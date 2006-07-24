@@ -1,0 +1,2 @@
+precious ^(target|\.DS_Store|velocity.log|cobertura.ser)$
+source ^(.classpath|.project)$

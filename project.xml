@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+
+<!-- Copyright (c) 2005  Dustin Sallings (dustin@spy.net)
+arch-tag: BFAE15E6-ED6E-4925-A5B2-79B8CBAE37D2
+-->
+
+<project>
+
+	<extend>${basedir}/../project.xml</extend>
+	<artifactId>memcached</artifactId>
+	<name>memcached</name>
+	<description>
+		Memcached client.
+	</description>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>spy</groupId>
+			<artifactId>spy</artifactId>
+			<version>2.2.15</version>
+			<properties><war.bundle>true</war.bundle></properties>
+		</dependency>
+		<dependency>
+			<groupId>spy</groupId>
+			<artifactId>maven-spy-build-plugin</artifactId>
+			<version>1.0</version>
+			<type>plugin</type>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>jmock</groupId>
+			<artifactId>jmock</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>jmock</groupId>
+			<artifactId>jmock-cglib</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib-full</artifactId>
+			<version>2.0.2</version>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<sourceDirectory>${basedir}/src/java</sourceDirectory>
+		<unitTestSourceDirectory>${basedir}/src/test</unitTestSourceDirectory>
+		<unitTest>
+			<includes>
+				<include>**/*Test.java</include>
+			</includes>
+		</unitTest>
+	</build>
+
+</project>
