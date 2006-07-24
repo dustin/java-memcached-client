@@ -32,6 +32,7 @@ public class MemcachedClient extends SpyThread {
 
 	private volatile boolean running=true;
 	private MemcachedConnection conn=null;
+	private Transcoder transcoder=null;
 
 	/**
 	 * Get a memcache client operating on the specified memcached locations.
@@ -41,7 +42,19 @@ public class MemcachedClient extends SpyThread {
 	 */
 	public MemcachedClient(InetSocketAddress... ia) throws IOException {
 		super();
+		transcoder=new StringTranscoder();
 		conn=new MemcachedConnection(ia);
+	}
+
+	/**
+	 * Set the transcoder for managing the cache representations of objects
+	 * going in and out of the cache.
+	 */
+	public void setTranscoder(Transcoder to) {
+		if(to == null) {
+			throw new NullPointerException("Can't use a null transcoder");
+		}
+		transcoder=to;
 	}
 
 	/**
@@ -55,11 +68,11 @@ public class MemcachedClient extends SpyThread {
 	 * @param callback the callback to send the result to
 	 */
 	public void storeAsync(StoreOperation.StoreType storeType, String key,
-			int flags, int exp, byte[] value,
-			StoreOperation.Callback callback) {
+			int exp, Object value, StoreOperation.Callback callback) {
+		CachedData co=transcoder.encode(value);
 		conn.addOperation(getServerForKey(key),
-				new StoreOperation(storeType, key, flags, exp, value,
-						callback));
+				new StoreOperation(storeType, key, co.getFlags(), exp,
+						co.getData(), callback));
 	}
 
 	/**
@@ -73,10 +86,10 @@ public class MemcachedClient extends SpyThread {
 	 * @return the result of the store
 	 */
 	public String storeSync(StoreOperation.StoreType storeType, String key,
-			int flags, int exp, byte[] value) {
+			int exp, Object o) {
 		final SynchronizationObject<String> so=
 			new SynchronizationObject<String>(null);
-		storeAsync(storeType, key, flags, exp, value,
+		storeAsync(storeType, key, exp, o,
 				new StoreOperation.Callback() {
 					public void storeResult(String val) {
 						so.set(val);
@@ -95,8 +108,8 @@ public class MemcachedClient extends SpyThread {
 	 * @param value the value to store
 	 * @return the storage return
 	 */
-	public String add(String key, int flags, int exp, byte[] value) {
-		return storeSync(StoreOperation.StoreType.add, key, flags, exp, value);
+	public String add(String key, int exp, Object o) {
+		return storeSync(StoreOperation.StoreType.add, key, exp, o);
 	}
 
 	/**
@@ -108,8 +121,8 @@ public class MemcachedClient extends SpyThread {
 	 * @param value the value to store
 	 * @return the storage return
 	 */
-	public String set(String key, int flags, int exp, byte[] value) {
-		return storeSync(StoreOperation.StoreType.set, key, flags, exp, value);
+	public String set(String key, int exp, Object o) {
+		return storeSync(StoreOperation.StoreType.set, key, exp, o);
 	}
 
 	/**
@@ -121,9 +134,8 @@ public class MemcachedClient extends SpyThread {
 	 * @param value the value to store
 	 * @return the storage return
 	 */
-	public String replace(String key, int flags, int exp, byte[] value) {
-		return storeSync(StoreOperation.StoreType.replace, key, flags, exp,
-				value);
+	public String replace(String key, int exp, Object o) {
+		return storeSync(StoreOperation.StoreType.replace, key, exp, o);
 	}
 
 	/**
@@ -317,8 +329,8 @@ public class MemcachedClient extends SpyThread {
 			int by, long def) {
 		long rv=mutate(t, key, by);
 		if(rv == -1) {
-			String v=storeSync(StoreOperation.StoreType.add, key, 0, 0,
-					String.valueOf(def).getBytes());
+			String v=storeSync(StoreOperation.StoreType.add, key, 0,
+					new Long(def));
 			if(v.equals("STORED")) {
 				rv=def;
 			}
