@@ -59,7 +59,7 @@ public class GetOperation extends Operation {
 		assert currentKey != null;
 		assert data != null;
 		// This will be the case, because we'll clear them when it's not.
-		assert readOffset < data.length
+		assert readOffset <= data.length
 			: "readOffset is " + readOffset + " data.length is " + data.length;
 
 		getLogger().info("readOffset: %d, length: %d",

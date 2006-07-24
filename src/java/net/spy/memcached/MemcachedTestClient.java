@@ -5,6 +5,9 @@ package net.spy.memcached;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.spy.SpyObject;
 import net.spy.memcached.ops.GetOperation;
@@ -54,7 +57,7 @@ public class MemcachedTestClient extends SpyObject {
 				System.out.println("Get complete!");
 			}}, "a", "b", "c");
 
-		System.out.println("Sync get(a): " + new String(c.get("a")));
+		System.out.println("Sync get(a): " + c.get("a"));
 		assert c.get("r") == null;
 		System.out.println("Bulk get: " + c.get("a", "b", "c"));
 
@@ -64,10 +67,20 @@ public class MemcachedTestClient extends SpyObject {
 
 		System.out.println("Stats: " + c.getStats());
 
+		c.delete("i");
+		c.delete("d");
 		System.out.println("incr(1):  " + c.incr("i", 3, 7));
 		System.out.println("incr(2):  " + c.incr("i", 3, 7));
 		System.out.println("decr(1):  " + c.decr("d", 3, 7));
 		System.out.println("decr(2):  " + c.decr("d", 3, 7));
+
+		Map<String, Date> m=new HashMap<String, Date>();
+		m.put("o1", new Date());
+		m.put("o2", new Date());
+		m.put("o3", new Date());
+		c.set("testobj", 60, m);
+		Object o=c.get("testobj");
+		System.out.printf("Object retrieval: %s (%s)\n", o, o.getClass());
 
 		// c.flush(5);
 

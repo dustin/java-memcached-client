@@ -42,7 +42,7 @@ public class MemcachedClient extends SpyThread {
 	 */
 	public MemcachedClient(InetSocketAddress... ia) throws IOException {
 		super();
-		transcoder=new StringTranscoder();
+		transcoder=new SerializingTranscoder();
 		conn=new MemcachedConnection(ia);
 	}
 
@@ -55,6 +55,13 @@ public class MemcachedClient extends SpyThread {
 			throw new NullPointerException("Can't use a null transcoder");
 		}
 		transcoder=to;
+	}
+
+	/**
+	 * Get the current transcoder that's in use.
+	 */
+	public Transcoder getTranscoder() {
+		return transcoder;
 	}
 
 	/**
@@ -156,8 +163,8 @@ public class MemcachedClient extends SpyThread {
 	 * @param key the key to get
 	 * @return the result from the cache (null if there is none)
 	 */
-	public byte[] get(final String key) {
-		final byte[][] rvContainer=new byte[1][];
+	public Object get(final String key) {
+		final CachedData[] rvContainer=new CachedData[1];
 		final SynchronizationObject<Object> sync
 			=new SynchronizationObject<Object>(null);
 		asyncGet(new GetOperation.Callback() {
@@ -166,10 +173,14 @@ public class MemcachedClient extends SpyThread {
 			}
 			public void gotData(String k, int flags, byte[] data) {
 				assert k.equals(key) : "Incorrect key returned: " + k;
-				rvContainer[0]=data;
+				rvContainer[0]=new CachedData(flags, data);
 			}}, key);
 		waitForNotNull(sync);
-		return rvContainer[0];
+		Object rv=null;
+		if(rvContainer[0] != null) {
+			rv=transcoder.decode(rvContainer[0]);
+		}
+		return rv;
 	}
 
 	/**
@@ -177,8 +188,8 @@ public class MemcachedClient extends SpyThread {
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 */
-	public Map<String, byte[]> get(String... keys) {
-		final Map<String, byte[]> rv=new ConcurrentHashMap<String, byte[]>();
+	public Map<String, Object> get(String... keys) {
+		final Map<String, Object> rv=new ConcurrentHashMap<String, Object>();
 		final AtomicInteger requests=new AtomicInteger();
 		final SynchronizationObject<AtomicInteger> sync
 			=new SynchronizationObject<AtomicInteger>(requests);
@@ -188,7 +199,7 @@ public class MemcachedClient extends SpyThread {
 					sync.set(requests);
 				}
 				public void gotData(String k, int flags, byte[] data) {
-					rv.put(k ,data);
+					rv.put(k, transcoder.decode(new CachedData(flags, data)));
 				}
 		};
 		// Break the gets down into groups by key
