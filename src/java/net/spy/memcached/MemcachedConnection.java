@@ -44,12 +44,12 @@ public class MemcachedConnection extends SpyObject {
 			Set<SelectionKey> selectedKeys=selector.selectedKeys();
 			assert selected == selectedKeys.size();
 			for(SelectionKey sk : selectedKeys) {
-				getLogger().info("Got selection key:  %s (r=%s, w=%s)",
+				getLogger().debug("Got selection key:  %s (r=%s, w=%s)",
 						sk, sk.isReadable(), sk.isWritable());
 				QueueAttachment qa=(QueueAttachment)sk.attachment();
 				if(qa.ops.size() > 0) {
 					Operation currentOp=qa.ops.peek();
-					getLogger().info("Current operation: %s", currentOp);
+					getLogger().debug("Current operation: %s", currentOp);
 					// First switch is for IO.
 					switch(currentOp.getState()) {
 						case READING:
@@ -64,7 +64,7 @@ public class MemcachedConnection extends SpyObject {
 							if(sk.isWritable()) {
 								ByteBuffer b=currentOp.getBuffer();
 								int written=qa.channel.write(b);
-								getLogger().info("Wrote %d bytes for %s",
+								getLogger().debug("Wrote %d bytes for %s",
 										written, currentOp);
 								if(b.remaining() == 0) {
 									currentOp.writeComplete();
@@ -81,7 +81,7 @@ public class MemcachedConnection extends SpyObject {
 							sk.interestOps(SelectionKey.OP_READ);
 							break;
 						case WRITING:
-							getLogger().info("Operation is still writing.");
+							getLogger().debug("Operation is still writing.");
 							sk.interestOps(SelectionKey.OP_WRITE);
 							break;
 						case COMPLETE:
@@ -143,7 +143,7 @@ public class MemcachedConnection extends SpyObject {
 				selector.wakeup();
 			}
 		}
-		getLogger().info("Added %s to %d", o, which);
+		getLogger().debug("Added %s to %d", o, which);
 	}
 
 	/**
@@ -154,10 +154,10 @@ public class MemcachedConnection extends SpyObject {
 			QueueAttachment qa=(QueueAttachment)sk.attachment();
 			qa.channel.close();
 			qa.sk=null;
-			getLogger().info("Shut down channel %s", qa.channel);
+			getLogger().debug("Shut down channel %s", qa.channel);
 		}
 		selector.close();
-		getLogger().info("Shut down selector %s", selector);
+		getLogger().debug("Shut down selector %s", selector);
 	}
 
 	private static class QueueAttachment {

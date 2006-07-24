@@ -33,14 +33,14 @@ public class GetOperation extends Operation {
 	@Override
 	public void handleLine(String line) {
 		if(line.equals("END")) {
-			getLogger().info("Get complete!");
+			getLogger().debug("Get complete!");
 			if(cb != null) {
 				cb.getComplete();
 			}
 			transitionState(State.COMPLETE);
 			data=null;
 		} else if(line.startsWith("VALUE ")) {
-			getLogger().info("Got line %s", line);
+			getLogger().debug("Got line %s", line);
 			String[] stuff=line.split(" ");
 			assert stuff[0].equals("VALUE");
 			currentKey=stuff[1];
@@ -62,12 +62,12 @@ public class GetOperation extends Operation {
 		assert readOffset <= data.length
 			: "readOffset is " + readOffset + " data.length is " + data.length;
 
-		getLogger().info("readOffset: %d, length: %d",
+		getLogger().debug("readOffset: %d, length: %d",
 				readOffset, data.length);
 		int toRead=data.length - readOffset;
 		int available=b.remaining();
 		toRead=Math.min(toRead, available);
-		getLogger().info("Reading %d bytes", toRead);
+		getLogger().debug("Reading %d bytes", toRead);
 		b.get(data, readOffset, toRead);
 		readOffset+=toRead;
 		if(readOffset == data.length) {
@@ -82,7 +82,7 @@ public class GetOperation extends Operation {
 			data=null;
 			readOffset=0;
 			currentFlags=0;
-			getLogger().info("Setting read type back to line.");
+			getLogger().debug("Setting read type back to line.");
 			setReadType(ReadType.LINE);
 		}
 	}

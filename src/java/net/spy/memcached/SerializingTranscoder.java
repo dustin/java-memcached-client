@@ -118,7 +118,7 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 			CloseUtil.close(bos);
 		}
 		byte[] rv=bos.toByteArray();
-		getLogger().info("Compressed %d bytes to %d", in.length, rv.length);
+		getLogger().debug("Compressed %d bytes to %d", in.length, rv.length);
 		return rv;
 	}
 

@@ -17,7 +17,7 @@ public class MemcachedTestClient extends SpyObject {
 
 	public static void main(String args[]) throws Exception {
 		final MemcachedClient c=new MemcachedClient(
-				new InetSocketAddress("purple", 11211));
+				new InetSocketAddress("localhost", 11211));
 		try {
 			assert false;
 			throw new RuntimeException("Assertions not enabled.");

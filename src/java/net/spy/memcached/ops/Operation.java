@@ -50,7 +50,7 @@ public abstract class Operation extends SpyObject {
 	 * Transition the state of this operation to the given state.
 	 */
 	protected void transitionState(State newState) {
-		getLogger().info("Transitioned state from %s to %s", state, newState);
+		getLogger().debug("Transitioned state from %s to %s", state, newState);
 		state=newState;
 		// Discard our buffer when we no longer need it.
 		if(state != State.WRITING) {

@@ -20,7 +20,7 @@ public class DeleteOperation extends Operation {
 
 	@Override
 	public void handleLine(String line) {
-		getLogger().info("Delete of %s returned %s", key, line);
+		getLogger().debug("Delete of %s returned %s", key, line);
 		assert line.equals("DELETED") || line.equals("NOT_FOUND");
 		transitionState(State.COMPLETE);
 	}

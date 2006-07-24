@@ -29,7 +29,7 @@ public class MutatorOperation extends Operation {
 
 	@Override
 	public void handleLine(String line) {
-		getLogger().info("Result:  %s", line);
+		getLogger().debug("Result:  %s", line);
 		Long found=null;
 		if(!line.equals("NOT_FOUND")) {
 			found=new Long(line);

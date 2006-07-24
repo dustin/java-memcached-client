@@ -310,7 +310,7 @@ public class MemcachedClient extends SpyThread {
 						sync.set(val);
 					}}));
 		waitForNotNull(sync);
-		getLogger().info("Mutation returned %s", sync.get());
+		getLogger().debug("Mutation returned %s", sync.get());
 		return sync.get().longValue();
 	}
 
