@@ -341,7 +341,7 @@ public class MemcachedClient extends SpyThread {
 		long rv=mutate(t, key, by);
 		if(rv == -1) {
 			String v=storeSync(StoreOperation.StoreType.add, key, 0,
-					new Long(def));
+					String.valueOf(def));
 			if(v.equals("STORED")) {
 				rv=def;
 			}
