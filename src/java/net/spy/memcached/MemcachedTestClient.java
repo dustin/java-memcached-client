@@ -85,6 +85,8 @@ public class MemcachedTestClient extends SpyObject {
 		Object o=c.get("testobj");
 		System.out.printf("Object retrieval: %s (%s)\n", o, o.getClass());
 
+		c.set("date", 300, new Date());
+
 		// c.flush(5);
 
 		// Give a bit of time to try to not be in an operation when this goes.
