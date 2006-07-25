@@ -21,6 +21,7 @@ import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.MutatorOperation;
+import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.VersionOperation;
@@ -44,6 +45,8 @@ public class MemcachedClient extends SpyThread {
 		super();
 		transcoder=new SerializingTranscoder();
 		conn=new MemcachedConnection(ia);
+		setName("Memcached IO over " + conn);
+		start();
 	}
 
 	/**
@@ -64,6 +67,11 @@ public class MemcachedClient extends SpyThread {
 		return transcoder;
 	}
 
+	private void addOp(int which, Operation op) {
+		assert isAlive() : "IO Thread is not running.";
+		conn.addOperation(which, op);
+	}
+
 	/**
 	 * Submit an asynchronous store to the current connection.
 	 * 
@@ -77,7 +85,7 @@ public class MemcachedClient extends SpyThread {
 	public void storeAsync(StoreOperation.StoreType storeType, String key,
 			int exp, Object value, StoreOperation.Callback callback) {
 		CachedData co=transcoder.encode(value);
-		conn.addOperation(getServerForKey(key),
+		addOp(getServerForKey(key),
 				new StoreOperation(storeType, key, co.getFlags(), exp,
 						co.getData(), callback));
 	}
@@ -153,7 +161,7 @@ public class MemcachedClient extends SpyThread {
 	 */
 	public void asyncGet(GetOperation.Callback cb, String... keys) {
 		for(String key : keys) {
-			conn.addOperation(getServerForKey(key), new GetOperation(key, cb));
+			addOp(getServerForKey(key), new GetOperation(key, cb));
 		}
 	}
 
@@ -216,7 +224,7 @@ public class MemcachedClient extends SpyThread {
 		}
 		for(Map.Entry<Integer, Collection<String>> me : chunks.entrySet()) {
 			requests.incrementAndGet();
-			conn.addOperation(me.getKey(), new GetOperation(me.getValue(), cb));
+			addOp(me.getKey(), new GetOperation(me.getValue(), cb));
 		}
 		try {
 			sync.waitUntilTrue(
@@ -247,7 +255,7 @@ public class MemcachedClient extends SpyThread {
 			final SynchronizationObject<String> sync=
 				new SynchronizationObject<String>(null);
 			syncs.add(sync);
-			conn.addOperation(i, new VersionOperation(
+			addOp(i, new VersionOperation(
 					new VersionOperation.Callback() {
 						public void versionResult(String s) {
 							rv.put(sa, s);
@@ -273,7 +281,7 @@ public class MemcachedClient extends SpyThread {
 		for(int i=0; i<conn.getNumConnections(); i++) {
 			final SocketAddress sa=conn.getAddressOf(i);
 			rv.put(sa, new HashMap<String, String>());
-			conn.addOperation(i, new StatsOperation(
+			addOp(i, new StatsOperation(
 					new StatsOperation.Callback() {
 						public void gotStat(String name, String val) {
 							rv.get(sa).put(name, val);
@@ -301,7 +309,7 @@ public class MemcachedClient extends SpyThread {
 	private long mutate(MutatorOperation.Mutator m, String key, int by) {
 		final SynchronizationObject<Long> sync=
 			new SynchronizationObject<Long>(null);
-		conn.addOperation(getServerForKey(key), new MutatorOperation(m, key, by,
+		addOp(getServerForKey(key), new MutatorOperation(m, key, by,
 				new MutatorOperation.Callback() {
 					public void mutatorResult(Long val) {
 						if(val == null) {
@@ -380,7 +388,7 @@ public class MemcachedClient extends SpyThread {
 	 * @param when when the deletion should take effect
 	 */
 	public void delete(String key, int when) {
-		conn.addOperation(getServerForKey(key), new DeleteOperation(key, when));
+		addOp(getServerForKey(key), new DeleteOperation(key, when));
 	}
 
 	/**
@@ -395,13 +403,13 @@ public class MemcachedClient extends SpyThread {
 	 */
 	public void flush(int delay) {
 		for(int i=0; i<conn.getNumConnections(); i++) {
-			conn.addOperation(i, new FlushOperation(delay));
+			addOp(i, new FlushOperation(delay));
 		}
 	}
 
 	public void flush() {
 		for(int i=0; i<conn.getNumConnections(); i++) {
-			conn.addOperation(i, new FlushOperation());
+			addOp(i, new FlushOperation());
 		}
 	}
 

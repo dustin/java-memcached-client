@@ -32,25 +32,30 @@ public class MemcachedConnection extends SpyObject {
 	private static final int MAX_OPS_QUEUE_LEN = 8192;
 
 	private Selector selector=null;
-	private SelectionKey[] connections=null;
+	private QueueAttachment[] connections=null;
 	private int emptySelects=0;
 	private SortedMap<Long, QueueAttachment> reconnectQueue=null;
 
 	public MemcachedConnection(InetSocketAddress[] a) throws IOException {
 		reconnectQueue=new TreeMap<Long, QueueAttachment>();
 		selector=Selector.open();
-		connections=new SelectionKey[a.length];
+		connections=new QueueAttachment[a.length];
 		int cons=0;
 		for(SocketAddress sa : a) {
 			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
-			ch.connect(sa);
 			QueueAttachment qa=new QueueAttachment(sa, ch);
-			connections[cons]=ch.register(selector, 0, qa);
-			qa.sk=connections[cons];
-			qa.sk.interestOps(SelectionKey.OP_CONNECT);
 			qa.which=cons;
-			cons++;
+			int ops=0;
+			if(ch.connect(sa)) {
+				getLogger().info("Connected to %s immediately", qa);
+				qa.reconnectAttempt=0;
+			} else {
+				getLogger().debug("Added %s to connect queue", qa);
+				ops=SelectionKey.OP_CONNECT;
+			}
+			qa.sk=ch.register(selector, ops, qa);
+			connections[cons++]=qa;
 		}
 	}
 
@@ -62,6 +67,7 @@ public class MemcachedConnection extends SpyObject {
 			long then=reconnectQueue.firstKey();
 			delay=Math.max(then-now, 1);
 		}
+		getLogger().debug("Selecting with delay of %sms", delay);
 		int selected=selector.select(delay);
 		if(selected > 0) {
 			Set<SelectionKey> selectedKeys=selector.selectedKeys();
@@ -99,7 +105,7 @@ public class MemcachedConnection extends SpyObject {
 	private void handleIO(SelectionKey sk) throws IOException {
 		QueueAttachment qa=(QueueAttachment)sk.attachment();
 		if(sk.isConnectable()) {
-			getLogger().info("Connection state changed for " + sk);
+			getLogger().info("Connection state changed for %s", sk);
 			try {
 				if(qa.channel.finishConnect()) {
 					synchronized(qa) {
@@ -112,6 +118,7 @@ public class MemcachedConnection extends SpyObject {
 					}
 				}
 			} catch(IOException e) {
+				getLogger().warn("Problem handling connect", e);
 				queueReconnect(qa);
 			}
 		} else {
@@ -231,8 +238,7 @@ public class MemcachedConnection extends SpyObject {
 			ch.configureBlocking(false);
 			ch.connect(qa.socketAddress);
 			qa.channel=ch;
-			connections[qa.which]=ch.register(selector, 0, qa);
-			qa.sk=connections[qa.which];
+			qa.sk=ch.register(selector, 0, qa);
 			qa.sk.interestOps(SelectionKey.OP_CONNECT);
 		}
 	}
@@ -265,8 +271,7 @@ public class MemcachedConnection extends SpyObject {
 	 * @return the rmeote address
 	 */
 	public SocketAddress getAddressOf(int which) {
-		QueueAttachment qa=(QueueAttachment)connections[which].attachment();
-		return qa.socketAddress;
+		return connections[which].socketAddress;
 	}
 
 	/**
@@ -277,7 +282,7 @@ public class MemcachedConnection extends SpyObject {
 	 */
 	@SuppressWarnings("unchecked")
 	public void addOperation(int which, Operation o) {
-		QueueAttachment qa=(QueueAttachment)connections[which].attachment();
+		QueueAttachment qa=connections[which];
 		o.initialize();
 		synchronized(qa) {
 			qa.ops.add(o);
@@ -285,9 +290,9 @@ public class MemcachedConnection extends SpyObject {
 			// we want to write
 			if(qa.reconnectAttempt == 0 && qa.ops.size() == 1) {
 				qa.sk.interestOps(SelectionKey.OP_WRITE);
-				selector.wakeup();
 			}
 		}
+		selector.wakeup();
 		getLogger().debug("Added %s to %d", o, which);
 	}
 
@@ -295,8 +300,7 @@ public class MemcachedConnection extends SpyObject {
 	 * Shut down all of the connections.
 	 */
 	public void shutdown() throws IOException {
-		for(SelectionKey sk : connections) {
-			QueueAttachment qa=(QueueAttachment)sk.attachment();
+		for(QueueAttachment qa : connections) {
 			qa.channel.close();
 			qa.sk=null;
 			getLogger().debug("Shut down channel %s", qa.channel);
@@ -305,9 +309,20 @@ public class MemcachedConnection extends SpyObject {
 		getLogger().debug("Shut down selector %s", selector);
 	}
 
+	public String toString() {
+		StringBuilder sb=new StringBuilder();
+		sb.append("{MemcachedConnection to");
+		for(QueueAttachment qa : connections) {
+			sb.append(" ");
+			sb.append(qa.socketAddress);
+		}
+		sb.append("}");
+		return sb.toString();
+	}
+
 	private static class QueueAttachment {
 		public int which=0;
-		public int reconnectAttempt=0;
+		public int reconnectAttempt=1;
 		public SocketAddress socketAddress=null;
 		public SocketChannel channel=null;
 		public ByteBuffer buf=null;
@@ -322,7 +337,8 @@ public class MemcachedConnection extends SpyObject {
 		}
 
 		public String toString() {
-			return "{QA #ops=" + ops.size() + ", topop=" + ops.peek() + "}";
+			return "{QA sa=" + socketAddress + ", #ops=" + ops.size()
+				+ ", topop=" + ops.peek() + "}";
 		}
 	}
 }
