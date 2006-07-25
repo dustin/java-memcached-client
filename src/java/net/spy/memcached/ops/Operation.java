@@ -44,6 +44,7 @@ public abstract class Operation extends SpyObject {
 	protected void setBuffer(ByteBuffer to) {
 		assert to != null : "Trying to set buffer to null";
 		cmd=to;
+		cmd.mark();
 	}
 
 	/**
