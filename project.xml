@@ -23,6 +23,12 @@ arch-tag: BFAE15E6-ED6E-4925-A5B2-79B8CBAE37D2
 		</dependency>
 		<dependency>
 			<groupId>spy</groupId>
+			<artifactId>maven-tla-plugin</artifactId>
+			<version>1.0</version>
+			<type>plugin</type>
+		</dependency>
+		<dependency>
+			<groupId>spy</groupId>
 			<artifactId>maven-spy-build-plugin</artifactId>
 			<version>1.0</version>
 			<type>plugin</type>
