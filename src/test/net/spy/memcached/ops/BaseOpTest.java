@@ -62,7 +62,7 @@ public class BaseOpTest extends BaseMockCase {
 		op.setReadType(Operation.ReadType.DATA);
 		op.setBytesToRead(2);
 		op.readFromBuffer(b);
-		byte expected[]={'x', 'y'};
+		byte[] expected={'x', 'y'};
 		assertTrue("Expected " + Arrays.toString(expected) + " but got "
 				+ Arrays.toString(op.getCurentBytes()),
 				Arrays.equals(expected, op.getCurentBytes()));

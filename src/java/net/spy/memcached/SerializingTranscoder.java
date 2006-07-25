@@ -36,7 +36,7 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 	}
 
 	public Object decode(CachedData d) {
-		byte data[]=d.getData();
+		byte[] data=d.getData();
 		Object rv=null;
 		if((d.getFlags() & COMPRESSED) != 0) {
 			data=decompress(d.getData());
@@ -51,7 +51,7 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 
 	public CachedData encode(Object o) {
 		CachedData rv=null;
-		byte b[]=null;
+		byte[] b=null;
 		int flags=0;
 		if(o instanceof String) {
 			b=((String)o).getBytes();
@@ -71,7 +71,7 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 
 	private byte[] serialize(Object o) {
 		assert o != null;
-		byte rv[]=null;
+		byte[] rv=null;
 		try {
 			ByteArrayOutputStream bos=new ByteArrayOutputStream();
 			ObjectOutputStream os=new ObjectOutputStream(bos);

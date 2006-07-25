@@ -34,7 +34,7 @@ public class MemcachedTestClient extends SpyObject {
 		System.out.println(c.getVersions());
 
 		// Do a big'un
-		byte b[]=new byte[128*1024];
+		byte[] b=new byte[128*1024];
 		Arrays.fill(b, (byte)'a');
 		c.storeAsync(StoreOperation.StoreType.add, "big", 60,
 				Arrays.toString(b),
@@ -47,6 +47,9 @@ public class MemcachedTestClient extends SpyObject {
 		for(String s : new String[]{"a", "b", "c"}) {
 			System.out.println(c.add(s, 10, "hello\r\n" + s));
 		}
+
+		System.err.println("Kill me now");
+		Thread.sleep(5000);
 
 		c.asyncGet(new GetOperation.Callback() {
 			public void gotData(String key, int flags, byte[] data) {

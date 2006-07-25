@@ -87,10 +87,10 @@ public abstract class Operation extends SpyObject {
 	protected void setArguments(ByteBuffer bb, Object... args) {
 		boolean wasFirst=true;
 		for(Object o : args) {
-			if(!wasFirst) {
-				bb.put((byte)' ');
-			} else {
+			if(wasFirst) {
 				wasFirst=false;
+			} else {
+				bb.put((byte)' ');
 			}
 			bb.put(String.valueOf(o).getBytes());
 		}

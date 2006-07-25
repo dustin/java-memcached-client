@@ -10,8 +10,12 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
@@ -23,21 +27,28 @@ public class MemcachedConnection extends SpyObject {
 	// The maximum number of empty results from selects that may occur without
 	// some actual values coming back.
 	private static final int MAX_EMPTY = 1000;
+	// How long to delay reconnect attempts.
+	private static final long DELAY = 5000;
+	private static final int MAX_OPS_QUEUE_LEN = 8192;
 
 	private Selector selector=null;
 	private SelectionKey[] connections=null;
 	private int emptySelects=0;
+	private SortedMap<Long, QueueAttachment> reconnectQueue=null;
 
 	public MemcachedConnection(InetSocketAddress[] a) throws IOException {
+		reconnectQueue=new TreeMap<Long, QueueAttachment>();
 		selector=Selector.open();
 		connections=new SelectionKey[a.length];
 		int cons=0;
 		for(SocketAddress sa : a) {
-			SocketChannel ch=SocketChannel.open(sa);
+			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
+			ch.connect(sa);
 			QueueAttachment qa=new QueueAttachment(sa, ch);
 			connections[cons]=ch.register(selector, 0, qa);
 			qa.sk=connections[cons];
+			qa.sk.interestOps(SelectionKey.OP_CONNECT);
 			qa.which=cons;
 			cons++;
 		}
@@ -45,11 +56,18 @@ public class MemcachedConnection extends SpyObject {
 
 	@SuppressWarnings("unchecked")
 	public void handleIO() throws IOException {
-		int selected=selector.select();
-		Set<SelectionKey> selectedKeys=selector.selectedKeys();
-		getLogger().debug("Selected %d, selected %d keys",
-				selected, selectedKeys.size());
-		if(selectedKeys.size() > 0) {
+		long delay=0;
+		if(reconnectQueue.size() > 0) {
+			long now=System.currentTimeMillis();
+			long then=reconnectQueue.firstKey();
+			delay=Math.max(then-now, 1);
+		}
+		int selected=selector.select(delay);
+		if(selected > 0) {
+			Set<SelectionKey> selectedKeys=selector.selectedKeys();
+			assert selected == selectedKeys.size();
+			getLogger().debug("Selected %d, selected %d keys",
+					selected, selectedKeys.size());
 			emptySelects=0;
 			for(SelectionKey sk : selectedKeys) {
 				getLogger().debug(
@@ -58,7 +76,10 @@ public class MemcachedConnection extends SpyObject {
 						sk.isConnectable(), sk.attachment());
 				handleIO(sk);
 			} // for each selector
+			selectedKeys.clear();
 		} else {
+			// It's very easy in NIO to write a bug such that your selector
+			// spins madly.  This will catch that and let it break.
 			getLogger().info("No selectors ready, interrupted: "
 				+ Thread.interrupted());
 			if(++emptySelects > MAX_EMPTY) {
@@ -69,17 +90,20 @@ public class MemcachedConnection extends SpyObject {
 				assert false : "Too many empty selects";
 			}
 		}
-		selectedKeys.clear();
+		if(reconnectQueue.size() > 0) {
+			attemptReconnects();
+		}
 	}
 
 	// Handle IO for a specific selector.
 	private void handleIO(SelectionKey sk) throws IOException {
 		QueueAttachment qa=(QueueAttachment)sk.attachment();
 		if(sk.isConnectable()) {
-			getLogger().warn("Connection state changed for " + sk);
+			getLogger().info("Connection state changed for " + sk);
 			try {
 				if(qa.channel.finishConnect()) {
 					synchronized(qa) {
+						qa.reconnectAttempt=0;
 						if(qa.ops.size() > 0) {
 							sk.interestOps(SelectionKey.OP_WRITE);
 						} else {
@@ -88,7 +112,7 @@ public class MemcachedConnection extends SpyObject {
 					}
 				}
 			} catch(IOException e) {
-				reconnect(qa);
+				queueReconnect(qa);
 			}
 		} else {
 			Operation currentOp=qa.ops.peek();
@@ -100,7 +124,7 @@ public class MemcachedConnection extends SpyObject {
 					int read=qa.channel.read(b);
 					assert read == -1
 						: "expected to read -1 bytes, read " + read;
-					reconnect(qa);
+					queueReconnect(qa);
 				} else {
 					assert false : "No current operations, but selectors ready";
 				}
@@ -119,7 +143,7 @@ public class MemcachedConnection extends SpyObject {
 				if(sk.isReadable()) {
 					int read=qa.channel.read(qa.buf);
 					if(read < 0) {
-						reconnect(qa);
+						queueReconnect(qa);
 					} else {
 						qa.buf.flip();
 						currentOp.readFromBuffer(qa.buf);
@@ -135,7 +159,7 @@ public class MemcachedConnection extends SpyObject {
 					int read=qa.channel.read(b);
 					assert read == -1
 						: "expected to read -1 bytes, read " + read;
-					reconnect(qa);
+					queueReconnect(qa);
 				} else if(sk.isWritable()) {
 					ByteBuffer b=currentOp.getBuffer();
 					int written=qa.channel.write(b);
@@ -151,6 +175,8 @@ public class MemcachedConnection extends SpyObject {
 			case COMPLETE:
 				assert false : "Current op is in complete state";
 				break;
+			default:
+				assert false;
 		}
 		// Second switch is for post-IO examination and state transition
 		switch(currentOp.getState()) {
@@ -175,30 +201,45 @@ public class MemcachedConnection extends SpyObject {
 					}
 				}
 				break;
+			default:
+				assert false;
 		}
 	}
 
-	private void reconnect(QueueAttachment qa) throws IOException {
+	private void queueReconnect(QueueAttachment qa) throws IOException {
 		getLogger().warn("Closing, and reopening connection.");
 		synchronized(qa) {
 			qa.sk.cancel();
-			SocketChannel ch=SocketChannel.open();
-			ch.configureBlocking(false);
-			ch.connect(qa.socketAddress);
+			qa.reconnectAttempt++;
 			qa.channel.socket().close();
-			qa.channel=ch;
-			connections[qa.which]=ch.register(selector, 0, qa);
-			qa.sk=connections[qa.which];
-			qa.sk.interestOps(SelectionKey.OP_CONNECT);
+
+			reconnectQueue.put(System.currentTimeMillis() + DELAY, qa);
 
 			// Need to do a little queue management.
 			setupResend(qa);
 		}
 	}
 
+	private void attemptReconnects() throws IOException {
+		long now=System.currentTimeMillis();
+		for(Iterator<QueueAttachment> i=
+				reconnectQueue.headMap(now).values().iterator(); i.hasNext();) {
+			QueueAttachment qa=i.next();
+			i.remove();
+			getLogger().info("Reconnecting %s", qa);
+			SocketChannel ch=SocketChannel.open();
+			ch.configureBlocking(false);
+			ch.connect(qa.socketAddress);
+			qa.channel=ch;
+			connections[qa.which]=ch.register(selector, 0, qa);
+			qa.sk=connections[qa.which];
+			qa.sk.interestOps(SelectionKey.OP_CONNECT);
+		}
+	}
+
 	private void setupResend(QueueAttachment qa) {
-		if(qa.ops.size() > 0) {
-			Operation op=qa.ops.peek();
+		Operation op=qa.ops.peek();
+		if(op != null) {
 			if(op.getState() == Operation.State.WRITING) {
 				getLogger().warn("Resetting write state of op: %s", op);
 				op.getBuffer().reset();
@@ -242,7 +283,7 @@ public class MemcachedConnection extends SpyObject {
 			qa.ops.add(o);
 			// If this is the only operation in the queue, tell the selector
 			// we want to write
-			if(qa.ops.size() == 1) {
+			if(qa.reconnectAttempt == 0 && qa.ops.size() == 1) {
 				qa.sk.interestOps(SelectionKey.OP_WRITE);
 				selector.wakeup();
 			}
@@ -266,17 +307,18 @@ public class MemcachedConnection extends SpyObject {
 
 	private static class QueueAttachment {
 		public int which=0;
+		public int reconnectAttempt=0;
 		public SocketAddress socketAddress=null;
 		public SocketChannel channel=null;
 		public ByteBuffer buf=null;
-		public LinkedBlockingQueue<Operation> ops=null;
+		public BlockingQueue<Operation> ops=null;
 		public SelectionKey sk=null;
 		public QueueAttachment(SocketAddress sa, SocketChannel c) {
 			super();
 			socketAddress=sa;
 			channel=c;
 			buf=ByteBuffer.allocate(4096);
-			ops=new LinkedBlockingQueue<Operation>();
+			ops=new ArrayBlockingQueue<Operation>(MAX_OPS_QUEUE_LEN);
 		}
 
 		public String toString() {
