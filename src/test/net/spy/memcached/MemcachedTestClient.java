@@ -43,6 +43,20 @@ public class MemcachedTestClient extends SpyObject {
 			System.out.println(c.add(s, 10, "hello\r\n" + s));
 		}
 
+		try {
+			c.set("invalid", 600, new Object());
+			assert false : "Stored a non-serializable object";
+		} catch(IllegalArgumentException e) {
+			// normal
+		}
+
+		try {
+			c.set("x x", 600, "broken");
+			assert false : "Can't queue an invalid key name";
+		} catch(IllegalArgumentException e) {
+			// normal
+		}
+
 		System.err.println("Kill me now");
 		Thread.sleep(5000);
 

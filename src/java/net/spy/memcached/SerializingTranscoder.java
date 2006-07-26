@@ -145,7 +145,7 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 			bos.close();
 			rv=bos.toByteArray();
 		} catch(IOException e) {
-			getLogger().warn("Caught IOException encoding %s", o, e);
+			throw new IllegalArgumentException("Non-serializable object", e);
 		}
 		return rv;
 	}

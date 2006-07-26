@@ -487,6 +487,10 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	private int getServerForKey(String key) {
+		if(key.matches(".*\\s.*")) {
+			throw new IllegalArgumentException(
+					"Key contains invalid characters: " + key);
+		}
 		return key.hashCode() % conn.getNumConnections();
 	}
 

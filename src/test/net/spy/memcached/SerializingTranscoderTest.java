@@ -23,6 +23,15 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		tc=new SerializingTranscoder();
 	}
 
+	public void testNonserializable() throws Exception {
+		try {
+			tc.encode(new Object());
+			fail("Processed a non-serializable object.");
+		} catch(IllegalArgumentException e) {
+			// pass
+		}
+	}
+
 	public void testStrings() throws Exception {
 		String s1="This is a simple test string.";
 		CachedData cd=tc.encode(s1);
