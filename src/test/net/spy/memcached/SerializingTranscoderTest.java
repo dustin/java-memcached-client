@@ -163,4 +163,11 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		assertTrue(tc.decodeBoolean(tc.encodeBoolean(true)));
 		assertFalse(tc.decodeBoolean(tc.encodeBoolean(false)));
 	}
+
+	public void testByteArray() throws Exception {
+		byte[] a={'a', 'b', 'c'};
+		CachedData cd=tc.encode(a);
+		assertTrue(Arrays.equals(a, cd.getData()));
+		assertTrue(Arrays.equals(a, (byte[])tc.decode(cd)));
+	}
 }

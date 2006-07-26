@@ -33,6 +33,7 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 	private static final int SPECIAL_BYTE=(5<<8);
 	private static final int SPECIAL_FLOAT=(6<<8);
 	private static final int SPECIAL_DOUBLE=(7<<8);
+	private static final int SPECIAL_BYTEARRAY=(8<<8);
 
 	private int compressionThreshold=16384;
 
@@ -78,6 +79,9 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 				case SPECIAL_DOUBLE:
 					rv=new Double(Double.longBitsToDouble(decodeLong(data)));
 					break;
+				case SPECIAL_BYTEARRAY:
+					rv=data;
+					break;
 				default: assert false;
 			}
 		} else {
@@ -113,6 +117,9 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 		} else if(o instanceof Double) {
 			b=encodeLong(Double.doubleToRawLongBits((Double)o));
 			flags |= SPECIAL_DOUBLE;
+		} else if(o instanceof byte[]) {
+			b=(byte[])o;
+			flags |= SPECIAL_BYTEARRAY;
 		} else {
 			b=serialize(o);
 			flags |= SERIALIZED;
