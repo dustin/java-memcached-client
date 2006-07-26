@@ -31,6 +31,44 @@ import net.spy.memcached.ops.VersionOperation;
 
 /**
  * Client to a memcached server.
+ * 
+ * <h2>Basic usage</h2>
+ * 
+ * <pre>
+ *  MemcachedClient c=new MemcachedClient(
+ *      new InetSocketAddress("hostname", portNum));
+ *  
+ *  // Store a value (async) for one hour
+ *  c.set("someKey", 3600, someObject);
+ *  // Retrieve a value.
+ *  Object myObject=c.get("someKey");
+ *  </pre>
+ *  
+ *  <h2>Advanced Usage</h2>
+ *  
+ *  <p>
+ *   MemcachedClient may be processing a great deal of asynchronous messages or
+ *   possibly dealing with an unreachable memcached, which may delay processing.
+ *   If a memcached is disabled, for example, MemcachedConnection will continue
+ *   to attempt to reconnect and replay pending operations until it comes back
+ *   up.  To prevent this from causing your application to hang, you can use
+ *   one of the asynchronous mechanisms to time out a request and cancel the
+ *   operation to the server.
+ *  </p>
+ *  
+ *  <pre>
+ *  // Try to get a value, for up to 5 seconds, and cancel if it doesn't return
+ *  Object myObj=null;
+ *  Future&lt;Object&gt; f=c.asyncGet("someKey");
+ *  try {
+ *      myObj=f.get(5, TimeUnit.SECONDS);
+ *  } catch(TimeoutException e) {
+ *      // Since we don't need this, go ahead and cancel the operation.  This
+ *      // is not strictly necessary, but it'll save some work on the server.
+ *      f.cancel();
+ *      // Do other timeout related stuff
+ *  }
+ * </pre>
  */
 public class MemcachedClient extends SpyThread {
 
@@ -92,7 +130,7 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	/**
-	 * Add an object to the cache if it does not exist already.
+	 * Add an object to the cache iff it does not exist already.
 	 * 
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
@@ -116,7 +154,7 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	/**
-	 * Replace an object with the given value only if there is already a value
+	 * Replace an object with the given value iff there is already a value
 	 * for the given key.
 	 * 
 	 * @param key the key under which this object should be added.
@@ -424,6 +462,9 @@ public class MemcachedClient extends SpyThread {
 		}
 	}
 
+	/**
+	 * Infinitely loop processing IO.
+	 */
 	public void run() {
 		while(running) {
 			try {
