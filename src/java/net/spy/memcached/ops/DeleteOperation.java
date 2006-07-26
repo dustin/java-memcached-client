@@ -5,6 +5,9 @@ package net.spy.memcached.ops;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Operation to delete an item from the cache.
+ */
 public class DeleteOperation extends Operation {
 
 	private static final int OVERHEAD=32;

@@ -12,14 +12,26 @@ public class MutatorOperation extends Operation {
 
 	public static final int OVERHEAD=32;
 
-	public enum Mutator { incr, decr }
+	/**
+	 * Type of mutation to perform.
+	 */
+	public enum Mutator {
+		/**
+		 * Increment a value on the memcached server.
+		 */
+		incr,
+		/**
+		 * Decrement a value on the memcached server.
+		 */
+		decr
+	}
 
 	private Mutator mutator=null;
 	private String key=null;
 	private int amount=0;
-	private Callback cb=null;
+	private OperationCallback cb=null;
 
-	public MutatorOperation(Mutator m, String k, int amt, Callback c) {
+	public MutatorOperation(Mutator m, String k, int amt, OperationCallback c) {
 		super();
 		mutator=m;
 		key=k;
@@ -30,12 +42,12 @@ public class MutatorOperation extends Operation {
 	@Override
 	public void handleLine(String line) {
 		getLogger().debug("Result:  %s", line);
-		Long found=null;
+		String found=null;
 		if(!line.equals("NOT_FOUND")) {
-			found=new Long(line);
+			found=line;
 		}
 		if(cb != null) {
-			cb.mutatorResult(found);
+			cb.receivedStatus(found);
 		}
 		transitionState(State.COMPLETE);
 	}
@@ -47,10 +59,6 @@ public class MutatorOperation extends Operation {
 		setArguments(b, mutator.name(), key, amount);
 		b.flip();
 		setBuffer(b);
-	}
-
-	public interface Callback {
-		void mutatorResult(Long val);
 	}
 
 }

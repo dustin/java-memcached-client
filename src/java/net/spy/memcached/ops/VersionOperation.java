@@ -12,9 +12,9 @@ public class VersionOperation extends Operation {
 
 	private static final byte[] REQUEST="version\r\n".getBytes();
 
-	private Callback cb=null;
+	private OperationCallback cb=null;
 
-	public VersionOperation(Callback c) {
+	public VersionOperation(OperationCallback c) {
 		super();
 		cb=c;
 	}
@@ -23,7 +23,7 @@ public class VersionOperation extends Operation {
 	public void handleLine(String line) {
 		if(cb != null) {
 			assert line.startsWith("VERSION ");
-			cb.versionResult(line.substring("VERSION ".length()));
+			cb.receivedStatus(line.substring("VERSION ".length()));
 		}
 		transitionState(State.COMPLETE);
 	}
@@ -31,10 +31,6 @@ public class VersionOperation extends Operation {
 	@Override
 	public void initialize() {
 		setBuffer(ByteBuffer.wrap(REQUEST));
-	}
-
-	public interface Callback {
-		public void versionResult(String s);
 	}
 
 }

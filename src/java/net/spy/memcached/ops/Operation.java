@@ -11,8 +11,36 @@ import net.spy.SpyObject;
  * Operations on a memcached connection.
  */
 public abstract class Operation extends SpyObject {
-	public enum State { WRITING, READING, COMPLETE }
-	public enum ReadType { LINE, DATA }
+	/**
+	 * State of this operation.
+	 */
+	public enum State {
+		/**
+		 * State indicating this operation is writing data to the server.
+		 */
+		WRITING,
+		/**
+		 * State indicating this operation is reading data from the server.
+		 */
+		READING,
+		/**
+		 * State indicating this operation is complete.
+		 */
+		COMPLETE
+	}
+	/**
+	 * Data read types.
+	 */
+	public enum ReadType {
+		/**
+		 * Read type indicating an operation currently wants to read lines.
+		 */
+		LINE,
+		/**
+		 * Read type indicating an operation currently wants to read raw data.
+		 */
+		DATA
+	}
 	
 	private State state=State.WRITING;
 	private ReadType readType=ReadType.LINE;

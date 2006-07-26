@@ -35,7 +35,7 @@ public class GetOperation extends Operation {
 		if(line.equals("END")) {
 			getLogger().debug("Get complete!");
 			if(cb != null) {
-				cb.getComplete();
+				cb.receivedStatus(line);
 			}
 			transitionState(State.COMPLETE);
 			data=null;
@@ -107,8 +107,17 @@ public class GetOperation extends Operation {
 		keys=null;
 	}
 
-	public interface Callback {
+	/**
+	 * Operation callback for the get request.
+	 */
+	public interface Callback extends OperationCallback {
+		/**
+		 * Callback for each result from a get.
+		 * 
+		 * @param key the key that was retrieved
+		 * @param flags the flags for this value
+		 * @param data the data stored under this key
+		 */
 		void gotData(String key, int flags, byte[] data);
-		void getComplete();
 	}
 }

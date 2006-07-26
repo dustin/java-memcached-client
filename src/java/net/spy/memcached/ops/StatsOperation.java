@@ -5,6 +5,9 @@ package net.spy.memcached.ops;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Operation to retrieve statistics from a memcached server.
+ */
 public class StatsOperation extends Operation {
 
 	private static final byte[] MSG="stats\r\n".getBytes();
@@ -20,7 +23,7 @@ public class StatsOperation extends Operation {
 	public void handleLine(String line) {
 		if(line.equals("END")) {
 			if(cb != null) {
-				cb.statsComplete();
+				cb.receivedStatus(line);
 			}
 			transitionState(State.COMPLETE);
 		} else {
@@ -37,8 +40,16 @@ public class StatsOperation extends Operation {
 		setBuffer(ByteBuffer.wrap(MSG));
 	}
 
-	public interface Callback {
-		void statsComplete();
+	/**
+	 * Callback for stats operation.
+	 */
+	public interface Callback extends OperationCallback {
+		/**
+		 * Invoked once for every stat returned from the server.
+		 * 
+		 * @param name the name of the stat
+		 * @param val the stat value.
+		 */
 		void gotStat(String name, String val);
 	}
 

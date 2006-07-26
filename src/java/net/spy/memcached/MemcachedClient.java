@@ -25,6 +25,7 @@ import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.VersionOperation;
@@ -120,8 +121,8 @@ public class MemcachedClient extends SpyThread {
 		final SynchronizationObject<String> sync
 			=new SynchronizationObject<String>(null);
 		Operation op=new StoreOperation(storeType, key, co.getFlags(), exp,
-				co.getData(), new StoreOperation.Callback() {
-					public void storeResult(String val) {
+				co.getData(), new OperationCallback() {
+					public void receivedStatus(String val) {
 						sync.set(val);
 					}});
 		OperationFuture<String> rv=new OperationFuture<String>(sync, op);
@@ -183,7 +184,7 @@ public class MemcachedClient extends SpyThread {
 
 		Operation op=new GetOperation(key, new GetOperation.Callback() {
 			private Object val=null;
-			public void getComplete() {
+			public void receivedStatus(String line) {
 				sync.set(val);
 			}
 			public void gotData(String k, int flags, byte[] data) {
@@ -235,7 +236,7 @@ public class MemcachedClient extends SpyThread {
 		final SynchronizationObject<AtomicInteger> sync
 			=new SynchronizationObject<AtomicInteger>(requests);
 		GetOperation.Callback cb=new GetOperation.Callback() {
-				public void getComplete() {
+				public void receivedStatus(String line) {
 					requests.decrementAndGet();
 					sync.set(requests);
 				}
@@ -302,8 +303,8 @@ public class MemcachedClient extends SpyThread {
 			final SocketAddress sa=conn.getAddressOf(i);
 			ai.incrementAndGet();
 			addOp(i, new VersionOperation(
-					new VersionOperation.Callback() {
-						public void versionResult(String s) {
+					new OperationCallback() {
+						public void receivedStatus(String s) {
 							rv.put(sa, s);
 							ai.decrementAndGet();
 							sync.set(ai);
@@ -331,7 +332,7 @@ public class MemcachedClient extends SpyThread {
 						public void gotStat(String name, String val) {
 							rv.get(sa).put(name, val);
 						}
-						public void statsComplete() {
+						public void receivedStatus(String line) {
 							todo.decrementAndGet();
 							sync.set(todo);
 						}}));
@@ -344,12 +345,9 @@ public class MemcachedClient extends SpyThread {
 		final SynchronizationObject<Long> sync=
 			new SynchronizationObject<Long>(null);
 		addOp(getServerForKey(key), new MutatorOperation(m, key, by,
-				new MutatorOperation.Callback() {
-					public void mutatorResult(Long val) {
-						if(val == null) {
-							val=new Long(-1);
-						}
-						sync.set(val);
+				new OperationCallback() {
+					public void receivedStatus(String val) {
+						sync.set(new Long(val==null?"-1":val));
 					}}));
 		try {
 			sync.waitUntilNotNull(Long.MAX_VALUE, TimeUnit.MILLISECONDS);

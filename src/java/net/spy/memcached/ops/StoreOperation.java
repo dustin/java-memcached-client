@@ -5,9 +5,30 @@ package net.spy.memcached.ops;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Operation to store data in a memcached server.
+ */
 public class StoreOperation extends Operation {
 
-	public enum StoreType { set, add, replace }
+	/**
+	 * The type of storage operation to perform.
+	 */
+	public enum StoreType {
+		/**
+		 * Unconditionally store a value in the cache.
+		 */
+		set,
+		/**
+		 * Store a value in the cache iff there is not already something stored
+		 * for the given key.
+		 */
+		add,
+		/**
+		 * Store a value in the cache iff there is already something stored for
+		 * the given key.
+		 */
+		replace
+	}
 
 	// Overhead storage stuff to make sure the buffer pushes out far enough.
 	private static final int OVERHEAD = 32;
@@ -17,10 +38,10 @@ public class StoreOperation extends Operation {
 	private int flags=0;
 	private int exp=0;
 	private byte[] data=null;
-	private Callback cb=null;
+	private OperationCallback cb=null;
 
 	public StoreOperation(StoreType t, String key, int flags, int exp,
-			byte[] data, Callback callback) {
+			byte[] data, OperationCallback callback) {
 		super();
 		this.type=t;
 		this.key=key;
@@ -31,9 +52,9 @@ public class StoreOperation extends Operation {
 	}
 
 	@Override
-	public void handleLine(String firstLine) {
+	public void handleLine(String line) {
 		if(cb != null) {
-			cb.storeResult(firstLine);
+			cb.receivedStatus(line);
 		}
 		transitionState(State.COMPLETE);
 	}
@@ -52,11 +73,4 @@ public class StoreOperation extends Operation {
 		setBuffer(bb);
 	}
 
-	public interface Callback {
-
-		/**
-		 * Report the result of an asynchronous callback.
-		 */
-		public void storeResult(String val);
-	}
 }
