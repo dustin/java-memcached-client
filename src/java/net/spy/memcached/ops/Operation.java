@@ -18,9 +18,24 @@ public abstract class Operation extends SpyObject {
 	private ReadType readType=ReadType.LINE;
 	private ByteBuffer cmd=null;
 	private StringBuffer currentLine=new StringBuffer();
+	private boolean cancelled=false;
 
 	protected Operation() {
 		super();
+	}
+
+	/**
+	 * Has this operation been cancelled?
+	 */
+	public boolean isCancelled() {
+		return cancelled;
+	}
+
+	/**
+	 * Cancel this operation.
+	 */
+	public void cancel() {
+		cancelled=true;
 	}
 
 	/**

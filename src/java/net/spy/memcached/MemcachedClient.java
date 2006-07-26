@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -72,114 +74,56 @@ public class MemcachedClient extends SpyThread {
 		conn.addOperation(which, op);
 	}
 
-	/**
-	 * Submit an asynchronous store to the current connection.
-	 * 
-	 * @param storeType the storage type
-	 * @param key the key under which to store this value
-	 * @param flags the storage flags
-	 * @param exp the expiration value for this store
-	 * @param value the value to store
-	 * @param callback the callback to send the result to
-	 */
-	public void storeAsync(StoreOperation.StoreType storeType, String key,
-			int exp, Object value, StoreOperation.Callback callback) {
+	private Future<String> asyncStore(StoreOperation.StoreType storeType,
+			String key, int exp, Object value) {
 		CachedData co=transcoder.encode(value);
-		addOp(getServerForKey(key),
-				new StoreOperation(storeType, key, co.getFlags(), exp,
-						co.getData(), callback));
-	}
-
-	private SynchronizationObject<String> setupStoreSync(
-			StoreOperation.StoreType storeType, String key,
-			int exp, Object o) {
-		final SynchronizationObject<String> so=
-			new SynchronizationObject<String>(null);
-		storeAsync(storeType, key, exp, o,
-				new StoreOperation.Callback() {
+		final SynchronizationObject<String> sync
+			=new SynchronizationObject<String>(null);
+		Operation op=new StoreOperation(storeType, key, co.getFlags(), exp,
+				co.getData(), new StoreOperation.Callback() {
 					public void storeResult(String val) {
-						so.set(val);
-					}
-			});
-		return so;
+						sync.set(val);
+					}});
+		OperationFuture<String> rv=new OperationFuture<String>(sync, op);
+		addOp(getServerForKey(key), op);
+		return rv;
 	}
 
 	/**
-	 * Synchronous store to the cache.
+	 * Add an object to the cache if it does not exist already.
 	 * 
-	 * @param storeType the type of store
-	 * @param key the key under which to store
-	 * @param flags the storage flags
-	 * @param exp the expiration date or duration
-	 * @param value the value to store
-	 * @return the result of the store
+	 * @param key the key under which this object should be added.
+	 * @param exp the expiration of this object
+	 * @param o the object to store
+	 * @return a future representing the processing of this operation
 	 */
-	public String storeSync(StoreOperation.StoreType storeType, String key,
-			int exp, Object o) {
-		SynchronizationObject<String> so=setupStoreSync(
-				storeType, key, exp, o);
-		waitForNotNull(so);
-		return so.get();
+	public Future<String> add(String key, int exp, Object o) {
+		return asyncStore(StoreOperation.StoreType.add, key, exp, o);
 	}
 
 	/**
-	 * Synchronous store to the cache.
+	 * Set an object in the cache regardless of any existing value.
 	 * 
-	 * @param timeout how long to wait for the results of this store.
-	 * @param storeType the type of store
-	 * @param key the key under which to store
-	 * @param flags the storage flags
-	 * @param exp the expiration date or duration
-	 * @param value the value to store
-	 * @return the result of the store
-	 * @throws TimeoutException if the store status isn't known before the
-	 *         request timeout
+	 * @param key the key under which this object should be added.
+	 * @param exp the expiration of this object
+	 * @param o the object to store
+	 * @return a future representing the processing of this operation
 	 */
-	public String storeSync(long timeout, StoreOperation.StoreType storeType,
-			String key, int exp, Object o) throws TimeoutException {
-		SynchronizationObject<String> so=setupStoreSync(
-				storeType, key, exp, o);
-		waitForNotNull(timeout, so);
-		return so.get();
+	public Future<String> set(String key, int exp, Object o) {
+		return asyncStore(StoreOperation.StoreType.set, key, exp, o);
 	}
 
 	/**
-	 * Convenience method to add a value to the memcached.
+	 * Replace an object with the given value only if there is already a value
+	 * for the given key.
 	 * 
-	 * @param key the storage key
-	 * @param flags the flags
-	 * @param exp the expiration
-	 * @param value the value to store
-	 * @return the storage return
+	 * @param key the key under which this object should be added.
+	 * @param exp the expiration of this object
+	 * @param o the object to store
+	 * @return a future representing the processing of this operation
 	 */
-	public String add(String key, int exp, Object o) {
-		return storeSync(StoreOperation.StoreType.add, key, exp, o);
-	}
-
-	/**
-	 * Convenience method to set a value in the memcached.
-	 * 
-	 * @param key the storage key
-	 * @param flags the flags
-	 * @param exp the expiration
-	 * @param value the value to store
-	 * @return the storage return
-	 */
-	public String set(String key, int exp, Object o) {
-		return storeSync(StoreOperation.StoreType.set, key, exp, o);
-	}
-
-	/**
-	 * Convenience method to replace a value in the memcached.
-	 * 
-	 * @param key the storage key
-	 * @param flags the flags
-	 * @param exp the expiration
-	 * @param value the value to store
-	 * @return the storage return
-	 */
-	public String replace(String key, int exp, Object o) {
-		return storeSync(StoreOperation.StoreType.replace, key, exp, o);
+	public Future<String> replace(String key, int exp, Object o) {
+		return asyncStore(StoreOperation.StoreType.replace, key, exp, o);
 	}
 
 	/**
@@ -403,10 +347,16 @@ public class MemcachedClient extends SpyThread {
 			int by, long def) {
 		long rv=mutate(t, key, by);
 		if(rv == -1) {
-			String v=storeSync(StoreOperation.StoreType.add, key, 0,
+			Future<String> f=asyncStore(StoreOperation.StoreType.add, key, 0,
 					String.valueOf(def));
-			if(v.equals("STORED")) {
-				rv=def;
+			try {
+				if(f.get().equals("STORED")) {
+					rv=def;
+				}
+			} catch (InterruptedException e) {
+				throw new RuntimeException("Interrupted waiting for store", e);
+			} catch (ExecutionException e) {
+				throw new RuntimeException("Failed waiting for store", e);
 			}
 		}
 		return rv;
@@ -531,5 +481,56 @@ public class MemcachedClient extends SpyThread {
 		} catch (TimeoutException e) {
 			throw new RuntimeException("Timed out waiting forever", e);
 		}
+	}
+
+	private static class OperationFuture<T> implements Future<T> {
+
+		private Operation op=null;
+		protected SynchronizationObject<T> sync=null;
+
+		public OperationFuture(SynchronizationObject<T> so, Operation o) {
+			super();
+			sync=so;
+			op=o;
+		}
+
+		public boolean cancel(boolean ign) {
+			assert op != null : "No operation";
+			op.cancel();
+			// This isn't exactly correct, but it's close enough.  If we're in
+			// a writing state, we *probably* haven't started.
+			return op.getState() == Operation.State.WRITING;
+		}
+
+		public T get() throws InterruptedException, ExecutionException {
+			try {
+				waitForIt(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+			} catch (TimeoutException e) {
+				assert false : "Timed out waiting forever.";
+			}
+			return sync.get();
+		}
+
+		public T get(long duration, TimeUnit units)
+			throws InterruptedException, TimeoutException {
+			waitForIt(duration, units);
+			return sync.get();
+		}
+
+		protected void waitForIt(long duration, TimeUnit units)
+			throws InterruptedException, TimeoutException {
+			sync.waitUntilNotNull(duration, units);
+		}
+
+		public boolean isCancelled() {
+			assert op != null : "No operation";
+			return op.isCancelled();
+		}
+
+		public boolean isDone() {
+			assert op != null : "No operation";
+			return op.getState() == Operation.State.COMPLETE;
+		}
+		
 	}
 }

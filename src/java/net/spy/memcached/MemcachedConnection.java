@@ -110,7 +110,7 @@ public class MemcachedConnection extends SpyObject {
 				if(qa.channel.finishConnect()) {
 					synchronized(qa) {
 						qa.reconnectAttempt=0;
-						if(qa.ops.size() > 0) {
+						if(hasPendingOperations(qa)) {
 							sk.interestOps(SelectionKey.OP_WRITE);
 						} else {
 							sk.interestOps(0);
@@ -203,7 +203,9 @@ public class MemcachedConnection extends SpyObject {
 				// If there are more operations in the queue, tell
 				// it we want to write
 				synchronized(qa) {
-					if(qa.ops.size() > 0 && sk.isValid()) {
+					// After removing the cancelled operations, if there's
+					// another operation waiting to go, wait for write
+					if(hasPendingOperations(qa) && sk.isValid()) {
 						sk.interestOps(SelectionKey.OP_WRITE);
 					}
 				}
@@ -211,6 +213,18 @@ public class MemcachedConnection extends SpyObject {
 			default:
 				assert false;
 		}
+	}
+
+	private boolean hasPendingOperations(QueueAttachment qa) {
+		assert Thread.holdsLock(qa) : "Not locking qa";
+		Operation nextOp=qa.ops.peek();
+		while(nextOp != null && nextOp.isCancelled()) {
+			getLogger().info("Removing cancelled operation: %s",
+					nextOp);
+			qa.ops.remove();
+			nextOp=qa.ops.peek();
+		}
+		return nextOp != null;
 	}
 
 	private void queueReconnect(QueueAttachment qa) throws IOException {

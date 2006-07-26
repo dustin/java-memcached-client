@@ -8,10 +8,12 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import net.spy.SpyObject;
 import net.spy.memcached.ops.GetOperation;
-import net.spy.memcached.ops.StoreOperation;
 
 public class MemcachedTestClient extends SpyObject {
 
@@ -35,13 +37,8 @@ public class MemcachedTestClient extends SpyObject {
 		// Do a big'un
 		byte[] b=new byte[128*1024];
 		Arrays.fill(b, (byte)'a');
-		c.storeAsync(StoreOperation.StoreType.add, "big", 60,
-				Arrays.toString(b),
-				new StoreOperation.Callback() {
-					public void storeResult(String val) {
-						System.out.println("Big store result:  " + val);
-					}
-			});
+		System.out.println("Big store result: "
+				+ c.add("big", 60, Arrays.toString(b)).get());
 
 		for(String s : new String[]{"a", "b", "c"}) {
 			System.out.println(c.add(s, 10, "hello\r\n" + s));
@@ -49,6 +46,14 @@ public class MemcachedTestClient extends SpyObject {
 
 		System.err.println("Kill me now");
 		Thread.sleep(5000);
+
+		Future<String> f=c.set("canc", 900, "canc");
+		try {
+			System.out.println("canc:  " + f.get(500, TimeUnit.MILLISECONDS));
+		} catch(TimeoutException e) {
+			System.out.println("Timed out.");
+			f.cancel(true);
+		}
 
 		c.asyncGet(new GetOperation.Callback() {
 			public void gotData(String key, int flags, byte[] data) {
