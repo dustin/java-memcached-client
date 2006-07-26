@@ -24,7 +24,6 @@ public class MemcachedTestClient extends SpyObject {
 		} catch(AssertionError e) {
 			// ok
 		}
-		c.start();
 
 		// Small delay to make sure we aren't getting something in the queue
 		// so early that the write just happens to be available.  We want to
