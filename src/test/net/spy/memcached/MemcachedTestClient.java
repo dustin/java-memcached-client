@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import net.spy.SpyObject;
-import net.spy.memcached.ops.GetOperation;
 
 public class MemcachedTestClient extends SpyObject {
 
@@ -55,22 +54,16 @@ public class MemcachedTestClient extends SpyObject {
 			f.cancel(true);
 		}
 
-		c.asyncGet(new GetOperation.Callback() {
-			public void gotData(String key, int flags, byte[] data) {
-				System.out.printf("Got data for %s (%d): %s\n",
-						key, flags, new String(data));
-			}
-			public void getComplete() {
-				System.out.println("Get complete!");
-			}}, "a", "b", "c");
+		System.out.println("Async get: "
+				+ c.asyncGetBulk("a", "b", "c").get());
 
 		System.out.println("Sync get(a): " + c.get("a"));
 		assert c.get("r") == null;
-		System.out.println("Bulk get: " + c.get("a", "b", "c"));
+		System.out.println("Bulk get: " + c.getBulk("a", "b", "c"));
 
 		c.delete("b");
 		c.delete("r");
-		System.out.println("Bulk get2: " + c.get("a", "b", "c"));
+		System.out.println("Bulk get2: " + c.getBulk("a", "b", "c"));
 
 		System.out.println("Stats: " + c.getStats());
 

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,9 +70,10 @@ public class MemcachedClient extends SpyThread {
 		return transcoder;
 	}
 
-	private void addOp(int which, Operation op) {
+	private Operation addOp(int which, Operation op) {
 		assert isAlive() : "IO Thread is not running.";
 		conn.addOperation(which, op);
+		return op;
 	}
 
 	private Future<String> asyncStore(StoreOperation.StoreType storeType,
@@ -127,31 +129,44 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	/**
-	 * Perform an asynchronous get operation.
+	 * Get the given key asynchronously.
 	 * 
-	 * @param cb the callback for each key retrieval
-	 * @param keys the keys to retrieve
+	 * @param key the key to fetch
+	 * @return a future that will hold the return value of the fetch
 	 */
-	public void asyncGet(GetOperation.Callback cb, String... keys) {
-		for(String key : keys) {
-			addOp(getServerForKey(key), new GetOperation(key, cb));
-		}
-	}
+	public Future<Object> asyncGet(final String key) {
+		// This marker object will be the default value of synchronization.
+		// When the synchronization object no longer contains this value, the
+		// get is complete.
+		final Object marker=new Object();
 
-	private SynchronizationObject<CachedData[]> setupGet(final String key) {
-		final CachedData[] rvContainer=new CachedData[1];
-		rvContainer[0]=null;
-		final SynchronizationObject<CachedData[]> rv
-			=new SynchronizationObject<CachedData[]>(null);
-			asyncGet(new GetOperation.Callback() {
-				public void getComplete() {
-					rv.set(rvContainer);
-				}
-				public void gotData(String k, int flags, byte[] data) {
-					assert k.equals(key) : "Incorrect key returned: " + k;
-					rvContainer[0]=new CachedData(flags, data);
-				}}, key);
-			return rv;
+		final SynchronizationObject<Object> sync
+			=new SynchronizationObject<Object>(marker);
+
+		Operation op=new GetOperation(key, new GetOperation.Callback() {
+			private Object val=null;
+			public void getComplete() {
+				sync.set(val);
+			}
+			public void gotData(String k, int flags, byte[] data) {
+				assert key.equals(k) : "Wrong key returned";
+				val=transcoder.decode(new CachedData(flags, data));
+			}});
+		addOp(getServerForKey(key), op);
+
+		// Return an operation future that waits for completion
+		return new OperationFuture<Object>(sync, op) {
+			@Override
+			protected void waitForIt(long duration, TimeUnit units)
+				throws InterruptedException, TimeoutException {
+				sync.waitUntilTrue(
+						new SynchronizationObject.Predicate<Object>() {
+							public boolean evaluate(Object o) {
+								return o != marker;
+							}
+						}, duration, units);
+			}
+		};
 	}
 
 	/**
@@ -161,40 +176,24 @@ public class MemcachedClient extends SpyThread {
 	 * @return the result from the cache (null if there is none)
 	 */
 	public Object get(String key) {
-		SynchronizationObject<CachedData[]> sync=setupGet(key);
-		waitForNotNull(sync);
-		CachedData[] rvContainer=sync.get();
-		assert rvContainer.length == 1;
-		Object rv=null;
-		if(rvContainer[0] != null) {
-			rv=transcoder.decode(rvContainer[0]);
+		try {
+			return asyncGet(key).get();
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted waiting for value", e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException("Exception waiting for value", e);
 		}
-		return rv;
 	}
 
 	/**
-	 * Get with a single key.
+	 * Asynchronously get a bunch of objects from the cache.
 	 * 
-	 * @param timeout how long to wait for the result
-	 * @param key the key to get
-	 * @return the result from the cache (null if there is none)
-	 * @throws TimeoutException if a timeout occurs before results are complete
+	 * @param keys the keys to request
+	 * @return a Future result of that fetch
 	 */
-	public Object get(long timeout, String key) throws TimeoutException {
-		SynchronizationObject<CachedData[]> sync=setupGet(key);
-		waitForNotNull(timeout, sync);
-		CachedData[] rvContainer=sync.get();
-		assert rvContainer.length == 1;
-		Object rv=null;
-		if(rvContainer[0] != null) {
-			rv=transcoder.decode(rvContainer[0]);
-		}
-		return rv;
-	}
-
-	private SynchronizationObject<AtomicInteger> setupBulkGet(
-			final Map<String, Object> m, String[] keys) {
+	public Future<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
 		final AtomicInteger requests=new AtomicInteger();
+		final Map<String, Object> m=new ConcurrentHashMap<String, Object>();
 		final SynchronizationObject<AtomicInteger> sync
 			=new SynchronizationObject<AtomicInteger>(requests);
 		GetOperation.Callback cb=new GetOperation.Callback() {
@@ -218,11 +217,22 @@ public class MemcachedClient extends SpyThread {
 			}
 			ks.add(key);
 		}
+		final Collection<Operation> ops=new ArrayList<Operation>();
 		for(Map.Entry<Integer, Collection<String>> me : chunks.entrySet()) {
 			requests.incrementAndGet();
-			addOp(me.getKey(), new GetOperation(me.getValue(), cb));
+			ops.add(addOp(me.getKey(), new GetOperation(me.getValue(), cb)));
 		}
-		return sync;
+		return new BulkGetFuture(requests, m, ops, sync);
+	}
+
+	/**
+	 * Varargs wrapper for asynchronous bulk gets.
+	 * 
+	 * @param keys one more more keys to get
+	 * @return the future values of those keys
+	 */
+	public Future<Map<String, Object>> asyncGetBulk(String... keys) {
+		return asyncGetBulk(Arrays.asList(keys));
 	}
 
 	/**
@@ -230,27 +240,14 @@ public class MemcachedClient extends SpyThread {
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 */
-	public Map<String, Object> get(String... keys) {
-		Map<String, Object> rv=new ConcurrentHashMap<String, Object>(); 
-		SynchronizationObject<AtomicInteger> sync=setupBulkGet(rv, keys);
-		waitForOperations(sync);
-		return rv;
-	}
-
-	/**
-	 * Get the values for multiple keys from the cache.
-	 * @param timeout how long to wait for the results
-	 * @param keys the keys
-	 * @return a map of the values (for each value that exists)
-	 * @throws TimeoutException if we don't get the results before the timeout
-	 */
-	public Map<String, Object> get(long timeout, String... keys)
-		throws TimeoutException {
-
-		Map<String, Object> rv=new ConcurrentHashMap<String, Object>(); 
-		SynchronizationObject<AtomicInteger> sync=setupBulkGet(rv, keys);
-		waitForOperations(timeout, sync);
-		return rv;
+	public Map<String, Object> getBulk(String... keys) {
+		try {
+			return asyncGetBulk(Arrays.asList(keys)).get();
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted getting bulk values", e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException("Failed getting bulk values", e);
+		}
 	}
 
 	/**
@@ -316,7 +313,13 @@ public class MemcachedClient extends SpyThread {
 						}
 						sync.set(val);
 					}}));
-		waitForNotNull(sync);
+		try {
+			sync.waitUntilNotNull(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted waiting for mutation", e);
+		} catch (TimeoutException e) {
+			throw new RuntimeException("Timed out waiting forever.");
+		}
 		getLogger().debug("Mutation returned %s", sync.get());
 		return sync.get().longValue();
 	}
@@ -404,7 +407,7 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	/**
-	 * Flush all caches from all servers.
+	 * Flush all caches from all servers with a delay of application.
 	 */
 	public void flush(int delay) {
 		for(int i=0; i<conn.getNumConnections(); i++) {
@@ -412,6 +415,9 @@ public class MemcachedClient extends SpyThread {
 		}
 	}
 
+	/**
+	 * Flush all caches from all servers immediately.
+	 */
 	public void flush() {
 		for(int i=0; i<conn.getNumConnections(); i++) {
 			addOp(i, new FlushOperation());
@@ -429,6 +435,9 @@ public class MemcachedClient extends SpyThread {
 		getLogger().info("Shut down memcached client");
 	}
 
+	/**
+	 * Shut down this client.
+	 */
 	public void shutdown() {
 		running=false;
 		try {
@@ -442,26 +451,8 @@ public class MemcachedClient extends SpyThread {
 		return key.hashCode() % conn.getNumConnections();
 	}
 
-	private void waitForNotNull(long timeout, SynchronizationObject<?> sync)
-		throws TimeoutException {
-		try {
-			sync.waitUntilNotNull(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
-			throw new RuntimeException("Interrupted waiting for response.", e);
-		}
-	}
-
-	private void waitForNotNull(SynchronizationObject<?> sync) {
-		try {
-			waitForNotNull(Long.MAX_VALUE, sync);
-		} catch (TimeoutException e) {
-			throw new RuntimeException("Timed out waiting forever", e);
-		}
-	}
-
-	private void waitForOperations(long timeout,
-			final SynchronizationObject<AtomicInteger> sync)
-		throws TimeoutException {
+	private void waitForOperations(
+			final SynchronizationObject<AtomicInteger> sync) {
 		try {
 			sync.waitUntilTrue(
 					new SynchronizationObject.Predicate<AtomicInteger>() {
@@ -471,22 +462,72 @@ public class MemcachedClient extends SpyThread {
 					Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for results", e);
+		} catch (TimeoutException e) {
+			throw new RuntimeException("Timed out waiting forever", e);
 		}
 	}
 
-	private void waitForOperations(
-			final SynchronizationObject<AtomicInteger> sync) {
-		try {
-			waitForOperations(Long.MAX_VALUE, sync);
-		} catch (TimeoutException e) {
-			throw new RuntimeException("Timed out waiting forever", e);
+	private static class BulkGetFuture implements Future<Map<String, Object>> {
+		private AtomicInteger requests;
+		private Map<String, Object> m;
+		private Collection<Operation> ops;
+		private SynchronizationObject<AtomicInteger> sync;
+		private boolean cancelled=false;
+
+		private BulkGetFuture(AtomicInteger requests, Map<String, Object> m,
+				Collection<Operation> ops,
+				SynchronizationObject<AtomicInteger> sync) {
+			super();
+			this.requests = requests;
+			this.m = m;
+			this.ops = ops;
+			this.sync = sync;
+		}
+
+		public boolean cancel(boolean ign) {
+			boolean rv=false;
+			for(Operation op : ops) {
+				rv |= op.getState() == Operation.State.WRITING;
+				op.cancel();
+			}
+			cancelled=true;
+			return rv;
+		}
+
+		public Map<String, Object> get()
+			throws InterruptedException, ExecutionException {
+			try {
+				return get(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+			} catch (TimeoutException e) {
+				throw new RuntimeException("Timed out waiting forever", e);
+			}
+		}
+
+		public Map<String, Object> get(long timeout, TimeUnit unit)
+			throws InterruptedException,
+			ExecutionException, TimeoutException {
+			sync.waitUntilTrue(
+					new SynchronizationObject.Predicate<AtomicInteger>() {
+						public boolean evaluate(AtomicInteger i) {
+							return i.get() == 0;
+						}},
+					timeout, unit);
+			return m;
+		}
+
+		public boolean isCancelled() {
+			return cancelled;
+		}
+
+		public boolean isDone() {
+			return requests.get() == 0;
 		}
 	}
 
 	private static class OperationFuture<T> implements Future<T> {
 
 		private Operation op=null;
-		protected SynchronizationObject<T> sync=null;
+		private SynchronizationObject<T> sync=null;
 
 		public OperationFuture(SynchronizationObject<T> so, Operation o) {
 			super();
