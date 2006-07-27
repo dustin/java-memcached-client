@@ -9,5 +9,14 @@ arch-tag: 865F81DF-F94F-4683-B984-762D3222CB1E
 		<attainGoal name="tla:versions"/>
 		<attainGoal name="spy:buildinfo"/>
 		<attainGoal name="tla:changelog"/>
+		<attainGoal name="copySources"/>
 	</preGoal>
+	<!-- make sources available within the jar file. -->
+	<goal name="copySources">
+		<copy todir="${maven.build.dir}/classes">
+			<fileset dir="${maven.src.dir}/java">
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>
+	</goal>
 </project>
