@@ -21,7 +21,7 @@ import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
 
 /**
- * Connection to a cluster of memcached 
+ * Connection to a cluster of memcached servers.
  */
 public class MemcachedConnection extends SpyObject {
 	// The number of empty selects we'll allow before taking action.  It's too

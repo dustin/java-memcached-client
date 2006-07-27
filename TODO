@@ -1,0 +1,6 @@
+* Store operations should return something more useful than strings.
+* delete and flush need to return futures.
+* Write up some more overview documentation, download links, etc...
+
+--
+arch-tag: C9F77020-C89A-4ABD-8B5A-28593C8E09ED
