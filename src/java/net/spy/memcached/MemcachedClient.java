@@ -273,20 +273,30 @@ public class MemcachedClient extends SpyThread {
 	public Future<Map<String, Object>> asyncGetBulk(String... keys) {
 		return asyncGetBulk(Arrays.asList(keys));
 	}
-
 	/**
 	 * Get the values for multiple keys from the cache.
+	 * 
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 */
-	public Map<String, Object> getBulk(String... keys) {
+	public Map<String, Object> getBulk(Collection<String> keys) {
 		try {
-			return asyncGetBulk(Arrays.asList(keys)).get();
+			return asyncGetBulk(keys).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted getting bulk values", e);
 		} catch (ExecutionException e) {
 			throw new RuntimeException("Failed getting bulk values", e);
 		}
+	}
+
+	/**
+	 * Get the values for multiple keys from the cache.
+	 * 
+	 * @param keys the keys
+	 * @return a map of the values (for each value that exists)
+	 */
+	public Map<String, Object> getBulk(String... keys) {
+		return getBulk(Arrays.asList(keys));
 	}
 
 	/**
