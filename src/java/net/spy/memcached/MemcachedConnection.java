@@ -24,11 +24,12 @@ import net.spy.memcached.ops.Operation;
  * Connection to a cluster of memcached 
  */
 public class MemcachedConnection extends SpyObject {
-	// The maximum number of empty results from selects that may occur without
-	// some actual values coming back.
-	private static final int MAX_EMPTY = 1000;
-	// How long to delay reconnect attempts.
-	private static final long DELAY = 5000;
+	// The number of empty selects we'll allow before taking action.  It's too
+	// easy to write a bug that causes it to loop uncontrollably.  This helps
+	// find those bugs and often works around them.
+	private static final int EXCESSIVE_EMPTY = 100;
+	// maximum amount of time to wait between reconnect attempts
+	private static final long MAX_DELAY = 30000;
 	private static final int MAX_OPS_QUEUE_LEN = 8192;
 
 	private Selector selector=null;
@@ -62,7 +63,7 @@ public class MemcachedConnection extends SpyObject {
 	@SuppressWarnings("unchecked")
 	public void handleIO() throws IOException {
 		long delay=0;
-		if(reconnectQueue.size() > 0) {
+		if(!reconnectQueue.isEmpty()) {
 			long now=System.currentTimeMillis();
 			long then=reconnectQueue.firstKey();
 			delay=Math.max(then-now, 1);
@@ -88,15 +89,22 @@ public class MemcachedConnection extends SpyObject {
 			// spins madly.  This will catch that and let it break.
 			getLogger().info("No selectors ready, interrupted: "
 				+ Thread.interrupted());
-			if(++emptySelects > MAX_EMPTY) {
+			if(++emptySelects > EXCESSIVE_EMPTY) {
 				for(SelectionKey sk : selector.keys()) {
 					getLogger().info("%s has %s, interested in %s",
 							sk, sk.readyOps(), sk.interestOps());
+					if(sk.readyOps() != 0) {
+						getLogger().info("%s has a ready op, handling IO", sk);
+						handleIO(sk);
+					} else {
+						queueReconnect((QueueAttachment)sk.attachment());
+					}
 				}
-				assert false : "Too many empty selects";
+				assert emptySelects < EXCESSIVE_EMPTY + 10
+					: "Too many empty selects";
 			}
 		}
-		if(reconnectQueue.size() > 0) {
+		if(!reconnectQueue.isEmpty()) {
 			attemptReconnects();
 		}
 	}
@@ -228,13 +236,16 @@ public class MemcachedConnection extends SpyObject {
 	}
 
 	private void queueReconnect(QueueAttachment qa) throws IOException {
-		getLogger().warn("Closing, and reopening connection.");
 		synchronized(qa) {
+			getLogger().warn("Closing, and reopening %s, attempt %d.",
+					qa, qa.reconnectAttempt);
 			qa.sk.cancel();
 			qa.reconnectAttempt++;
 			qa.channel.socket().close();
 
-			reconnectQueue.put(System.currentTimeMillis() + DELAY, qa);
+			long delay=Math.min((100*qa.reconnectAttempt) ^ 2, MAX_DELAY);
+
+			reconnectQueue.put(System.currentTimeMillis() + delay, qa);
 
 			// Need to do a little queue management.
 			setupResend(qa);
