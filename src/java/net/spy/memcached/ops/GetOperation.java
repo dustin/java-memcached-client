@@ -34,9 +34,7 @@ public class GetOperation extends Operation {
 	public void handleLine(String line) {
 		if(line.equals("END")) {
 			getLogger().debug("Get complete!");
-			if(cb != null) {
-				cb.receivedStatus(line);
-			}
+			cb.receivedStatus(line);
 			transitionState(State.COMPLETE);
 			data=null;
 		} else if(line.startsWith("VALUE ")) {
@@ -71,9 +69,7 @@ public class GetOperation extends Operation {
 		b.get(data, readOffset, toRead);
 		readOffset+=toRead;
 		if(readOffset == data.length) {
-			if(cb != null) {
-				cb.gotData(currentKey, currentFlags, data);
-			}
+			cb.gotData(currentKey, currentFlags, data);
 			byte tmp=b.get();
 			assert tmp == (byte)'\r' : " expected \\r, got " + (char)tmp;
 			tmp=b.get();
@@ -119,5 +115,10 @@ public class GetOperation extends Operation {
 		 * @param data the data stored under this key
 		 */
 		void gotData(String key, int flags, byte[] data);
+	}
+
+	@Override
+	protected void wasCancelled() {
+		cb.receivedStatus("cancelled");
 	}
 }

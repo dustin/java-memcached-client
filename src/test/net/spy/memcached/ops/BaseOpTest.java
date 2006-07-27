@@ -128,6 +128,11 @@ public class BaseOpTest extends BaseMockCase {
 		public void initialize() {
 			setBuffer(ByteBuffer.allocate(0));
 		}
+
+		@Override
+		protected void wasCancelled() {
+			// nothing
+		}
 		
 	}
 }

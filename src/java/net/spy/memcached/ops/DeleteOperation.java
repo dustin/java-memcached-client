@@ -36,4 +36,9 @@ public class DeleteOperation extends Operation {
 		setBuffer(b);
 	}
 
+	@Override
+	protected void wasCancelled() {
+		// nothing -- no callback
+	}
+
 }

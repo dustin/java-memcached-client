@@ -555,6 +555,12 @@ public class MemcachedClient extends SpyThread {
 							return i.get() == 0;
 						}},
 					timeout, unit);
+			for(Operation op : ops) {
+				if(op.isCancelled()) {
+					throw new ExecutionException(
+							new RuntimeException("Cancelled"));
+				}
+			}
 			return m;
 		}
 
@@ -591,6 +597,9 @@ public class MemcachedClient extends SpyThread {
 				waitForIt(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 			} catch (TimeoutException e) {
 				assert false : "Timed out waiting forever.";
+			}
+			if(op.isCancelled()) {
+				throw new ExecutionException(new RuntimeException("Cancelled"));
 			}
 			return sync.get();
 		}

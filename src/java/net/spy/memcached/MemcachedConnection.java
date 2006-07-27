@@ -277,6 +277,7 @@ public class MemcachedConnection extends SpyObject {
 			} else {
 				getLogger().warn(
 						"Discarding partially completed operation: %s", op);
+				op.cancel();
 				qa.ops.remove();
 			}
 		}

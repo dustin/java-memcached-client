@@ -33,4 +33,9 @@ public class VersionOperation extends Operation {
 		setBuffer(ByteBuffer.wrap(REQUEST));
 	}
 
+	@Override
+	protected void wasCancelled() {
+		cb.receivedStatus("cancelled");
+	}
+
 }

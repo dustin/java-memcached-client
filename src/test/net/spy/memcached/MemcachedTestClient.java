@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -66,6 +67,14 @@ public class MemcachedTestClient extends SpyObject {
 		} catch(TimeoutException e) {
 			System.out.println("Timed out.");
 			f.cancel(true);
+		}
+
+		// try it again, should get execution exception
+		try {
+			f.get();
+			assert false : "Didn't get an execution exception";
+		} catch(ExecutionException e) {
+			// pass
 		}
 
 		System.out.println("Async get: "

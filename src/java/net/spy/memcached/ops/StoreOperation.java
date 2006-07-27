@@ -73,4 +73,9 @@ public class StoreOperation extends Operation {
 		setBuffer(bb);
 	}
 
+	@Override
+	protected void wasCancelled() {
+		cb.receivedStatus("cancelled");
+	}
+
 }

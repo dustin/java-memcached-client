@@ -22,22 +22,23 @@ public class StatsOperation extends Operation {
 	@Override
 	public void handleLine(String line) {
 		if(line.equals("END")) {
-			if(cb != null) {
-				cb.receivedStatus(line);
-			}
+			cb.receivedStatus(line);
 			transitionState(State.COMPLETE);
 		} else {
 			String[] parts=line.split(" ");
 			assert parts.length == 3;
-			if(cb != null) {
-				cb.gotStat(parts[1], parts[2]);
-			}
+			cb.gotStat(parts[1], parts[2]);
 		}
 	}
 
 	@Override
 	public void initialize() {
 		setBuffer(ByteBuffer.wrap(MSG));
+	}
+
+	@Override
+	protected void wasCancelled() {
+		cb.receivedStatus("cancelled");
 	}
 
 	/**

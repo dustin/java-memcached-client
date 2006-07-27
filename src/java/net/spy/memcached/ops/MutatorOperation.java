@@ -46,9 +46,7 @@ public class MutatorOperation extends Operation {
 		if(!line.equals("NOT_FOUND")) {
 			found=line;
 		}
-		if(cb != null) {
-			cb.receivedStatus(found);
-		}
+		cb.receivedStatus(found);
 		transitionState(State.COMPLETE);
 	}
 
@@ -59,6 +57,11 @@ public class MutatorOperation extends Operation {
 		setArguments(b, mutator.name(), key, amount);
 		b.flip();
 		setBuffer(b);
+	}
+
+	@Override
+	protected void wasCancelled() {
+		cb.receivedStatus("cancelled");
 	}
 
 }

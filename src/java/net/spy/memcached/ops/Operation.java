@@ -64,7 +64,13 @@ public abstract class Operation extends SpyObject {
 	 */
 	public void cancel() {
 		cancelled=true;
+		wasCancelled();
 	}
+
+	/**
+	 * This is called on each subclass whenever an operation was cancelled.
+	 */
+	protected abstract void wasCancelled();
 
 	/**
 	 * Get the current state of this operation.
