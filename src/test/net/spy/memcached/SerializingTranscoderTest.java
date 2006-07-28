@@ -40,8 +40,20 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		assertEquals(s1, tc.decode(cd));
 	}
 
+	public void testCompressedStringNotSmaller() throws Exception {
+		String s1="This is a test simple string that will not be compressed.";
+		// Reduce the compression threshold so it'll attempt to compress it.
+		tc.setCompressionThreshold(8);
+		CachedData cd=tc.encode(s1);
+		// This should *not* be compressed because it is too small
+		assertEquals(0, cd.getFlags());
+		assertTrue(Arrays.equals(s1.getBytes(), cd.getData()));
+		assertEquals(s1, tc.decode(cd));
+	}
+
 	public void testCompressedString() throws Exception {
-		String s1="This is a test simple string that will be compressed.";
+		// This one will actually compress
+		String s1="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 		tc.setCompressionThreshold(8);
 		CachedData cd=tc.encode(s1);
 		assertEquals(SerializingTranscoder.COMPRESSED, cd.getFlags());

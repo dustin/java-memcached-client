@@ -126,8 +126,17 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 		}
 		if(b != null) {
 			if(b.length > compressionThreshold) {
-				b=compress(b);
-				flags |= COMPRESSED;
+				byte[] compressed=compress(b);
+				if(compressed.length < b.length) {
+					getLogger().info("Compressed %s from %d to %d",
+						o.getClass().getName(), b.length, compressed.length);
+					b=compress(b);
+					flags |= COMPRESSED;
+				} else {
+					getLogger().info(
+						"Compression increased the size of %s from %d to %d",
+						o.getClass().getName(), b.length, compressed.length);
+				}
 			}
 			rv=new CachedData(flags, b);
 		}
