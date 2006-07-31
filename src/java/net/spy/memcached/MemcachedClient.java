@@ -77,6 +77,12 @@ public class MemcachedClient extends SpyThread {
 	private MemcachedConnection conn=null;
 	private Transcoder transcoder=null;
 
+	/** 
+	 * Allow mockery.
+	 */
+	protected MemcachedClient() {
+	}
+
 	/**
 	 * Get a memcache client operating on the specified memcached locations.
 	 * 
