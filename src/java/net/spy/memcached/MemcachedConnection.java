@@ -89,19 +89,6 @@ public class MemcachedConnection extends SpyObject {
 			// spins madly.  This will catch that and let it break.
 			getLogger().info("No selectors ready, interrupted: "
 				+ Thread.interrupted());
-			// XXX:  This is a stupid hack, but if I didn't get any selectors
-			// and there's a current op that's in write state, just try to
-			// write
-			if(selector.isOpen()) {
-				for(SelectionKey sk : selector.keys()) {
-					QueueAttachment qa=(QueueAttachment)sk.attachment();
-					if(!qa.ops.isEmpty() && qa.ops.peek().getState()
-							== Operation.State.WRITING) {
-						getLogger().info("Trying write on %s", sk);
-						handleIO(sk);
-					}
-				}
-			}
 			if(++emptySelects > EXCESSIVE_EMPTY) {
 				for(SelectionKey sk : selector.keys()) {
 					getLogger().info("%s has %s, interested in %s",
@@ -188,8 +175,7 @@ public class MemcachedConnection extends SpyObject {
 					assert read == -1
 						: "expected to read -1 bytes, read " + read;
 					queueReconnect(qa);
-				} else {
-					// Ignore writability flag.  Try to write whenever.
+				} else if(sk.isWritable()) {
 					ByteBuffer b=currentOp.getBuffer();
 					int written=qa.channel.write(b);
 					getLogger().debug("Wrote %d bytes for %s",
@@ -197,6 +183,8 @@ public class MemcachedConnection extends SpyObject {
 					if(b.remaining() == 0) {
 						currentOp.writeComplete();
 					}
+				} else {
+					assert false : "Not readable or writable.";
 				}
 				break;
 			case COMPLETE:

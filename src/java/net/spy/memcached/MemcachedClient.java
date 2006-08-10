@@ -81,7 +81,6 @@ public class MemcachedClient extends SpyThread {
 	 * Allow mockery.
 	 */
 	protected MemcachedClient() {
-		super();
 	}
 
 	/**
