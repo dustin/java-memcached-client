@@ -6,9 +6,9 @@ arch-tag: 865F81DF-F94F-4683-B984-762D3222CB1E
 
 <project default="jar">
 	<preGoal name="java:compile">
-		<attainGoal name="tla:versions"/>
+		<attainGoal name="hg:versions"/>
 		<attainGoal name="spy:buildinfo"/>
-		<attainGoal name="tla:changelog"/>
+		<attainGoal name="hg:changelog"/>
 		<attainGoal name="copySources"/>
 	</preGoal>
 	<!-- make sources available within the jar file. -->

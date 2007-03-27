@@ -36,19 +36,19 @@ arch-tag: BFAE15E6-ED6E-4925-A5B2-79B8CBAE37D2
 		<dependency>
 			<groupId>spy</groupId>
 			<artifactId>spy</artifactId>
-			<version>2.2.15</version>
+			<version>2.2.44</version>
 			<properties><war.bundle>true</war.bundle></properties>
 		</dependency>
 		<dependency>
 			<groupId>spy</groupId>
-			<artifactId>maven-tla-plugin</artifactId>
+			<artifactId>maven-hg-plugin</artifactId>
 			<version>1.0</version>
 			<type>plugin</type>
 		</dependency>
 		<dependency>
 			<groupId>spy</groupId>
 			<artifactId>maven-spy-build-plugin</artifactId>
-			<version>1.0</version>
+			<version>1.11</version>
 			<type>plugin</type>
 		</dependency>
 

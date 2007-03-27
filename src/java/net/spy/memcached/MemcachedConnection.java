@@ -414,6 +414,7 @@ public class MemcachedConnection extends SpyObject {
 		getLogger().debug("Shut down selector %s", selector);
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb=new StringBuilder();
 		sb.append("{MemcachedConnection to");
@@ -441,6 +442,7 @@ public class MemcachedConnection extends SpyObject {
 			ops=new ArrayBlockingQueue<Operation>(MAX_OPS_QUEUE_LEN);
 		}
 
+		@Override
 		public String toString() {
 			int sops=0;
 			if(sk.isValid()) {

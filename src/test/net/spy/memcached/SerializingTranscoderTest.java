@@ -18,6 +18,7 @@ public class SerializingTranscoderTest extends BaseMockCase {
 
 	private SerializingTranscoder tc=null;
 
+	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		tc=new SerializingTranscoder();

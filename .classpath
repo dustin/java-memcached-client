@@ -9,7 +9,7 @@
   </classpathentry>
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
   </classpathentry>
-  <classpathentry kind="var" path="MAVEN_REPO/spy/jars/spy-2.2.15.jar">
+  <classpathentry kind="var" path="MAVEN_REPO/spy/jars/spy-2.2.44.jar">
   </classpathentry>
   <classpathentry kind="var" path="MAVEN_REPO/jmock/jars/jmock-1.0.1.jar">
   </classpathentry>

@@ -75,7 +75,7 @@ public class MemcachedClient extends SpyThread {
 
 	private volatile boolean running=true;
 	private MemcachedConnection conn=null;
-	private Transcoder transcoder=null;
+	Transcoder transcoder=null;
 
 	/** 
 	 * Allow mockery.
@@ -480,6 +480,7 @@ public class MemcachedClient extends SpyThread {
 	/**
 	 * Infinitely loop processing IO.
 	 */
+	@Override
 	public void run() {
 		while(running) {
 			try {
@@ -527,14 +528,14 @@ public class MemcachedClient extends SpyThread {
 		}
 	}
 
-	private static class BulkGetFuture implements Future<Map<String, Object>> {
+	static class BulkGetFuture implements Future<Map<String, Object>> {
 		private AtomicInteger requests;
 		private Map<String, Object> m;
 		private Collection<Operation> ops;
 		private SynchronizationObject<AtomicInteger> sync;
 		private boolean cancelled=false;
 
-		private BulkGetFuture(AtomicInteger requests, Map<String, Object> m,
+		public BulkGetFuture(AtomicInteger requests, Map<String, Object> m,
 				Collection<Operation> ops,
 				SynchronizationObject<AtomicInteger> sync) {
 			super();
