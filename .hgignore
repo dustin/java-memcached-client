@@ -5,3 +5,4 @@
 ^memcached.state$
 ^memcached.state.old$
 ^memcached.state.journal$
+^target($|/)

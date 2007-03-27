@@ -6,13 +6,30 @@ arch-tag: BFAE15E6-ED6E-4925-A5B2-79B8CBAE37D2
 
 <project>
 
-	<extend>${basedir}/../project.xml</extend>
+	<pomVersion>3</pomVersion>
+	<groupId>spy</groupId>
 	<artifactId>memcached</artifactId>
 	<name>memcached</name>
 	<currentVersion>1.0</currentVersion>
+	<inceptionYear>1995</inceptionYear>
+	<organization>
+		<name>SPY Internetworking</name>
+		<url>http://bleu.west.spy.net/~dustin/</url>
+	</organization>
 	<description>
 		Memcached client.
 	</description>
+
+	<shortDescription>SPY</shortDescription>
+
+	<developers>
+		<developer>
+			<name>Dustin Sallings</name>
+			<id>dustin</id>
+			<email>dustin@spy.net</email>
+			<organization>SPY Internetworking</organization>
+		</developer>
+	</developers>
 
 	<dependencies>
 
@@ -62,11 +79,36 @@ arch-tag: BFAE15E6-ED6E-4925-A5B2-79B8CBAE37D2
 	<build>
 		<sourceDirectory>${basedir}/src/java</sourceDirectory>
 		<unitTestSourceDirectory>${basedir}/src/test</unitTestSourceDirectory>
+		<resources>
+			<resource>
+				<directory>${maven.src.dir}/java</directory>
+				<includes>
+					<include>**/*.properties</include>
+					<include>**/*.txt</include>
+				</includes>
+			</resource>
+		</resources>
 		<unitTest>
 			<includes>
 				<include>**/*Test.java</include>
 			</includes>
+			<excludes>
+				<!-- Don't try to run the SPTs with junit -->
+				<exclude>**/test/db/*.java</exclude>
+			</excludes>
 		</unitTest>
 	</build>
+
+	<reports>
+		<report>maven-multiproject-plugin</report>
+		<report>maven-junit-report-plugin</report>
+		<report>maven-cobertura-plugin</report>
+		<report>maven-checkstyle-plugin</report>
+		<report>maven-javadoc-plugin</report>
+		<report>maven-jdepend-plugin</report>
+		<report>maven-pmd-plugin</report>
+		<report>maven-simian-plugin</report>
+		<report>maven-jxr-plugin</report>
+	</reports>
 
 </project>
