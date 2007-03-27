@@ -1,0 +1,7 @@
+(^|/)\{arch\}($|/)
+(^|/)\.hg($|/)
+(^|/)\.hgtags($|/)
+^memcached.log$
+^memcached.state$
+^memcached.state.old$
+^memcached.state.journal$
