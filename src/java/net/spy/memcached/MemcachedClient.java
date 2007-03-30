@@ -530,19 +530,19 @@ public class MemcachedClient extends SpyThread {
 
 	static class BulkGetFuture implements Future<Map<String, Object>> {
 		private AtomicInteger requests;
-		private Map<String, Object> m;
+		private Map<String, Object> rvMap;
 		private Collection<Operation> ops;
 		private SynchronizationObject<AtomicInteger> sync;
 		private boolean cancelled=false;
 
-		public BulkGetFuture(AtomicInteger requests, Map<String, Object> m,
-				Collection<Operation> ops,
-				SynchronizationObject<AtomicInteger> sync) {
+		public BulkGetFuture(AtomicInteger reqs, Map<String, Object> m,
+				Collection<Operation> getOps,
+				SynchronizationObject<AtomicInteger> syncOb) {
 			super();
-			this.requests = requests;
-			this.m = m;
-			this.ops = ops;
-			this.sync = sync;
+			requests = reqs;
+			rvMap = m;
+			ops = getOps;
+			sync = syncOb;
 		}
 
 		public boolean cancel(boolean ign) {
@@ -579,7 +579,7 @@ public class MemcachedClient extends SpyThread {
 							new RuntimeException("Cancelled"));
 				}
 			}
-			return m;
+			return rvMap;
 		}
 
 		public boolean isCancelled() {

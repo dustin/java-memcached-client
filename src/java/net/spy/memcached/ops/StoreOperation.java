@@ -40,14 +40,14 @@ public class StoreOperation extends Operation {
 	private byte[] data=null;
 	private OperationCallback cb=null;
 
-	public StoreOperation(StoreType t, String key, int flags, int exp,
-			byte[] data, OperationCallback callback) {
+	public StoreOperation(StoreType t, String k, int f, int e,
+			byte[] d, OperationCallback callback) {
 		super();
 		this.type=t;
-		this.key=key;
-		this.flags=flags;
-		this.exp=exp;
-		this.data=data;
+		this.key=k;
+		this.flags=f;
+		this.exp=e;
+		this.data=d;
 		this.cb=callback;
 	}
 
