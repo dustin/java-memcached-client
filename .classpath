@@ -17,8 +17,6 @@
   </classpathentry>
   <classpathentry kind="var" path="MAVEN_REPO/cglib/jars/cglib-full-2.0.2.jar">
   </classpathentry>
-  <classpathentry kind="var" path="MAVEN_REPO/log4j/jars/log4j-1.2.8.jar">
-  </classpathentry>
   <classpathentry kind="output" path="target/classes">
   </classpathentry>
 </classpath>
