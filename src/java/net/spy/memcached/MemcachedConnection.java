@@ -132,7 +132,7 @@ public class MemcachedConnection extends SpyObject {
 		} else {
 			// It's very easy in NIO to write a bug such that your selector
 			// spins madly.  This will catch that and let it break.
-			getLogger().info("No selectors ready, interrupted: "
+			getLogger().debug("No selectors ready, interrupted: "
 					+ Thread.interrupted());
 			if(++emptySelects > EXCESSIVE_EMPTY) {
 				for(SelectionKey sk : selector.keys()) {
@@ -188,7 +188,7 @@ public class MemcachedConnection extends SpyObject {
 			getLogger().info("Connection state changed for %s", sk);
 			try {
 				if(qa.channel.finishConnect()) {
-					assert qa.channel.isConnected() : "Not onnected.";
+					assert qa.channel.isConnected() : "Not connected.";
 					synchronized(qa) {
 						qa.reconnectAttempt=0;
 					}
@@ -241,25 +241,19 @@ public class MemcachedConnection extends SpyObject {
 				}
 				break;
 			case WRITING:
-				boolean needsReconnect=false;
 				if(sk.isValid() && sk.isReadable()) {
-					getLogger().info("Readable in write mode.");
+					getLogger().debug("Readable in write mode.");
 					ByteBuffer b=ByteBuffer.allocate(1);
 					int read=qa.channel.read(b);
 					assert read <= 0
 						: "expected to read -1 bytes, read " + read;
-					needsReconnect=true;
 				}
-				if(needsReconnect) {
-					queueReconnect(qa);
-				} else {
-					ByteBuffer b=currentOp.getBuffer();
-					int wrote=qa.channel.write(b);
-					getLogger().debug("Wrote %d bytes for %s",
-							wrote, currentOp);
-					if(b.remaining() == 0) {
-						currentOp.writeComplete();
-					}
+				ByteBuffer b=currentOp.getBuffer();
+				int wrote=qa.channel.write(b);
+				getLogger().debug("Wrote %d bytes for %s",
+						wrote, currentOp);
+				if(b.remaining() == 0) {
+					currentOp.writeComplete();
 				}
 				break;
 			case COMPLETE:
@@ -445,7 +439,7 @@ public class MemcachedConnection extends SpyObject {
 		@Override
 		public String toString() {
 			int sops=0;
-			if(sk.isValid()) {
+			if(sk!= null && sk.isValid()) {
 				sops=sk.interestOps();
 			}
 			return "{QA sa=" + socketAddress + ", #ops=" + ops.size()
