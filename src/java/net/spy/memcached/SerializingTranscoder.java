@@ -130,7 +130,7 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 				if(compressed.length < b.length) {
 					getLogger().info("Compressed %s from %d to %d",
 						o.getClass().getName(), b.length, compressed.length);
-					b=compress(b);
+					b=compressed;
 					flags |= COMPRESSED;
 				} else {
 					getLogger().info(
