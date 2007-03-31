@@ -13,6 +13,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -42,16 +43,17 @@ public class MemcachedConnection extends SpyObject {
 	private ConcurrentLinkedQueue<QueueAttachment> addedQueue=null;
 	private SortedMap<Long, QueueAttachment> reconnectQueue=null;
 
-	public MemcachedConnection(InetSocketAddress[] a) throws IOException {
+	public MemcachedConnection(int bufSize, List<InetSocketAddress> a)
+		throws IOException {
 		reconnectQueue=new TreeMap<Long, QueueAttachment>();
 		addedQueue=new ConcurrentLinkedQueue<QueueAttachment>();
 		selector=Selector.open();
-		connections=new QueueAttachment[a.length];
+		connections=new QueueAttachment[a.size()];
 		int cons=0;
 		for(SocketAddress sa : a) {
 			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
-			QueueAttachment qa=new QueueAttachment(sa, ch);
+			QueueAttachment qa=new QueueAttachment(sa, ch, bufSize);
 			qa.which=cons;
 			int ops=0;
 			if(ch.connect(sa)) {
@@ -428,11 +430,11 @@ public class MemcachedConnection extends SpyObject {
 		public ByteBuffer buf=null;
 		public BlockingQueue<Operation> ops=null;
 		public SelectionKey sk=null;
-		public QueueAttachment(SocketAddress sa, SocketChannel c) {
+		public QueueAttachment(SocketAddress sa, SocketChannel c, int bufSize) {
 			super();
 			socketAddress=sa;
 			channel=c;
-			buf=ByteBuffer.allocate(4096);
+			buf=ByteBuffer.allocate(bufSize);
 			ops=new ArrayBlockingQueue<Operation>(MAX_OPS_QUEUE_LEN);
 		}
 

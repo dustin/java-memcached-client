@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -73,6 +74,11 @@ import net.spy.memcached.ops.VersionOperation;
  */
 public class MemcachedClient extends SpyThread {
 
+	/**
+	 * Default read buffer size.
+	 */
+	public static final int DEFAULT_BUF_SIZE = 16384;
+
 	private volatile boolean running=true;
 	private MemcachedConnection conn=null;
 	private HashAlgorithm hashAlg=HashAlgorithm.NATIVE_HASH;
@@ -92,9 +98,44 @@ public class MemcachedClient extends SpyThread {
 	 * @throws IOException if connections cannot be established
 	 */
 	public MemcachedClient(InetSocketAddress... ia) throws IOException {
-		super();
+		this(DEFAULT_BUF_SIZE, ia);
+	}
+
+	/**
+	 * Get a memcache client over the specified memcached locations.
+	 *
+	 * @param bufSize read buffer size per connection (in bytes)
+	 * @param ia the socket addresses
+	 * @throws IOException if connections cannot be established
+	 */
+	public MemcachedClient(int bufSize, InetSocketAddress... ia)
+		throws IOException {
+		this(bufSize, Arrays.asList(ia));
+	}
+
+
+	/**
+	 * Get a memcache client over the specified memcached locations.
+	 *
+	 * @param addrs the socket addrs
+	 * @throws IOException if connections cannot be established
+	 */
+	public MemcachedClient(List<InetSocketAddress> addrs)
+		throws IOException {
+		this(DEFAULT_BUF_SIZE, addrs);
+	}
+
+	/**
+	 * Get a memcache client over the specified memcached locations.
+	 *
+	 * @param bufSize read buffer size per connection (in bytes)
+	 * @param addrs the socket addresses
+	 * @throws IOException if connections cannot be established
+	 */
+	public MemcachedClient(int bufSize, List<InetSocketAddress> addrs)
+		throws IOException {
 		transcoder=new SerializingTranscoder();
-		conn=new MemcachedConnection(ia);
+		conn=new MemcachedConnection(bufSize, addrs);
 		setName("Memcached IO over " + conn);
 		start();
 	}
@@ -528,8 +569,8 @@ public class MemcachedClient extends SpyThread {
 		assert rv >= 0 : "Returned negative key for key " + key;
 		assert rv < conn.getNumConnections()
 			: "Invalid server number " + rv + " for key " + key;
-		getLogger().debug("Returning server #%d for key %s (%d total conns)",
-				rv, key, conn.getNumConnections());
+		getLogger().debug("Returning server #%d for %s(%s) (%d total conns)",
+				rv, hashAlg, key, conn.getNumConnections());
 		return rv;
 	}
 
