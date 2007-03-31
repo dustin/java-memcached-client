@@ -75,6 +75,7 @@ public class MemcachedClient extends SpyThread {
 
 	private volatile boolean running=true;
 	private MemcachedConnection conn=null;
+	private HashAlgorithm hashAlg=HashAlgorithm.NATIVE_HASH;
 	Transcoder transcoder=null;
 
 	/** 
@@ -96,6 +97,20 @@ public class MemcachedClient extends SpyThread {
 		conn=new MemcachedConnection(ia);
 		setName("Memcached IO over " + conn);
 		start();
+	}
+
+	/**
+	 * Set the hash algorithm.
+	 */
+	public HashAlgorithm getHashAlgorithm() {
+		return hashAlg;
+	}
+
+	public void setHashAlgorithm(HashAlgorithm to) {
+		if(to == null) {
+			throw new NullPointerException("Null hash algorithm not allowed");
+		}
+		hashAlg=to;
 	}
 
 	/**
@@ -509,7 +524,7 @@ public class MemcachedClient extends SpyThread {
 			throw new IllegalArgumentException(
 					"Key contains invalid characters: " + key);
 		}
-		int rv=Math.abs(key.hashCode()) % conn.getNumConnections();
+		int rv=hashAlg.hash(key) % conn.getNumConnections();
 		assert rv >= 0 : "Returned negative key for key " + key;
 		assert rv < conn.getNumConnections()
 			: "Invalid server number " + rv + " for key " + key;
