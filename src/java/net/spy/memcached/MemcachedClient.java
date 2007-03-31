@@ -509,7 +509,13 @@ public class MemcachedClient extends SpyThread {
 			throw new IllegalArgumentException(
 					"Key contains invalid characters: " + key);
 		}
-		return key.hashCode() % conn.getNumConnections();
+		int rv=Math.abs(key.hashCode()) % conn.getNumConnections();
+		assert rv >= 0 : "Returned negative key for key " + key;
+		assert rv < conn.getNumConnections()
+			: "Invalid server number " + rv + " for key " + key;
+		getLogger().debug("Returning server #%d for key %s (%d total conns)",
+				rv, key, conn.getNumConnections());
+		return rv;
 	}
 
 	private void waitForOperations(
