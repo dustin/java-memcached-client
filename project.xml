@@ -31,6 +31,10 @@ arch-tag: BFAE15E6-ED6E-4925-A5B2-79B8CBAE37D2
 		</developer>
 	</developers>
 
+	<versions>
+		<version><name>1.0.42</name></version>
+	</versions>
+
 	<dependencies>
 
 		<dependency>
