@@ -164,7 +164,7 @@ public class MemcachedConnection extends SpyObject {
 			try {
 				QueueAttachment qa=null;
 				while((qa=addedQueue.remove()) != null) {
-					if(qa.channel.isConnected()) {
+					if(qa.channel != null && qa.channel.isConnected()) {
 						Operation op=qa.ops.peek();
 						if(op != null
 								&& op.getState() == Operation.State.WRITING) {
@@ -333,12 +333,14 @@ public class MemcachedConnection extends SpyObject {
 			getLogger().warn("Closing, and reopening %s, attempt %d.",
 					qa, qa.reconnectAttempt);
 			qa.sk.cancel();
+			assert !qa.sk.isValid() : "Cancelled selection key is valid";
 			qa.reconnectAttempt++;
 			try {
 				qa.channel.socket().close();
 			} catch(IOException e) {
 				getLogger().warn("IOException trying to close a socket", e);
 			}
+			qa.channel=null;
 
 			long delay=Math.min((100*qa.reconnectAttempt) ^ 2, MAX_DELAY);
 
