@@ -52,11 +52,25 @@
 			</ul>
 		</section>
 		<section name="Where to Get">
+			<h3>Binary Distributions</h3>
 			<p>
-				My maven repository has the latest version here:
+				My <a href="http://bleu.west.spy.net/~dustin/repo/">maven 1
+				repository</a> has the latest binary version here:
 				<blockquote>
 					http://bleu.west.spy.net/~dustin/repo/
 				</blockquote>
+			</p>
+			<h3>Source Code</h3>
+			<p>
+				The source can be downloaded or checked out from my
+				<a href="http://rubik.west.spy.net/hg/memcached/">mercurial
+				repository</a>.
+			</p>
+			<h3>Dependencies</h3>
+			<p>
+				Note that this also requires
+				<a href="http://bleu.west.spy.net/~dustin/projects/spyjar/">spy.jar</a>
+				(2.2.44 or so) from the same repository.
 			</p>
 		</section>
 		<section name="License">
