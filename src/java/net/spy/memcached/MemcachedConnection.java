@@ -156,7 +156,7 @@ public class MemcachedConnection extends SpyObject {
 		}
 	}
 
-	private void handleInputQueue() throws IOException {
+	private void handleInputQueue() {
 		if(!addedQueue.isEmpty()) {
 			getLogger().debug("Handling queue");
 			// If there's stuff in the added queue.  Try to process it.
@@ -170,7 +170,13 @@ public class MemcachedConnection extends SpyObject {
 								&& op.getState() == Operation.State.WRITING) {
 							getLogger().debug(
 									"Handling queued write on %s", qa);
-							handleOperation(op, qa.sk, qa);
+							try {
+								handleOperation(op, qa.sk, qa);
+							} catch(IOException e) {
+								getLogger().warn("Exception handling %s",
+										op, e);
+								queueReconnect(qa);
+							}
 						}
 					} else {
 						toAdd.add(qa);
@@ -183,8 +189,9 @@ public class MemcachedConnection extends SpyObject {
 		}
 	}
 
-	// Handle IO for a specific selector.
-	private void handleIO(SelectionKey sk) throws IOException {
+	// Handle IO for a specific selector.  Any IOException will cause a
+	// reconnect
+	private void handleIO(SelectionKey sk) {
 		QueueAttachment qa=(QueueAttachment)sk.attachment();
 		if(sk.isConnectable()) {
 			getLogger().info("Connection state changed for %s", sk);
@@ -216,9 +223,14 @@ public class MemcachedConnection extends SpyObject {
 			} else {
 				if(sk.isReadable()) {
 					ByteBuffer b=ByteBuffer.allocate(1);
-					int read=qa.channel.read(b);
-					assert read == -1
-						: "expected to read -1 bytes, read " + read;
+					try {
+						int read=qa.channel.read(b);
+						assert read == -1
+							: "expected to read -1 bytes, read " + read;
+					} catch(IOException e) {
+						getLogger().warn("IOException reading while not"
+								+ " expecting a readable channel", e);
+					}
 					queueReconnect(qa);
 				} else {
 					assert false : "No current operations, but selectors ready";
@@ -316,13 +328,17 @@ public class MemcachedConnection extends SpyObject {
 		return nextOp != null;
 	}
 
-	private void queueReconnect(QueueAttachment qa) throws IOException {
+	private void queueReconnect(QueueAttachment qa) {
 		synchronized(qa) {
 			getLogger().warn("Closing, and reopening %s, attempt %d.",
 					qa, qa.reconnectAttempt);
 			qa.sk.cancel();
 			qa.reconnectAttempt++;
-			qa.channel.socket().close();
+			try {
+				qa.channel.socket().close();
+			} catch(IOException e) {
+				getLogger().warn("IOException trying to close a socket", e);
+			}
 
 			long delay=Math.min((100*qa.reconnectAttempt) ^ 2, MAX_DELAY);
 
