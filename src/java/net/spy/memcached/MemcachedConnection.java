@@ -206,7 +206,13 @@ public class MemcachedConnection extends SpyObject {
 		} else {
 			Operation currentOp=qa.ops.peek();
 			if(currentOp != null) {
-				handleOperation(currentOp, sk, qa);
+				try {
+					handleOperation(currentOp, sk, qa);
+				} catch(IOException e) {
+					getLogger().warn("Exception handling %s, reconnecting",
+							currentOp, e);
+					queueReconnect(qa);
+				}
 			} else {
 				if(sk.isReadable()) {
 					ByteBuffer b=ByteBuffer.allocate(1);
