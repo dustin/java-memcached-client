@@ -59,29 +59,30 @@ public class MemcachedConnection extends SpyObject {
 			if(ch.connect(sa)) {
 				getLogger().info("Connected to %s immediately", qa);
 				qa.reconnectAttempt=0;
+				assert ch.isConnected();
 			} else {
-				getLogger().debug("Added %s to connect queue", qa);
+				getLogger().info("Added %s to connect queue", qa);
 				ops=SelectionKey.OP_CONNECT;
 			}
 			qa.sk=ch.register(selector, ops, qa);
+			assert ch.isConnected()
+				|| qa.sk.interestOps() == SelectionKey.OP_CONNECT
+				: "Not connected, and not wanting to connect";
 			connections[cons++]=qa;
 		}
 	}
 
 	private boolean selectorsMakeSense() {
 		for(QueueAttachment qa : connections) {
-			if(qa.sk.isValid()) {
-				if(qa.channel.isConnected()) {
-					Operation op=null;
-					int sops=0;
-					synchronized(qa) {
-						op=qa.ops.peek();
-						sops=qa.sk.interestOps();
-					}
-					if(op == null) {
-						assert sops == 0 : "Invalid ops: " + qa;
-					} else {
-						switch(op.getState()) {
+			synchronized(qa) {
+				if(qa.sk.isValid()) {
+					if(qa.channel.isConnected()) {
+						Operation op=qa.ops.peek();
+						int sops=qa.sk.interestOps();
+						if(op == null) {
+							assert sops == 0 : "Invalid ops: " + qa;
+						} else {
+							switch(op.getState()) {
 							case READING:
 								assert (sops & SelectionKey.OP_READ) != 0
 									: "Invalid ops: " + qa;
@@ -92,11 +93,14 @@ public class MemcachedConnection extends SpyObject {
 								break;
 							case COMPLETE:
 								assert false : "Completed item in queue";
+							}
 						}
+					} else {
+						int sops=qa.sk.interestOps();
+						assert sops == SelectionKey.OP_CONNECT
+							: "Not connected, and not watching for connect: "
+								+ sops;
 					}
-				} else {
-					assert qa.sk.interestOps() == SelectionKey.OP_CONNECT
-						: "Not connected, and not watching for connect.";
 				}
 			}
 		}
@@ -244,7 +248,7 @@ public class MemcachedConnection extends SpyObject {
 	}
 
 	// Make a debug string out of the given buffer's values
-	private String dbgBuffer(ByteBuffer b, int size) {
+	static String dbgBuffer(ByteBuffer b, int size) {
 		StringBuilder sb=new StringBuilder();
 		byte[] bytes=b.array();
 		for(int i=0; i<size; i++) {
@@ -392,10 +396,15 @@ public class MemcachedConnection extends SpyObject {
 			getLogger().info("Reconnecting %s", qa);
 			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
-			ch.connect(qa.socketAddress);
+			int ops=0;
+			if(ch.connect(qa.socketAddress)) {
+				getLogger().info("Immediately reconnected to %s", qa);
+				assert ch.isConnected();
+			} else {
+				ops=SelectionKey.OP_CONNECT;
+			}
 			qa.channel=ch;
-			qa.sk=ch.register(selector, 0, qa);
-			qa.sk.interestOps(SelectionKey.OP_CONNECT);
+			qa.sk=ch.register(selector, ops, qa);
 		}
 	}
 
@@ -444,7 +453,8 @@ public class MemcachedConnection extends SpyObject {
 		o.initialize();
 		synchronized(qa) {
 			qa.ops.add(o);
-			if(qa.ops.size() == 1 && qa.sk.isValid()) {
+			if(qa.ops.size() == 1 && qa.sk.isValid()
+					&& qa.channel.isConnected()) {
 				qa.sk.interestOps(SelectionKey.OP_WRITE);
 			}
 		}

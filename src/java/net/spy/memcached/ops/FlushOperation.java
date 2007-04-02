@@ -37,6 +37,7 @@ public class FlushOperation extends Operation {
 		} else {
 			b=ByteBuffer.allocate(32);
 			b.put( ("flush_all " + delay + "\r\n").getBytes());
+			b.flip();
 		}
 		setBuffer(b);
 	}

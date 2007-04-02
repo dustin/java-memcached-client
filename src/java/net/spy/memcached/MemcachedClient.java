@@ -78,6 +78,7 @@ public class MemcachedClient extends SpyThread {
 	 * Default read buffer size.
 	 */
 	public static final int DEFAULT_BUF_SIZE = 16384;
+	private static final int MAX_KEY_LENGTH = 250;
 
 	private volatile boolean running=true;
 	private MemcachedConnection conn=null;
@@ -464,6 +465,9 @@ public class MemcachedClient extends SpyThread {
 			try {
 				if(f.get().equals("STORED")) {
 					rv=def;
+				} else {
+					rv=mutate(t, key, by);
+					assert rv != -1 : "Failed to mutate or init value";
 				}
 			} catch (InterruptedException e) {
 				throw new RuntimeException("Interrupted waiting for store", e);
@@ -561,7 +565,11 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	private int getServerForKey(String key) {
-		if(key.matches(".*\\s.*")) {
+		if(key.length() > MAX_KEY_LENGTH) {
+			throw new IllegalArgumentException("Key is too long (maxlen = "
+					+ MAX_KEY_LENGTH + ")");
+		}
+		if(key.indexOf(' ') >= 0) {
 			throw new IllegalArgumentException(
 					"Key contains invalid characters: " + key);
 		}

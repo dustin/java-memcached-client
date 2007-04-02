@@ -78,6 +78,14 @@ arch-tag: BFAE15E6-ED6E-4925-A5B2-79B8CBAE37D2
 			<version>2.0.2</version>
 		</dependency>
 
+		<dependency>
+			<groupId>maven-plugins</groupId>
+			<artifactId>maven-cobertura-plugin</artifactId>
+			<version>1.0</version>
+			<type>plugin</type>
+			<url>http://maven-plugins.sourceforge.net/maven-cobertura-plugin/</url>
+		</dependency>
+
 	</dependencies>
 
 	<build>
