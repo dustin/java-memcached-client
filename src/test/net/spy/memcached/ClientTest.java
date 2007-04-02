@@ -185,21 +185,12 @@ public class ClientTest extends TestCase {
 	public void testFutureFlush() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
+		client.set("test2", 5, "test2value");
 		assertEquals("test1value", client.get("test1"));
-		client.flush(1);
-		// XXX:  I do not understand the semantics of flush_all
-		/*
-		Object ob=client.get("test1");
-		assertNull("Expected null, was " + ob, ob);
-		// Add should fail, even though the get returns null
-		client.add("test1", 5, "test1value");
+		assertEquals("test2value", client.get("test2"));
+		client.flush(2);
+		Thread.sleep(2100);
 		assertNull(client.get("test1"));
-		// Replace should also fail
-		client.replace("test1", 5, "test1value");
-		assertNull(client.get("test1"));
-		// Set should be fine, though.
-		client.set("test1", 5, "test1value");
-		assertEquals("test1value", client.get("test1"));
-		*/
+		assertNull(client.get("test2"));
 	}
 }
