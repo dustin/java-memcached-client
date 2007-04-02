@@ -239,6 +239,22 @@ public class MemcachedConnection extends SpyObject {
 		}
 	}
 
+	// Make a debug string out of the given buffer's values
+	private String dbgBuffer(ByteBuffer b, int size) {
+		StringBuilder sb=new StringBuilder();
+		byte[] bytes=b.array();
+		for(int i=0; i<size; i++) {
+			char ch=(char)bytes[i];
+			if(Character.isWhitespace(ch) || Character.isLetterOrDigit(ch)) {
+				sb.append(ch);
+			} else {
+				sb.append("\\x");
+				sb.append(Integer.toHexString(bytes[i] & 0xff));
+			}
+		}
+		return sb.toString();
+	}
+
 	// Handle IO for an operation.
 	private void handleOperation(Operation currentOp, SelectionKey sk,
 			QueueAttachment qa) throws IOException {
@@ -264,12 +280,14 @@ public class MemcachedConnection extends SpyObject {
 				boolean mustReinint=false;
 				if(sk.isValid() && sk.isReadable()) {
 					getLogger().debug("Readable in write mode.");
-					ByteBuffer b=ByteBuffer.allocate(1);
+					ByteBuffer b=ByteBuffer.allocate(512);
 					int read=qa.channel.read(b);
+					getLogger().debug("Read %d bytes in write mode", read);
 					if(read > 0) {
+						b.flip();
 						getLogger().error(
-							"Read %d bytes in write mode -- reconnecting",
-							read);
+							"Read %d bytes in write mode (%s) -- reconnecting",
+							read, dbgBuffer(b, read));
 						mustReinint=true;
 					}
 				}
@@ -299,7 +317,8 @@ public class MemcachedConnection extends SpyObject {
 				}
 				break;
 			case WRITING:
-				getLogger().debug("Operation is still writing.");
+				getLogger().debug("Operation is still writing (%d remaining).",
+					currentOp.getBuffer().remaining());
 				if(sk.isValid()) {
 					sk.interestOps(SelectionKey.OP_WRITE);
 				}
