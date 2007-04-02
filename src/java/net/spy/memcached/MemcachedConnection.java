@@ -261,19 +261,28 @@ public class MemcachedConnection extends SpyObject {
 				}
 				break;
 			case WRITING:
+				boolean mustReinint=false;
 				if(sk.isValid() && sk.isReadable()) {
 					getLogger().debug("Readable in write mode.");
 					ByteBuffer b=ByteBuffer.allocate(1);
 					int read=qa.channel.read(b);
-					assert read <= 0
-						: "expected to read -1 bytes, read " + read;
+					if(read > 0) {
+						getLogger().error(
+							"Read %d bytes in write mode -- reconnecting",
+							read);
+						mustReinint=true;
+					}
 				}
-				ByteBuffer b=currentOp.getBuffer();
-				int wrote=qa.channel.write(b);
-				getLogger().debug("Wrote %d bytes for %s",
-						wrote, currentOp);
-				if(b.remaining() == 0) {
-					currentOp.writeComplete();
+				if(mustReinint) {
+					queueReconnect(qa);
+				} else {
+					ByteBuffer b=currentOp.getBuffer();
+					int wrote=qa.channel.write(b);
+					getLogger().debug("Wrote %d bytes for %s",
+							wrote, currentOp);
+					if(b.remaining() == 0) {
+						currentOp.writeComplete();
+					}
 				}
 				break;
 			case COMPLETE:
