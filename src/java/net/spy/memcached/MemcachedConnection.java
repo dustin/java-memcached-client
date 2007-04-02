@@ -71,9 +71,13 @@ public class MemcachedConnection extends SpyObject {
 	private boolean selectorsMakeSense() {
 		for(QueueAttachment qa : connections) {
 			if(qa.sk.isValid()) {
-				int sops=qa.sk.interestOps();
 				if(qa.channel.isConnected()) {
-					Operation op=qa.ops.peek();
+					Operation op=null;
+					int sops=0;
+					synchronized(qa) {
+						op=qa.ops.peek();
+						sops=qa.sk.interestOps();
+					}
 					if(op == null) {
 						assert sops == 0 : "Invalid ops: " + qa;
 					} else {
@@ -91,7 +95,7 @@ public class MemcachedConnection extends SpyObject {
 						}
 					}
 				} else {
-					assert sops == SelectionKey.OP_CONNECT
+					assert qa.sk.interestOps() == SelectionKey.OP_CONNECT
 						: "Not connected, and not watching for connect.";
 				}
 			}
