@@ -10,8 +10,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -393,6 +395,10 @@ public class MemcachedClient extends SpyThread {
 	 * Get all of the stats from all of the connections.
 	 */
 	public Map<SocketAddress, Map<String, String>> getStats() {
+		return getStats(null);
+	}
+
+	private Map<SocketAddress, Map<String, String>> getStats(String arg) {
 		final Map<SocketAddress, Map<String, String>> rv
 			=new HashMap<SocketAddress, Map<String, String>>();
 		final AtomicInteger todo=new AtomicInteger(conn.getNumConnections());
@@ -401,7 +407,7 @@ public class MemcachedClient extends SpyThread {
 		for(int i=0; i<conn.getNumConnections(); i++) {
 			final SocketAddress sa=conn.getAddressOf(i);
 			rv.put(sa, new HashMap<String, String>());
-			addOp(i, new StatsOperation(
+			addOp(i, new StatsOperation(arg,
 					new StatsOperation.Callback() {
 						public void gotStat(String name, String val) {
 							rv.get(sa).put(name, val);
@@ -535,6 +541,35 @@ public class MemcachedClient extends SpyThread {
 		for(int i=0; i<conn.getNumConnections(); i++) {
 			addOp(i, new FlushOperation());
 		}
+	}
+
+	/**
+	 * Find keys matching a given prefix.
+	 * This method uses undocumented mechanisms in the memcached wire protocol,
+	 * so it may just altogether stop working at some point.
+	 */
+	public Collection<String> findKeys(String prefix) {
+		Map<SocketAddress, Map<String, String>> stats = getStats("items");
+		Collection<String> chunks=new HashSet<String>();
+		for(Map<String, String> m : stats.values()) {
+			for(String stuff : m.keySet()) {
+				String parts[]=stuff.split(":");
+				assert parts.length == 3
+					: "Incorrect number of parts in " + stuff;
+				chunks.add(parts[1]);
+			}
+		}
+
+		// Now that we know what chunks we need, ask for the keys
+		Collection<String> rv=new TreeSet<String>();
+		for(String chunk : chunks) {
+			for(Map<String, String> m
+					: getStats("cachedump " + chunk + " 10000000").values()) {
+				rv.addAll(m.keySet());
+			}
+		}
+		
+		return rv;
 	}
 
 	/**

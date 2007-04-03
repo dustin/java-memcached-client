@@ -193,4 +193,13 @@ public class ClientTest extends TestCase {
 		assertNull(client.get("test1"));
 		assertNull(client.get("test2"));
 	}
+
+	public void testGetKeys() throws Exception {
+		client.set("test1", 5, "test1value");
+		client.set("test2", 5, "test2value");
+		Collection<String> ks=client.findKeys("");
+		assertEquals(2, ks.size());
+		assertTrue(ks.contains("test1"));
+		assertTrue(ks.contains("test2"));
+	}
 }

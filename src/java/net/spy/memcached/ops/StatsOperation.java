@@ -12,11 +12,17 @@ public class StatsOperation extends Operation {
 
 	private static final byte[] MSG="stats\r\n".getBytes();
 
+	private byte[] msg=MSG;
 	private Callback cb=null;
 
-	public StatsOperation(Callback c) {
+	public StatsOperation(String arg, Callback c) {
 		super();
 		cb=c;
+		if(arg == null) {
+			msg=MSG;
+		} else {
+			msg=("stats " + arg + "\r\n").getBytes();
+		}
 	}
 
 	@Override
@@ -26,14 +32,14 @@ public class StatsOperation extends Operation {
 			transitionState(State.COMPLETE);
 		} else {
 			String[] parts=line.split(" ");
-			assert parts.length == 3;
+			assert parts.length >= 3;
 			cb.gotStat(parts[1], parts[2]);
 		}
 	}
 
 	@Override
 	public void initialize() {
-		setBuffer(ByteBuffer.wrap(MSG));
+		setBuffer(ByteBuffer.wrap(msg));
 	}
 
 	@Override
