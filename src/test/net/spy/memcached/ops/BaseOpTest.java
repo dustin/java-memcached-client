@@ -5,6 +5,8 @@ package net.spy.memcached.ops;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import net.spy.test.BaseMockCase;
 
@@ -32,7 +34,8 @@ public class BaseOpTest extends BaseMockCase {
 		} catch(AssertionError e) {
 			// ok
 		}
-		op.handleRead(ByteBuffer.allocate(3));
+		op.setBytesToRead(2);
+		op.handleRead(ByteBuffer.wrap("hi".getBytes()));
 	}
 
 	public void testLineReadType() throws Exception {
@@ -48,26 +51,20 @@ public class BaseOpTest extends BaseMockCase {
 		op.handleLine("x");
 	}
 
-	// XXX: this broke when operation's buffer processing changed to drain the
-	// buffer.  Only the operation knows enough to do the state changes and
-	// inspection this thing is trying to do.
-	public void xtestLineParser() throws Exception {
-		String input="This is a multiline string\r\nhere is line two\r\nxyz";
+	public void testLineParser() throws Exception {
+		String input="This is a multiline string\r\nhere is line two\r\n";
 		ByteBuffer b=ByteBuffer.wrap(input.getBytes());
 		SimpleOp op=new SimpleOp(Operation.ReadType.LINE);
+		op.linesToRead=2;
 		op.readFromBuffer(b);
-		assertEquals("This is a multiline string", op.getCurrentLine());
-		op.readFromBuffer(b);
-		assertEquals("here is line two", op.getCurrentLine());
-		op.setReadType(Operation.ReadType.DATA);
+		assertEquals("This is a multiline string", op.getLines().get(0));
+		assertEquals("here is line two", op.getLines().get(1));
 		op.setBytesToRead(2);
-		op.readFromBuffer(b);
+		op.readFromBuffer(ByteBuffer.wrap("xy".getBytes()));
 		byte[] expected={'x', 'y'};
 		assertTrue("Expected " + Arrays.toString(expected) + " but got "
 				+ Arrays.toString(op.getCurentBytes()),
 				Arrays.equals(expected, op.getCurentBytes()));
-		assertEquals(1, b.remaining());
-		assertEquals((byte)'z', b.get());
 	}
 
 	public void testPartialLine() throws Exception {
@@ -89,9 +86,10 @@ public class BaseOpTest extends BaseMockCase {
 
 	private static class SimpleOp extends Operation {
 
-		private String currentLine=null;
+		private LinkedList<String> lines=new LinkedList<String>();
 		private byte[] currentBytes=null;
 		private int bytesToRead=0;
+		public int linesToRead=1;
 
 		public SimpleOp(ReadType t) {
 			setReadType(t);
@@ -102,7 +100,11 @@ public class BaseOpTest extends BaseMockCase {
 		}
 
 		public String getCurrentLine() {
-			return currentLine;
+			return lines.isEmpty()?null:lines.getLast();
+		}
+
+		public List<String> getLines() {
+			return lines;
 		}
 
 		public byte[] getCurentBytes() {
@@ -112,12 +114,16 @@ public class BaseOpTest extends BaseMockCase {
 		@Override
 		public void handleLine(String line) {
 			assert getReadType() == Operation.ReadType.LINE;
-			currentLine=line;
+			lines.add(line);
+			if(--linesToRead == 0) {
+				setReadType(Operation.ReadType.DATA);
+			}
 		}
 
 		@Override
 		public void handleRead(ByteBuffer data) {
 			assert getReadType() == Operation.ReadType.DATA;
+			assert bytesToRead > 0;
 			if(bytesToRead > 0) {
 				currentBytes=new byte[bytesToRead];
 				data.get(currentBytes);
