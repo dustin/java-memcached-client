@@ -452,9 +452,9 @@ public class MemcachedConnection extends SpyObject {
 		QueueAttachment qa=connections[which];
 		o.initialize();
 		synchronized(qa) {
+			boolean wasEmpty=qa.ops.isEmpty();
 			qa.ops.add(o);
-			if(qa.ops.size() == 1 && qa.sk.isValid()
-					&& qa.channel.isConnected()) {
+			if(wasEmpty && qa.sk.isValid() && qa.channel.isConnected()) {
 				qa.sk.interestOps(SelectionKey.OP_WRITE);
 			}
 		}
