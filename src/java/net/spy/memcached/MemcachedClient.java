@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import net.spy.SpyThread;
 import net.spy.concurrent.SynchronizationObject;
@@ -185,14 +184,15 @@ public class MemcachedClient extends SpyThread {
 	private Future<String> asyncStore(StoreOperation.StoreType storeType,
 			String key, int exp, Object value) {
 		CachedData co=transcoder.encode(value);
-		final SynchronizationObject<String> sync
-			=new SynchronizationObject<String>(null);
+		final CountDownLatch latch=new CountDownLatch(1);
+		final OperationFuture<String> rv=new OperationFuture<String>(latch);
 		Operation op=new StoreOperation(storeType, key, co.getFlags(), exp,
 				co.getData(), new OperationCallback() {
 					public void receivedStatus(String val) {
-						sync.set(val);
+						rv.set(val);
+						latch.countDown();
 					}});
-		OperationFuture<String> rv=new OperationFuture<String>(sync, op);
+		rv.setOperation(op);
 		addOp(getServerForKey(key), op);
 		return rv;
 	}
@@ -241,38 +241,23 @@ public class MemcachedClient extends SpyThread {
 	 * @return a future that will hold the return value of the fetch
 	 */
 	public Future<Object> asyncGet(final String key) {
-		// This marker object will be the default value of synchronization.
-		// When the synchronization object no longer contains this value, the
-		// get is complete.
-		final Object marker=new Object();
 
-		final SynchronizationObject<Object> sync
-			=new SynchronizationObject<Object>(marker);
+		final CountDownLatch latch=new CountDownLatch(1);
+		final OperationFuture<Object> rv=new OperationFuture<Object>(latch);
 
 		Operation op=new GetOperation(key, new GetOperation.Callback() {
 			private Object val=null;
 			public void receivedStatus(String line) {
-				sync.set(val);
+				rv.set(val);
+				latch.countDown();
 			}
 			public void gotData(String k, int flags, byte[] data) {
 				assert key.equals(k) : "Wrong key returned";
 				val=transcoder.decode(new CachedData(flags, data));
 			}});
+		rv.setOperation(op);
 		addOp(getServerForKey(key), op);
-
-		// Return an operation future that waits for completion
-		return new OperationFuture<Object>(sync, op) {
-			@Override
-			protected void waitForIt(long duration, TimeUnit units)
-				throws InterruptedException, TimeoutException {
-				sync.waitUntilTrue(
-						new SynchronizationObject.Predicate<Object>() {
-							public boolean evaluate(Object o) {
-								return o != marker;
-							}
-						}, duration, units);
-			}
-		};
+		return rv;
 	}
 
 	/**
@@ -298,19 +283,7 @@ public class MemcachedClient extends SpyThread {
 	 * @return a Future result of that fetch
 	 */
 	public Future<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
-		final AtomicInteger requests=new AtomicInteger();
 		final Map<String, Object> m=new ConcurrentHashMap<String, Object>();
-		final SynchronizationObject<AtomicInteger> sync
-			=new SynchronizationObject<AtomicInteger>(requests);
-		GetOperation.Callback cb=new GetOperation.Callback() {
-				public void receivedStatus(String line) {
-					requests.decrementAndGet();
-					sync.set(requests);
-				}
-				public void gotData(String k, int flags, byte[] data) {
-					m.put(k, transcoder.decode(new CachedData(flags, data)));
-				}
-		};
 		// Break the gets down into groups by key
 		Map<Integer, Collection<String>> chunks
 			=new HashMap<Integer, Collection<String>>();
@@ -323,12 +296,21 @@ public class MemcachedClient extends SpyThread {
 			}
 			ks.add(key);
 		}
+		final CountDownLatch latch=new CountDownLatch(chunks.size());
 		final Collection<Operation> ops=new ArrayList<Operation>();
+
+		GetOperation.Callback cb=new GetOperation.Callback() {
+				public void receivedStatus(String line) {
+					latch.countDown();
+				}
+				public void gotData(String k, int flags, byte[] data) {
+					m.put(k, transcoder.decode(new CachedData(flags, data)));
+				}
+		};
 		for(Map.Entry<Integer, Collection<String>> me : chunks.entrySet()) {
-			requests.incrementAndGet();
 			ops.add(addOp(me.getKey(), new GetOperation(me.getValue(), cb)));
 		}
-		return new BulkGetFuture(requests, m, ops, sync);
+		return new BulkGetFuture(m, ops, latch);
 	}
 
 	/**
@@ -620,20 +602,17 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	static class BulkGetFuture implements Future<Map<String, Object>> {
-		private AtomicInteger requests;
 		private Map<String, Object> rvMap;
 		private Collection<Operation> ops;
-		private SynchronizationObject<AtomicInteger> sync;
+		private CountDownLatch latch=null;
 		private boolean cancelled=false;
 
-		public BulkGetFuture(AtomicInteger reqs, Map<String, Object> m,
-				Collection<Operation> getOps,
-				SynchronizationObject<AtomicInteger> syncOb) {
+		public BulkGetFuture(Map<String, Object> m,
+				Collection<Operation> getOps, CountDownLatch l) {
 			super();
-			requests = reqs;
 			rvMap = m;
 			ops = getOps;
-			sync = syncOb;
+			latch=l;
 		}
 
 		public boolean cancel(boolean ign) {
@@ -658,12 +637,7 @@ public class MemcachedClient extends SpyThread {
 		public Map<String, Object> get(long timeout, TimeUnit unit)
 			throws InterruptedException,
 			ExecutionException, TimeoutException {
-			sync.waitUntilTrue(
-					new SynchronizationObject.Predicate<AtomicInteger>() {
-						public boolean evaluate(AtomicInteger i) {
-							return i.get() == 0;
-						}},
-					timeout, unit);
+			latch.await(timeout, unit);
 			for(Operation op : ops) {
 				if(op.isCancelled()) {
 					throw new ExecutionException(
@@ -678,19 +652,19 @@ public class MemcachedClient extends SpyThread {
 		}
 
 		public boolean isDone() {
-			return requests.get() == 0;
+			return latch.getCount() == 0;
 		}
 	}
 
 	private static class OperationFuture<T> implements Future<T> {
 
+		private T obj=null;
+		private CountDownLatch latch=null;
 		private Operation op=null;
-		private SynchronizationObject<T> sync=null;
 
-		public OperationFuture(SynchronizationObject<T> so, Operation o) {
+		public OperationFuture(CountDownLatch l) {
 			super();
-			sync=so;
-			op=o;
+			latch=l;
 		}
 
 		public boolean cancel(boolean ign) {
@@ -702,26 +676,25 @@ public class MemcachedClient extends SpyThread {
 		}
 
 		public T get() throws InterruptedException, ExecutionException {
-			try {
-				waitForIt(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-			} catch (TimeoutException e) {
-				assert false : "Timed out waiting forever.";
-			}
+			latch.await();
 			if(op.isCancelled()) {
 				throw new ExecutionException(new RuntimeException("Cancelled"));
 			}
-			return sync.get();
+			return obj;
 		}
 
 		public T get(long duration, TimeUnit units)
 			throws InterruptedException, TimeoutException {
-			waitForIt(duration, units);
-			return sync.get();
+			latch.await(duration, units);
+			return obj;
 		}
 
-		protected void waitForIt(long duration, TimeUnit units)
-			throws InterruptedException, TimeoutException {
-			sync.waitUntilNotNull(duration, units);
+		void set(T o) {
+			obj=o;
+		}
+
+		void setOperation(Operation to) {
+			op=to;
 		}
 
 		public boolean isCancelled() {
