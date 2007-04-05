@@ -45,7 +45,7 @@ public abstract class Operation extends SpyObject {
 	private State state=State.WRITING;
 	private ReadType readType=ReadType.LINE;
 	private ByteBuffer cmd=null;
-	private StringBuffer currentLine=new StringBuffer();
+	private StringBuilder currentLine=new StringBuilder();
 	private boolean cancelled=false;
 
 	protected Operation() {
