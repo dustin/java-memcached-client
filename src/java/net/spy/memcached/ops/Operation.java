@@ -165,7 +165,8 @@ public abstract class Operation extends SpyObject {
 				for(int i=0; data.remaining() > 0; i++) {
 					byte b=data.get();
 					if(b == '\r') {
-						assert data.get() == '\n' : "got a \\r without a \\n";
+						byte newline=data.get();
+						assert newline == '\n' : "got a \\r without a \\n";
 						offset=i;
 						break;
 					} else {
