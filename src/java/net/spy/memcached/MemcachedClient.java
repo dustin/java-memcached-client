@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -371,23 +372,23 @@ public class MemcachedClient extends SpyThread {
 	public Map<SocketAddress, String> getVersions() {
 		final Map<SocketAddress, String>rv=
 			new ConcurrentHashMap<SocketAddress, String>();
-		final AtomicInteger ai=new AtomicInteger(0);
-		final SynchronizationObject<AtomicInteger> sync=
-			new SynchronizationObject<AtomicInteger>(ai);
+		final CountDownLatch latch=new CountDownLatch(conn.getNumConnections());
 
 		for(int i=0; i<conn.getNumConnections(); i++) {
 			final SocketAddress sa=conn.getAddressOf(i);
-			ai.incrementAndGet();
 			addOp(i, new VersionOperation(
 					new OperationCallback() {
 						public void receivedStatus(String s) {
 							rv.put(sa, s);
-							ai.decrementAndGet();
-							sync.set(ai);
+							latch.countDown();
 						}
 					}));
 		}
-		waitForOperations(sync);
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted waiting for versions", e);
+		}
 		return rv;
 	}
 
@@ -401,9 +402,7 @@ public class MemcachedClient extends SpyThread {
 	private Map<SocketAddress, Map<String, String>> getStats(String arg) {
 		final Map<SocketAddress, Map<String, String>> rv
 			=new HashMap<SocketAddress, Map<String, String>>();
-		final AtomicInteger todo=new AtomicInteger(conn.getNumConnections());
-		final SynchronizationObject<AtomicInteger> sync
-			=new SynchronizationObject<AtomicInteger>(todo);
+		final CountDownLatch latch=new CountDownLatch(conn.getNumConnections());
 		for(int i=0; i<conn.getNumConnections(); i++) {
 			final SocketAddress sa=conn.getAddressOf(i);
 			rv.put(sa, new HashMap<String, String>());
@@ -413,11 +412,14 @@ public class MemcachedClient extends SpyThread {
 							rv.get(sa).put(name, val);
 						}
 						public void receivedStatus(String line) {
-							todo.decrementAndGet();
-							sync.set(todo);
+							latch.countDown();
 						}}));
 		}
-		waitForOperations(sync);
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted waiting for stats", e);
+		}
 		return rv;
 	}
 
@@ -615,22 +617,6 @@ public class MemcachedClient extends SpyThread {
 		getLogger().debug("Returning server #%d for %s(%s) (%d total conns)",
 				rv, hashAlg, key, conn.getNumConnections());
 		return rv;
-	}
-
-	private void waitForOperations(
-			final SynchronizationObject<AtomicInteger> sync) {
-		try {
-			sync.waitUntilTrue(
-					new SynchronizationObject.Predicate<AtomicInteger>() {
-						public boolean evaluate(AtomicInteger val) {
-							return val.get() == 0;
-						}},
-					Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e) {
-			throw new RuntimeException("Interrupted waiting for results", e);
-		} catch (TimeoutException e) {
-			throw new RuntimeException("Timed out waiting forever", e);
-		}
 	}
 
 	static class BulkGetFuture implements Future<Map<String, Object>> {
