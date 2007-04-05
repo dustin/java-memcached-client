@@ -1,5 +1,4 @@
 * Store operations should return something more useful than strings.
-* delete and flush need to return futures.
 * Write up some more overview documentation, download links, etc...
 
 --

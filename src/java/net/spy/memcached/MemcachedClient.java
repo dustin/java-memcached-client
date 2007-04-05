@@ -498,33 +498,49 @@ public class MemcachedClient extends SpyThread {
 	 * @param key the key to delete
 	 * @param when when the deletion should take effect
 	 */
-	public void delete(String key, int when) {
-		addOp(getServerForKey(key), new DeleteOperation(key, when));
+	public Future<Boolean> delete(String key, int when) {
+		final CountDownLatch latch=new CountDownLatch(1);
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
+		DeleteOperation op=new DeleteOperation(key, when,
+				new OperationCallback() {
+					public void receivedStatus(String line) {
+						rv.set(line.equals("DELETED"));
+						latch.countDown();
+					}});
+		rv.setOperation(op);
+		addOp(getServerForKey(key), op);
+		return rv;
 	}
 
 	/**
 	 * Shortcut to delete that will immediately delete the item from the cache.
 	 */
-	public void delete(String key) {
-		delete(key, 0);
+	public Future<Boolean> delete(String key) {
+		return delete(key, 0);
 	}
 
 	/**
 	 * Flush all caches from all servers with a delay of application.
 	 */
-	public void flush(int delay) {
+	public Future<Boolean> flush(int delay) {
+		final CountDownLatch latch=new CountDownLatch(conn.getNumConnections());
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
+		// XXX:  We will not be able to cancel this operation
 		for(int i=0; i<conn.getNumConnections(); i++) {
-			addOp(i, new FlushOperation(delay));
+			addOp(i, new FlushOperation(delay, new OperationCallback(){
+				public void receivedStatus(String line) {
+					rv.set(line.equals("OK"));
+					latch.countDown();
+				}}));
 		}
+		return rv;
 	}
 
 	/**
 	 * Flush all caches from all servers immediately.
 	 */
-	public void flush() {
-		for(int i=0; i<conn.getNumConnections(); i++) {
-			addOp(i, new FlushOperation());
-		}
+	public Future<Boolean> flush() {
+		return flush(-1);
 	}
 
 	/**
@@ -677,7 +693,7 @@ public class MemcachedClient extends SpyThread {
 
 		public T get() throws InterruptedException, ExecutionException {
 			latch.await();
-			if(op.isCancelled()) {
+			if(op != null && op.isCancelled()) {
 				throw new ExecutionException(new RuntimeException("Cancelled"));
 			}
 			return obj;

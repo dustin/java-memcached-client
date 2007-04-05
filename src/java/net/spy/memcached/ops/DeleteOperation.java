@@ -14,17 +14,20 @@ public class DeleteOperation extends Operation {
 
 	private String key=null;
 	private int when=0;
+	private OperationCallback callback=null;
 
-	public DeleteOperation(String k, int w) {
+	public DeleteOperation(String k, int w, OperationCallback cb) {
 		super();
 		key=k;
 		when=w;
+		callback=cb;
 	}
 
 	@Override
 	public void handleLine(String line) {
 		getLogger().debug("Delete of %s returned %s", key, line);
 		assert line.equals("DELETED") || line.equals("NOT_FOUND");
+		callback.receivedStatus(line);
 		transitionState(State.COMPLETE);
 	}
 

@@ -6,8 +6,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 import junit.framework.TestCase;
+
 import net.spy.test.SyncThread;
 
 /**
@@ -25,10 +27,7 @@ public class ClientTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		client.flush();
-		// XXX:  This exists because flush is async.  We need to wait for the
-		// flush to finish before shutting down.
-		client.getVersions();
+		assertTrue(client.flush().get());
 		client.shutdown();
 		client=null;
 		super.tearDown();
@@ -165,7 +164,18 @@ public class ClientTest extends TestCase {
 		assertNull(client.get("test1"));
 	}
 
-	public void testFutureDelete() throws Exception {
+	public void testDeleteFuture() throws Exception {
+		assertNull(client.get("test1"));
+		client.set("test1", 5, "test1value");
+		assertEquals("test1value", client.get("test1"));
+		Future<Boolean> f=client.delete("test1");
+		assertNull(client.get("test1"));
+		assertTrue("Deletion didn't return true", f.get());
+		assertFalse("Second deletion returned true",
+			client.delete("test1").get());
+	}
+
+	public void testDelayedDelete() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
 		assertEquals("test1value", client.get("test1"));
@@ -182,7 +192,7 @@ public class ClientTest extends TestCase {
 		assertEquals("test1value", client.get("test1"));
 	}
 
-	public void testFutureFlush() throws Exception {
+	public void testDelayedFlush() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
 		client.set("test2", 5, "test2value");
@@ -190,6 +200,17 @@ public class ClientTest extends TestCase {
 		assertEquals("test2value", client.get("test2"));
 		client.flush(2);
 		Thread.sleep(2100);
+		assertNull(client.get("test1"));
+		assertNull(client.get("test2"));
+	}
+
+	public void testFlush() throws Exception {
+		assertNull(client.get("test1"));
+		client.set("test1", 5, "test1value");
+		client.set("test2", 5, "test2value");
+		assertEquals("test1value", client.get("test1"));
+		assertEquals("test2value", client.get("test2"));
+		assertTrue(client.flush().get());
 		assertNull(client.get("test1"));
 		assertNull(client.get("test2"));
 	}

@@ -12,20 +12,23 @@ public class FlushOperation extends Operation {
 
 	private static final byte[] FLUSH="flush_all\r\n".getBytes();
 	private int delay=-1;
+	private OperationCallback callback=null;
 
-	public FlushOperation() {
-		super();
+	public FlushOperation(OperationCallback cb) {
+		this(-1, cb);
 	}
 
-	public FlushOperation(int d) {
+	public FlushOperation(int d, OperationCallback cb) {
 		super();
 		delay=d;
+		callback=cb;
 	}
 
 	@Override
 	public void handleLine(String line) {
 		assert line.equals("OK");
 		getLogger().debug("Flush completed successfully");
+		callback.receivedStatus(line);
 		transitionState(State.COMPLETE);
 	}
 
