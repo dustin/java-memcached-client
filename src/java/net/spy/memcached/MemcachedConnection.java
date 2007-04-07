@@ -34,6 +34,7 @@ public class MemcachedConnection extends SpyObject {
 	// maximum amount of time to wait between reconnect attempts
 	private static final long MAX_DELAY = 30000;
 
+	private volatile boolean shutDown=false;
 	private Selector selector=null;
 	private QueueAttachment[] connections=null;
 	private int emptySelects=0;
@@ -121,6 +122,9 @@ public class MemcachedConnection extends SpyObject {
 	 */
 	@SuppressWarnings("unchecked")
 	public void handleIO() throws IOException {
+		if(shutDown) {
+			throw new IOException("No IO while shut down");
+		}
 
 		// Deal with all of the stuff that's been added, but may not be marked
 		// writable.
@@ -376,25 +380,27 @@ public class MemcachedConnection extends SpyObject {
 	}
 
 	private void queueReconnect(QueueAttachment qa) {
-		synchronized(qa) {
-			getLogger().warn("Closing, and reopening %s, attempt %d.",
-					qa, qa.reconnectAttempt);
-			qa.sk.cancel();
-			assert !qa.sk.isValid() : "Cancelled selection key is valid";
-			qa.reconnectAttempt++;
-			try {
-				qa.channel.socket().close();
-			} catch(IOException e) {
-				getLogger().warn("IOException trying to close a socket", e);
+		if(!shutDown) {
+			synchronized(qa) {
+				getLogger().warn("Closing, and reopening %s, attempt %d.",
+						qa, qa.reconnectAttempt);
+				qa.sk.cancel();
+				assert !qa.sk.isValid() : "Cancelled selection key is valid";
+				qa.reconnectAttempt++;
+				try {
+					qa.channel.socket().close();
+				} catch(IOException e) {
+					getLogger().warn("IOException trying to close a socket", e);
+				}
+				qa.channel=null;
+
+				long delay=Math.min((100*qa.reconnectAttempt) ^ 2, MAX_DELAY);
+
+				reconnectQueue.put(System.currentTimeMillis() + delay, qa);
+
+				// Need to do a little queue management.
+				setupResend(qa);
 			}
-			qa.channel=null;
-
-			long delay=Math.min((100*qa.reconnectAttempt) ^ 2, MAX_DELAY);
-
-			reconnectQueue.put(System.currentTimeMillis() + delay, qa);
-
-			// Need to do a little queue management.
-			setupResend(qa);
 		}
 	}
 

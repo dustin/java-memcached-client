@@ -25,7 +25,7 @@ public class FlushOperation extends Operation {
 
 	@Override
 	public void handleLine(String line) {
-		assert line.equals("OK");
+		assert line.equals("OK") : "Expected OK, was " + line;
 		getLogger().debug("Flush completed successfully");
 		callback.receivedStatus(line);
 		transitionState(State.COMPLETE);

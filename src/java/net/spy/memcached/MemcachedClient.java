@@ -78,6 +78,7 @@ public class MemcachedClient extends SpyThread {
 	private static final int MAX_KEY_LENGTH = 250;
 
 	private volatile boolean running=true;
+	private volatile boolean shuttingDown=false;
 	private MemcachedConnection conn=null;
 	private HashAlgorithm hashAlg=HashAlgorithm.NATIVE_HASH;
 	Transcoder transcoder=null;
@@ -164,6 +165,9 @@ public class MemcachedClient extends SpyThread {
 
 	private Operation addOp(int which, Operation op) {
 		assert isAlive() : "IO Thread is not running.";
+		if(shuttingDown) {
+			throw new IllegalStateException("Shutting down");
+		}
 		conn.addOperation(which, op);
 		return op;
 	}
@@ -574,15 +578,62 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	/**
-	 * Shut down this client.
+	 * Shut down immediately.
 	 */
 	public void shutdown() {
-		running=false;
+		shutdown(-1, TimeUnit.MILLISECONDS);
+	}
+
+	/**
+	 * Shut down this client graceful.
+	 */
+	public boolean shutdown(long timeout, TimeUnit unit) {
+		shuttingDown=true;
+		String baseName=getName();
+		setName(baseName + " - SHUTTING DOWN");
+		boolean rv=false;
+		if(timeout > 0) {
+			setName(baseName + " - SHUTTING DOWN (waiting)");
+			rv=waitForQueues(timeout, unit);
+		}
 		try {
+			setName(baseName + " - SHUTTING DOWN (telling client)");
+			running=false;
 			conn.shutdown();
+			setName(baseName + " - SHUTTING DOWN (informed client)");
 		} catch (IOException e) {
 			getLogger().warn("exception while shutting down", e);
 		}
+		return rv;
+	}
+
+	/**
+	 * Wait for the queues to die down.
+	 */
+	public boolean waitForQueues(long timeout, TimeUnit unit) {
+		boolean rv=false;
+		final CountDownLatch latch=new CountDownLatch(conn.getNumConnections());
+
+		// This is implemented by directly adding VersionOperations to all the
+		// existing queues and then waiting for them to be processed.  We're
+		// directly adding to the queue instead of using addOp because we want
+		// to be able to do this during a shutdown after disallowing any
+		// additional operations.
+		for(int i=0; i<conn.getNumConnections(); i++) {
+			assert isAlive() : "IO Thread is not running.";
+			conn.addOperation(i, new VersionOperation(
+					new OperationCallback() {
+						public void receivedStatus(String s) {
+							latch.countDown();
+						}
+					}));
+		}
+		try {
+			rv=latch.await(timeout, unit);
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted waiting for versions", e);
+		}
+		return rv;
 	}
 
 	private int getServerForKey(String key) {
