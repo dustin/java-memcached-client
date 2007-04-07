@@ -12,7 +12,8 @@ public enum HashAlgorithm {
 	NATIVE_HASH,
 	/**
 	 * CRC32_HASH as used by the perl API.  This will be more consistent
-	 * both across multiple API users as well as java versions.
+	 * both across multiple API users as well as java versions, but is mostly
+	 * likely significantly slower.
 	 */
 	CRC32_HASH;
 

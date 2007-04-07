@@ -41,6 +41,15 @@ public class MemcachedConnection extends SpyObject {
 	private ConcurrentLinkedQueue<QueueAttachment> addedQueue=null;
 	private SortedMap<Long, QueueAttachment> reconnectQueue=null;
 
+	/**
+	 * Construct a memcached connection.
+	 *
+	 * @param bufSize the size of the buffer used for reading from the server
+	 * @param f the factory that will provide an operation queue
+	 * @param a the addresses of the servers to connect to
+	 *
+	 * @throws IOException if a connection attempt fails early
+	 */
 	public MemcachedConnection(int bufSize, ConnectionFactory f,
 			List<InetSocketAddress> a)
 		throws IOException {
@@ -108,6 +117,9 @@ public class MemcachedConnection extends SpyObject {
 		return true;
 	}
 
+	/**
+	 * MemcachedClient calls this method to handle IO over the connections.
+	 */
 	@SuppressWarnings("unchecked")
 	public void handleIO() throws IOException {
 

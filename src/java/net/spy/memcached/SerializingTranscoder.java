@@ -20,9 +20,14 @@ import net.spy.util.CloseUtil;
  */
 public class SerializingTranscoder extends SpyObject implements Transcoder {
 
+	/**
+	 * Default compression threshold value.
+	 */
+	public static final int DEFAULT_COMPRESSION_THRESHOLD = 16384;
+
 	// General flags
-	public static final int SERIALIZED=1;
-	public static final int COMPRESSED=2;
+	static final int SERIALIZED=1;
+	static final int COMPRESSED=2;
 
 	// Special flags for specially handled types.
 	private static final int SPECIAL_MASK=0xff00;
@@ -35,19 +40,22 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 	private static final int SPECIAL_DOUBLE=(7<<8);
 	private static final int SPECIAL_BYTEARRAY=(8<<8);
 
-	private int compressionThreshold=16384;
-
-	public SerializingTranscoder() {
-		super();
-	}
+	private int compressionThreshold=DEFAULT_COMPRESSION_THRESHOLD;
 
 	/**
-	 * Set the compression threshold to the given value.
+	 * Set the compression threshold to the given number of bytes.  This
+	 * transcoder will attempt to compress any data being stored that's larger
+	 * than this.
+	 *
+	 * @param to the number of bytes
 	 */
 	public void setCompressionThreshold(int to) {
 		compressionThreshold=to;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.Transcoder#decode(net.spy.memcached.CachedData)
+	 */
 	public Object decode(CachedData d) {
 		byte[] data=d.getData();
 		Object rv=null;
@@ -90,6 +98,9 @@ public class SerializingTranscoder extends SpyObject implements Transcoder {
 		return rv;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.Transcoder#encode(java.lang.Object)
+	 */
 	public CachedData encode(Object o) {
 		CachedData rv=null;
 		byte[] b=null;

@@ -48,10 +48,6 @@ public abstract class Operation extends SpyObject {
 	private StringBuilder currentLine=new StringBuilder();
 	private boolean cancelled=false;
 
-	protected Operation() {
-		super();
-	}
-
 	/**
 	 * Has this operation been cancelled?
 	 */
@@ -147,7 +143,8 @@ public abstract class Operation extends SpyObject {
 	}
 
 	/**
-	 * Initialize this operation.
+	 * Initialize this operation.  This is used to prepare output byte buffers
+	 * and stuff.
 	 */
 	public abstract void initialize();
 
