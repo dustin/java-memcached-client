@@ -18,7 +18,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -35,7 +34,6 @@ public class MemcachedConnection extends SpyObject {
 	private static final int EXCESSIVE_EMPTY = 100;
 	// maximum amount of time to wait between reconnect attempts
 	private static final long MAX_DELAY = 30000;
-	private static final int MAX_OPS_QUEUE_LEN = 8192;
 
 	private Selector selector=null;
 	private QueueAttachment[] connections=null;
@@ -43,7 +41,8 @@ public class MemcachedConnection extends SpyObject {
 	private ConcurrentLinkedQueue<QueueAttachment> addedQueue=null;
 	private SortedMap<Long, QueueAttachment> reconnectQueue=null;
 
-	public MemcachedConnection(int bufSize, List<InetSocketAddress> a)
+	public MemcachedConnection(int bufSize, ConnectionFactory f,
+			List<InetSocketAddress> a)
 		throws IOException {
 		reconnectQueue=new TreeMap<Long, QueueAttachment>();
 		addedQueue=new ConcurrentLinkedQueue<QueueAttachment>();
@@ -53,7 +52,8 @@ public class MemcachedConnection extends SpyObject {
 		for(SocketAddress sa : a) {
 			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
-			QueueAttachment qa=new QueueAttachment(sa, ch, bufSize);
+			QueueAttachment qa=new QueueAttachment(sa, ch, bufSize,
+				f.createOperationQueue());
 			qa.which=cons;
 			int ops=0;
 			if(ch.connect(sa)) {
@@ -453,7 +453,8 @@ public class MemcachedConnection extends SpyObject {
 		o.initialize();
 		synchronized(qa) {
 			boolean wasEmpty=qa.ops.isEmpty();
-			qa.ops.add(o);
+			boolean added=qa.ops.add(o);
+			assert added; // documented to throw an IllegalStateException
 			if(wasEmpty && qa.sk.isValid() && qa.channel.isConnected()) {
 				qa.sk.interestOps(SelectionKey.OP_WRITE);
 			}
@@ -496,12 +497,17 @@ public class MemcachedConnection extends SpyObject {
 		public ByteBuffer buf=null;
 		public BlockingQueue<Operation> ops=null;
 		public SelectionKey sk=null;
-		public QueueAttachment(SocketAddress sa, SocketChannel c, int bufSize) {
+		public QueueAttachment(SocketAddress sa, SocketChannel c, int bufSize,
+				BlockingQueue<Operation> q) {
 			super();
+			assert sa != null : "No SocketAddress";
+			assert c != null : "No SocketChannel";
+			assert bufSize > 0 : "Invalid buffer size: " + bufSize;
+			assert q != null : "No operation queue";
 			socketAddress=sa;
 			channel=c;
 			buf=ByteBuffer.allocate(bufSize);
-			ops=new ArrayBlockingQueue<Operation>(MAX_OPS_QUEUE_LEN);
+			ops=q;
 		}
 
 		@Override

@@ -101,19 +101,7 @@ public class MemcachedClient extends SpyThread {
 	 * @throws IOException if connections cannot be established
 	 */
 	public MemcachedClient(InetSocketAddress... ia) throws IOException {
-		this(DEFAULT_BUF_SIZE, ia);
-	}
-
-	/**
-	 * Get a memcache client over the specified memcached locations.
-	 *
-	 * @param bufSize read buffer size per connection (in bytes)
-	 * @param ia the socket addresses
-	 * @throws IOException if connections cannot be established
-	 */
-	public MemcachedClient(int bufSize, InetSocketAddress... ia)
-		throws IOException {
-		this(bufSize, Arrays.asList(ia));
+		this(new DefaultConnectionFactory(), Arrays.asList(ia));
 	}
 
 
@@ -125,7 +113,7 @@ public class MemcachedClient extends SpyThread {
 	 */
 	public MemcachedClient(List<InetSocketAddress> addrs)
 		throws IOException {
-		this(DEFAULT_BUF_SIZE, addrs);
+		this(new DefaultConnectionFactory(), addrs);
 	}
 
 	/**
@@ -135,10 +123,10 @@ public class MemcachedClient extends SpyThread {
 	 * @param addrs the socket addresses
 	 * @throws IOException if connections cannot be established
 	 */
-	public MemcachedClient(int bufSize, List<InetSocketAddress> addrs)
+	public MemcachedClient(ConnectionFactory cf, List<InetSocketAddress> addrs)
 		throws IOException {
 		transcoder=new SerializingTranscoder();
-		conn=new MemcachedConnection(bufSize, addrs);
+		conn=cf.createConnection(addrs);
 		setName("Memcached IO over " + conn);
 		start();
 	}
