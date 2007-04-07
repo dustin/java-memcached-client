@@ -76,10 +76,6 @@ import net.spy.memcached.ops.VersionOperation;
  */
 public class MemcachedClient extends SpyThread {
 
-	/**
-	 * Default read buffer size.
-	 */
-	public static final int DEFAULT_BUF_SIZE = 16384;
 	private static final int MAX_KEY_LENGTH = 250;
 
 	private volatile boolean running=true;
