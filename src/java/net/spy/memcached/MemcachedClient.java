@@ -169,15 +169,15 @@ public class MemcachedClient extends SpyThread {
 		return op;
 	}
 
-	private Future<String> asyncStore(StoreOperation.StoreType storeType,
+	private Future<Boolean> asyncStore(StoreOperation.StoreType storeType,
 			String key, int exp, Object value) {
 		CachedData co=transcoder.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<String> rv=new OperationFuture<String>(latch);
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
 		Operation op=new StoreOperation(storeType, key, co.getFlags(), exp,
 				co.getData(), new OperationCallback() {
 					public void receivedStatus(String val) {
-						rv.set(val);
+						rv.set(val.equals("STORED"));
 						latch.countDown();
 					}});
 		rv.setOperation(op);
@@ -193,7 +193,7 @@ public class MemcachedClient extends SpyThread {
 	 * @param o the object to store
 	 * @return a future representing the processing of this operation
 	 */
-	public Future<String> add(String key, int exp, Object o) {
+	public Future<Boolean> add(String key, int exp, Object o) {
 		return asyncStore(StoreOperation.StoreType.add, key, exp, o);
 	}
 
@@ -205,7 +205,7 @@ public class MemcachedClient extends SpyThread {
 	 * @param o the object to store
 	 * @return a future representing the processing of this operation
 	 */
-	public Future<String> set(String key, int exp, Object o) {
+	public Future<Boolean> set(String key, int exp, Object o) {
 		return asyncStore(StoreOperation.StoreType.set, key, exp, o);
 	}
 
@@ -218,7 +218,7 @@ public class MemcachedClient extends SpyThread {
 	 * @param o the object to store
 	 * @return a future representing the processing of this operation
 	 */
-	public Future<String> replace(String key, int exp, Object o) {
+	public Future<Boolean> replace(String key, int exp, Object o) {
 		return asyncStore(StoreOperation.StoreType.replace, key, exp, o);
 	}
 
@@ -437,10 +437,10 @@ public class MemcachedClient extends SpyThread {
 			int by, long def) {
 		long rv=mutate(t, key, by);
 		if(rv == -1) {
-			Future<String> f=asyncStore(StoreOperation.StoreType.add, key, 0,
+			Future<Boolean> f=asyncStore(StoreOperation.StoreType.add, key, 0,
 					String.valueOf(def));
 			try {
-				if(f.get().equals("STORED")) {
+				if(f.get()) {
 					rv=def;
 				} else {
 					rv=mutate(t, key, by);

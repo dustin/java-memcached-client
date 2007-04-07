@@ -87,9 +87,9 @@ public class ClientTest extends TestCase {
 
 	public void testAdd() throws Exception {
 		assertNull(client.get("test1"));
-		client.set("test1", 5, "test1value");
+		assertTrue(client.set("test1", 5, "test1value").get());
 		assertEquals("test1value", client.get("test1"));
-		client.add("test1", 5, "ignoredvalue");
+		assertFalse(client.add("test1", 5, "ignoredvalue").get());
 		// Should return the original value
 		assertEquals("test1value", client.get("test1"));
 	}
