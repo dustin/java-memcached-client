@@ -191,6 +191,23 @@ public class MemcachedClient extends SpyThread {
 	/**
 	 * Add an object to the cache iff it does not exist already.
 	 * 
+	 * <p>
+	 * The <code>exp</code> value is passed along to memcached exactly as
+	 * given, and will be processed per the memcached protocol specification:
+	 * </p>
+	 *
+	 * <blockquote>
+	 * <p>
+	 * The actual value sent may either be
+	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
+	 * value), or a number of seconds starting from current time. In the
+	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
+	 * of seconds in 30 days); if the number sent by a client is larger than
+	 * that, the server will consider it to be real Unix time value rather
+	 * than an offset from current time.
+	 * </p>
+	 * </blockquote>
+	 * 
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
@@ -202,6 +219,23 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Set an object in the cache regardless of any existing value.
+	 * 
+	 * <p>
+	 * The <code>exp</code> value is passed along to memcached exactly as
+	 * given, and will be processed per the memcached protocol specification:
+	 * </p>
+	 *
+	 * <blockquote>
+	 * <p>
+	 * The actual value sent may either be
+	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
+	 * value), or a number of seconds starting from current time. In the
+	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
+	 * of seconds in 30 days); if the number sent by a client is larger than
+	 * that, the server will consider it to be real Unix time value rather
+	 * than an offset from current time.
+	 * </p>
+	 * </blockquote>
 	 * 
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
@@ -215,7 +249,24 @@ public class MemcachedClient extends SpyThread {
 	/**
 	 * Replace an object with the given value iff there is already a value
 	 * for the given key.
-	 * 
+	 *
+	 * <p>
+	 * The <code>exp</code> value is passed along to memcached exactly as
+	 * given, and will be processed per the memcached protocol specification:
+	 * </p>
+	 *
+	 * <blockquote>
+	 * <p>
+	 * The actual value sent may either be
+	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
+	 * value), or a number of seconds starting from current time. In the
+	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
+	 * of seconds in 30 days); if the number sent by a client is larger than
+	 * that, the server will consider it to be real Unix time value rather
+	 * than an offset from current time.
+	 * </p>
+	 * </blockquote>
+	 *
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
