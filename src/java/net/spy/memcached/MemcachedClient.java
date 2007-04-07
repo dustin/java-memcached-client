@@ -164,10 +164,10 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	private Operation addOp(int which, Operation op) {
-		assert isAlive() : "IO Thread is not running.";
 		if(shuttingDown) {
 			throw new IllegalStateException("Shutting down");
 		}
+		assert isAlive() : "IO Thread is not running.";
 		conn.addOperation(which, op);
 		return op;
 	}
