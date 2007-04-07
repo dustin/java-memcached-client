@@ -20,9 +20,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.spy.SpyThread;
-import net.spy.concurrent.SynchronizationObject;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
@@ -394,22 +394,21 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	private long mutate(MutatorOperation.Mutator m, String key, int by) {
-		final SynchronizationObject<Long> sync=
-			new SynchronizationObject<Long>(null);
+		final AtomicLong rv=new AtomicLong();
+		final CountDownLatch latch=new CountDownLatch(1);
 		addOp(getServerForKey(key), new MutatorOperation(m, key, by,
 				new OperationCallback() {
 					public void receivedStatus(String val) {
-						sync.set(new Long(val==null?"-1":val));
+						rv.set(new Long(val==null?"-1":val));
+						latch.countDown();
 					}}));
 		try {
-			sync.waitUntilNotNull(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+			latch.await();
 		} catch (InterruptedException e) {
-			throw new RuntimeException("Interrupted waiting for mutation", e);
-		} catch (TimeoutException e) {
-			throw new RuntimeException("Timed out waiting forever.");
+			throw new RuntimeException("Interrupted", e);
 		}
-		getLogger().debug("Mutation returned %s", sync.get());
-		return sync.get().longValue();
+		getLogger().debug("Mutation returned %s", rv);
+		return rv.get();
 	}
 
 	/**
