@@ -1,5 +1,4 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
-// arch-tag: 8671097A-797A-4FCA-A1A0-AC333C1DF32E
 
 package net.spy.memcached.ops;
 
