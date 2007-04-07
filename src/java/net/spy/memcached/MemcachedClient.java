@@ -643,17 +643,22 @@ public class MemcachedClient extends SpyThread {
 		String baseName=getName();
 		setName(baseName + " - SHUTTING DOWN");
 		boolean rv=false;
-		if(timeout > 0) {
-			setName(baseName + " - SHUTTING DOWN (waiting)");
-			rv=waitForQueues(timeout, unit);
-		}
 		try {
-			setName(baseName + " - SHUTTING DOWN (telling client)");
-			running=false;
-			conn.shutdown();
-			setName(baseName + " - SHUTTING DOWN (informed client)");
-		} catch (IOException e) {
-			getLogger().warn("exception while shutting down", e);
+			// Conditionally wait
+			if(timeout > 0) {
+				setName(baseName + " - SHUTTING DOWN (waiting)");
+				rv=waitForQueues(timeout, unit);
+			}
+		} finally {
+			// But always begin the shutdown sequence
+			try {
+				setName(baseName + " - SHUTTING DOWN (telling client)");
+				running=false;
+				conn.shutdown();
+				setName(baseName + " - SHUTTING DOWN (informed client)");
+			} catch (IOException e) {
+				getLogger().warn("exception while shutting down", e);
+			}
 		}
 		return rv;
 	}
@@ -682,7 +687,7 @@ public class MemcachedClient extends SpyThread {
 		try {
 			rv=latch.await(timeout, unit);
 		} catch (InterruptedException e) {
-			throw new RuntimeException("Interrupted waiting for versions", e);
+			throw new RuntimeException("Interrupted waiting for queues", e);
 		}
 		return rv;
 	}
