@@ -96,6 +96,33 @@ public class ClientTest extends TestCase {
 		assertEquals("test1value", client.get("test1"));
 	}
 
+	public void testAddNotSerializable() throws Exception {
+		try {
+			client.add("t1", 5, new Object());
+			fail("expected illegal argument exception");
+		} catch(IllegalArgumentException e) {
+			assertEquals("Non-serializable object", e.getMessage());
+		}
+	}
+
+	public void testSetNotSerializable() throws Exception {
+		try {
+			client.set("t1", 5, new Object());
+			fail("expected illegal argument exception");
+		} catch(IllegalArgumentException e) {
+			assertEquals("Non-serializable object", e.getMessage());
+		}
+	}
+
+	public void testReplaceNotSerializable() throws Exception {
+		try {
+			client.replace("t1", 5, new Object());
+			fail("expected illegal argument exception");
+		} catch(IllegalArgumentException e) {
+			assertEquals("Non-serializable object", e.getMessage());
+		}
+	}
+
 	public void testUpdate() throws Exception {
 		assertNull(client.get("test1"));
 		client.replace("test1", 5, "test1value");
