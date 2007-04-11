@@ -49,6 +49,7 @@ public enum HashAlgorithm {
 				rv = (rv >> 16) & 0x7fff;
 				break;
 			case FNV_HASH:
+				// Thanks to pierre@demartines.com for the pointer
 				rv = FNV1_64_INIT;
 				int len = k.length();
 				for (int i = 0; i < len; i++) {
