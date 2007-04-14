@@ -21,7 +21,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import net.spy.SpyObject;
+import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OptimizedGet;
 
 /**
  * Connection to a cluster of memcached servers.
@@ -35,6 +37,8 @@ public class MemcachedConnection extends SpyObject {
 	private static final long MAX_DELAY = 30000;
 
 	private volatile boolean shutDown=false;
+	// If true, get optimization will collapse multiple sequential get ops
+	private boolean optimizeGets=true;
 	private Selector selector=null;
 	private QueueAttachment[] connections=null;
 	private int emptySelects=0;
@@ -85,12 +89,21 @@ public class MemcachedConnection extends SpyObject {
 		}
 	}
 
+	/**
+	 * Enable or disable get optimization.
+	 *
+	 * When enabled (default), multiple sequential gets are collapsed into one.
+	 */
+	public void setGetOptimization(boolean to) {
+		optimizeGets=to;
+	}
+
 	private boolean selectorsMakeSense() {
 		for(QueueAttachment qa : connections) {
 			synchronized(qa) {
 				if(qa.sk.isValid()) {
 					if(qa.channel.isConnected()) {
-						Operation op=qa.ops.peek();
+						Operation op=qa.getCurrentOp();
 						int sops=qa.sk.interestOps();
 						if(op == null) {
 							assert sops == 0 : "Invalid ops: " + qa;
@@ -193,7 +206,7 @@ public class MemcachedConnection extends SpyObject {
 				QueueAttachment qa=null;
 				while((qa=addedQueue.remove()) != null) {
 					if(qa.channel != null && qa.channel.isConnected()) {
-						Operation op=qa.ops.peek();
+						Operation op=qa.getCurrentOp();
 						if(op != null
 								&& op.getState() == Operation.State.WRITING) {
 							getLogger().debug(
@@ -239,7 +252,7 @@ public class MemcachedConnection extends SpyObject {
 				queueReconnect(qa);
 			}
 		} else {
-			Operation currentOp=qa.ops.peek();
+			Operation currentOp=qa.getCurrentOp();
 			if(currentOp != null) {
 				try {
 					handleOperation(currentOp, sk, qa);
@@ -352,9 +365,8 @@ public class MemcachedConnection extends SpyObject {
 				}
 				break;
 			case COMPLETE:
-				qa.ops.remove();
-				// If there are more operations in the queue, tell
-				// it we want to write
+				// XXX:  Check this?
+				qa.removeCurrentOp();
 				if(sk.isValid()) {
 					sk.interestOps(0);
 				}
@@ -362,6 +374,9 @@ public class MemcachedConnection extends SpyObject {
 					// After removing the cancelled operations, if there's
 					// another operation waiting to go, wait for write
 					if(hasPendingOperations(qa) && sk.isValid()) {
+						if(optimizeGets) {
+							qa.optimize();
+						}
 						sk.interestOps(SelectionKey.OP_WRITE);
 						addedQueue.offer(qa);
 					}
@@ -374,12 +389,12 @@ public class MemcachedConnection extends SpyObject {
 
 	private boolean hasPendingOperations(QueueAttachment qa) {
 		assert Thread.holdsLock(qa) : "Not locking qa";
-		Operation nextOp=qa.ops.peek();
+		Operation nextOp=qa.getCurrentOp();
 		while(nextOp != null && nextOp.isCancelled()) {
 			getLogger().info("Removing cancelled operation: %s",
 					nextOp);
-			qa.ops.remove();
-			nextOp=qa.ops.peek();
+			qa.removeCurrentOp();
+			nextOp=qa.getCurrentOp();
 		}
 		return nextOp != null;
 	}
@@ -431,7 +446,7 @@ public class MemcachedConnection extends SpyObject {
 	}
 
 	private void setupResend(QueueAttachment qa) {
-		Operation op=qa.ops.peek();
+		Operation op=qa.getCurrentOp();
 		if(op != null) {
 			if(op.getState() == Operation.State.WRITING) {
 				getLogger().warn("Resetting write state of op: %s", op);
@@ -441,7 +456,7 @@ public class MemcachedConnection extends SpyObject {
 				getLogger().warn(
 						"Discarding partially completed operation: %s", op);
 				op.cancel();
-				qa.ops.remove();
+				qa.removeCurrentOp();
 			}
 		}
 	}
@@ -474,9 +489,8 @@ public class MemcachedConnection extends SpyObject {
 		QueueAttachment qa=connections[which];
 		o.initialize();
 		synchronized(qa) {
-			boolean wasEmpty=qa.ops.isEmpty();
-			boolean added=qa.ops.add(o);
-			assert added; // documented to throw an IllegalStateException
+			boolean wasEmpty=!qa.hasOp();
+			qa.addOp(o);
 			if(wasEmpty && qa.sk.isValid() && qa.channel.isConnected()) {
 				qa.sk.interestOps(SelectionKey.OP_WRITE);
 			}
@@ -511,13 +525,14 @@ public class MemcachedConnection extends SpyObject {
 		return sb.toString();
 	}
 
-	private static class QueueAttachment {
+	private static class QueueAttachment extends SpyObject {
 		public int which=0;
 		public int reconnectAttempt=1;
 		public SocketAddress socketAddress=null;
 		public SocketChannel channel=null;
 		public ByteBuffer buf=null;
-		public BlockingQueue<Operation> ops=null;
+		private BlockingQueue<Operation> opq=null;
+		private GetOperation getOp=null;
 		public SelectionKey sk=null;
 		public QueueAttachment(SocketAddress sa, SocketChannel c, int bufSize,
 				BlockingQueue<Operation> q) {
@@ -529,7 +544,57 @@ public class MemcachedConnection extends SpyObject {
 			socketAddress=sa;
 			channel=c;
 			buf=ByteBuffer.allocate(bufSize);
-			ops=q;
+			opq=q;
+		}
+
+		public void optimize() {
+			assert Thread.holdsLock(this) : "Not holding the lock for QA";
+			// make sure there are at least two get operations in a row before
+			// attempting to optimize them.
+			if(opq.peek() instanceof GetOperation) {
+				getOp=(GetOperation)opq.remove();
+				if(opq.peek() instanceof GetOperation) {
+					OptimizedGet og=new OptimizedGet(getOp);
+					getOp=og;
+
+					while(opq.peek() instanceof GetOperation) {
+						GetOperation o=(GetOperation) opq.remove();
+						if(!o.isCancelled()) {
+							og.addOperation(o);
+						}
+					}
+
+					// Initialize the new mega get
+					getOp.initialize();
+					assert getOp.getState() == Operation.State.WRITING;
+					getLogger().debug(
+						"Set up %s with %s keys and %s callbacks",
+						this, og.numKeys(), og.numCallbacks());
+				}
+			}
+		}
+
+		public Operation getCurrentOp() {
+			return getOp == null ? opq.peek() : getOp;
+		}
+
+		public Operation removeCurrentOp() {
+			Operation rv=getOp;
+			if(rv == null) {
+				rv=opq.remove();
+			} else {
+				getOp=null;
+			}
+			return rv;
+		}
+
+		public boolean hasOp() {
+			return !(getOp == null && opq.isEmpty());
+		}
+
+		public void addOp(Operation op) {
+			boolean added=opq.add(op);
+			assert added; // documented to throw an IllegalStateException
 		}
 
 		@Override
@@ -538,8 +603,9 @@ public class MemcachedConnection extends SpyObject {
 			if(sk!= null && sk.isValid()) {
 				sops=sk.interestOps();
 			}
-			return "{QA sa=" + socketAddress + ", #ops=" + ops.size()
-				+ ", topop=" + ops.peek() + ", interested=" + sops + "}";
+			int size=opq.size() + (getOp == null ? 0 : 1);
+			return "{QA sa=" + socketAddress + ", #ops=" + size
+				+ ", topop=" + getCurrentOp() + ", interested=" + sops + "}";
 		}
 	}
 }
