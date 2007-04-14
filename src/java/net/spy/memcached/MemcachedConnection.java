@@ -38,7 +38,11 @@ public class MemcachedConnection extends SpyObject {
 	private Selector selector=null;
 	private QueueAttachment[] connections=null;
 	private int emptySelects=0;
+	// AddedQueue is used to track the QueueAttachments for which operations
+	// have recently been queued.
 	private ConcurrentLinkedQueue<QueueAttachment> addedQueue=null;
+	// reconnectQueue contains the attachments that need to be reconnected
+	// The key is the time at which they are eligible for reconnect
 	private SortedMap<Long, QueueAttachment> reconnectQueue=null;
 
 	/**
@@ -179,6 +183,7 @@ public class MemcachedConnection extends SpyObject {
 		}
 	}
 
+	// Handle any requests that have been made against the client.
 	private void handleInputQueue() {
 		if(!addedQueue.isEmpty()) {
 			getLogger().debug("Handling queue");
