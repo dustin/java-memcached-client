@@ -5,6 +5,7 @@ package net.spy.memcached.ops;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 
 /**
  * Operation for retrieving data.
@@ -27,12 +28,14 @@ public class GetOperation extends Operation {
 	}
 
 	public GetOperation(String key, Callback c) {
-		this(Collections.singleton(key), c);
+		super();
+		keys=Collections.singleton(key);
+		cb=c;
 	}
 
 	public GetOperation(Collection<String> k, Callback c) {
 		this();
-		keys=k;
+		keys=new HashSet<String>(k);
 		cb=c;
 	}
 
