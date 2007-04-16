@@ -271,6 +271,8 @@ public class MemcachedConnection extends SpyObject {
 		boolean canWriteMore=true;
 		while(canWriteMore) {
 			Operation currentOp = qa.getCurrentWriteOp();
+			assert currentOp.getState() == Operation.State.WRITING
+				: currentOp + " is not in a writable state.";
 			ByteBuffer b=currentOp.getBuffer();
 			int wrote=qa.channel.write(b);
 			canWriteMore = wrote > 0;
@@ -279,6 +281,9 @@ public class MemcachedConnection extends SpyObject {
 				currentOp.writeComplete();
 				qa.transitionWriteItem();
 				canWriteMore &= preparePending(qa);
+				if(optimizeGets) {
+					qa.optimize();
+				}
 			}
 		}
 	}
@@ -505,14 +510,14 @@ public class MemcachedConnection extends SpyObject {
 		}
 
 		public void transitionWriteItem() {
-			Operation op=writeQ.remove();
+			Operation op=removeCurrentWriteOp();
 			assert op != null : "There is no write item to transition";
+			assert op.getState() == Operation.State.READING;
 			getLogger().debug("Transitioning %s to read", op);
 			readQ.add(op);
 		}
 
 		public void optimize() {
-			assert Thread.holdsLock(this) : "Not holding the lock for QA";
 			// make sure there are at least two get operations in a row before
 			// attempting to optimize them.
 			if(writeQ.peek() instanceof GetOperation) {
