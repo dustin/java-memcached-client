@@ -407,11 +407,10 @@ public class MemcachedConnection extends SpyObject {
 		}
 		// Now cancel all the pending read operations.  Might be better to
 		// to requeue them.
-		op=qa.removeCurrentReadOp();
-		while(op != null) {
+		while(qa.hasReadOp()) {
+			op=qa.removeCurrentReadOp();
 			getLogger().warn("Discarding partially completed op: %s", op);
 			op.cancel();
-			op=qa.removeCurrentReadOp();
 		}
 	}
 
