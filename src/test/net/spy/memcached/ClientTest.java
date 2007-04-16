@@ -5,6 +5,7 @@ import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -127,6 +128,27 @@ public class ClientTest extends TestCase {
 		assertNull(client.get("test1"));
 		client.replace("test1", 5, "test1value");
 		assertNull(client.get("test1"));
+	}
+
+	// Just to make sure the sequence is being handled correctly
+	public void testMixedSetsAndUpdates() throws Exception {
+		Collection<Future<Boolean>> futures=new ArrayList<Future<Boolean>>();
+		Collection<String> keys=new ArrayList<String>();
+		for(int i=0; i<100; i++) {
+			String key="k" + i;
+			futures.add(client.set(key, 10, key));
+			futures.add(client.add(key, 10, "a" + i));
+			keys.add(key);
+		}
+		Map<String, Object> m=client.getBulk(keys);
+		assertEquals(100, m.size());
+		for(Map.Entry<String, Object> me : m.entrySet()) {
+			assertEquals(me.getKey(), me.getValue());
+		}
+		for(Iterator<Future<Boolean>> i=futures.iterator();i.hasNext();) {
+			assertTrue(i.next().get());
+			assertFalse(i.next().get());
+		}
 	}
 
 	public void testGetBulk() throws Exception {
