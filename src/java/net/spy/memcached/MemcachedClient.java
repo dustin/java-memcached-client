@@ -683,6 +683,7 @@ public class MemcachedClient extends SpyThread {
 							latch.countDown();
 						}
 					}));
+			getLogger().info("Added queue wait command to %s", i);
 		}
 		try {
 			rv=latch.await(timeout, unit);

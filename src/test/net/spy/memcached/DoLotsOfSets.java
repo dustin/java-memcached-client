@@ -21,10 +21,10 @@ public class DoLotsOfSets {
 			client.set("k" + i, 300, toStore);
 		}
 		long added=System.currentTimeMillis();
-		System.out.printf("Finished queuing in %sms\n", added-start);
+		System.err.printf("Finished queuing in %sms\n", added-start);
 		client.waitForQueues(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 		long end=System.currentTimeMillis();
-		System.out.printf("Completed everything in %sms (%sms to flush)\n",
+		System.err.printf("Completed everything in %sms (%sms to flush)\n",
 				end-start, end-added);
 		client.shutdown();
 	}

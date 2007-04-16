@@ -274,7 +274,7 @@ public class ClientTest extends TestCase {
 	}
 
 	public void testGracefulShutdownTooSlow() throws Exception {
-		for(int i=0; i<1000; i++) {
+		for(int i=0; i<10000; i++) {
 			client.set("t" + i, 10, i);
 		}
 		assertFalse("Weird, shut down too fast",

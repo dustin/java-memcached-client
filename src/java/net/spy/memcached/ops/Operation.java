@@ -154,7 +154,7 @@ public abstract class Operation extends SpyObject {
 	 */
 	public final void readFromBuffer(ByteBuffer data) {
 		// Loop while there's data remaining to get it all drained.
-		while(data.remaining() > 0) {
+		while(state != State.COMPLETE && data.remaining() > 0) {
 			if(readType == ReadType.DATA) {
 				handleRead(data);
 			} else {
