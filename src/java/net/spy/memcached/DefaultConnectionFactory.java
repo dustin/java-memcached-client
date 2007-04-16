@@ -24,7 +24,7 @@ public class DefaultConnectionFactory extends SpyObject
 	 * Maximum length of the operation queue returned by this connection
 	 * factory.
 	 */
-	public static final int DEFAULT_OP_QUEUE_LEN=8192;
+	public static final int DEFAULT_OP_QUEUE_LEN=16384;
 
 	/**
 	 * The read buffer size for each server connection from this factory.
