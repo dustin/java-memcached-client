@@ -147,8 +147,7 @@ public class MemcachedConnection extends SpyObject {
 			long then=reconnectQueue.firstKey();
 			delay=Math.max(then-now, 1);
 		}
-		getLogger().debug("Selecting with delay of %sms over %s", delay,
-				Arrays.toString(connections));
+		getLogger().debug("Selecting with delay of %sms", delay);
 		assert selectorsMakeSense() : "Selectors don't make sense.";
 		int selected=selector.select(delay);
 		Set<SelectionKey> selectedKeys=selector.selectedKeys();
