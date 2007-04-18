@@ -10,7 +10,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -196,23 +195,28 @@ public class MemcachedConnection extends SpyObject {
 			Collection<QueueAttachment> toAdd=new HashSet<QueueAttachment>();
 			try {
 				QueueAttachment qa=null;
+				boolean readyForIO=false;
 				while((qa=addedQueue.remove()) != null) {
 					if(qa.channel != null && qa.channel.isConnected()) {
 						Operation op=qa.getCurrentWriteOp();
 						if(op != null) {
+							readyForIO=true;
 							getLogger().debug("Handling queued write %s", qa);
-							try {
-								handleWrites(qa.sk, qa);
-							} catch(IOException e) {
-								getLogger().warn("Exception handling %s",
-										op, e);
-								queueReconnect(qa);
-							}
 						}
 					} else {
 						toAdd.add(qa);
 					}
 					qa.copyInputQueue();
+					if(readyForIO) {
+						try {
+							if(qa.wbuf.hasRemaining()) {
+								handleWrites(qa.sk, qa);
+							}
+						} catch(IOException e) {
+							getLogger().warn("Exception handling write", e);
+							queueReconnect(qa);
+						}
+					}
 					fixupOps(qa);
 				}
 			} catch(NoSuchElementException e) {
@@ -234,7 +238,7 @@ public class MemcachedConnection extends SpyObject {
 					assert qa.channel.isConnected() : "Not connected.";
 					qa.reconnectAttempt=0;
 					addedQueue.offer(qa);
-					if(qa.hasWriteOp()) {
+					if(qa.wbuf.hasRemaining()) {
 						handleWrites(sk, qa);
 					}
 				} else {
@@ -267,48 +271,39 @@ public class MemcachedConnection extends SpyObject {
 
 	private void handleWrites(SelectionKey sk, QueueAttachment qa)
 		throws IOException {
-		boolean canWriteMore=true;
+		qa.fillWriteBuffer(optimizeGets);
+		boolean canWriteMore=qa.wbuf.hasRemaining();
 		while(canWriteMore) {
-			Operation currentOp = qa.getCurrentWriteOp();
-			assert currentOp.getState() == Operation.State.WRITING
-				: currentOp + " is not in a writable state.";
-			ByteBuffer b=currentOp.getBuffer();
-			int wrote=qa.channel.write(b);
-			canWriteMore = wrote > 0;
-			getLogger().debug("Wrote %d bytes for %s", wrote, currentOp);
-			if(b.remaining() == 0) {
-				currentOp.writeComplete();
-				qa.transitionWriteItem();
-				canWriteMore &= preparePending(qa);
-				if(optimizeGets) {
-					qa.optimize();
-				}
-			}
+			int wrote=qa.channel.write(qa.wbuf);
+			getLogger().debug("Wrote %d bytes", wrote);
+			qa.fillWriteBuffer(optimizeGets);
+			getLogger().info("After fill:  %s", qa.wbuf);
+			canWriteMore = wrote > 0 && qa.wbuf.hasRemaining();
 		}
 	}
 
 	private void handleReads(SelectionKey sk, QueueAttachment qa)
 		throws IOException {
 		Operation currentOp = qa.getCurrentReadOp();
-		int read=qa.channel.read(qa.buf);
+		int read=qa.channel.read(qa.rbuf);
 		while(read > 0) {
 			getLogger().debug("Read %d bytes", read);
-			qa.buf.flip();
-			while(qa.buf.remaining() > 0) {
+			qa.rbuf.flip();
+			while(qa.rbuf.remaining() > 0) {
 				assert currentOp != null : "No read operation";
-				currentOp.readFromBuffer(qa.buf);
+				currentOp.readFromBuffer(qa.rbuf);
 				if(currentOp.getState() == Operation.State.COMPLETE) {
 					getLogger().debug(
 							"Completed read op: %s and giving the next %d bytes",
-							currentOp, qa.buf.remaining());
+							currentOp, qa.rbuf.remaining());
 					Operation op=qa.removeCurrentReadOp();
 					assert op == currentOp
 					: "Expected to pop " + currentOp + " got " + op;
 					currentOp=qa.getCurrentReadOp();
 				}
 			}
-			qa.buf.clear();
-			read=qa.channel.read(qa.buf);
+			qa.rbuf.clear();
+			read=qa.channel.read(qa.rbuf);
 		}
 	}
 
@@ -336,22 +331,6 @@ public class MemcachedConnection extends SpyObject {
 			}
 		}
 		return sb.toString();
-	}
-
-	// Prepare the pending operations.  Return true if there are any pending
-	// ops
-	private boolean preparePending(QueueAttachment qa) {
-		// Copy the input queue into the write queue.
-		qa.copyInputQueue();
-
-		// Now check the ops
-		Operation nextOp=qa.getCurrentWriteOp();
-		while(nextOp != null && nextOp.isCancelled()) {
-			getLogger().info("Removing cancelled operation: %s", nextOp);
-			qa.removeCurrentWriteOp();
-			nextOp=qa.getCurrentWriteOp();
-		}
-		return nextOp != null;
 	}
 
 	private void queueReconnect(QueueAttachment qa) {
@@ -477,7 +456,8 @@ public class MemcachedConnection extends SpyObject {
 		public int reconnectAttempt=1;
 		public SocketAddress socketAddress=null;
 		public SocketChannel channel=null;
-		public ByteBuffer buf=null;
+		public ByteBuffer rbuf=null;
+		public ByteBuffer wbuf=null;
 		private BlockingQueue<Operation> writeQ=null;
 		private BlockingQueue<Operation> readQ=null;
 		private BlockingQueue<Operation> inputQueue=null;
@@ -495,7 +475,9 @@ public class MemcachedConnection extends SpyObject {
 			assert iq != null : "No input queue";
 			socketAddress=sa;
 			channel=c;
-			buf=ByteBuffer.allocate(bufSize);
+			rbuf=ByteBuffer.allocate(bufSize);
+			wbuf=ByteBuffer.allocate(bufSize);
+			wbuf.clear();
 			readQ=rq;
 			writeQ=wq;
 			inputQueue=iq;
@@ -505,6 +487,52 @@ public class MemcachedConnection extends SpyObject {
 			Collection<Operation> tmp=new ArrayList<Operation>();
 			inputQueue.drainTo(tmp);
 			writeQ.addAll(tmp);
+		}
+
+
+		// Prepare the pending operations.  Return true if there are any pending
+		// ops
+		private boolean preparePending() {
+			// Copy the input queue into the write queue.
+			copyInputQueue();
+
+			// Now check the ops
+			Operation nextOp=getCurrentWriteOp();
+			while(nextOp != null && nextOp.isCancelled()) {
+				getLogger().info("Removing cancelled operation: %s", nextOp);
+				removeCurrentWriteOp();
+				nextOp=getCurrentWriteOp();
+			}
+			return nextOp != null;
+		}
+
+		public void fillWriteBuffer(boolean optimizeGets) {
+			getLogger().info("Buffer:  %s", wbuf);
+			if(wbuf.position() <= wbuf.limit()) {
+				wbuf.clear();
+				getLogger().info("Copying stuff");
+				Operation o=getCurrentWriteOp();
+				while(o != null && wbuf.position() < wbuf.capacity()) {
+					assert o.getState() == Operation.State.WRITING;
+					wbuf.put(o.getBuffer());
+					getLogger().info("After copying stuff from %s: %s",
+							o, wbuf);
+					if(!o.getBuffer().hasRemaining()) {
+						o.writeComplete();
+						transitionWriteItem();
+
+						preparePending();
+						if(optimizeGets) {
+							optimize();
+						}
+
+						o=getCurrentWriteOp();
+					}
+				}
+				wbuf.flip();
+			} else {
+				getLogger().info("Buffer is full, skipping");
+			}
 		}
 
 		public void transitionWriteItem() {
