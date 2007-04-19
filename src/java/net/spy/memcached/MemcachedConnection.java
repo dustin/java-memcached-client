@@ -112,6 +112,9 @@ public class MemcachedConnection extends SpyObject {
 					if(qa.hasWriteOp()) {
 						expected |= SelectionKey.OP_WRITE;
 					}
+					if(qa.toWrite > 0) {
+						expected |= SelectionKey.OP_WRITE;
+					}
 					assert sops == expected : "Invalid ops:  "
 						+ qa + ", expected " + expected + ", got " + sops;
 				} else {
@@ -272,13 +275,17 @@ public class MemcachedConnection extends SpyObject {
 	private void handleWrites(SelectionKey sk, QueueAttachment qa)
 		throws IOException {
 		qa.fillWriteBuffer(optimizeGets);
-		boolean canWriteMore=qa.wbuf.hasRemaining();
+		boolean canWriteMore=qa.toWrite > 0;
 		while(canWriteMore) {
 			int wrote=qa.channel.write(qa.wbuf);
+			assert wrote >= 0 : "Wrote negative bytes?";
+			qa.toWrite -= wrote;
+			assert qa.toWrite >= 0
+				: "toWrite went negative after writing " + wrote
+					+ " bytes for " + qa;
 			getLogger().debug("Wrote %d bytes", wrote);
 			qa.fillWriteBuffer(optimizeGets);
-			getLogger().info("After fill:  %s", qa.wbuf);
-			canWriteMore = wrote > 0 && qa.wbuf.hasRemaining();
+			canWriteMore = wrote > 0 && qa.toWrite > 0;
 		}
 	}
 
@@ -433,6 +440,10 @@ public class MemcachedConnection extends SpyObject {
 		for(QueueAttachment qa : connections) {
 			qa.channel.close();
 			qa.sk=null;
+			if(qa.toWrite > 0) {
+				getLogger().warn("Shut down with %d bytes remaining to write",
+						qa.toWrite);
+			}
 			getLogger().debug("Shut down channel %s", qa.channel);
 		}
 		selector.close();
@@ -456,6 +467,7 @@ public class MemcachedConnection extends SpyObject {
 		public int reconnectAttempt=1;
 		public SocketAddress socketAddress=null;
 		public SocketChannel channel=null;
+		public int toWrite=0;
 		public ByteBuffer rbuf=null;
 		public ByteBuffer wbuf=null;
 		private BlockingQueue<Operation> writeQ=null;
@@ -507,15 +519,18 @@ public class MemcachedConnection extends SpyObject {
 		}
 
 		public void fillWriteBuffer(boolean optimizeGets) {
-			getLogger().info("Buffer:  %s", wbuf);
-			if(wbuf.position() <= wbuf.limit()) {
+			if(toWrite == 0) {
 				wbuf.clear();
-				getLogger().info("Copying stuff");
 				Operation o=getCurrentWriteOp();
-				while(o != null && wbuf.position() < wbuf.capacity()) {
+				while(o != null && toWrite < wbuf.capacity()) {
 					assert o.getState() == Operation.State.WRITING;
-					wbuf.put(o.getBuffer());
-					getLogger().info("After copying stuff from %s: %s",
+					ByteBuffer obuf=o.getBuffer();
+					int bytesToCopy=Math.min(wbuf.remaining(),
+							obuf.remaining());
+					byte b[]=new byte[bytesToCopy];
+					obuf.get(b);
+					wbuf.put(b);
+					getLogger().debug("After copying stuff from %s: %s",
 							o, wbuf);
 					if(!o.getBuffer().hasRemaining()) {
 						o.writeComplete();
@@ -528,10 +543,16 @@ public class MemcachedConnection extends SpyObject {
 
 						o=getCurrentWriteOp();
 					}
+					toWrite += bytesToCopy;
 				}
 				wbuf.flip();
+				assert toWrite <= wbuf.capacity()
+					: "toWrite exceeded capacity: " + this;
+				assert toWrite == wbuf.remaining()
+					: "Expected " + toWrite + " remaining, got "
+					+ wbuf.remaining();
 			} else {
-				getLogger().info("Buffer is full, skipping");
+				getLogger().debug("Buffer is full, skipping");
 			}
 		}
 
@@ -610,7 +631,7 @@ public class MemcachedConnection extends SpyObject {
 				if(hasReadOp()) {
 					rv |= SelectionKey.OP_READ;
 				}
-				if(hasWriteOp()) {
+				if(toWrite > 0 || hasWriteOp()) {
 					rv |= SelectionKey.OP_WRITE;
 				}
 			} else {
@@ -633,6 +654,7 @@ public class MemcachedConnection extends SpyObject {
 				+ ", #iq=" + isize
 				+ ", topRop=" + getCurrentReadOp()
 				+ ", topWop=" + getCurrentWriteOp()
+				+ ", toWrite=" + toWrite
 				+ ", interested=" + sops + "}";
 		}
 	}
