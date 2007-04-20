@@ -163,7 +163,15 @@ public class MemcachedClient extends SpyThread {
 		return transcoder;
 	}
 
-	private Operation addOp(int which, Operation op) {
+	/**
+	 * (internal use) Add a raw operation to a numbered connection.
+	 * This method is exposed for testing.
+	 *
+	 * @param which server number
+	 * @param op the operation to perform
+	 * @return the Operation
+	 */
+	Operation addOp(int which, Operation op) {
 		if(shuttingDown) {
 			throw new IllegalStateException("Shutting down");
 		}
@@ -181,6 +189,8 @@ public class MemcachedClient extends SpyThread {
 				co.getData(), new OperationCallback() {
 					public void receivedStatus(String val) {
 						rv.set(val.equals("STORED"));
+					}
+					public void complete() {
 						latch.countDown();
 					}});
 		rv.setOperation(op);
@@ -291,11 +301,13 @@ public class MemcachedClient extends SpyThread {
 			private Object val=null;
 			public void receivedStatus(String line) {
 				rv.set(val);
-				latch.countDown();
 			}
 			public void gotData(String k, int flags, byte[] data) {
 				assert key.equals(k) : "Wrong key returned";
 				val=transcoder.decode(new CachedData(flags, data));
+			}
+			public void complete() {
+				latch.countDown();
 			}});
 		rv.setOperation(op);
 		addOp(getServerForKey(key), op);
@@ -343,10 +355,13 @@ public class MemcachedClient extends SpyThread {
 
 		GetOperation.Callback cb=new GetOperation.Callback() {
 				public void receivedStatus(String line) {
-					latch.countDown();
+					assert line.equals("END");
 				}
 				public void gotData(String k, int flags, byte[] data) {
 					m.put(k, transcoder.decode(new CachedData(flags, data)));
+				}
+				public void complete() {
+					latch.countDown();
 				}
 		};
 		for(Map.Entry<Integer, Collection<String>> me : chunks.entrySet()) {
@@ -404,6 +419,9 @@ public class MemcachedClient extends SpyThread {
 					new OperationCallback() {
 						public void receivedStatus(String s) {
 							rv.put(sa, s);
+						}
+
+						public void complete() {
 							latch.countDown();
 						}
 					}));
@@ -436,6 +454,9 @@ public class MemcachedClient extends SpyThread {
 							rv.get(sa).put(name, val);
 						}
 						public void receivedStatus(String line) {
+							assert line.equals("END");
+						}
+						public void complete() {
 							latch.countDown();
 						}}));
 		}
@@ -454,6 +475,9 @@ public class MemcachedClient extends SpyThread {
 				new OperationCallback() {
 					public void receivedStatus(String val) {
 						rv.set(new Long(val==null?"-1":val));
+					}
+
+					public void complete() {
 						latch.countDown();
 					}}));
 		try {
@@ -546,6 +570,9 @@ public class MemcachedClient extends SpyThread {
 				new OperationCallback() {
 					public void receivedStatus(String line) {
 						rv.set(line.equals("DELETED"));
+					}
+
+					public void complete() {
 						latch.countDown();
 					}});
 		rv.setOperation(op);
@@ -571,6 +598,9 @@ public class MemcachedClient extends SpyThread {
 			addOp(i, new FlushOperation(delay, new OperationCallback(){
 				public void receivedStatus(String line) {
 					rv.set(line.equals("OK"));
+				}
+
+				public void complete() {
 					latch.countDown();
 				}}));
 		}
@@ -682,6 +712,9 @@ public class MemcachedClient extends SpyThread {
 						public void receivedStatus(String s) {
 							latch.countDown();
 						}
+						public void complete() {
+							latch.countDown();
+						}
 					}));
 			getLogger().info("Added queue wait command to %s", i);
 		}
@@ -753,6 +786,9 @@ public class MemcachedClient extends SpyThread {
 					throw new ExecutionException(
 							new RuntimeException("Cancelled"));
 				}
+				if(op.hasErrored()) {
+					throw new ExecutionException(op.getException());
+				}
 			}
 			return rvMap;
 		}
@@ -789,6 +825,9 @@ public class MemcachedClient extends SpyThread {
 			latch.await();
 			if(op != null && op.isCancelled()) {
 				throw new ExecutionException(new RuntimeException("Cancelled"));
+			}
+			if(op != null && op.hasErrored()) {
+				throw new ExecutionException(op.getException());
 			}
 			return obj;
 		}

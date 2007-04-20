@@ -13,4 +13,9 @@ public interface OperationCallback {
 	 * @param line the line containing the final status of the operation
 	 */
 	void receivedStatus(String line);
+
+	/**
+	 * Called whenever an operation completes.
+	 */
+	void complete();
 }

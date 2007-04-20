@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import net.spy.SpyObject;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.OptimizedGet;
 
 /**
@@ -36,6 +37,8 @@ public class MemcachedConnection extends SpyObject {
 	private static final int EXCESSIVE_EMPTY = 100;
 	// maximum amount of time to wait between reconnect attempts
 	private static final long MAX_DELAY = 30000;
+	// Maximum number of sequential errors before reconnecting.
+	private static final int EXCESSIVE_ERRORS = 1;
 
 	private volatile boolean shutDown=false;
 	// If true, get optimization will collapse multiple sequential get ops
@@ -256,16 +259,23 @@ public class MemcachedConnection extends SpyObject {
 				try {
 					handleWrites(sk, qa);
 				} catch (IOException e) {
-					getLogger().info("IOExcepting handling %s, reconnecting",
+					getLogger().info("IOException handling %s, reconnecting",
 							qa.getCurrentWriteOp(), e);
+					queueReconnect(qa);
 				}
 			}
 			if(sk.isReadable()) {
 				try {
 					handleReads(sk, qa);
+					qa.protocolErrors=0;
+				} catch (OperationException e) {
+					if(++qa.protocolErrors >= EXCESSIVE_ERRORS) {
+						queueReconnect(qa);
+					}
 				} catch (IOException e) {
-					getLogger().info("IOExcepting handling %s, reconnecting",
+					getLogger().info("IOException handling %s, reconnecting",
 							qa.getCurrentReadOp(), e);
+					queueReconnect(qa);
 				}
 			}
 		}
@@ -344,8 +354,10 @@ public class MemcachedConnection extends SpyObject {
 		if(!shutDown) {
 			getLogger().warn("Closing, and reopening %s, attempt %d.",
 					qa, qa.reconnectAttempt);
-			qa.sk.cancel();
-			assert !qa.sk.isValid() : "Cancelled selection key is valid";
+			if(qa.sk != null) {
+				qa.sk.cancel();
+				assert !qa.sk.isValid() : "Cancelled selection key is valid";
+			}
 			qa.reconnectAttempt++;
 			try {
 				qa.channel.socket().close();
@@ -359,7 +371,7 @@ public class MemcachedConnection extends SpyObject {
 			reconnectQueue.put(System.currentTimeMillis() + delay, qa);
 
 			// Need to do a little queue management.
-			setupResend(qa);
+			qa.setupResend();
 		}
 	}
 
@@ -381,21 +393,6 @@ public class MemcachedConnection extends SpyObject {
 			}
 			qa.channel=ch;
 			qa.sk=ch.register(selector, ops, qa);
-		}
-	}
-
-	private void setupResend(QueueAttachment qa) {
-		// First, reset the current write op.
-		Operation op=qa.getCurrentWriteOp();
-		if(op != null) {
-			op.getBuffer().reset();
-		}
-		// Now cancel all the pending read operations.  Might be better to
-		// to requeue them.
-		while(qa.hasReadOp()) {
-			op=qa.removeCurrentReadOp();
-			getLogger().warn("Discarding partially completed op: %s", op);
-			op.cancel();
 		}
 	}
 
@@ -475,6 +472,10 @@ public class MemcachedConnection extends SpyObject {
 		private BlockingQueue<Operation> inputQueue=null;
 		private GetOperation getOp=null;
 		public SelectionKey sk=null;
+
+		// Count sequential protocol errors.
+		public int protocolErrors=0;
+
 		public QueueAttachment(SocketAddress sa, SocketChannel c, int bufSize,
 				BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
 				BlockingQueue<Operation> iq) {
@@ -501,6 +502,26 @@ public class MemcachedConnection extends SpyObject {
 			writeQ.addAll(tmp);
 		}
 
+
+		public void setupResend() {
+			// First, reset the current write op.
+			Operation op=getCurrentWriteOp();
+			if(op != null) {
+				op.getBuffer().reset();
+			}
+			// Now cancel all the pending read operations.  Might be better to
+			// to requeue them.
+			while(hasReadOp()) {
+				op=removeCurrentReadOp();
+				getLogger().warn("Discarding partially completed op: %s", op);
+				op.cancel();
+			}
+
+			wbuf.clear();
+			rbuf.clear();
+			toWrite=0;
+			protocolErrors=0;
+		}
 
 		// Prepare the pending operations.  Return true if there are any pending
 		// ops

@@ -11,19 +11,14 @@ public class VersionOperation extends Operation {
 
 	private static final byte[] REQUEST="version\r\n".getBytes();
 
-	private OperationCallback cb=null;
-
 	public VersionOperation(OperationCallback c) {
-		super();
-		cb=c;
+		super(c);
 	}
 
 	@Override
 	public void handleLine(String line) {
-		if(cb != null) {
-			assert line.startsWith("VERSION ");
-			cb.receivedStatus(line.substring("VERSION ".length()));
-		}
+		assert line.startsWith("VERSION ");
+		getCallback().receivedStatus(line.substring("VERSION ".length()));
 		transitionState(State.COMPLETE);
 	}
 
@@ -34,7 +29,7 @@ public class VersionOperation extends Operation {
 
 	@Override
 	protected void wasCancelled() {
-		cb.receivedStatus("cancelled");
+		// nothing
 	}
 
 }

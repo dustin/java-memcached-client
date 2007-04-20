@@ -28,13 +28,13 @@ public class GetOperation extends Operation {
 	}
 
 	public GetOperation(String key, Callback c) {
-		super();
+		super(c);
 		keys=Collections.singleton(key);
 		cb=c;
 	}
 
 	public GetOperation(Collection<String> k, Callback c) {
-		this();
+		super(c);
 		keys=new HashSet<String>(k);
 		cb=c;
 	}
@@ -54,18 +54,10 @@ public class GetOperation extends Operation {
 		return keys;
 	}
 
-	/**
-	 * Get the callback for this GetOperation.
-	 */
-	protected Callback getCallback() {
-		return cb;
-	}
-
-	/**
-	 * Set the callback for this instance.
-	 */
-	protected void setCallback(Callback to) {
-		cb=to;
+	@Override
+	protected void setCallback(OperationCallback to) {
+		super.setCallback(to);
+		cb=(Callback)to;
 	}
 
 	@Override

@@ -2,6 +2,7 @@
 
 package net.spy.memcached.ops;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import net.spy.SpyObject;
@@ -27,6 +28,35 @@ public abstract class Operation extends SpyObject {
 		 */
 		COMPLETE
 	}
+
+	/**
+	 * Error classification.
+	 */
+	public enum ErrorType {
+		/**
+		 * General error.
+		 */
+		GENERAL(0),
+		/**
+		 * Error that occurred because the client did something stupid.
+		 */
+		CLIENT("CLIENT_ERROR ".length()),
+		/**
+		 * Error that occurred because the server did something stupid.
+		 */
+		SERVER("SERVER_ERROR ".length());
+
+		private final int size;
+
+		ErrorType(int s) {
+			size=s;
+		}
+
+		public int getSize() {
+			return size;
+		}
+	}
+
 	/**
 	 * Data read types.
 	 */
@@ -47,6 +77,32 @@ public abstract class Operation extends SpyObject {
 	private StringBuilder currentLine=new StringBuilder();
 	private boolean cancelled=false;
 	private boolean foundCr=false;
+	private OperationException exception=null;
+	private OperationCallback callback=null;
+
+	protected Operation() {
+		super();
+	}
+
+	protected Operation(OperationCallback cb) {
+		super();
+		callback=cb;
+	}
+
+	/**
+	 * Get the operation callback associated with this operation.
+	 */
+	protected OperationCallback getCallback() {
+		return callback;
+	}
+
+
+	/**
+	 * Set the callback for this instance.
+	 */
+	protected void setCallback(OperationCallback to) {
+		callback=to;
+	}
 
 	/**
 	 * Has this operation been cancelled?
@@ -56,11 +112,26 @@ public abstract class Operation extends SpyObject {
 	}
 
 	/**
+	 * True if an error occurred while processing this operation.
+	 */
+	public boolean hasErrored() {
+		return exception != null;
+	}
+
+	/**
+	 * Get the exception that occurred (or null if no exception occurred).
+	 */
+	public OperationException getException() {
+		return exception;
+	}
+
+	/**
 	 * Cancel this operation.
 	 */
 	public void cancel() {
 		cancelled=true;
 		wasCancelled();
+		callback.complete();
 	}
 
 	/**
@@ -101,6 +172,9 @@ public abstract class Operation extends SpyObject {
 		// Discard our buffer when we no longer need it.
 		if(state != State.WRITING) {
 			cmd=null;
+		}
+		if(state == State.COMPLETE) {
+			callback.complete();
 		}
 	}
 
@@ -152,7 +226,7 @@ public abstract class Operation extends SpyObject {
 	 * Read data from the given byte buffer and dispatch to the appropriate
 	 * read mechanism.
 	 */
-	public final void readFromBuffer(ByteBuffer data) {
+	public final void readFromBuffer(ByteBuffer data) throws IOException {
 		// Loop while there's data remaining to get it all drained.
 		while(state != State.COMPLETE && data.remaining() > 0) {
 			if(readType == ReadType.DATA) {
@@ -174,12 +248,48 @@ public abstract class Operation extends SpyObject {
 					}
 				}
 				if(offset >= 0) {
-					handleLine(currentLine.toString());
+					String line=currentLine.toString();
 					currentLine.delete(0, currentLine.length());
 					assert currentLine.length() == 0;
+					ErrorType eType=classifyError(line);
+					if(eType != null) {
+						handleError(eType, line);
+					} else {
+						handleLine(line);
+					}
 				}
 			}
 		}
+	}
+
+	private void handleError(ErrorType eType, String line) throws IOException {
+		getLogger().error("Error:  %s", line);
+		switch(eType) {
+			case GENERAL:
+				exception=new OperationException();
+				break;
+			case SERVER:
+				exception=new OperationException(eType, line);
+				break;
+			case CLIENT:
+				exception=new OperationException(eType, line);
+				break;
+			default: assert false;
+		}
+		transitionState(State.COMPLETE);
+		throw exception;
+	}
+
+	private ErrorType classifyError(String line) {
+		ErrorType rv=null;
+		if(line.startsWith("ERROR")) {
+			rv=ErrorType.GENERAL;
+		} else if(line.startsWith("CLIENT_ERROR")) {
+			rv=ErrorType.CLIENT;
+		} else if(line.startsWith("SERVER_ERROR")) {
+			rv=ErrorType.SERVER;
+		}
+		return rv;
 	}
 
 	/**
