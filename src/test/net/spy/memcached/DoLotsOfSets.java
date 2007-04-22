@@ -1,6 +1,7 @@
 package net.spy.memcached;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -26,6 +27,9 @@ public class DoLotsOfSets {
 		long end=System.currentTimeMillis();
 		System.err.printf("Completed everything in %sms (%sms to flush)\n",
 				end-start, end-added);
+		Map<String, Object> m = client.getBulk("k1", "k2", "k3", "k4", "k5",
+				"k299999", "k299998", "k299997", "k299996");
+		assert m.size() == 9 : "Expected 9 results, got " + m;
 		client.shutdown();
 	}
 }
