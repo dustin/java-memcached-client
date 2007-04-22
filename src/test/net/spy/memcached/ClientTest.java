@@ -14,8 +14,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
-
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationException;
@@ -24,32 +22,7 @@ import net.spy.test.SyncThread;
 /**
  * This test assumes a client is running on localhost:11211.
  */
-public class ClientTest extends TestCase {
-
-	MemcachedClient client=null;
-
-	private void initClient() throws Exception {
-		client=new MemcachedClient(new InetSocketAddress("127.0.0.1", 11211));
-	}
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		initClient();
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		// Shut down, start up, flush, and shut down again.  Error tests have
-		// unpredictable timing issues.
-		client.shutdown();
-		client=null;
-		initClient();
-		assertTrue(client.flush().get());
-		client.shutdown();
-		client=null;
-		super.tearDown();
-	}
+public class ClientTest extends ClientBaseCase {
 
 	public void testAssertions() {
 		try {

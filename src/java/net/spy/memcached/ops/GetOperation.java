@@ -17,6 +17,8 @@ public class GetOperation extends Operation {
 	private int currentFlags=0;
 	private byte[] data=null;
 	private int readOffset=0;
+	// Character we're looking for after a data read
+	private byte lookingFor='\0';
 
 	private Callback cb=null;
 
@@ -92,24 +94,44 @@ public class GetOperation extends Operation {
 
 		getLogger().debug("readOffset: %d, length: %d",
 				readOffset, data.length);
-		int toRead=data.length - readOffset;
-		int available=b.remaining();
-		toRead=Math.min(toRead, available);
-		getLogger().debug("Reading %d bytes", toRead);
-		b.get(data, readOffset, toRead);
-		readOffset+=toRead;
-		if(readOffset == data.length) {
+		// If we're not looking for termination, we're still looking for data
+		if(lookingFor == '\0') {
+			int toRead=data.length - readOffset;
+			int available=b.remaining();
+			toRead=Math.min(toRead, available);
+			getLogger().debug("Reading %d bytes", toRead);
+			b.get(data, readOffset, toRead);
+			readOffset+=toRead;
+		}
+		// Transition us into a ``looking for \r\n'' kind of state if we've
+		// read enough and are still in a data state.
+		if(readOffset == data.length && lookingFor == '\0') {
 			cb.gotData(currentKey, currentFlags, data);
-			byte tmp=b.get();
-			assert tmp == (byte)'\r' : " expected \\r, got " + (char)tmp;
-			tmp=b.get();
-			assert tmp == (byte)'\n' : " expected \\n, got " + (char)tmp;
-			currentKey=null;
-			data=null;
-			readOffset=0;
-			currentFlags=0;
-			getLogger().debug("Setting read type back to line.");
-			setReadType(ReadType.LINE);
+			lookingFor='\r';
+		}
+		// If we're looking for an ending byte, let's go find it.
+		if(lookingFor != '\0' && b.hasRemaining()) {
+			while(lookingFor != '\0' && b.hasRemaining()) {
+				byte tmp=b.get();
+				assert tmp == lookingFor : "Expecting " + lookingFor + ", got "
+					+ (char)tmp;
+				switch(lookingFor) {
+					case '\r': lookingFor='\n'; break;
+					case '\n': lookingFor='\0'; break;
+					default:
+						assert false: "Looking for unexpected char: "
+							+ (char)lookingFor;
+				}
+			}
+			// Completed the read, reset stuff.
+			if(lookingFor == '\0') {
+				currentKey=null;
+				data=null;
+				readOffset=0;
+				currentFlags=0;
+				getLogger().debug("Setting read type back to line.");
+				setReadType(ReadType.LINE);
+			}
 		}
 	}
 
