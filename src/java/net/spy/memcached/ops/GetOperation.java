@@ -111,7 +111,7 @@ public class GetOperation extends Operation {
 		}
 		// If we're looking for an ending byte, let's go find it.
 		if(lookingFor != '\0' && b.hasRemaining()) {
-			while(lookingFor != '\0' && b.hasRemaining()) {
+			do {
 				byte tmp=b.get();
 				assert tmp == lookingFor : "Expecting " + lookingFor + ", got "
 					+ (char)tmp;
@@ -122,7 +122,7 @@ public class GetOperation extends Operation {
 						assert false: "Looking for unexpected char: "
 							+ (char)lookingFor;
 				}
-			}
+			} while(lookingFor != '\0' && b.hasRemaining());
 			// Completed the read, reset stuff.
 			if(lookingFor == '\0') {
 				currentKey=null;
