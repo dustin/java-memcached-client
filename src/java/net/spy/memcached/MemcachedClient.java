@@ -731,9 +731,12 @@ public class MemcachedClient extends SpyThread {
 			throw new IllegalArgumentException("Key is too long (maxlen = "
 					+ MAX_KEY_LENGTH + ")");
 		}
-		if(key.indexOf(' ') >= 0) {
-			throw new IllegalArgumentException(
-					"Key contains invalid characters: " + key);
+		// Validate the key
+		for(char c : key.toCharArray()) {
+			if(Character.isWhitespace(c) || Character.isISOControl(c)) {
+				throw new IllegalArgumentException(
+					"Key contains invalid characters:  ``" + key + "''");
+			}
 		}
 		int rv=(int)(hashAlg.hash(key) % conn.getNumConnections());
 		assert rv >= 0 : "Returned negative key for key " + key;

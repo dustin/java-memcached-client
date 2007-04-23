@@ -61,6 +61,15 @@ public class ClientTest extends ClientBaseCase {
 		}
 	}
 
+	public void testInvalidKey3() throws Exception {
+		try {
+			Object val=client.get("Key\n");
+			fail("Expected IllegalArgumentException, got " + val);
+		} catch(IllegalArgumentException e) {
+			// pass
+		}
+	}
+
 	public void testParallelSetGet() throws Throwable {
 		int cnt=SyncThread.getDistinctResultCount(10, new Callable<Boolean>(){
 			public Boolean call() throws Exception {
