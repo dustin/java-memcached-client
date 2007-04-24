@@ -83,13 +83,6 @@ public class MemcachedClient extends SpyThread {
 	private HashAlgorithm hashAlg=HashAlgorithm.NATIVE_HASH;
 	Transcoder transcoder=null;
 
-	/** 
-	 * Allow mockery.
-	 */
-	protected MemcachedClient() {
-		super();
-	}
-
 	/**
 	 * Get a memcache client operating on the specified memcached locations.
 	 * 

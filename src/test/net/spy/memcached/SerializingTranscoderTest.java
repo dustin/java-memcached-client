@@ -35,6 +35,11 @@ public class SerializingTranscoderTest extends BaseMockCase {
 	public void testStrings() throws Exception {
 		String s1="This is a simple test string.";
 		CachedData cd=tc.encode(s1);
+		// Test the stringification while we're here.
+		String exp="{CachedData flags=0 data=[84, 104, 105, 115, 32, 105, "
+			+ "115, 32, 97, 32, 115, 105, 109, 112, 108, 101, 32, 116, 101, "
+			+ "115, 116, 32, 115, 116, 114, 105, 110, 103, 46]}";
+		assertEquals(exp, String.valueOf(cd));
 		assertEquals(0, cd.getFlags());
 		assertTrue(Arrays.equals(s1.getBytes(), cd.getData()));
 		assertEquals(s1, tc.decode(cd));

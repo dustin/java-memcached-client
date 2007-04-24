@@ -15,4 +15,5 @@ public class MemcachedConnectionTest extends TestCase {
 		String s=MemcachedConnection.dbgBuffer(bb, input.length());
 		assertEquals("this is a test \\x5f", s);
 	}
+
 }
