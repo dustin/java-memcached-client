@@ -347,8 +347,11 @@ public class MemcachedClient extends SpyThread {
 		final Collection<Operation> ops=new ArrayList<Operation>();
 
 		GetOperation.Callback cb=new GetOperation.Callback() {
+				@SuppressWarnings("synthetic-access")
 				public void receivedStatus(String line) {
-					assert line.equals("END");
+					if(!line.equals("END")) {
+						getLogger().warn("Expected ``END'', was ``%s''", line);
+					}
 				}
 				public void gotData(String k, int flags, byte[] data) {
 					m.put(k, transcoder.decode(new CachedData(flags, data)));
@@ -446,8 +449,12 @@ public class MemcachedClient extends SpyThread {
 						public void gotStat(String name, String val) {
 							rv.get(sa).put(name, val);
 						}
+						@SuppressWarnings("synthetic-access")
 						public void receivedStatus(String line) {
-							assert line.equals("END");
+							if(!line.equals("END")) {
+								getLogger().warn("Expeted ``END'', was ``%s''," +
+									line);
+							}
 						}
 						public void complete() {
 							latch.countDown();
