@@ -7,7 +7,7 @@ import java.io.IOException;
  */
 public class OperationException extends IOException {
 
-	private Operation.ErrorType type=null;
+	private final Operation.ErrorType type;
 
 	/**
 	 * General exception (no message).

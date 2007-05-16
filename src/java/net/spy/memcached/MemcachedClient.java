@@ -748,9 +748,9 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	static class BulkGetFuture implements Future<Map<String, Object>> {
-		private Map<String, Object> rvMap;
-		private Collection<Operation> ops;
-		private CountDownLatch latch=null;
+		private final Map<String, Object> rvMap;
+		private final Collection<Operation> ops;
+		private final CountDownLatch latch;
 		private boolean cancelled=false;
 
 		public BulkGetFuture(Map<String, Object> m,
@@ -805,11 +805,11 @@ public class MemcachedClient extends SpyThread {
 		}
 	}
 
-	private static class OperationFuture<T> implements Future<T> {
+	static class OperationFuture<T> implements Future<T> {
 
+		private final CountDownLatch latch;
 		private T obj=null;
-		private CountDownLatch latch=null;
-		private Operation op=null;
+		private Operation op;
 
 		public OperationFuture(CountDownLatch l) {
 			super();

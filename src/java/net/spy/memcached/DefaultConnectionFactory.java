@@ -31,8 +31,8 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public static final int DEFAULT_READ_BUFFER_SIZE=16384;
 
-	private int opQueueLen=DEFAULT_OP_QUEUE_LEN;
-	private int readBufSize=DEFAULT_READ_BUFFER_SIZE;
+	private final int opQueueLen;
+	private final int readBufSize;
 
 	/**
 	 * Create a DefaultConnectionFactory with the default parameters.

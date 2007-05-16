@@ -11,8 +11,8 @@ public class StatsOperation extends Operation {
 
 	private static final byte[] MSG="stats\r\n".getBytes();
 
-	private byte[] msg=MSG;
-	private Callback cb=null;
+	private final byte[] msg;
+	private final Callback cb;
 
 	public StatsOperation(String arg, Callback c) {
 		super(c);

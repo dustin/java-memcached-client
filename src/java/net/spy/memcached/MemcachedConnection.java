@@ -48,10 +48,10 @@ public class MemcachedConnection extends SpyObject {
 	private int emptySelects=0;
 	// AddedQueue is used to track the QueueAttachments for which operations
 	// have recently been queued.
-	private ConcurrentLinkedQueue<QueueAttachment> addedQueue=null;
+	private final ConcurrentLinkedQueue<QueueAttachment> addedQueue;
 	// reconnectQueue contains the attachments that need to be reconnected
 	// The key is the time at which they are eligible for reconnect
-	private SortedMap<Long, QueueAttachment> reconnectQueue=null;
+	private final SortedMap<Long, QueueAttachment> reconnectQueue;
 
 	/**
 	 * Construct a memcached connection.
@@ -459,17 +459,17 @@ public class MemcachedConnection extends SpyObject {
 		return sb.toString();
 	}
 
-	private static class QueueAttachment extends SpyObject {
+	static class QueueAttachment extends SpyObject {
+		public final SocketAddress socketAddress;
+		public final ByteBuffer rbuf;
+		public final ByteBuffer wbuf;
+		private final BlockingQueue<Operation> writeQ;
+		private final BlockingQueue<Operation> readQ;
+		private final BlockingQueue<Operation> inputQueue;
 		public int which=0;
 		public int reconnectAttempt=1;
-		public SocketAddress socketAddress=null;
-		public SocketChannel channel=null;
+		public SocketChannel channel;
 		public int toWrite=0;
-		public ByteBuffer rbuf=null;
-		public ByteBuffer wbuf=null;
-		private BlockingQueue<Operation> writeQ=null;
-		private BlockingQueue<Operation> readQ=null;
-		private BlockingQueue<Operation> inputQueue=null;
 		private GetOperation getOp=null;
 		public SelectionKey sk=null;
 

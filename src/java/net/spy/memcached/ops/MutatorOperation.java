@@ -25,9 +25,9 @@ public class MutatorOperation extends Operation {
 		decr
 	}
 
-	private Mutator mutator=null;
-	private String key=null;
-	private int amount=0;
+	private final Mutator mutator;
+	private final String key;
+	private final int amount;
 
 	public MutatorOperation(Mutator m, String k, int amt, OperationCallback c) {
 		super(c);

@@ -11,9 +11,9 @@ import java.util.Map;
 public class OptimizedGet extends GetOperation
 	implements GetOperation.Callback {
 
-	private Map<String, Collection<Callback>> callbacks=
+	private final Map<String, Collection<Callback>> callbacks=
 		new HashMap<String, Collection<Callback>>();
-	private Collection<Callback> allCallbacks=new ArrayList<Callback>();
+	private final Collection<Callback> allCallbacks=new ArrayList<Callback>();
 
 	/**
 	 * Construct an optimized get starting with the given get operation.

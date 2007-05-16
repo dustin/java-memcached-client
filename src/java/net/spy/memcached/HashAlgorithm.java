@@ -35,7 +35,7 @@ public enum HashAlgorithm {
 	 * 
 	 * @return a positive integer hash
 	 */
-	public long hash(String k) {
+	public long hash(final String k) {
 		long rv = 0;
 		switch (this) {
 			case NATIVE_HASH:

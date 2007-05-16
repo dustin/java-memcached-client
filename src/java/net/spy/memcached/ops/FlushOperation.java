@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 public class FlushOperation extends Operation {
 
 	private static final byte[] FLUSH="flush_all\r\n".getBytes();
-	private int delay=-1;
+	private final int delay;
 
 	public FlushOperation(OperationCallback cb) {
 		this(-1, cb);
