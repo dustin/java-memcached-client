@@ -60,6 +60,10 @@ import net.spy.memcached.ops.VersionOperation;
  *  </p>
  *  
  *  <pre>
+ *  // Get a memcached client connected to several servers
+ *  MemcachedClient c=new MemcachedClient(
+ *      AddrUtil.getAddresses("server1:11211 server2:11211"));
+ *
  *  // Try to get a value, for up to 5 seconds, and cancel if it doesn't return
  *  Object myObj=null;
  *  Future&lt;Object&gt; f=c.asyncGet("someKey");
@@ -666,7 +670,7 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	/**
-	 * Shut down this client graceful.
+	 * Shut down this client gracefully.
 	 */
 	public boolean shutdown(long timeout, TimeUnit unit) {
 		shuttingDown=true;
