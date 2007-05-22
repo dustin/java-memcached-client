@@ -65,7 +65,7 @@ public class StoreOperation extends Operation {
 			: "Not enough room in buffer, need another "
 				+ (2 + data.length - bb.remaining());
 		bb.put(data);
-		bb.put("\r\n".getBytes());
+		bb.put(CRLF);
 		bb.flip();
 		setBuffer(bb);
 	}
