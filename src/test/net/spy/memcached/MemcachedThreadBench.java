@@ -115,10 +115,10 @@ public class MemcachedThreadBench extends TestCase {
 		private static final AtomicInteger total=new AtomicInteger(0);
 		private static final int MAX_QUEUE=10000;
 		private final MemcachedClient mc;
-		private WorkerStat stat;
+		private final WorkerStat stat;
 
-		SetterThread(MemcachedClient c, WorkerStat stat) {
-			this.stat = stat;
+		SetterThread(MemcachedClient c, WorkerStat st) {
+			stat = st;
 			mc=c;
 		}
 
@@ -153,10 +153,10 @@ public class MemcachedThreadBench extends TestCase {
 
 	private static class GetterThread extends Thread {
 		private final MemcachedClient mc;
-		private WorkerStat stat;
+		private final WorkerStat stat;
 
-		GetterThread(MemcachedClient c, WorkerStat stat) {
-			this.stat = stat;
+		GetterThread(MemcachedClient c, WorkerStat st) {
+			stat = st;
 			mc=c;
 		}
 
