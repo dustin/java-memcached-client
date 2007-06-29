@@ -201,8 +201,8 @@ public class MemcachedConnection extends SpyObject {
 			Collection<QueueAttachment> toAdd=new HashSet<QueueAttachment>();
 			try {
 				QueueAttachment qa=null;
-				boolean readyForIO=false;
 				while((qa=addedQueue.remove()) != null) {
+					boolean readyForIO=false;
 					if(qa.channel != null && qa.channel.isConnected()) {
 						Operation op=qa.getCurrentWriteOp();
 						if(op != null) {
@@ -419,15 +419,30 @@ public class MemcachedConnection extends SpyObject {
 	 * @param which the connection offset
 	 * @param o the operation
 	 */
-	@SuppressWarnings("unchecked")
 	public void addOperation(int which, Operation o) {
-		QueueAttachment qa=connections[which];
-		o.initialize();
-		qa.addOp(o);
-		addedQueue.offer(qa);
-		Selector s=selector.wakeup();
-		assert s == selector : "Wakeup returned the wrong selector.";
-		getLogger().debug("Added %s to %d", o, which);
+		boolean placed=false;
+		int pos=which;
+		int loops=0;
+		while(!placed) {
+			assert loops < 3 : "Too many loops!";
+			QueueAttachment qa=connections[pos];
+			if(which == pos) {
+				loops++;
+			}
+			if(qa.reconnectAttempt == 0 || loops > 1) {
+				o.initialize();
+				qa.addOp(o);
+				addedQueue.offer(qa);
+				Selector s=selector.wakeup();
+				assert s == selector : "Wakeup returned the wrong selector.";
+				getLogger().debug("Added %s to %d", o, which);
+				placed=true;
+			} else {
+				if(++pos >= connections.length) {
+					pos=0;
+				}
+			}
+		}
 	}
 
 	/**
@@ -435,13 +450,16 @@ public class MemcachedConnection extends SpyObject {
 	 */
 	public void shutdown() throws IOException {
 		for(QueueAttachment qa : connections) {
-			qa.channel.close();
-			qa.sk=null;
-			if(qa.toWrite > 0) {
-				getLogger().warn("Shut down with %d bytes remaining to write",
-						qa.toWrite);
+			if(qa.channel != null) {
+				qa.channel.close();
+				qa.sk=null;
+				if(qa.toWrite > 0) {
+					getLogger().warn(
+						"Shut down with %d bytes remaining to write",
+							qa.toWrite);
+				}
+				getLogger().debug("Shut down channel %s", qa.channel);
 			}
-			getLogger().debug("Shut down channel %s", qa.channel);
 		}
 		selector.close();
 		getLogger().debug("Shut down selector %s", selector);
@@ -467,7 +485,9 @@ public class MemcachedConnection extends SpyObject {
 		private final BlockingQueue<Operation> readQ;
 		private final BlockingQueue<Operation> inputQueue;
 		public int which=0;
-		public int reconnectAttempt=1;
+		// This has been declared volatile so it can be used as an availability
+		// indicator.
+		public volatile int reconnectAttempt=1;
 		public SocketChannel channel;
 		public int toWrite=0;
 		private GetOperation getOp=null;

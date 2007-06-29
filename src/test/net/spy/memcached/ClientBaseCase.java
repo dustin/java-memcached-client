@@ -28,10 +28,15 @@ public abstract class ClientBaseCase extends TestCase {
 		client.shutdown();
 		client=null;
 		initClient();
+		flushPause();
 		assertTrue(client.flush().get());
 		client.shutdown();
 		client=null;
 		super.tearDown();
+	}
+
+	protected void flushPause() throws InterruptedException {
+		// nothing useful
 	}
 
 }
