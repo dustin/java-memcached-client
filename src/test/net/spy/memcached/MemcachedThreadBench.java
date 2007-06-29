@@ -1,11 +1,14 @@
 package net.spy.memcached;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import junit.framework.TestCase;
 
 /**
  * Adaptation of http://code.google.com/p/spcached/wiki/benchmarktool
  */
-public class MemcachedThreadBench {
+public class MemcachedThreadBench extends TestCase {
 
 	private static class WorkerStat {
 		public int start, runs;
@@ -16,6 +19,10 @@ public class MemcachedThreadBench {
 			start = runs = 0;
 			setterTime = getterTime = 0;
 		}
+	}
+
+	public void testCrap() throws Exception {
+		main(new String[]{"1000", "100", "11211", "100"});
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -33,7 +40,7 @@ public class MemcachedThreadBench {
 		int threads = Integer.parseInt(args[3]);
 
 		MemcachedClient client=new MemcachedClient(
-			new DefaultConnectionFactory(runs, 32768),
+			new DefaultConnectionFactory(100000, 32768),
 			AddrUtil.getAddresses(serverlist));
 
 		WorkerStat[] statArray = new WorkerStat[threads];
@@ -105,6 +112,8 @@ public class MemcachedThreadBench {
 	}
 
 	private static class SetterThread extends Thread {
+		private static final AtomicInteger total=new AtomicInteger(0);
+		private static final int MAX_QUEUE=10000;
 		private final MemcachedClient mc;
 		private WorkerStat stat;
 
@@ -123,16 +132,22 @@ public class MemcachedThreadBench {
 					+ "I have not done any heavy benchmarking recently";
 
 			long begin = System.currentTimeMillis();
-			// Pause after every 10,000
 			for (int i = stat.start; i < stat.start + stat.runs; i++) {
 				mc.set("" + i + keyBase, 3600, object);
-				if(i % 10000 == 0) {
-					mc.waitForQueues(5, TimeUnit.SECONDS);
+				if(total.incrementAndGet() >= MAX_QUEUE) {
+					flush();
 				}
 			}
 			long end = System.currentTimeMillis();
 
 			stat.setterTime = end - begin;
+		}
+
+		private synchronized void flush() {
+			if(total.intValue() >= MAX_QUEUE) {
+				mc.waitForQueues(5, TimeUnit.SECONDS);
+				total.set(0);
+			}
 		}
 	}
 
