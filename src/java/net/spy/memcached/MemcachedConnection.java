@@ -423,12 +423,18 @@ public class MemcachedConnection extends SpyObject {
 		boolean placed=false;
 		int pos=which;
 		int loops=0;
+		// Loop until we find an appropriate server to process this operation
+		// beginning with the requested position.
 		while(!placed) {
 			assert loops < 3 : "Too many loops!";
 			QueueAttachment qa=connections[pos];
 			if(which == pos) {
 				loops++;
 			}
+			// If reconnectAttempt == 0, this client is not in the process of
+			// reconnecting.  If loops > 0, we've already been through all the
+			// clients and just want to queue the new item where it was
+			// originally requested (where it'll wait for the node to return)
 			if(qa.reconnectAttempt == 0 || loops > 1) {
 				o.initialize();
 				qa.addOp(o);
