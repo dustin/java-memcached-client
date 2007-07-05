@@ -18,25 +18,24 @@ import net.spy.memcached.ops.OptimizedGet;
  * operation queues.
  */
 class MemcachedNode extends SpyObject {
-	public final SocketAddress socketAddress;
-	public final ByteBuffer rbuf;
-	public final ByteBuffer wbuf;
+	private final SocketAddress socketAddress;
+	private final ByteBuffer rbuf;
+	private final ByteBuffer wbuf;
 	private final BlockingQueue<Operation> writeQ;
 	private final BlockingQueue<Operation> readQ;
 	private final BlockingQueue<Operation> inputQueue;
-	public final int which;
 	// This has been declared volatile so it can be used as an availability
 	// indicator.
-	public volatile int reconnectAttempt=1;
-	public SocketChannel channel;
+	private volatile int reconnectAttempt=1;
+	private SocketChannel channel;
 	public int toWrite=0;
 	private GetOperation getOp=null;
-	public SelectionKey sk=null;
+	private SelectionKey sk=null;
 
 	// Count sequential protocol errors.
 	public int protocolErrors=0;
 
-	public MemcachedNode(int pos, SocketAddress sa, SocketChannel c,
+	public MemcachedNode(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
 			BlockingQueue<Operation> wq, BlockingQueue<Operation> iq) {
 		super();
@@ -46,12 +45,11 @@ class MemcachedNode extends SpyObject {
 		assert rq != null : "No operation read queue";
 		assert wq != null : "No operation write queue";
 		assert iq != null : "No input queue";
-		which=pos;
 		socketAddress=sa;
-		channel=c;
+		setChannel(c);
 		rbuf=ByteBuffer.allocate(bufSize);
 		wbuf=ByteBuffer.allocate(bufSize);
-		wbuf.clear();
+		getWbuf().clear();
 		readQ=rq;
 		writeQ=wq;
 		inputQueue=iq;
@@ -78,8 +76,8 @@ class MemcachedNode extends SpyObject {
 			op.cancel();
 		}
 
-		wbuf.clear();
-		rbuf.clear();
+		getWbuf().clear();
+		getRbuf().clear();
 		toWrite=0;
 		protocolErrors=0;
 	}
@@ -102,18 +100,18 @@ class MemcachedNode extends SpyObject {
 
 	public void fillWriteBuffer(boolean optimizeGets) {
 		if(toWrite == 0) {
-			wbuf.clear();
+			getWbuf().clear();
 			Operation o=getCurrentWriteOp();
-			while(o != null && toWrite < wbuf.capacity()) {
+			while(o != null && toWrite < getWbuf().capacity()) {
 				assert o.getState() == Operation.State.WRITING;
 				ByteBuffer obuf=o.getBuffer();
-				int bytesToCopy=Math.min(wbuf.remaining(),
+				int bytesToCopy=Math.min(getWbuf().remaining(),
 						obuf.remaining());
 				byte b[]=new byte[bytesToCopy];
 				obuf.get(b);
-				wbuf.put(b);
+				getWbuf().put(b);
 				getLogger().debug("After copying stuff from %s: %s",
-						o, wbuf);
+						o, getWbuf());
 				if(!o.getBuffer().hasRemaining()) {
 					o.writeComplete();
 					transitionWriteItem();
@@ -127,12 +125,12 @@ class MemcachedNode extends SpyObject {
 				}
 				toWrite += bytesToCopy;
 			}
-			wbuf.flip();
-			assert toWrite <= wbuf.capacity()
+			getWbuf().flip();
+			assert toWrite <= getWbuf().capacity()
 				: "toWrite exceeded capacity: " + this;
-			assert toWrite == wbuf.remaining()
+			assert toWrite == getWbuf().remaining()
 				: "Expected " + toWrite + " remaining, got "
-				+ wbuf.remaining();
+				+ getWbuf().remaining();
 		} else {
 			getLogger().debug("Buffer is full, skipping");
 		}
@@ -209,7 +207,7 @@ class MemcachedNode extends SpyObject {
 
 	public int getSelectionOps() {
 		int rv=0;
-		if(channel.isConnected()) {
+		if(getChannel().isConnected()) {
 			if(hasReadOp()) {
 				rv |= SelectionKey.OP_READ;
 			}
@@ -222,16 +220,61 @@ class MemcachedNode extends SpyObject {
 		return rv;
 	}
 
+	/**
+	 * Get the buffer used for reading data from this node.
+	 */
+	public ByteBuffer getRbuf() {
+		return rbuf;
+	}
+
+	public ByteBuffer getWbuf() {
+		return wbuf;
+	}
+
+	public SocketAddress getSocketAddress() {
+		return socketAddress;
+	}
+
+	/**
+	 * True if this node is <q>active.</q>  i.e. is is currently connected
+	 * and expected to be able to process requests
+	 */
+	public boolean isActive() {
+		return reconnectAttempt == 0
+			&& getChannel() != null && getChannel().isConnected();
+	}
+
+	/**
+	 * Notify this node that it will be reconnecting.
+	 */
+	public void reconnecting() {
+		reconnectAttempt++;
+	}
+
+	/**
+	 * Notify this node that it has reconnected.
+	 */
+	public void connected() {
+		reconnectAttempt=0;
+	}
+
+	/**
+	 * Get the current reconnect count.
+	 */
+	public int getReconnectCount() {
+		return reconnectAttempt;
+	}
+
 	@Override
 	public String toString() {
 		int sops=0;
-		if(sk!= null && sk.isValid()) {
-			sops=sk.interestOps();
+		if(getSk()!= null && getSk().isValid()) {
+			sops=getSk().interestOps();
 		}
 		int rsize=readQ.size() + (getOp == null ? 0 : 1);
 		int wsize=writeQ.size();
 		int isize=inputQueue.size();
-		return "{QA sa=" + socketAddress + ", #Rops=" + rsize
+		return "{QA sa=" + getSocketAddress() + ", #Rops=" + rsize
 			+ ", #Wops=" + wsize
 			+ ", #iq=" + isize
 			+ ", topRop=" + getCurrentReadOp()
@@ -239,4 +282,29 @@ class MemcachedNode extends SpyObject {
 			+ ", toWrite=" + toWrite
 			+ ", interested=" + sops + "}";
 	}
+
+	/**
+	 * Register a channel with this node.
+	 */
+	public void registerChannel(SocketChannel ch, SelectionKey selectionKey) {
+		setChannel(ch);
+		setSk(selectionKey);
+	}
+
+	public void setChannel(SocketChannel to) {
+		channel = to;
+	}
+
+	public SocketChannel getChannel() {
+		return channel;
+	}
+
+	public void setSk(SelectionKey to) {
+		sk = to;
+	}
+
+	public SelectionKey getSk() {
+		return sk;
+	}
+
 }
