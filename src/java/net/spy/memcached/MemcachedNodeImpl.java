@@ -18,7 +18,7 @@ import net.spy.memcached.ops.OptimizedGet;
  * Represents a node with the memcached cluster, along with buffering and
  * operation queues.
  */
-class MemcachedNode extends SpyObject {
+class MemcachedNodeImpl extends SpyObject {
 	private final SocketAddress socketAddress;
 	private final ByteBuffer rbuf;
 	private final ByteBuffer wbuf;
@@ -33,7 +33,7 @@ class MemcachedNode extends SpyObject {
 	private GetOperation getOp=null;
 	private SelectionKey sk=null;
 
-	public MemcachedNode(SocketAddress sa, SocketChannel c,
+	public MemcachedNodeImpl(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
 			BlockingQueue<Operation> wq, BlockingQueue<Operation> iq) {
 		super();

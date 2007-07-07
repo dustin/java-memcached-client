@@ -10,7 +10,7 @@ import java.util.Iterator;
  */
 public final class ArrayModNodeLocator implements NodeLocator {
 
-	final MemcachedNode[] nodes;
+	final MemcachedNodeImpl[] nodes;
 
 	private final HashAlgorithm hashAlg;
 
@@ -21,21 +21,21 @@ public final class ArrayModNodeLocator implements NodeLocator {
 	 * @param n the array of nodes
 	 * @param alg the hash algorithm
 	 */
-	public ArrayModNodeLocator(MemcachedNode[] n, HashAlgorithm alg) {
+	public ArrayModNodeLocator(MemcachedNodeImpl[] n, HashAlgorithm alg) {
 		super();
 		nodes=n;
 		hashAlg=alg;
 	}
 
-	public Collection<MemcachedNode> getAll() {
+	public Collection<MemcachedNodeImpl> getAll() {
 		return Arrays.asList(nodes);
 	}
 
-	public MemcachedNode getPrimary(String k) {
+	public MemcachedNodeImpl getPrimary(String k) {
 		return nodes[getServerForKey(k)];
 	}
 
-	public Iterator<MemcachedNode> getSequence(String k) {
+	public Iterator<MemcachedNodeImpl> getSequence(String k) {
 		return new NodeIterator(getServerForKey(k));
 	}
 
@@ -48,7 +48,7 @@ public final class ArrayModNodeLocator implements NodeLocator {
 	}
 
 
-	class NodeIterator implements Iterator<MemcachedNode> {
+	class NodeIterator implements Iterator<MemcachedNodeImpl> {
 
 		private final int start;
 		private int next=0;
@@ -71,7 +71,7 @@ public final class ArrayModNodeLocator implements NodeLocator {
 			}
 		}
 
-		public MemcachedNode next() {
+		public MemcachedNodeImpl next() {
 			return nodes[next];
 		}
 
