@@ -72,7 +72,11 @@ public final class ArrayModNodeLocator implements NodeLocator {
 		}
 
 		public MemcachedNode next() {
-			return nodes[next];
+			try {
+				return nodes[next];
+			} finally {
+				computeNext();
+			}
 		}
 
 		public void remove() {
