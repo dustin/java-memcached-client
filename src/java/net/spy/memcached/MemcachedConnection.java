@@ -38,14 +38,14 @@ public class MemcachedConnection extends SpyObject {
 	// If true, get optimization will collapse multiple sequential get ops
 	private boolean optimizeGets=true;
 	private Selector selector=null;
-	private MemcachedNodeImpl[] connections=null;
+	private MemcachedNode[] connections=null;
 	private int emptySelects=0;
 	// AddedQueue is used to track the QueueAttachments for which operations
 	// have recently been queued.
-	private final ConcurrentLinkedQueue<MemcachedNodeImpl> addedQueue;
+	private final ConcurrentLinkedQueue<MemcachedNode> addedQueue;
 	// reconnectQueue contains the attachments that need to be reconnected
 	// The key is the time at which they are eligible for reconnect
-	private final SortedMap<Long, MemcachedNodeImpl> reconnectQueue;
+	private final SortedMap<Long, MemcachedNode> reconnectQueue;
 
 	/**
 	 * Construct a memcached connection.
@@ -59,15 +59,15 @@ public class MemcachedConnection extends SpyObject {
 	public MemcachedConnection(int bufSize, ConnectionFactory f,
 			List<InetSocketAddress> a)
 		throws IOException {
-		reconnectQueue=new TreeMap<Long, MemcachedNodeImpl>();
-		addedQueue=new ConcurrentLinkedQueue<MemcachedNodeImpl>();
+		reconnectQueue=new TreeMap<Long, MemcachedNode>();
+		addedQueue=new ConcurrentLinkedQueue<MemcachedNode>();
 		selector=Selector.open();
-		connections=new MemcachedNodeImpl[a.size()];
+		connections=new MemcachedNode[a.size()];
 		int cons=0;
 		for(SocketAddress sa : a) {
 			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
-			MemcachedNodeImpl qa=new MemcachedNodeImpl(sa, ch, bufSize,
+			MemcachedNode qa=new MemcachedNodeImpl(sa, ch, bufSize,
 				f.createOperationQueue(), f.createOperationQueue(),
 				f.createOperationQueue());
 			int ops=0;
@@ -161,7 +161,7 @@ public class MemcachedConnection extends SpyObject {
 						getLogger().info("%s has a ready op, handling IO", sk);
 						handleIO(sk);
 					} else {
-						queueReconnect((MemcachedNodeImpl)sk.attachment());
+						queueReconnect((MemcachedNode)sk.attachment());
 					}
 				}
 				assert emptySelects < EXCESSIVE_EMPTY + 10
@@ -191,9 +191,9 @@ public class MemcachedConnection extends SpyObject {
 		if(!addedQueue.isEmpty()) {
 			getLogger().debug("Handling queue");
 			// If there's stuff in the added queue.  Try to process it.
-			Collection<MemcachedNodeImpl> toAdd=new HashSet<MemcachedNodeImpl>();
+			Collection<MemcachedNode> toAdd=new HashSet<MemcachedNode>();
 			try {
-				MemcachedNodeImpl qa=null;
+				MemcachedNode qa=null;
 				while((qa=addedQueue.remove()) != null) {
 					boolean readyForIO=false;
 					if(qa.isActive()) {
@@ -229,7 +229,7 @@ public class MemcachedConnection extends SpyObject {
 	// reconnect
 	private void handleIO(SelectionKey sk) {
 		assert !sk.isAcceptable() : "We don't do accepting here.";
-		MemcachedNodeImpl qa=(MemcachedNodeImpl)sk.attachment();
+		MemcachedNode qa=(MemcachedNode)sk.attachment();
 		if(sk.isConnectable()) {
 			getLogger().info("Connection state changed for %s", sk);
 			try {
@@ -338,7 +338,7 @@ public class MemcachedConnection extends SpyObject {
 		return sb.toString();
 	}
 
-	private void queueReconnect(MemcachedNodeImpl qa) {
+	private void queueReconnect(MemcachedNode qa) {
 		if(!shutDown) {
 			getLogger().warn("Closing, and reopening %s, attempt %d.",
 					qa, qa.getReconnectCount());
@@ -365,7 +365,7 @@ public class MemcachedConnection extends SpyObject {
 
 	private void attemptReconnects() throws IOException {
 		long now=System.currentTimeMillis();
-		for(Iterator<MemcachedNodeImpl> i=
+		for(Iterator<MemcachedNode> i=
 				reconnectQueue.headMap(now).values().iterator(); i.hasNext();) {
 			MemcachedNode qa=i.next();
 			i.remove();
@@ -414,7 +414,7 @@ public class MemcachedConnection extends SpyObject {
 		// beginning with the requested position.
 		while(!placed) {
 			assert loops < 3 : "Too many loops!";
-			MemcachedNodeImpl qa=connections[pos];
+			MemcachedNode qa=connections[pos];
 			if(which == pos) {
 				loops++;
 			}

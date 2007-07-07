@@ -23,10 +23,10 @@ public interface NodeLocator {
 	 * @param k the object key
 	 * @return the sequence of backup nodes.
 	 */
-	Iterator<MemcachedNodeImpl> getSequence(String k);
+	Iterator<MemcachedNode> getSequence(String k);
 
 	/**
 	 * Get all memcached nodes.  This is useful for broadcasting messages.
 	 */
-	Collection<MemcachedNodeImpl> getAll();
+	Collection<MemcachedNode> getAll();
 }
