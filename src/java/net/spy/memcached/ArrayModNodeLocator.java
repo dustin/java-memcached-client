@@ -31,7 +31,7 @@ public final class ArrayModNodeLocator implements NodeLocator {
 		return Arrays.asList(nodes);
 	}
 
-	public MemcachedNodeImpl getPrimary(String k) {
+	public MemcachedNode getPrimary(String k) {
 		return nodes[getServerForKey(k)];
 	}
 

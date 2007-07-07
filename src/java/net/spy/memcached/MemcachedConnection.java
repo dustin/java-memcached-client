@@ -97,7 +97,7 @@ public class MemcachedConnection extends SpyObject {
 	}
 
 	private boolean selectorsMakeSense() {
-		for(MemcachedNodeImpl qa : connections) {
+		for(MemcachedNode qa : connections) {
 			if(qa.getSk().isValid()) {
 				if(qa.getChannel().isConnected()) {
 					int sops=qa.getSk().interestOps();
@@ -108,7 +108,7 @@ public class MemcachedConnection extends SpyObject {
 					if(qa.hasWriteOp()) {
 						expected |= SelectionKey.OP_WRITE;
 					}
-					if(qa.getBytesRemainingInBuffer() > 0) {
+					if(qa.getBytesRemainingToWrite() > 0) {
 						expected |= SelectionKey.OP_WRITE;
 					}
 					assert sops == expected : "Invalid ops:  "
@@ -274,18 +274,18 @@ public class MemcachedConnection extends SpyObject {
 		fixupOps(qa);
 	}
 
-	private void handleWrites(SelectionKey sk, MemcachedNodeImpl qa)
+	private void handleWrites(SelectionKey sk, MemcachedNode qa)
 		throws IOException {
 		qa.fillWriteBuffer(optimizeGets);
-		boolean canWriteMore=qa.getBytesRemainingInBuffer() > 0;
+		boolean canWriteMore=qa.getBytesRemainingToWrite() > 0;
 		while(canWriteMore) {
 			int wrote=qa.writeSome();
 			qa.fillWriteBuffer(optimizeGets);
-			canWriteMore = wrote > 0 && qa.getBytesRemainingInBuffer() > 0;
+			canWriteMore = wrote > 0 && qa.getBytesRemainingToWrite() > 0;
 		}
 	}
 
-	private void handleReads(SelectionKey sk, MemcachedNodeImpl qa)
+	private void handleReads(SelectionKey sk, MemcachedNode qa)
 		throws IOException {
 		Operation currentOp = qa.getCurrentReadOp();
 		ByteBuffer rbuf=qa.getRbuf();
@@ -312,7 +312,7 @@ public class MemcachedConnection extends SpyObject {
 		}
 	}
 
-	private void fixupOps(MemcachedNodeImpl qa) {
+	private void fixupOps(MemcachedNode qa) {
 		if(qa.getSk().isValid()) {
 			int iops=qa.getSelectionOps();
 			getLogger().debug("Setting interested opts to %d", iops);
@@ -367,7 +367,7 @@ public class MemcachedConnection extends SpyObject {
 		long now=System.currentTimeMillis();
 		for(Iterator<MemcachedNodeImpl> i=
 				reconnectQueue.headMap(now).values().iterator(); i.hasNext();) {
-			MemcachedNodeImpl qa=i.next();
+			MemcachedNode qa=i.next();
 			i.remove();
 			getLogger().info("Reconnecting %s", qa);
 			SocketChannel ch=SocketChannel.open();
@@ -442,14 +442,14 @@ public class MemcachedConnection extends SpyObject {
 	 * Shut down all of the connections.
 	 */
 	public void shutdown() throws IOException {
-		for(MemcachedNodeImpl qa : connections) {
+		for(MemcachedNode qa : connections) {
 			if(qa.getChannel() != null) {
 				qa.getChannel().close();
 				qa.setSk(null);
-				if(qa.getBytesRemainingInBuffer() > 0) {
+				if(qa.getBytesRemainingToWrite() > 0) {
 					getLogger().warn(
 						"Shut down with %d bytes remaining to write",
-							qa.getBytesRemainingInBuffer());
+							qa.getBytesRemainingToWrite());
 				}
 				getLogger().debug("Shut down channel %s", qa.getChannel());
 			}
@@ -462,7 +462,7 @@ public class MemcachedConnection extends SpyObject {
 	public String toString() {
 		StringBuilder sb=new StringBuilder();
 		sb.append("{MemcachedConnection to");
-		for(MemcachedNodeImpl qa : connections) {
+		for(MemcachedNode qa : connections) {
 			sb.append(" ");
 			sb.append(qa.getSocketAddress());
 		}

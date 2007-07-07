@@ -18,7 +18,7 @@ import net.spy.memcached.ops.OptimizedGet;
  * Represents a node with the memcached cluster, along with buffering and
  * operation queues.
  */
-class MemcachedNodeImpl extends SpyObject {
+class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	private final SocketAddress socketAddress;
 	private final ByteBuffer rbuf;
 	private final ByteBuffer wbuf;
@@ -53,6 +53,9 @@ class MemcachedNodeImpl extends SpyObject {
 		inputQueue=iq;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#copyInputQueue()
+	 */
 	public void copyInputQueue() {
 		Collection<Operation> tmp=new ArrayList<Operation>();
 		inputQueue.drainTo(tmp);
@@ -60,6 +63,9 @@ class MemcachedNodeImpl extends SpyObject {
 	}
 
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#setupResend()
+	 */
 	public void setupResend() {
 		// First, reset the current write op.
 		Operation op=getCurrentWriteOp();
@@ -95,6 +101,9 @@ class MemcachedNodeImpl extends SpyObject {
 		return nextOp != null;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#fillWriteBuffer(boolean)
+	 */
 	public void fillWriteBuffer(boolean optimizeGets) {
 		if(toWrite == 0) {
 			getWbuf().clear();
@@ -133,6 +142,9 @@ class MemcachedNodeImpl extends SpyObject {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#transitionWriteItem()
+	 */
 	public void transitionWriteItem() {
 		Operation op=removeCurrentWriteOp();
 		assert op != null : "There is no write item to transition";
@@ -141,7 +153,10 @@ class MemcachedNodeImpl extends SpyObject {
 		readQ.add(op);
 	}
 
-	public void optimize() {
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#optimize()
+	 */
+	private void optimize() {
 		// make sure there are at least two get operations in a row before
 		// attempting to optimize them.
 		if(writeQ.peek() instanceof GetOperation) {
@@ -167,18 +182,30 @@ class MemcachedNodeImpl extends SpyObject {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getCurrentReadOp()
+	 */
 	public Operation getCurrentReadOp() {
 		return readQ.peek();
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#removeCurrentReadOp()
+	 */
 	public Operation removeCurrentReadOp() {
 		return readQ.remove();
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getCurrentWriteOp()
+	 */
 	public Operation getCurrentWriteOp() {
 		return getOp == null ? writeQ.peek() : getOp;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#removeCurrentWriteOp()
+	 */
 	public Operation removeCurrentWriteOp() {
 		Operation rv=getOp;
 		if(rv == null) {
@@ -189,19 +216,31 @@ class MemcachedNodeImpl extends SpyObject {
 		return rv;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#hasReadOp()
+	 */
 	public boolean hasReadOp() {
 		return !readQ.isEmpty();
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#hasWriteOp()
+	 */
 	public boolean hasWriteOp() {
 		return !(getOp == null && writeQ.isEmpty());
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#addOp(net.spy.memcached.ops.Operation)
+	 */
 	public void addOp(Operation op) {
 		boolean added=inputQueue.add(op);
 		assert added; // documented to throw an IllegalStateException
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getSelectionOps()
+	 */
 	public int getSelectionOps() {
 		int rv=0;
 		if(getChannel().isConnected()) {
@@ -217,51 +256,59 @@ class MemcachedNodeImpl extends SpyObject {
 		return rv;
 	}
 
-	/**
-	 * Get the buffer used for reading data from this node.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getRbuf()
 	 */
 	public ByteBuffer getRbuf() {
 		return rbuf;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getWbuf()
+	 */
 	public ByteBuffer getWbuf() {
 		return wbuf;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getSocketAddress()
+	 */
 	public SocketAddress getSocketAddress() {
 		return socketAddress;
 	}
 
-	/**
-	 * True if this node is <q>active.</q>  i.e. is is currently connected
-	 * and expected to be able to process requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#isActive()
 	 */
 	public boolean isActive() {
 		return reconnectAttempt == 0
 			&& getChannel() != null && getChannel().isConnected();
 	}
 
-	/**
-	 * Notify this node that it will be reconnecting.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#reconnecting()
 	 */
 	public void reconnecting() {
 		reconnectAttempt++;
 	}
 
-	/**
-	 * Notify this node that it has reconnected.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#connected()
 	 */
 	public void connected() {
 		reconnectAttempt=0;
 	}
 
-	/**
-	 * Get the current reconnect count.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getReconnectCount()
 	 */
 	public int getReconnectCount() {
 		return reconnectAttempt;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#toString()
+	 */
 	@Override
 	public String toString() {
 		int sops=0;
@@ -280,38 +327,51 @@ class MemcachedNodeImpl extends SpyObject {
 			+ ", interested=" + sops + "}";
 	}
 
-	/**
-	 * Register a channel with this node.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#registerChannel(java.nio.channels.SocketChannel, java.nio.channels.SelectionKey)
 	 */
 	public void registerChannel(SocketChannel ch, SelectionKey selectionKey) {
 		setChannel(ch);
 		setSk(selectionKey);
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#setChannel(java.nio.channels.SocketChannel)
+	 */
 	public void setChannel(SocketChannel to) {
 		channel = to;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getChannel()
+	 */
 	public SocketChannel getChannel() {
 		return channel;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#setSk(java.nio.channels.SelectionKey)
+	 */
 	public void setSk(SelectionKey to) {
 		sk = to;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getSk()
+	 */
 	public SelectionKey getSk() {
 		return sk;
 	}
 
-	public int getBytesRemainingInBuffer() {
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getBytesRemainingInBuffer()
+	 */
+	public int getBytesRemainingToWrite() {
 		return toWrite;
 	}
 
-	/**
-	 * Write some bytes and return the number of bytes written.
-	 * @return
-	 * @throws IOException
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#writeSome()
 	 */
 	public int writeSome() throws IOException {
 		int wrote=channel.write(wbuf);

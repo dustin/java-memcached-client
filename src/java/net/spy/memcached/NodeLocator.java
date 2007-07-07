@@ -14,7 +14,7 @@ public interface NodeLocator {
 	 * @param k the object key
 	 * @return the QueueAttachment containing the primary storage for a key
 	 */
-	MemcachedNodeImpl getPrimary(String k);
+	MemcachedNode getPrimary(String k);
 
 	/**
 	 * Get an iterator over the sequence of nodes that make up the backup
