@@ -33,8 +33,6 @@ public class MemcachedConnection extends SpyObject {
 	private static final int EXCESSIVE_EMPTY = 100;
 	// maximum amount of time to wait between reconnect attempts
 	private static final long MAX_DELAY = 30000;
-	// Maximum number of sequential errors before reconnecting.
-	private static final int EXCESSIVE_ERRORS = 1;
 
 	private volatile boolean shutDown=false;
 	// If true, get optimization will collapse multiple sequential get ops
@@ -110,7 +108,7 @@ public class MemcachedConnection extends SpyObject {
 					if(qa.hasWriteOp()) {
 						expected |= SelectionKey.OP_WRITE;
 					}
-					if(qa.toWrite > 0) {
+					if(qa.getBytesRemainingInBuffer() > 0) {
 						expected |= SelectionKey.OP_WRITE;
 					}
 					assert sops == expected : "Invalid ops:  "
@@ -263,11 +261,9 @@ public class MemcachedConnection extends SpyObject {
 			if(sk.isReadable()) {
 				try {
 					handleReads(sk, qa);
-					qa.protocolErrors=0;
 				} catch (OperationException e) {
-					if(++qa.protocolErrors >= EXCESSIVE_ERRORS) {
-						queueReconnect(qa);
-					}
+					// Reconnect if we have trouble executing an operation.
+					queueReconnect(qa);
 				} catch (IOException e) {
 					getLogger().info("IOException handling %s, reconnecting",
 							qa.getCurrentReadOp(), e);
@@ -281,17 +277,11 @@ public class MemcachedConnection extends SpyObject {
 	private void handleWrites(SelectionKey sk, MemcachedNode qa)
 		throws IOException {
 		qa.fillWriteBuffer(optimizeGets);
-		boolean canWriteMore=qa.toWrite > 0;
+		boolean canWriteMore=qa.getBytesRemainingInBuffer() > 0;
 		while(canWriteMore) {
-			int wrote=qa.getChannel().write(qa.getWbuf());
-			assert wrote >= 0 : "Wrote negative bytes?";
-			qa.toWrite -= wrote;
-			assert qa.toWrite >= 0
-				: "toWrite went negative after writing " + wrote
-					+ " bytes for " + qa;
-			getLogger().debug("Wrote %d bytes", wrote);
+			int wrote=qa.writeSome();
 			qa.fillWriteBuffer(optimizeGets);
-			canWriteMore = wrote > 0 && qa.toWrite > 0;
+			canWriteMore = wrote > 0 && qa.getBytesRemainingInBuffer() > 0;
 		}
 	}
 
@@ -456,10 +446,10 @@ public class MemcachedConnection extends SpyObject {
 			if(qa.getChannel() != null) {
 				qa.getChannel().close();
 				qa.setSk(null);
-				if(qa.toWrite > 0) {
+				if(qa.getBytesRemainingInBuffer() > 0) {
 					getLogger().warn(
 						"Shut down with %d bytes remaining to write",
-							qa.toWrite);
+							qa.getBytesRemainingInBuffer());
 				}
 				getLogger().debug("Shut down channel %s", qa.getChannel());
 			}

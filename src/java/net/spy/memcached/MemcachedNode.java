@@ -1,5 +1,6 @@
 package net.spy.memcached;
 
+import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -28,12 +29,9 @@ class MemcachedNode extends SpyObject {
 	// indicator.
 	private volatile int reconnectAttempt=1;
 	private SocketChannel channel;
-	public int toWrite=0;
+	private int toWrite=0;
 	private GetOperation getOp=null;
 	private SelectionKey sk=null;
-
-	// Count sequential protocol errors.
-	public int protocolErrors=0;
 
 	public MemcachedNode(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
@@ -79,7 +77,6 @@ class MemcachedNode extends SpyObject {
 		getWbuf().clear();
 		getRbuf().clear();
 		toWrite=0;
-		protocolErrors=0;
 	}
 
 	// Prepare the pending operations.  Return true if there are any pending
@@ -307,4 +304,23 @@ class MemcachedNode extends SpyObject {
 		return sk;
 	}
 
+	public int getBytesRemainingInBuffer() {
+		return toWrite;
+	}
+
+	/**
+	 * Write some bytes and return the number of bytes written.
+	 * @return
+	 * @throws IOException
+	 */
+	public int writeSome() throws IOException {
+		int wrote=channel.write(wbuf);
+		assert wrote >= 0 : "Wrote negative bytes?";
+		toWrite -= wrote;
+		assert toWrite >= 0
+			: "toWrite went negative after writing " + wrote
+				+ " bytes for " + this;
+		getLogger().debug("Wrote %d bytes", wrote);
+		return wrote;
+	}
 }
