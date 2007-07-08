@@ -10,10 +10,23 @@ import java.util.concurrent.TimeUnit;
 
 public class FailingServerTest extends ClientBaseCase {
 
+	private String serverList;
+
+	@Override
+	protected void setUp() throws Exception {
+		serverList="127.0.0.1:11211 127.0.0.1:11212";
+		super.setUp();
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		serverList="127.0.0.1:11211";
+		super.tearDown();
+	}
+
 	@Override
 	protected void initClient(ConnectionFactory cf) throws Exception {
-		client=new MemcachedClient(cf, AddrUtil.getAddresses(
-			"127.0.0.1:11211 127.0.0.1:11212"));
+		client=new MemcachedClient(cf, AddrUtil.getAddresses(serverList));
 	}
 
 	@Override

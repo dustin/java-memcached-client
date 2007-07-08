@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -371,11 +372,27 @@ public class MemcachedClient extends SpyThread {
 	public Future<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
 		final Map<String, Object> m=new ConcurrentHashMap<String, Object>();
 		// Break the gets down into groups by key
-		Map<MemcachedNode, Collection<String>> chunks
+		final Map<MemcachedNode, Collection<String>> chunks
 			=new HashMap<MemcachedNode, Collection<String>>();
-		NodeLocator locator=conn.getLocator();
+		final NodeLocator locator=conn.getLocator();
 		for(String key : keys) {
-			MemcachedNode node=locator.getPrimary(key);
+			final MemcachedNode primaryNode=locator.getPrimary(key);
+			MemcachedNode node=null;
+			if(primaryNode.isActive()) {
+				node=primaryNode;
+			} else {
+				for(Iterator<MemcachedNode> i=locator.getSequence(key);
+					node == null && i.hasNext();) {
+					MemcachedNode n=i.next();
+					if(n.isActive()) {
+						node=n;
+					}
+				}
+				if(node == null) {
+					node=primaryNode;
+				}
+			}
+			assert node != null : "Didn't find a node for " + key;
 			Collection<String> ks=chunks.get(node);
 			if(ks == null) {
 				ks=new ArrayList<String>();
@@ -400,7 +417,8 @@ public class MemcachedClient extends SpyThread {
 					latch.countDown();
 				}
 		};
-		for(Map.Entry<MemcachedNode, Collection<String>> me : chunks.entrySet()) {
+		for(Map.Entry<MemcachedNode, Collection<String>> me
+				: chunks.entrySet()) {
 			ops.add(addOp(me.getKey(), new GetOperation(me.getValue(), cb)));
 		}
 		return new BulkGetFuture(m, ops, latch);
