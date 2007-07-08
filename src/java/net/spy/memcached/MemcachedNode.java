@@ -11,7 +11,7 @@ import net.spy.memcached.ops.Operation;
 /**
  * Interface defining a connection to a memcached server.
  */
-interface MemcachedNode {
+public interface MemcachedNode {
 
 	/**
 	 * Move all of the operations delivered via addOperation into the internal

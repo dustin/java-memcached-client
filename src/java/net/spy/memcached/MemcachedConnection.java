@@ -59,7 +59,7 @@ public class MemcachedConnection extends SpyObject {
 	 * @throws IOException if a connection attempt fails early
 	 */
 	public MemcachedConnection(int bufSize, ConnectionFactory f,
-			List<InetSocketAddress> a, HashAlgorithm hash)
+			List<InetSocketAddress> a)
 		throws IOException {
 		reconnectQueue=new TreeMap<Long, MemcachedNode>();
 		addedQueue=new ConcurrentLinkedQueue<MemcachedNode>();
@@ -86,7 +86,7 @@ public class MemcachedConnection extends SpyObject {
 				: "Not connected, and not wanting to connect";
 			connections.add(qa);
 		}
-		locator=new ArrayModNodeLocator(connections, hash);
+		locator=f.createLocator(connections);
 	}
 
 	/**

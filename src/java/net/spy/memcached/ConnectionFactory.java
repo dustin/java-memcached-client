@@ -27,4 +27,9 @@ public interface ConnectionFactory {
 	 * Create a BlockingQueue for operations for a connection.
 	 */
 	BlockingQueue<Operation> createOperationQueue();
+
+	/**
+	 * Create a NodeLocator instance for the given list of nodes.
+	 */
+	NodeLocator createLocator(List<MemcachedNode> nodes);
 }

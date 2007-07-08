@@ -69,7 +69,7 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public MemcachedConnection createConnection(List<InetSocketAddress> addrs)
 		throws IOException {
-		return new MemcachedConnection(readBufSize, this, addrs, hashAlg);
+		return new MemcachedConnection(readBufSize, this, addrs);
 	}
 
 	/* (non-Javadoc)
@@ -77,6 +77,34 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public BlockingQueue<Operation> createOperationQueue() {
 		return new ArrayBlockingQueue<Operation>(opQueueLen);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#createLocator(java.util.List)
+	 */
+	public NodeLocator createLocator(List<MemcachedNode> nodes) {
+		return new ArrayModNodeLocator(nodes, getHashAlg());
+	}
+
+	/**
+	 * Get the op queue length set at construct time.
+	 */
+	public int getOpQueueLen() {
+		return opQueueLen;
+	}
+
+	/**
+	 * Get the read buffer size set at construct time.
+	 */
+	public int getReadBufSize() {
+		return readBufSize;
+	}
+
+	/**
+	 * Get the hash algorithm set at construct time.
+	 */
+	public HashAlgorithm getHashAlg() {
+		return hashAlg;
 	}
 
 }
