@@ -1,5 +1,7 @@
 package net.spy.memcached;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.zip.CRC32;
 
 /**
@@ -25,7 +27,11 @@ public enum HashAlgorithm {
 	 * @see http://www.isthe.com/chongo/tech/comp/fnv/
 	 * @see http://en.wikipedia.org/wiki/Fowler_Noll_Vo_hash
 	 */
-	FNV_HASH;
+	FNV_HASH,
+	/**
+	 * MD5-based hash algorithm used by ketama.
+	 */
+	KETAMA_HASH;
 
 	private static final long FNV1_64_INIT = 0xcbf29ce484222325L;
 	private static final long FNV_64_PRIME = 0x100000001b3L;
@@ -57,6 +63,21 @@ public enum HashAlgorithm {
 					rv ^= k.charAt(i);
 				}
 				break;
+			case KETAMA_HASH:
+				MessageDigest md5;
+				try {
+					md5 = MessageDigest.getInstance("MD5");
+				} catch (NoSuchAlgorithmException e) {
+					throw new RuntimeException("MD5 not supported", e);
+				}
+		        md5.reset();
+		        md5.update(k.getBytes());
+		        byte[] bKey = md5.digest();
+		        rv = ((long)(bKey[3]&0xFF) << 24)
+		        	| ((long)(bKey[2]&0xFF) << 16)
+		        	| ((long)(bKey[1]&0xFF) << 8)
+		        	| (bKey[0]&0xFF);
+		        break;
 			default:
 				assert false;
 		}
