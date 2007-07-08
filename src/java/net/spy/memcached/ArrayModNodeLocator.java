@@ -55,7 +55,11 @@ public final class ArrayModNodeLocator implements NodeLocator {
 
 		public NodeIterator(int keyStart) {
 			start=keyStart;
+			next=start;
 			computeNext();
+			assert next >= 0 || nodes.length == 1
+				: "Starting sequence at " + start + " of "
+					+ nodes.length + " next is " + next;
 		}
 
 		public boolean hasNext() {

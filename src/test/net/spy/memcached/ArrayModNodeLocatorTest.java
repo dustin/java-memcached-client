@@ -18,11 +18,8 @@ public class ArrayModNodeLocatorTest extends MockObjectTestCase {
 
 	private ArrayModNodeLocator locator;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-
-		nodes=new MemcachedNode[4];
+	private void setupNodes(int n) {
+		nodes=new MemcachedNode[n];
 		nodeMocks=new Mock[nodes.length];
 
 		for(int i=0; i<nodeMocks.length; i++) {
@@ -34,12 +31,14 @@ public class ArrayModNodeLocatorTest extends MockObjectTestCase {
 	}
 
 	public void testPrimary() throws Exception {
+		setupNodes(4);
 		assertSame(nodes[1], locator.getPrimary("dustin"));
 		assertSame(nodes[0], locator.getPrimary("x"));
 		assertSame(nodes[1], locator.getPrimary("y"));
 	}
 
 	public void testAll() throws Exception {
+		setupNodes(4);
 		Collection<MemcachedNode> all = locator.getAll();
 		assertEquals(4, all.size());
 		assertTrue(all.contains(nodes[0]));
@@ -54,10 +53,26 @@ public class ArrayModNodeLocatorTest extends MockObjectTestCase {
 			assertSame("At position " + pos, nodes[seq[pos]], i.next());
 			pos++;
 		}
+		assertEquals("Incorrect sequence size for " + k, seq.length, pos);
 	}
 
 	public void testSeq1() {
-		assertSequence("dustin", 2, 3, 0, 1);
-		assertSequence("noelani", 1, 2, 3, 0);
+		setupNodes(4);
+		assertSequence("dustin", 2, 3, 0);
+	}
+
+	public void testSeq2() {
+		setupNodes(4);
+		assertSequence("noelani", 1, 2, 3);
+	}
+
+	public void testSeqOnlyOneServer() {
+		setupNodes(1);
+		assertSequence("noelani");
+	}
+
+	public void testSeqWithTwoNodes() {
+		setupNodes(2);
+		assertSequence("dustin", 0);
 	}
 }
