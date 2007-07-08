@@ -3,6 +3,7 @@ package net.spy.memcached;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * NodeLocator implementation for dealing with simple array lookups using a
@@ -21,9 +22,9 @@ public final class ArrayModNodeLocator implements NodeLocator {
 	 * @param n the array of nodes
 	 * @param alg the hash algorithm
 	 */
-	public ArrayModNodeLocator(MemcachedNode[] n, HashAlgorithm alg) {
+	public ArrayModNodeLocator(List<MemcachedNode> n, HashAlgorithm alg) {
 		super();
-		nodes=n;
+		nodes=n.toArray(new MemcachedNode[n.size()]);
 		hashAlg=alg;
 	}
 

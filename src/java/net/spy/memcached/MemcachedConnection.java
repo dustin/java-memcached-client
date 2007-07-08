@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -63,8 +64,7 @@ public class MemcachedConnection extends SpyObject {
 		reconnectQueue=new TreeMap<Long, MemcachedNode>();
 		addedQueue=new ConcurrentLinkedQueue<MemcachedNode>();
 		selector=Selector.open();
-		MemcachedNode[] connections=new MemcachedNode[a.size()];
-		int cons=0;
+		List<MemcachedNode> connections=new ArrayList<MemcachedNode>(a.size());
 		for(SocketAddress sa : a) {
 			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
@@ -84,7 +84,7 @@ public class MemcachedConnection extends SpyObject {
 			assert ch.isConnected()
 				|| qa.getSk().interestOps() == SelectionKey.OP_CONNECT
 				: "Not connected, and not wanting to connect";
-			connections[cons++]=qa;
+			connections.add(qa);
 		}
 		locator=new ArrayModNodeLocator(connections, hash);
 	}

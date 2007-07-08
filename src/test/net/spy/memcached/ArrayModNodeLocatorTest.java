@@ -1,5 +1,6 @@
 package net.spy.memcached;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -27,7 +28,8 @@ public class ArrayModNodeLocatorTest extends MockObjectTestCase {
 			nodes[i]=(MemcachedNode)nodeMocks[i].proxy();
 		}
 
-		locator=new ArrayModNodeLocator(nodes, HashAlgorithm.NATIVE_HASH);
+		locator=new ArrayModNodeLocator(Arrays.asList(nodes),
+			HashAlgorithm.NATIVE_HASH);
 	}
 
 	public void testPrimary() throws Exception {
