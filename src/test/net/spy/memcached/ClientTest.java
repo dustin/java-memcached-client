@@ -331,7 +331,7 @@ public class ClientTest extends ClientBaseCase {
 	}
 
 	public void testBadOperation() throws Exception {
-		client.addOp(0, new Operation(new OperationCallback(){
+		client.addOp("x", new Operation(new OperationCallback(){
 			public void complete() {
 				System.err.println("Complete.");
 			}

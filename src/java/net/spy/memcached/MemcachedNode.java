@@ -154,4 +154,9 @@ interface MemcachedNode {
 	 */
 	int writeSome() throws IOException;
 
+	/**
+	 * Fix up the selection ops on the selection key.
+	 */
+	void fixupOps();
+
 }

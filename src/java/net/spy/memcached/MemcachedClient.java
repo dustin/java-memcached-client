@@ -20,6 +20,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.SpyThread;
 import net.spy.memcached.ops.DeleteOperation;
@@ -168,13 +169,47 @@ public class MemcachedClient extends SpyThread {
 	 * @param op the operation to perform
 	 * @return the Operation
 	 */
-	Operation addOp(int which, Operation op) {
+	Operation addOp(final String key, final Operation op) {
+		if(shuttingDown) {
+			throw new IllegalStateException("Shutting down");
+		}
+		if(key.length() > MAX_KEY_LENGTH) {
+			throw new IllegalArgumentException("Key is too long (maxlen = "
+					+ MAX_KEY_LENGTH + ")");
+		}
+		// Validate the key
+		for(char c : key.toCharArray()) {
+			if(Character.isWhitespace(c) || Character.isISOControl(c)) {
+				throw new IllegalArgumentException(
+					"Key contains invalid characters:  ``" + key + "''");
+			}
+		}
+		assert isAlive() : "IO Thread is not running.";
+		conn.addOperation(key, op);
+		return op;
+	}
+
+	Operation addOp(final MemcachedNode node, final Operation op) {
 		if(shuttingDown) {
 			throw new IllegalStateException("Shutting down");
 		}
 		assert isAlive() : "IO Thread is not running.";
-		conn.addOperation(which, op);
+		conn.addOperation(node, op);
 		return op;
+	}
+
+
+	CountDownLatch broadcastOp(final OperationFactory of) {
+		return broadcastOp(of, true);
+	}
+
+
+	private CountDownLatch broadcastOp(OperationFactory of,
+			boolean checkShuttingDown) {
+		if(checkShuttingDown && shuttingDown) {
+			throw new IllegalStateException("Shutting down");
+		}
+		return conn.broadcastOperation(of);
 	}
 
 	private Future<Boolean> asyncStore(StoreOperation.StoreType storeType,
@@ -191,7 +226,7 @@ public class MemcachedClient extends SpyThread {
 						latch.countDown();
 					}});
 		rv.setOperation(op);
-		addOp(getServerForKey(key), op);
+		addOp(key, op);
 		return rv;
 	}
 
@@ -307,7 +342,7 @@ public class MemcachedClient extends SpyThread {
 				latch.countDown();
 			}});
 		rv.setOperation(op);
-		addOp(getServerForKey(key), op);
+		addOp(key, op);
 		return rv;
 	}
 
@@ -336,14 +371,15 @@ public class MemcachedClient extends SpyThread {
 	public Future<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
 		final Map<String, Object> m=new ConcurrentHashMap<String, Object>();
 		// Break the gets down into groups by key
-		Map<Integer, Collection<String>> chunks
-			=new HashMap<Integer, Collection<String>>();
+		Map<MemcachedNode, Collection<String>> chunks
+			=new HashMap<MemcachedNode, Collection<String>>();
+		NodeLocator locator=conn.getLocator();
 		for(String key : keys) {
-			int which=getServerForKey(key);
-			Collection<String> ks=chunks.get(which);
+			MemcachedNode node=locator.getPrimary(key);
+			Collection<String> ks=chunks.get(node);
 			if(ks == null) {
 				ks=new ArrayList<String>();
-				chunks.put(which, ks);
+				chunks.put(node, ks);
 			}
 			ks.add(key);
 		}
@@ -364,7 +400,7 @@ public class MemcachedClient extends SpyThread {
 					latch.countDown();
 				}
 		};
-		for(Map.Entry<Integer, Collection<String>> me : chunks.entrySet()) {
+		for(Map.Entry<MemcachedNode, Collection<String>> me : chunks.entrySet()) {
 			ops.add(addOp(me.getKey(), new GetOperation(me.getValue(), cb)));
 		}
 		return new BulkGetFuture(m, ops, latch);
@@ -411,23 +447,24 @@ public class MemcachedClient extends SpyThread {
 	public Map<SocketAddress, String> getVersions() {
 		final Map<SocketAddress, String>rv=
 			new ConcurrentHashMap<SocketAddress, String>();
-		final CountDownLatch latch=new CountDownLatch(conn.getNumConnections());
 
-		for(int i=0; i<conn.getNumConnections(); i++) {
-			final SocketAddress sa=conn.getAddressOf(i);
-			addOp(i, new VersionOperation(
-					new OperationCallback() {
-						public void receivedStatus(String s) {
-							rv.put(sa, s);
-						}
+		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+			public Operation newOp(final MemcachedNode n,
+					final CountDownLatch latch) {
+				final SocketAddress sa=n.getSocketAddress();
+				return new VersionOperation(
+						new OperationCallback() {
+							public void receivedStatus(String s) {
+								rv.put(sa, s);
+							}
 
-						public void complete() {
-							latch.countDown();
-						}
-					}));
-		}
+							public void complete() {
+								latch.countDown();
+							}
+						});
+			}});
 		try {
-			latch.await();
+			blatch.await();
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for versions", e);
 		}
@@ -441,31 +478,33 @@ public class MemcachedClient extends SpyThread {
 		return getStats(null);
 	}
 
-	private Map<SocketAddress, Map<String, String>> getStats(String arg) {
+	private Map<SocketAddress, Map<String, String>> getStats(final String arg) {
 		final Map<SocketAddress, Map<String, String>> rv
 			=new HashMap<SocketAddress, Map<String, String>>();
-		final CountDownLatch latch=new CountDownLatch(conn.getNumConnections());
-		for(int i=0; i<conn.getNumConnections(); i++) {
-			final SocketAddress sa=conn.getAddressOf(i);
-			rv.put(sa, new HashMap<String, String>());
-			addOp(i, new StatsOperation(arg,
-					new StatsOperation.Callback() {
-						public void gotStat(String name, String val) {
-							rv.get(sa).put(name, val);
+
+		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+			public Operation newOp(final MemcachedNode n,
+				final CountDownLatch latch) {
+				final SocketAddress sa=n.getSocketAddress();
+				rv.put(sa, new HashMap<String, String>());
+				return new StatsOperation(arg,
+						new StatsOperation.Callback() {
+					public void gotStat(String name, String val) {
+						rv.get(sa).put(name, val);
+					}
+					@SuppressWarnings("synthetic-access")
+					public void receivedStatus(String line) {
+						if(!line.equals("END")) {
+							getLogger().warn("Expeted ``END'', was ``%s''",
+								line);
 						}
-						@SuppressWarnings("synthetic-access")
-						public void receivedStatus(String line) {
-							if(!line.equals("END")) {
-								getLogger().warn("Expeted ``END'', was ``%s''," +
-									line);
-							}
-						}
-						public void complete() {
-							latch.countDown();
-						}}));
-		}
+					}
+					public void complete() {
+						latch.countDown();
+					}});
+			}});
 		try {
-			latch.await();
+			blatch.await();
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for stats", e);
 		}
@@ -475,7 +514,7 @@ public class MemcachedClient extends SpyThread {
 	private long mutate(MutatorOperation.Mutator m, String key, int by) {
 		final AtomicLong rv=new AtomicLong();
 		final CountDownLatch latch=new CountDownLatch(1);
-		addOp(getServerForKey(key), new MutatorOperation(m, key, by,
+		addOp(key, new MutatorOperation(m, key, by,
 				new OperationCallback() {
 					public void receivedStatus(String val) {
 						rv.set(new Long(val==null?"-1":val));
@@ -580,7 +619,7 @@ public class MemcachedClient extends SpyThread {
 						latch.countDown();
 					}});
 		rv.setOperation(op);
-		addOp(getServerForKey(key), op);
+		addOp(key, op);
 		return rv;
 	}
 
@@ -594,21 +633,22 @@ public class MemcachedClient extends SpyThread {
 	/**
 	 * Flush all caches from all servers with a delay of application.
 	 */
-	public Future<Boolean> flush(int delay) {
-		final CountDownLatch latch=new CountDownLatch(conn.getNumConnections());
-		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
-		// XXX:  We will not be able to cancel this operation
-		for(int i=0; i<conn.getNumConnections(); i++) {
-			addOp(i, new FlushOperation(delay, new OperationCallback(){
-				public void receivedStatus(String line) {
-					rv.set(line.equals("OK"));
-				}
+	public Future<Boolean> flush(final int delay) {
+		final AtomicReference<Boolean> flushResult=
+			new AtomicReference<Boolean>(null);
+		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+			public Operation newOp(final MemcachedNode n,
+					final CountDownLatch latch) {
+				return new FlushOperation(delay, new OperationCallback(){
+					public void receivedStatus(String line) {
+						flushResult.set(line.equals("OK"));
+					}
 
-				public void complete() {
-					latch.countDown();
-				}}));
-		}
-		return rv;
+					public void complete() {
+						latch.countDown();
+					}});
+			}});
+		return new OperationFuture<Boolean>(blatch, flushResult);
 	}
 
 	/**
@@ -701,54 +741,26 @@ public class MemcachedClient extends SpyThread {
 	 * Wait for the queues to die down.
 	 */
 	public boolean waitForQueues(long timeout, TimeUnit unit) {
-		boolean rv=false;
-		final CountDownLatch latch=new CountDownLatch(conn.getNumConnections());
-
-		// This is implemented by directly adding VersionOperations to all the
-		// existing queues and then waiting for them to be processed.  We're
-		// directly adding to the queue instead of using addOp because we want
-		// to be able to do this during a shutdown after disallowing any
-		// additional operations.
-		for(int i=0; i<conn.getNumConnections(); i++) {
-			assert isAlive() : "IO Thread is not running.";
-			conn.addOperation(i, new VersionOperation(
-					new OperationCallback() {
-						public void receivedStatus(String s) {
-							latch.countDown();
-						}
-						public void complete() {
-							latch.countDown();
-						}
-					}));
-			getLogger().info("Added queue wait command to %s", i);
-		}
+		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+			public Operation newOp(final MemcachedNode n,
+					final CountDownLatch latch) {
+				return new VersionOperation(
+						new OperationCallback() {
+							// XXX:  Why do I count down the latch on two
+							// conditions?
+							public void receivedStatus(String s) {
+								latch.countDown();
+							}
+							public void complete() {
+								latch.countDown();
+							}
+						});
+			}}, false);
 		try {
-			rv=latch.await(timeout, unit);
+			return blatch.await(timeout, unit);
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for queues", e);
 		}
-		return rv;
-	}
-
-	private int getServerForKey(String key) {
-		if(key.length() > MAX_KEY_LENGTH) {
-			throw new IllegalArgumentException("Key is too long (maxlen = "
-					+ MAX_KEY_LENGTH + ")");
-		}
-		// Validate the key
-		for(char c : key.toCharArray()) {
-			if(Character.isWhitespace(c) || Character.isISOControl(c)) {
-				throw new IllegalArgumentException(
-					"Key contains invalid characters:  ``" + key + "''");
-			}
-		}
-		int rv=(int)(hashAlg.hash(key) % conn.getNumConnections());
-		assert rv >= 0 : "Returned negative key for key " + key;
-		assert rv < conn.getNumConnections()
-			: "Invalid server number " + rv + " for key " + key;
-		getLogger().debug("Returning server #%d for %s(%s) (%d total conns)",
-				rv, hashAlg, key, conn.getNumConnections());
-		return rv;
 	}
 
 	static class BulkGetFuture implements Future<Map<String, Object>> {
@@ -812,12 +824,17 @@ public class MemcachedClient extends SpyThread {
 	static class OperationFuture<T> implements Future<T> {
 
 		private final CountDownLatch latch;
-		private T obj=null;
+		private final AtomicReference<T> objRef;
 		private Operation op;
 
 		public OperationFuture(CountDownLatch l) {
+			this(l, new AtomicReference<T>(null));
+		}
+
+		public OperationFuture(CountDownLatch l, AtomicReference<T> oref) {
 			super();
 			latch=l;
+			objRef=oref;
 		}
 
 		public boolean cancel(boolean ign) {
@@ -836,17 +853,17 @@ public class MemcachedClient extends SpyThread {
 			if(op != null && op.hasErrored()) {
 				throw new ExecutionException(op.getException());
 			}
-			return obj;
+			return objRef.get();
 		}
 
 		public T get(long duration, TimeUnit units)
 			throws InterruptedException, TimeoutException {
 			latch.await(duration, units);
-			return obj;
+			return objRef.get();
 		}
 
 		void set(T o) {
-			obj=o;
+			objRef.set(o);
 		}
 
 		void setOperation(Operation to) {

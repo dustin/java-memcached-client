@@ -33,6 +33,29 @@ public class DefaultConnectionFactory extends SpyObject
 
 	private final int opQueueLen;
 	private final int readBufSize;
+	private final HashAlgorithm hashAlg;
+
+	/**
+	 * Construct a DefaultConnectionFactory with the given parameters.
+	 *
+	 * @param hashAlgorithm the algorithm to use for hashing
+	 * @param bufSize the buffer size
+	 * @param qLen the queue length.
+	 */
+	public DefaultConnectionFactory(int qLen, int bufSize, HashAlgorithm hash) {
+		super();
+		opQueueLen=qLen;
+		readBufSize=bufSize;
+		hashAlg=hash;
+	}
+
+	/**
+	 * Create a DefaultConnectionFactory with the given maximum operation
+	 * queue length, and the given read buffer size.
+	 */
+	public DefaultConnectionFactory(int qLen, int bufSize) {
+		this(qLen, bufSize, HashAlgorithm.NATIVE_HASH);
+	}
 
 	/**
 	 * Create a DefaultConnectionFactory with the default parameters.
@@ -41,22 +64,12 @@ public class DefaultConnectionFactory extends SpyObject
 		this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE);
 	}
 
-	/**
-	 * Create a DefaultConnectionFactory with the given maximum operation
-	 * queue length, and the given read buffer size.
-	 */
-	public DefaultConnectionFactory(int qLen, int bufSize) {
-		super();
-		opQueueLen=qLen;
-		readBufSize=bufSize;
-	}
-
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.ConnectionFactory#createConnection(java.util.List)
 	 */
 	public MemcachedConnection createConnection(List<InetSocketAddress> addrs)
 		throws IOException {
-		return new MemcachedConnection(readBufSize, this, addrs);
+		return new MemcachedConnection(readBufSize, this, addrs, hashAlg);
 	}
 
 	/* (non-Javadoc)

@@ -383,4 +383,15 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 		getLogger().debug("Wrote %d bytes", wrote);
 		return wrote;
 	}
+
+
+	public void fixupOps() {
+		if(sk != null && sk.isValid()) {
+			int iops=getSelectionOps();
+			getLogger().debug("Setting interested opts to %d", iops);
+			sk.interestOps(iops);
+		} else {
+			getLogger().debug("Selection key is not valid.");
+		}
+	}
 }

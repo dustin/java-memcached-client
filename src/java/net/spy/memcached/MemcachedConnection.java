@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
@@ -38,7 +39,7 @@ public class MemcachedConnection extends SpyObject {
 	// If true, get optimization will collapse multiple sequential get ops
 	private boolean optimizeGets=true;
 	private Selector selector=null;
-	private MemcachedNode[] connections=null;
+	private final NodeLocator locator;
 	private int emptySelects=0;
 	// AddedQueue is used to track the QueueAttachments for which operations
 	// have recently been queued.
@@ -57,12 +58,12 @@ public class MemcachedConnection extends SpyObject {
 	 * @throws IOException if a connection attempt fails early
 	 */
 	public MemcachedConnection(int bufSize, ConnectionFactory f,
-			List<InetSocketAddress> a)
+			List<InetSocketAddress> a, HashAlgorithm hash)
 		throws IOException {
 		reconnectQueue=new TreeMap<Long, MemcachedNode>();
 		addedQueue=new ConcurrentLinkedQueue<MemcachedNode>();
 		selector=Selector.open();
-		connections=new MemcachedNode[a.size()];
+		MemcachedNode[] connections=new MemcachedNode[a.size()];
 		int cons=0;
 		for(SocketAddress sa : a) {
 			SocketChannel ch=SocketChannel.open();
@@ -85,6 +86,7 @@ public class MemcachedConnection extends SpyObject {
 				: "Not connected, and not wanting to connect";
 			connections[cons++]=qa;
 		}
+		locator=new ArrayModNodeLocator(connections, hash);
 	}
 
 	/**
@@ -97,8 +99,8 @@ public class MemcachedConnection extends SpyObject {
 	}
 
 	private boolean selectorsMakeSense() {
-		for(MemcachedNode qa : connections) {
-			if(qa.getSk().isValid()) {
+		for(MemcachedNode qa : locator.getAll()) {
+			if(qa.getSk() != null && qa.getSk().isValid()) {
 				if(qa.getChannel().isConnected()) {
 					int sops=qa.getSk().interestOps();
 					int expected=0;
@@ -216,7 +218,7 @@ public class MemcachedConnection extends SpyObject {
 							queueReconnect(qa);
 						}
 					}
-					fixupOps(qa);
+					qa.fixupOps();
 				}
 			} catch(NoSuchElementException e) {
 				// out of stuff.
@@ -271,7 +273,7 @@ public class MemcachedConnection extends SpyObject {
 				}
 			}
 		}
-		fixupOps(qa);
+		qa.fixupOps();
 	}
 
 	private void handleWrites(SelectionKey sk, MemcachedNode qa)
@@ -309,16 +311,6 @@ public class MemcachedConnection extends SpyObject {
 			}
 			rbuf.clear();
 			read=channel.read(rbuf);
-		}
-	}
-
-	private void fixupOps(MemcachedNode qa) {
-		if(qa.getSk().isValid()) {
-			int iops=qa.getSelectionOps();
-			getLogger().debug("Setting interested opts to %d", iops);
-			qa.getSk().interestOps(iops);
-		} else {
-			getLogger().debug("Selection key is not valid.");
 		}
 	}
 
@@ -384,20 +376,10 @@ public class MemcachedConnection extends SpyObject {
 	}
 
 	/**
-	 * Get the number of connections currently handled.
+	 * Get the node locator used by this connection.
 	 */
-	public int getNumConnections() {
-		return connections.length;
-	}
-
-	/**
-	 * Get the remote address of the socket with the given ID.
-	 * 
-	 * @param which which id
-	 * @return the rmeote address
-	 */
-	public SocketAddress getAddressOf(int which) {
-		return connections[which].getSocketAddress();
+	NodeLocator getLocator() {
+		return locator;
 	}
 
 	/**
@@ -406,43 +388,61 @@ public class MemcachedConnection extends SpyObject {
 	 * @param which the connection offset
 	 * @param o the operation
 	 */
-	public void addOperation(int which, Operation o) {
-		boolean placed=false;
-		int pos=which;
-		int loops=0;
-		// Loop until we find an appropriate server to process this operation
-		// beginning with the requested position.
-		while(!placed) {
-			assert loops < 3 : "Too many loops!";
-			MemcachedNode qa=connections[pos];
-			if(which == pos) {
-				loops++;
-			}
-			// If isActive, this client is not in the process of
-			// reconnecting.  If loops > 0, we've already been through all the
-			// clients and just want to queue the new item where it was
-			// originally requested (where it'll wait for the node to return)
-			if(qa.isActive() || loops > 1) {
-				o.initialize();
-				qa.addOp(o);
-				addedQueue.offer(qa);
-				Selector s=selector.wakeup();
-				assert s == selector : "Wakeup returned the wrong selector.";
-				getLogger().debug("Added %s to %d", o, which);
-				placed=true;
-			} else {
-				if(++pos >= connections.length) {
-					pos=0;
+	public void addOperation(final String key, final Operation o) {
+		MemcachedNode placeIn=null;
+		MemcachedNode primary = locator.getPrimary(key);
+		if(primary.isActive()) {
+			placeIn=primary;
+		} else {
+			// Look for another node in sequence that is ready.
+			for(Iterator<MemcachedNode> i=locator.getSequence(key);
+				placeIn == null && i.hasNext(); ) {
+				MemcachedNode n=i.next();
+				if(n.isActive()) {
+					placeIn=n;
 				}
 			}
+			// If we didn't find an active node, queue it in the primary node
+			// and wait for it to come back online.
+			if(placeIn == null) {
+				placeIn = primary;
+			}
 		}
+
+		assert placeIn != null : "No node found for key " + key;
+		addOperation(placeIn, o);
+	}
+
+	public void addOperation(final MemcachedNode node, final Operation o) {
+		o.initialize();
+		node.addOp(o);
+		addedQueue.offer(node);
+		Selector s=selector.wakeup();
+		assert s == selector : "Wakeup returned the wrong selector.";
+		getLogger().debug("Added %s to %d", o, node);
+	}
+
+	/**
+	 * Broadcast an operation to all nodes.
+	 */
+	public CountDownLatch broadcastOperation(final OperationFactory of) {
+		final CountDownLatch latch=new CountDownLatch(locator.getAll().size());
+		for(MemcachedNode node : locator.getAll()) {
+			Operation op = of.newOp(node, latch);
+			op.initialize();
+			node.addOp(op);
+			addedQueue.offer(node);
+		}
+		Selector s=selector.wakeup();
+		assert s == selector : "Wakeup returned the wrong selector.";
+		return latch;
 	}
 
 	/**
 	 * Shut down all of the connections.
 	 */
 	public void shutdown() throws IOException {
-		for(MemcachedNode qa : connections) {
+		for(MemcachedNode qa : locator.getAll()) {
 			if(qa.getChannel() != null) {
 				qa.getChannel().close();
 				qa.setSk(null);
@@ -462,7 +462,7 @@ public class MemcachedConnection extends SpyObject {
 	public String toString() {
 		StringBuilder sb=new StringBuilder();
 		sb.append("{MemcachedConnection to");
-		for(MemcachedNode qa : connections) {
+		for(MemcachedNode qa : locator.getAll()) {
 			sb.append(" ");
 			sb.append(qa.getSocketAddress());
 		}
