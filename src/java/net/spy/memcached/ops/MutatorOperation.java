@@ -28,14 +28,12 @@ public class MutatorOperation extends Operation {
 	private Mutator mutator=null;
 	private String key=null;
 	private int amount=0;
-	private OperationCallback cb=null;
 
 	public MutatorOperation(Mutator m, String k, int amt, OperationCallback c) {
-		super();
+		super(c);
 		mutator=m;
 		key=k;
 		amount=amt;
-		cb=c;
 	}
 
 	@Override
@@ -45,7 +43,7 @@ public class MutatorOperation extends Operation {
 		if(!line.equals("NOT_FOUND")) {
 			found=line;
 		}
-		cb.receivedStatus(found);
+		getCallback().receivedStatus(found);
 		transitionState(State.COMPLETE);
 	}
 
@@ -60,7 +58,8 @@ public class MutatorOperation extends Operation {
 
 	@Override
 	protected void wasCancelled() {
-		cb.receivedStatus("cancelled");
+		// XXX:  Replace this comment with why the hell I did this.
+		getCallback().receivedStatus("cancelled");
 	}
 
 }

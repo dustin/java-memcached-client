@@ -37,26 +37,22 @@ public class StoreOperation extends Operation {
 	private int flags=0;
 	private int exp=0;
 	private byte[] data=null;
-	private OperationCallback cb=null;
 
 	public StoreOperation(StoreType t, String k, int f, int e,
 			byte[] d, OperationCallback callback) {
-		super();
+		super(callback);
 		this.type=t;
 		this.key=k;
 		this.flags=f;
 		this.exp=e;
 		this.data=d;
-		this.cb=callback;
 	}
 
 	@Override
 	public void handleLine(String line) {
 		assert getState() == State.READING
 			: "Read ``" + line + "'' when in " + getState() + " state";
-		if(cb != null) {
-			cb.receivedStatus(line);
-		}
+		getCallback().receivedStatus(line);
 		transitionState(State.COMPLETE);
 	}
 
@@ -76,7 +72,8 @@ public class StoreOperation extends Operation {
 
 	@Override
 	protected void wasCancelled() {
-		cb.receivedStatus("cancelled");
+		// XXX:  Replace this comment with why I did this
+		getCallback().receivedStatus("cancelled");
 	}
 
 }

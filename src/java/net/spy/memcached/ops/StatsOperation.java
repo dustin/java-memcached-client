@@ -15,7 +15,7 @@ public class StatsOperation extends Operation {
 	private Callback cb=null;
 
 	public StatsOperation(String arg, Callback c) {
-		super();
+		super(c);
 		cb=c;
 		if(arg == null) {
 			msg=MSG;

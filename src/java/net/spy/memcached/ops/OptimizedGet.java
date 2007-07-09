@@ -29,7 +29,8 @@ public class OptimizedGet extends GetOperation
 	 * Add a new GetOperation to get.
 	 */
 	public void addOperation(GetOperation o) {
-		Callback c=new GetCallbackWrapper(o.getKeys().size(), o.getCallback());
+		Callback c=new GetCallbackWrapper(o.getKeys().size(),
+				(Callback)o.getCallback());
 		allCallbacks.add(c);
 		for(String s : o.getKeys()) {
 			Collection<Callback> cbs=callbacks.get(s);
@@ -67,6 +68,13 @@ public class OptimizedGet extends GetOperation
 		}
 	}
 
+
+	public void complete() {
+		for(Callback c : allCallbacks) {
+			c.complete();
+		}
+	}
+
 	// Wrap a get callback to allow an operation that got rolled up into a
 	// multi-operation to return before the entire get operation completes.
 	private static class GetCallbackWrapper implements Callback {
@@ -93,8 +101,13 @@ public class OptimizedGet extends GetOperation
 		public void receivedStatus(String line) {
 			if(!completed) {
 				cb.receivedStatus(line);
-				completed=true;
 			}
+		}
+
+		public void complete() {
+			assert !completed;
+			cb.complete();
+			completed=true;
 		}
 		
 	}

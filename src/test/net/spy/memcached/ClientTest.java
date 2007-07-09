@@ -2,39 +2,27 @@ package net.spy.memcached;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
-
+import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationException;
 import net.spy.test.SyncThread;
 
 /**
  * This test assumes a client is running on localhost:11211.
  */
-public class ClientTest extends TestCase {
-
-	MemcachedClient client=null;
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		client=new MemcachedClient(new InetSocketAddress("127.0.0.1", 11211));
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		assertTrue(client.flush().get());
-		client.shutdown();
-		client=null;
-		super.tearDown();
-	}
+public class ClientTest extends ClientBaseCase {
 
 	public void testAssertions() {
 		try {
@@ -68,6 +56,15 @@ public class ClientTest extends TestCase {
 			}
 			client.get(longKey.toString());
 			fail("Expected IllegalArgumentException getting too long of a key");
+		} catch(IllegalArgumentException e) {
+			// pass
+		}
+	}
+
+	public void testInvalidKey3() throws Exception {
+		try {
+			Object val=client.get("Key\n");
+			fail("Expected IllegalArgumentException, got " + val);
 		} catch(IllegalArgumentException e) {
 			// pass
 		}
@@ -295,6 +292,55 @@ public class ClientTest extends TestCase {
 		}
 	}
 
+	public void testBadOperation() throws Exception {
+		client.addOp(0, new Operation(new OperationCallback(){
+			public void complete() {
+				System.err.println("Complete.");
+			}
+
+			public void receivedStatus(String line) {
+				System.err.println("Received a line.");
+			}}) {
+
+			@Override
+			public void handleLine(String line) {
+				System.out.println("Woo! A line!");
+			}
+
+			@Override
+			public void initialize() {
+				setBuffer(ByteBuffer.wrap("garbage\r\n".getBytes()));
+			}
+
+			@Override
+			protected void wasCancelled() {
+				getLogger().info("I was cancelled.");
+			}});
+	}
+
+	public void testStupidlyLargeSet() throws Exception {
+		Random r=new Random();
+		SerializingTranscoder st=new SerializingTranscoder();
+		st.setCompressionThreshold(Integer.MAX_VALUE);
+		client.setTranscoder(st);
+
+		byte data[]=new byte[10*1024*1024];
+		r.nextBytes(data);
+
+		try {
+			client.set("bigassthing", 60, data).get();
+			fail("Didn't fail setting bigass thing.");
+		} catch(ExecutionException e) {
+			e.printStackTrace();
+			OperationException oe=(OperationException)e.getCause();
+			assertSame(Operation.ErrorType.SERVER, oe.getType());
+		}
+
+		// But I should still be able to do something.
+		client.set("k", 5, "Blah");
+		assertEquals("Blah", client.get("k"));
+	}
+
 	public void testGracefulShutdownTooSlow() throws Exception {
 		for(int i=0; i<10000; i++) {
 			client.set("t" + i, 10, i);
@@ -312,4 +358,5 @@ public class ClientTest extends TestCase {
 		// Get a new client
 		client=new MemcachedClient(new InetSocketAddress("127.0.0.1", 11211));
 	}
+
 }
