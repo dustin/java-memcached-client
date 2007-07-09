@@ -2,32 +2,15 @@ package net.spy.memcached;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
-
-import org.jmock.Mock;
-import org.jmock.MockObjectTestCase;
 
 /**
  * Test the ArrayModNodeLocator.
  */
-public class ArrayModNodeLocatorTest extends MockObjectTestCase {
+public class ArrayModNodeLocatorTest extends AbstractNodeLocationCase {
 
-	// Test nodes.
-	private MemcachedNode[] nodes;
-	// Mocks for the above nodes.
-	private Mock[] nodeMocks;
-
-	private ArrayModNodeLocator locator;
-
-	private void setupNodes(int n) {
-		nodes=new MemcachedNode[n];
-		nodeMocks=new Mock[nodes.length];
-
-		for(int i=0; i<nodeMocks.length; i++) {
-			nodeMocks[i]=mock(MemcachedNode.class, "node#" + i);
-			nodes[i]=(MemcachedNode)nodeMocks[i].proxy();
-		}
-
+	@Override
+	protected void setupNodes(int n) {
+		super.setupNodes(n);
 		locator=new ArrayModNodeLocator(Arrays.asList(nodes),
 			HashAlgorithm.NATIVE_HASH);
 	}
@@ -47,15 +30,6 @@ public class ArrayModNodeLocatorTest extends MockObjectTestCase {
 		assertTrue(all.contains(nodes[1]));
 		assertTrue(all.contains(nodes[2]));
 		assertTrue(all.contains(nodes[3]));
-	}
-
-	private void assertSequence(String k, int... seq) {
-		int pos=0;
-		for(Iterator<MemcachedNode> i=locator.getSequence(k); i.hasNext(); ) {
-			assertSame("At position " + pos, nodes[seq[pos]], i.next());
-			pos++;
-		}
-		assertEquals("Incorrect sequence size for " + k, seq.length, pos);
 	}
 
 	public void testSeq1() {

@@ -69,14 +69,14 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public MemcachedConnection createConnection(List<InetSocketAddress> addrs)
 		throws IOException {
-		return new MemcachedConnection(readBufSize, this, addrs);
+		return new MemcachedConnection(getReadBufSize(), this, addrs);
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.ConnectionFactory#createOperationQueue()
 	 */
 	public BlockingQueue<Operation> createOperationQueue() {
-		return new ArrayBlockingQueue<Operation>(opQueueLen);
+		return new ArrayBlockingQueue<Operation>(getOpQueueLen());
 	}
 
 	/* (non-Javadoc)

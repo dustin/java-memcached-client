@@ -34,8 +34,9 @@ public class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
 		for(MemcachedNode node : nodes) {
 			// XXX:  Replace getSocketAddress() with something more precise
+			String sockStr=String.valueOf(node.getSocketAddress());
 			for(int i=0; i<NUM_REPS; i++) {
-				long hash = hashAlg.hash(node.getSocketAddress() + "-" + i);
+				long hash = hashAlg.hash(sockStr + "-" + i);
 				ketamaNodes.put(hash, node);
 			}
 		}
