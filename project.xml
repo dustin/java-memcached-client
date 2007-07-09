@@ -8,7 +8,7 @@
 	<groupId>spy</groupId>
 	<artifactId>memcached</artifactId>
 	<name>memcached</name>
-	<currentVersion>1.3.1</currentVersion>
+	<currentVersion>1.4</currentVersion>
 	<inceptionYear>1995</inceptionYear>
 	<organization>
 		<name>SPY Internetworking</name>
@@ -30,6 +30,7 @@
 	</developers>
 
 	<versions>
+		<version><name>1.4</name></version>
 		<version><name>1.3.1</name></version>
 		<version><name>1.2</name></version>
 		<version><name>1.1</name></version>
