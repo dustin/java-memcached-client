@@ -46,6 +46,7 @@ public abstract class Operation extends SpyObject {
 	private ByteBuffer cmd=null;
 	private StringBuilder currentLine=new StringBuilder();
 	private boolean cancelled=false;
+	private boolean foundCr=false;
 
 	/**
 	 * Has this operation been cancelled?
@@ -153,7 +154,7 @@ public abstract class Operation extends SpyObject {
 	 */
 	public final void readFromBuffer(ByteBuffer data) {
 		// Loop while there's data remaining to get it all drained.
-		while(data.remaining() > 0) {
+		while(state != State.COMPLETE && data.remaining() > 0) {
 			if(readType == ReadType.DATA) {
 				handleRead(data);
 			} else {
@@ -161,11 +162,14 @@ public abstract class Operation extends SpyObject {
 				for(int i=0; data.remaining() > 0; i++) {
 					byte b=data.get();
 					if(b == '\r') {
-						byte newline=data.get();
-						assert newline == '\n' : "got a \\r without a \\n";
+						foundCr=true;
+					} else if(b == '\n') {
+						assert foundCr: "got a \\n without a \\r";
 						offset=i;
+						foundCr=false;
 						break;
 					} else {
+						assert !foundCr : "got a \\r without a \\n";
 						currentLine.append((char)b);
 					}
 				}

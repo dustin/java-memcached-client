@@ -52,6 +52,8 @@ public class StoreOperation extends Operation {
 
 	@Override
 	public void handleLine(String line) {
+		assert getState() == State.READING
+			: "Read ``" + line + "'' when in " + getState() + " state";
 		if(cb != null) {
 			cb.receivedStatus(line);
 		}
