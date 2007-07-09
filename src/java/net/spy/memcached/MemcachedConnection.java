@@ -18,14 +18,12 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 
 import net.spy.SpyObject;
-import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationException;
-import net.spy.memcached.ops.OptimizedGet;
 
 /**
  * Connection to a cluster of memcached servers.
@@ -37,21 +35,19 @@ public class MemcachedConnection extends SpyObject {
 	private static final int EXCESSIVE_EMPTY = 100;
 	// maximum amount of time to wait between reconnect attempts
 	private static final long MAX_DELAY = 30000;
-	// Maximum number of sequential errors before reconnecting.
-	private static final int EXCESSIVE_ERRORS = 1;
 
 	private volatile boolean shutDown=false;
 	// If true, get optimization will collapse multiple sequential get ops
 	private boolean optimizeGets=true;
 	private Selector selector=null;
-	private QueueAttachment[] connections=null;
+	private final NodeLocator locator;
 	private int emptySelects=0;
 	// AddedQueue is used to track the QueueAttachments for which operations
 	// have recently been queued.
-	private ConcurrentLinkedQueue<QueueAttachment> addedQueue=null;
+	private final ConcurrentLinkedQueue<MemcachedNode> addedQueue;
 	// reconnectQueue contains the attachments that need to be reconnected
 	// The key is the time at which they are eligible for reconnect
-	private SortedMap<Long, QueueAttachment> reconnectQueue=null;
+	private final SortedMap<Long, MemcachedNode> reconnectQueue;
 
 	/**
 	 * Construct a memcached connection.
@@ -65,33 +61,32 @@ public class MemcachedConnection extends SpyObject {
 	public MemcachedConnection(int bufSize, ConnectionFactory f,
 			List<InetSocketAddress> a)
 		throws IOException {
-		reconnectQueue=new TreeMap<Long, QueueAttachment>();
-		addedQueue=new ConcurrentLinkedQueue<QueueAttachment>();
+		reconnectQueue=new TreeMap<Long, MemcachedNode>();
+		addedQueue=new ConcurrentLinkedQueue<MemcachedNode>();
 		selector=Selector.open();
-		connections=new QueueAttachment[a.size()];
-		int cons=0;
+		List<MemcachedNode> connections=new ArrayList<MemcachedNode>(a.size());
 		for(SocketAddress sa : a) {
 			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
-			QueueAttachment qa=new QueueAttachment(sa, ch, bufSize,
+			MemcachedNode qa=new MemcachedNodeImpl(sa, ch, bufSize,
 				f.createOperationQueue(), f.createOperationQueue(),
 				f.createOperationQueue());
-			qa.which=cons;
 			int ops=0;
 			if(ch.connect(sa)) {
 				getLogger().info("Connected to %s immediately", qa);
-				qa.reconnectAttempt=0;
+				qa.connected();
 				assert ch.isConnected();
 			} else {
 				getLogger().info("Added %s to connect queue", qa);
 				ops=SelectionKey.OP_CONNECT;
 			}
-			qa.sk=ch.register(selector, ops, qa);
+			qa.setSk(ch.register(selector, ops, qa));
 			assert ch.isConnected()
-				|| qa.sk.interestOps() == SelectionKey.OP_CONNECT
+				|| qa.getSk().interestOps() == SelectionKey.OP_CONNECT
 				: "Not connected, and not wanting to connect";
-			connections[cons++]=qa;
+			connections.add(qa);
 		}
+		locator=f.createLocator(connections);
 	}
 
 	/**
@@ -104,10 +99,10 @@ public class MemcachedConnection extends SpyObject {
 	}
 
 	private boolean selectorsMakeSense() {
-		for(QueueAttachment qa : connections) {
-			if(qa.sk.isValid()) {
-				if(qa.channel.isConnected()) {
-					int sops=qa.sk.interestOps();
+		for(MemcachedNode qa : locator.getAll()) {
+			if(qa.getSk() != null && qa.getSk().isValid()) {
+				if(qa.getChannel().isConnected()) {
+					int sops=qa.getSk().interestOps();
 					int expected=0;
 					if(qa.hasReadOp()) {
 						expected |= SelectionKey.OP_READ;
@@ -115,13 +110,13 @@ public class MemcachedConnection extends SpyObject {
 					if(qa.hasWriteOp()) {
 						expected |= SelectionKey.OP_WRITE;
 					}
-					if(qa.toWrite > 0) {
+					if(qa.getBytesRemainingToWrite() > 0) {
 						expected |= SelectionKey.OP_WRITE;
 					}
 					assert sops == expected : "Invalid ops:  "
 						+ qa + ", expected " + expected + ", got " + sops;
 				} else {
-					int sops=qa.sk.interestOps();
+					int sops=qa.getSk().interestOps();
 					assert sops == SelectionKey.OP_CONNECT
 					: "Not connected, and not watching for connect: "
 						+ sops;
@@ -168,7 +163,7 @@ public class MemcachedConnection extends SpyObject {
 						getLogger().info("%s has a ready op, handling IO", sk);
 						handleIO(sk);
 					} else {
-						queueReconnect((QueueAttachment)sk.attachment());
+						queueReconnect((MemcachedNode)sk.attachment());
 					}
 				}
 				assert emptySelects < EXCESSIVE_EMPTY + 10
@@ -198,12 +193,12 @@ public class MemcachedConnection extends SpyObject {
 		if(!addedQueue.isEmpty()) {
 			getLogger().debug("Handling queue");
 			// If there's stuff in the added queue.  Try to process it.
-			Collection<QueueAttachment> toAdd=new HashSet<QueueAttachment>();
+			Collection<MemcachedNode> toAdd=new HashSet<MemcachedNode>();
 			try {
-				QueueAttachment qa=null;
-				boolean readyForIO=false;
+				MemcachedNode qa=null;
 				while((qa=addedQueue.remove()) != null) {
-					if(qa.channel != null && qa.channel.isConnected()) {
+					boolean readyForIO=false;
+					if(qa.isActive()) {
 						Operation op=qa.getCurrentWriteOp();
 						if(op != null) {
 							readyForIO=true;
@@ -215,15 +210,15 @@ public class MemcachedConnection extends SpyObject {
 					qa.copyInputQueue();
 					if(readyForIO) {
 						try {
-							if(qa.wbuf.hasRemaining()) {
-								handleWrites(qa.sk, qa);
+							if(qa.getWbuf().hasRemaining()) {
+								handleWrites(qa.getSk(), qa);
 							}
 						} catch(IOException e) {
 							getLogger().warn("Exception handling write", e);
 							queueReconnect(qa);
 						}
 					}
-					fixupOps(qa);
+					qa.fixupOps();
 				}
 			} catch(NoSuchElementException e) {
 				// out of stuff.
@@ -236,19 +231,20 @@ public class MemcachedConnection extends SpyObject {
 	// reconnect
 	private void handleIO(SelectionKey sk) {
 		assert !sk.isAcceptable() : "We don't do accepting here.";
-		QueueAttachment qa=(QueueAttachment)sk.attachment();
+		MemcachedNode qa=(MemcachedNode)sk.attachment();
 		if(sk.isConnectable()) {
 			getLogger().info("Connection state changed for %s", sk);
 			try {
-				if(qa.channel.finishConnect()) {
-					assert qa.channel.isConnected() : "Not connected.";
-					qa.reconnectAttempt=0;
+				final SocketChannel channel=qa.getChannel();
+				if(channel.finishConnect()) {
+					assert channel.isConnected() : "Not connected.";
+					qa.connected();
 					addedQueue.offer(qa);
-					if(qa.wbuf.hasRemaining()) {
+					if(qa.getWbuf().hasRemaining()) {
 						handleWrites(sk, qa);
 					}
 				} else {
-					assert !qa.channel.isConnected() : "connected";
+					assert !channel.isConnected() : "connected";
 				}
 			} catch(IOException e) {
 				getLogger().warn("Problem handling connect", e);
@@ -267,11 +263,9 @@ public class MemcachedConnection extends SpyObject {
 			if(sk.isReadable()) {
 				try {
 					handleReads(sk, qa);
-					qa.protocolErrors=0;
 				} catch (OperationException e) {
-					if(++qa.protocolErrors >= EXCESSIVE_ERRORS) {
-						queueReconnect(qa);
-					}
+					// Reconnect if we have trouble executing an operation.
+					queueReconnect(qa);
 				} catch (IOException e) {
 					getLogger().info("IOException handling %s, reconnecting",
 							qa.getCurrentReadOp(), e);
@@ -279,58 +273,44 @@ public class MemcachedConnection extends SpyObject {
 				}
 			}
 		}
-		fixupOps(qa);
+		qa.fixupOps();
 	}
 
-	private void handleWrites(SelectionKey sk, QueueAttachment qa)
+	private void handleWrites(SelectionKey sk, MemcachedNode qa)
 		throws IOException {
 		qa.fillWriteBuffer(optimizeGets);
-		boolean canWriteMore=qa.toWrite > 0;
+		boolean canWriteMore=qa.getBytesRemainingToWrite() > 0;
 		while(canWriteMore) {
-			int wrote=qa.channel.write(qa.wbuf);
-			assert wrote >= 0 : "Wrote negative bytes?";
-			qa.toWrite -= wrote;
-			assert qa.toWrite >= 0
-				: "toWrite went negative after writing " + wrote
-					+ " bytes for " + qa;
-			getLogger().debug("Wrote %d bytes", wrote);
+			int wrote=qa.writeSome();
 			qa.fillWriteBuffer(optimizeGets);
-			canWriteMore = wrote > 0 && qa.toWrite > 0;
+			canWriteMore = wrote > 0 && qa.getBytesRemainingToWrite() > 0;
 		}
 	}
 
-	private void handleReads(SelectionKey sk, QueueAttachment qa)
+	private void handleReads(SelectionKey sk, MemcachedNode qa)
 		throws IOException {
 		Operation currentOp = qa.getCurrentReadOp();
-		int read=qa.channel.read(qa.rbuf);
+		ByteBuffer rbuf=qa.getRbuf();
+		final SocketChannel channel = qa.getChannel();
+		int read=channel.read(rbuf);
 		while(read > 0) {
 			getLogger().debug("Read %d bytes", read);
-			qa.rbuf.flip();
-			while(qa.rbuf.remaining() > 0) {
+			rbuf.flip();
+			while(rbuf.remaining() > 0) {
 				assert currentOp != null : "No read operation";
-				currentOp.readFromBuffer(qa.rbuf);
+				currentOp.readFromBuffer(rbuf);
 				if(currentOp.getState() == Operation.State.COMPLETE) {
 					getLogger().debug(
 							"Completed read op: %s and giving the next %d bytes",
-							currentOp, qa.rbuf.remaining());
+							currentOp, rbuf.remaining());
 					Operation op=qa.removeCurrentReadOp();
 					assert op == currentOp
 					: "Expected to pop " + currentOp + " got " + op;
 					currentOp=qa.getCurrentReadOp();
 				}
 			}
-			qa.rbuf.clear();
-			read=qa.channel.read(qa.rbuf);
-		}
-	}
-
-	private void fixupOps(QueueAttachment qa) {
-		if(qa.sk.isValid()) {
-			int iops=qa.getSelectionOps();
-			getLogger().debug("Setting interested opts to %d", iops);
-			qa.sk.interestOps(iops);
-		} else {
-			getLogger().debug("Selection key is not valid.");
+			rbuf.clear();
+			read=channel.read(rbuf);
 		}
 	}
 
@@ -350,23 +330,23 @@ public class MemcachedConnection extends SpyObject {
 		return sb.toString();
 	}
 
-	private void queueReconnect(QueueAttachment qa) {
+	private void queueReconnect(MemcachedNode qa) {
 		if(!shutDown) {
 			getLogger().warn("Closing, and reopening %s, attempt %d.",
-					qa, qa.reconnectAttempt);
-			if(qa.sk != null) {
-				qa.sk.cancel();
-				assert !qa.sk.isValid() : "Cancelled selection key is valid";
+					qa, qa.getReconnectCount());
+			if(qa.getSk() != null) {
+				qa.getSk().cancel();
+				assert !qa.getSk().isValid() : "Cancelled selection key is valid";
 			}
-			qa.reconnectAttempt++;
+			qa.reconnecting();
 			try {
-				qa.channel.socket().close();
+				qa.getChannel().socket().close();
 			} catch(IOException e) {
 				getLogger().warn("IOException trying to close a socket", e);
 			}
-			qa.channel=null;
+			qa.setChannel(null);
 
-			long delay=Math.min((100*qa.reconnectAttempt) ^ 2, MAX_DELAY);
+			long delay=Math.min((100*qa.getReconnectCount()) ^ 2, MAX_DELAY);
 
 			reconnectQueue.put(System.currentTimeMillis() + delay, qa);
 
@@ -377,40 +357,29 @@ public class MemcachedConnection extends SpyObject {
 
 	private void attemptReconnects() throws IOException {
 		long now=System.currentTimeMillis();
-		for(Iterator<QueueAttachment> i=
+		for(Iterator<MemcachedNode> i=
 				reconnectQueue.headMap(now).values().iterator(); i.hasNext();) {
-			QueueAttachment qa=i.next();
+			MemcachedNode qa=i.next();
 			i.remove();
 			getLogger().info("Reconnecting %s", qa);
 			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
 			int ops=0;
-			if(ch.connect(qa.socketAddress)) {
+			if(ch.connect(qa.getSocketAddress())) {
 				getLogger().info("Immediately reconnected to %s", qa);
 				assert ch.isConnected();
 			} else {
 				ops=SelectionKey.OP_CONNECT;
 			}
-			qa.channel=ch;
-			qa.sk=ch.register(selector, ops, qa);
+			qa.registerChannel(ch, ch.register(selector, ops, qa));
 		}
 	}
 
 	/**
-	 * Get the number of connections currently handled.
+	 * Get the node locator used by this connection.
 	 */
-	public int getNumConnections() {
-		return connections.length;
-	}
-
-	/**
-	 * Get the remote address of the socket with the given ID.
-	 * 
-	 * @param which which id
-	 * @return the rmeote address
-	 */
-	public SocketAddress getAddressOf(int which) {
-		return connections[which].socketAddress;
+	NodeLocator getLocator() {
+		return locator;
 	}
 
 	/**
@@ -419,29 +388,71 @@ public class MemcachedConnection extends SpyObject {
 	 * @param which the connection offset
 	 * @param o the operation
 	 */
-	@SuppressWarnings("unchecked")
-	public void addOperation(int which, Operation o) {
-		QueueAttachment qa=connections[which];
+	public void addOperation(final String key, final Operation o) {
+		MemcachedNode placeIn=null;
+		MemcachedNode primary = locator.getPrimary(key);
+		if(primary.isActive()) {
+			placeIn=primary;
+		} else {
+			// Look for another node in sequence that is ready.
+			for(Iterator<MemcachedNode> i=locator.getSequence(key);
+				placeIn == null && i.hasNext(); ) {
+				MemcachedNode n=i.next();
+				if(n.isActive()) {
+					placeIn=n;
+				}
+			}
+			// If we didn't find an active node, queue it in the primary node
+			// and wait for it to come back online.
+			if(placeIn == null) {
+				placeIn = primary;
+			}
+		}
+
+		assert placeIn != null : "No node found for key " + key;
+		addOperation(placeIn, o);
+	}
+
+	public void addOperation(final MemcachedNode node, final Operation o) {
 		o.initialize();
-		qa.addOp(o);
-		addedQueue.offer(qa);
+		node.addOp(o);
+		addedQueue.offer(node);
 		Selector s=selector.wakeup();
 		assert s == selector : "Wakeup returned the wrong selector.";
-		getLogger().debug("Added %s to %d", o, which);
+		getLogger().debug("Added %s to %d", o, node);
+	}
+
+	/**
+	 * Broadcast an operation to all nodes.
+	 */
+	public CountDownLatch broadcastOperation(final OperationFactory of) {
+		final CountDownLatch latch=new CountDownLatch(locator.getAll().size());
+		for(MemcachedNode node : locator.getAll()) {
+			Operation op = of.newOp(node, latch);
+			op.initialize();
+			node.addOp(op);
+			addedQueue.offer(node);
+		}
+		Selector s=selector.wakeup();
+		assert s == selector : "Wakeup returned the wrong selector.";
+		return latch;
 	}
 
 	/**
 	 * Shut down all of the connections.
 	 */
 	public void shutdown() throws IOException {
-		for(QueueAttachment qa : connections) {
-			qa.channel.close();
-			qa.sk=null;
-			if(qa.toWrite > 0) {
-				getLogger().warn("Shut down with %d bytes remaining to write",
-						qa.toWrite);
+		for(MemcachedNode qa : locator.getAll()) {
+			if(qa.getChannel() != null) {
+				qa.getChannel().close();
+				qa.setSk(null);
+				if(qa.getBytesRemainingToWrite() > 0) {
+					getLogger().warn(
+						"Shut down with %d bytes remaining to write",
+							qa.getBytesRemainingToWrite());
+				}
+				getLogger().debug("Shut down channel %s", qa.getChannel());
 			}
-			getLogger().debug("Shut down channel %s", qa.channel);
 		}
 		selector.close();
 		getLogger().debug("Shut down selector %s", selector);
@@ -451,232 +462,12 @@ public class MemcachedConnection extends SpyObject {
 	public String toString() {
 		StringBuilder sb=new StringBuilder();
 		sb.append("{MemcachedConnection to");
-		for(QueueAttachment qa : connections) {
+		for(MemcachedNode qa : locator.getAll()) {
 			sb.append(" ");
-			sb.append(qa.socketAddress);
+			sb.append(qa.getSocketAddress());
 		}
 		sb.append("}");
 		return sb.toString();
 	}
 
-	private static class QueueAttachment extends SpyObject {
-		public int which=0;
-		public int reconnectAttempt=1;
-		public SocketAddress socketAddress=null;
-		public SocketChannel channel=null;
-		public int toWrite=0;
-		public ByteBuffer rbuf=null;
-		public ByteBuffer wbuf=null;
-		private BlockingQueue<Operation> writeQ=null;
-		private BlockingQueue<Operation> readQ=null;
-		private BlockingQueue<Operation> inputQueue=null;
-		private GetOperation getOp=null;
-		public SelectionKey sk=null;
-
-		// Count sequential protocol errors.
-		public int protocolErrors=0;
-
-		public QueueAttachment(SocketAddress sa, SocketChannel c, int bufSize,
-				BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
-				BlockingQueue<Operation> iq) {
-			super();
-			assert sa != null : "No SocketAddress";
-			assert c != null : "No SocketChannel";
-			assert bufSize > 0 : "Invalid buffer size: " + bufSize;
-			assert rq != null : "No operation read queue";
-			assert wq != null : "No operation write queue";
-			assert iq != null : "No input queue";
-			socketAddress=sa;
-			channel=c;
-			rbuf=ByteBuffer.allocate(bufSize);
-			wbuf=ByteBuffer.allocate(bufSize);
-			wbuf.clear();
-			readQ=rq;
-			writeQ=wq;
-			inputQueue=iq;
-		}
-
-		public void copyInputQueue() {
-			Collection<Operation> tmp=new ArrayList<Operation>();
-			inputQueue.drainTo(tmp);
-			writeQ.addAll(tmp);
-		}
-
-
-		public void setupResend() {
-			// First, reset the current write op.
-			Operation op=getCurrentWriteOp();
-			if(op != null) {
-				op.getBuffer().reset();
-			}
-			// Now cancel all the pending read operations.  Might be better to
-			// to requeue them.
-			while(hasReadOp()) {
-				op=removeCurrentReadOp();
-				getLogger().warn("Discarding partially completed op: %s", op);
-				op.cancel();
-			}
-
-			wbuf.clear();
-			rbuf.clear();
-			toWrite=0;
-			protocolErrors=0;
-		}
-
-		// Prepare the pending operations.  Return true if there are any pending
-		// ops
-		private boolean preparePending() {
-			// Copy the input queue into the write queue.
-			copyInputQueue();
-
-			// Now check the ops
-			Operation nextOp=getCurrentWriteOp();
-			while(nextOp != null && nextOp.isCancelled()) {
-				getLogger().info("Removing cancelled operation: %s", nextOp);
-				removeCurrentWriteOp();
-				nextOp=getCurrentWriteOp();
-			}
-			return nextOp != null;
-		}
-
-		public void fillWriteBuffer(boolean optimizeGets) {
-			if(toWrite == 0) {
-				wbuf.clear();
-				Operation o=getCurrentWriteOp();
-				while(o != null && toWrite < wbuf.capacity()) {
-					assert o.getState() == Operation.State.WRITING;
-					ByteBuffer obuf=o.getBuffer();
-					int bytesToCopy=Math.min(wbuf.remaining(),
-							obuf.remaining());
-					byte b[]=new byte[bytesToCopy];
-					obuf.get(b);
-					wbuf.put(b);
-					getLogger().debug("After copying stuff from %s: %s",
-							o, wbuf);
-					if(!o.getBuffer().hasRemaining()) {
-						o.writeComplete();
-						transitionWriteItem();
-
-						preparePending();
-						if(optimizeGets) {
-							optimize();
-						}
-
-						o=getCurrentWriteOp();
-					}
-					toWrite += bytesToCopy;
-				}
-				wbuf.flip();
-				assert toWrite <= wbuf.capacity()
-					: "toWrite exceeded capacity: " + this;
-				assert toWrite == wbuf.remaining()
-					: "Expected " + toWrite + " remaining, got "
-					+ wbuf.remaining();
-			} else {
-				getLogger().debug("Buffer is full, skipping");
-			}
-		}
-
-		public void transitionWriteItem() {
-			Operation op=removeCurrentWriteOp();
-			assert op != null : "There is no write item to transition";
-			assert op.getState() == Operation.State.READING;
-			getLogger().debug("Transitioning %s to read", op);
-			readQ.add(op);
-		}
-
-		public void optimize() {
-			// make sure there are at least two get operations in a row before
-			// attempting to optimize them.
-			if(writeQ.peek() instanceof GetOperation) {
-				getOp=(GetOperation)writeQ.remove();
-				if(writeQ.peek() instanceof GetOperation) {
-					OptimizedGet og=new OptimizedGet(getOp);
-					getOp=og;
-
-					while(writeQ.peek() instanceof GetOperation) {
-						GetOperation o=(GetOperation) writeQ.remove();
-						if(!o.isCancelled()) {
-							og.addOperation(o);
-						}
-					}
-
-					// Initialize the new mega get
-					getOp.initialize();
-					assert getOp.getState() == Operation.State.WRITING;
-					getLogger().debug(
-						"Set up %s with %s keys and %s callbacks",
-						this, og.numKeys(), og.numCallbacks());
-				}
-			}
-		}
-
-		public Operation getCurrentReadOp() {
-			return readQ.peek();
-		}
-
-		public Operation removeCurrentReadOp() {
-			return readQ.remove();
-		}
-
-		public Operation getCurrentWriteOp() {
-			return getOp == null ? writeQ.peek() : getOp;
-		}
-
-		public Operation removeCurrentWriteOp() {
-			Operation rv=getOp;
-			if(rv == null) {
-				rv=writeQ.remove();
-			} else {
-				getOp=null;
-			}
-			return rv;
-		}
-
-		public boolean hasReadOp() {
-			return !readQ.isEmpty();
-		}
-
-		public boolean hasWriteOp() {
-			return !(getOp == null && writeQ.isEmpty());
-		}
-
-		public void addOp(Operation op) {
-			boolean added=inputQueue.add(op);
-			assert added; // documented to throw an IllegalStateException
-		}
-
-		public int getSelectionOps() {
-			int rv=0;
-			if(channel.isConnected()) {
-				if(hasReadOp()) {
-					rv |= SelectionKey.OP_READ;
-				}
-				if(toWrite > 0 || hasWriteOp()) {
-					rv |= SelectionKey.OP_WRITE;
-				}
-			} else {
-				rv = SelectionKey.OP_CONNECT;
-			}
-			return rv;
-		}
-
-		@Override
-		public String toString() {
-			int sops=0;
-			if(sk!= null && sk.isValid()) {
-				sops=sk.interestOps();
-			}
-			int rsize=readQ.size() + (getOp == null ? 0 : 1);
-			int wsize=writeQ.size();
-			int isize=inputQueue.size();
-			return "{QA sa=" + socketAddress + ", #Rops=" + rsize
-				+ ", #Wops=" + wsize
-				+ ", #iq=" + isize
-				+ ", topRop=" + getCurrentReadOp()
-				+ ", topWop=" + getCurrentWriteOp()
-				+ ", toWrite=" + toWrite
-				+ ", interested=" + sops + "}";
-		}
-	}
 }

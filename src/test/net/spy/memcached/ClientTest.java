@@ -70,6 +70,44 @@ public class ClientTest extends ClientBaseCase {
 		}
 	}
 
+	public void testInvalidAlgorithm() {
+		try {
+			client.setHashAlgorithm(null);
+			fail("Allowed null hash algorithm.");
+		} catch(NullPointerException e) {
+			assertEquals("Null hash algorithm not allowed", e.getMessage());
+		}
+	}
+
+	public void testSetHashAlg() {
+		assertSame(HashAlgorithm.NATIVE_HASH, client.getHashAlgorithm());
+		client.setHashAlgorithm(HashAlgorithm.FNV_HASH);
+		assertSame(HashAlgorithm.FNV_HASH, client.getHashAlgorithm());
+	}
+
+	public void testInvalidTranscoder() {
+		try {
+			client.setTranscoder(null);
+			fail("Allowed null transcoder.");
+		} catch(NullPointerException e) {
+			assertEquals("Can't use a null transcoder", e.getMessage());
+		}
+	}
+
+	public void testSetTranscoder() {
+		Transcoder tc=client.getTranscoder();
+		assertTrue(tc instanceof SerializingTranscoder);
+		Transcoder tmptc=new Transcoder(){
+			public Object decode(CachedData d) {
+				throw new RuntimeException("Not implemented.");
+			}
+			public CachedData encode(Object o) {
+				throw new RuntimeException("Not implemented.");
+			}};
+		client.setTranscoder(tmptc);
+		assertSame(tmptc, client.getTranscoder());
+	}
+
 	public void testParallelSetGet() throws Throwable {
 		int cnt=SyncThread.getDistinctResultCount(10, new Callable<Boolean>(){
 			public Boolean call() throws Exception {
@@ -293,7 +331,7 @@ public class ClientTest extends ClientBaseCase {
 	}
 
 	public void testBadOperation() throws Exception {
-		client.addOp(0, new Operation(new OperationCallback(){
+		client.addOp("x", new Operation(new OperationCallback(){
 			public void complete() {
 				System.err.println("Complete.");
 			}

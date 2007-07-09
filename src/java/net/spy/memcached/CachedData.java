@@ -9,8 +9,8 @@ import java.util.Arrays;
  */
 public class CachedData {
 
-	private int flags=0;
-	private byte[] data=null;
+	private final int flags;
+	private final byte[] data;
 
 	/**
 	 * Get a CachedData instance for the given flags and byte array.

@@ -11,8 +11,8 @@ public class DeleteOperation extends Operation {
 
 	private static final int OVERHEAD=32;
 
-	private String key=null;
-	private int when=0;
+	private final String key;
+	private final int when;
 
 	public DeleteOperation(String k, int w, OperationCallback cb) {
 		super(cb);

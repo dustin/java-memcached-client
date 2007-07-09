@@ -48,6 +48,54 @@
 				</li>
 			</ul>
 		</section>
+		<section name="Example Usage">
+			<p>
+				Below are some getting-started examples of how to use the memcached
+				client to store and retrieve objects.  See the <a
+				href="apidocs/index.html">the API docs</a> for more details, in
+				particular the documentation for the <a
+				href="apidocs/net/spy/memcached/MemcachedClient.html">MemcachedClient</a>
+				class.
+			</p>
+			<h2>Basic Usage</h2>
+<pre>
+MemcachedClient c=new MemcachedClient(
+    new InetSocketAddress("hostname", portNum));
+
+// Store a value (async) for one hour
+c.set("someKey", 3600, someObject);
+// Retrieve a value (synchronously).
+Object myObject=c.get("someKey");
+</pre>
+
+			<h2>Advanced Usage</h2>
+			<p>
+			MemcachedClient may be processing a great deal of asynchronous messages
+			or possibly dealing with an unreachable memcached, which may delay
+			processing. If a memcached is disabled, for example, MemcachedConnection
+			will continue to attempt to reconnect and replay pending operations until
+			it comes back up. To prevent this from causing your application to hang,
+			you can use one of the asynchronous mechanisms to time out a request and
+			cancel the operation to the server.
+			</p>
+<pre>
+// Get a memcached client connected to several servers
+MemcachedClient c=new MemcachedClient(
+	AddrUtil.getAddresses("server1:11211 server2:11211"));
+
+// Try to get a value, for up to 5 seconds, and cancel if it doesn't return
+Object myObj=null;
+Future&lt;Object> f=c.asyncGet("someKey");
+try {
+    myObj=f.get(5, TimeUnit.SECONDS);
+} catch(TimeoutException e) {
+    // Since we don't need this, go ahead and cancel the operation.  This
+    // is not strictly necessary, but it'll save some work on the server.
+    f.cancel();
+    // Do other timeout related stuff
+}
+</pre>
+		</section>
 		<section name="Where to Get">
 			<h3>Binary Distributions</h3>
 			<p>

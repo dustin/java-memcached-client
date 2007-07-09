@@ -32,11 +32,11 @@ public class StoreOperation extends Operation {
 	// Overhead storage stuff to make sure the buffer pushes out far enough.
 	private static final int OVERHEAD = 32;
 
-	private StoreType type=null;
-	private String key=null;
-	private int flags=0;
-	private int exp=0;
-	private byte[] data=null;
+	private final StoreType type;
+	private final String key;
+	private final int flags;
+	private final int exp;
+	private final byte[] data;
 
 	public StoreOperation(StoreType t, String k, int f, int e,
 			byte[] d, OperationCallback callback) {
@@ -65,7 +65,7 @@ public class StoreOperation extends Operation {
 			: "Not enough room in buffer, need another "
 				+ (2 + data.length - bb.remaining());
 		bb.put(data);
-		bb.put("\r\n".getBytes());
+		bb.put(CRLF);
 		bb.flip();
 		setBuffer(bb);
 	}

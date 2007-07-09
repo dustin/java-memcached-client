@@ -31,14 +31,22 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public static final int DEFAULT_READ_BUFFER_SIZE=16384;
 
-	private int opQueueLen=DEFAULT_OP_QUEUE_LEN;
-	private int readBufSize=DEFAULT_READ_BUFFER_SIZE;
+	private final int opQueueLen;
+	private final int readBufSize;
+	private final HashAlgorithm hashAlg;
 
 	/**
-	 * Create a DefaultConnectionFactory with the default parameters.
+	 * Construct a DefaultConnectionFactory with the given parameters.
+	 *
+	 * @param hashAlgorithm the algorithm to use for hashing
+	 * @param bufSize the buffer size
+	 * @param qLen the queue length.
 	 */
-	public DefaultConnectionFactory() {
-		this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE);
+	public DefaultConnectionFactory(int qLen, int bufSize, HashAlgorithm hash) {
+		super();
+		opQueueLen=qLen;
+		readBufSize=bufSize;
+		hashAlg=hash;
 	}
 
 	/**
@@ -46,9 +54,14 @@ public class DefaultConnectionFactory extends SpyObject
 	 * queue length, and the given read buffer size.
 	 */
 	public DefaultConnectionFactory(int qLen, int bufSize) {
-		super();
-		opQueueLen=qLen;
-		readBufSize=bufSize;
+		this(qLen, bufSize, HashAlgorithm.NATIVE_HASH);
+	}
+
+	/**
+	 * Create a DefaultConnectionFactory with the default parameters.
+	 */
+	public DefaultConnectionFactory() {
+		this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE);
 	}
 
 	/* (non-Javadoc)
@@ -64,6 +77,34 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public BlockingQueue<Operation> createOperationQueue() {
 		return new ArrayBlockingQueue<Operation>(opQueueLen);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#createLocator(java.util.List)
+	 */
+	public NodeLocator createLocator(List<MemcachedNode> nodes) {
+		return new ArrayModNodeLocator(nodes, getHashAlg());
+	}
+
+	/**
+	 * Get the op queue length set at construct time.
+	 */
+	public int getOpQueueLen() {
+		return opQueueLen;
+	}
+
+	/**
+	 * Get the read buffer size set at construct time.
+	 */
+	public int getReadBufSize() {
+		return readBufSize;
+	}
+
+	/**
+	 * Get the hash algorithm set at construct time.
+	 */
+	public HashAlgorithm getHashAlg() {
+		return hashAlg;
 	}
 
 }

@@ -70,11 +70,13 @@ public abstract class Operation extends SpyObject {
 		 */
 		DATA
 	}
-	
+
+	protected static final byte[] CRLF={'\r', '\n'};
+
+	private final StringBuilder currentLine=new StringBuilder();
 	private State state=State.WRITING;
 	private ReadType readType=ReadType.LINE;
 	private ByteBuffer cmd=null;
-	private StringBuilder currentLine=new StringBuilder();
 	private boolean cancelled=false;
 	private boolean foundCr=false;
 	private OperationException exception=null;
@@ -213,7 +215,7 @@ public abstract class Operation extends SpyObject {
 			}
 			bb.put(String.valueOf(o).getBytes());
 		}
-		bb.put("\r\n".getBytes());
+		bb.put(CRLF);
 	}
 
 	/**
