@@ -1,5 +1,4 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
-// arch-tag: 8F357832-263E-473E-BB88-3FFBC813180F
 
 package net.spy.memcached;
 
@@ -79,6 +78,7 @@ public class MemcachedClient extends SpyThread {
 	private static final int MAX_KEY_LENGTH = 250;
 
 	private volatile boolean running=true;
+	private volatile boolean shuttingDown=false;
 	private MemcachedConnection conn=null;
 	private HashAlgorithm hashAlg=HashAlgorithm.NATIVE_HASH;
 	Transcoder transcoder=null;
@@ -164,6 +164,9 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	private Operation addOp(int which, Operation op) {
+		if(shuttingDown) {
+			throw new IllegalStateException("Shutting down");
+		}
 		assert isAlive() : "IO Thread is not running.";
 		conn.addOperation(which, op);
 		return op;
@@ -188,6 +191,23 @@ public class MemcachedClient extends SpyThread {
 	/**
 	 * Add an object to the cache iff it does not exist already.
 	 * 
+	 * <p>
+	 * The <code>exp</code> value is passed along to memcached exactly as
+	 * given, and will be processed per the memcached protocol specification:
+	 * </p>
+	 *
+	 * <blockquote>
+	 * <p>
+	 * The actual value sent may either be
+	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
+	 * value), or a number of seconds starting from current time. In the
+	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
+	 * of seconds in 30 days); if the number sent by a client is larger than
+	 * that, the server will consider it to be real Unix time value rather
+	 * than an offset from current time.
+	 * </p>
+	 * </blockquote>
+	 * 
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
@@ -199,6 +219,23 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Set an object in the cache regardless of any existing value.
+	 * 
+	 * <p>
+	 * The <code>exp</code> value is passed along to memcached exactly as
+	 * given, and will be processed per the memcached protocol specification:
+	 * </p>
+	 *
+	 * <blockquote>
+	 * <p>
+	 * The actual value sent may either be
+	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
+	 * value), or a number of seconds starting from current time. In the
+	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
+	 * of seconds in 30 days); if the number sent by a client is larger than
+	 * that, the server will consider it to be real Unix time value rather
+	 * than an offset from current time.
+	 * </p>
+	 * </blockquote>
 	 * 
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
@@ -212,7 +249,24 @@ public class MemcachedClient extends SpyThread {
 	/**
 	 * Replace an object with the given value iff there is already a value
 	 * for the given key.
-	 * 
+	 *
+	 * <p>
+	 * The <code>exp</code> value is passed along to memcached exactly as
+	 * given, and will be processed per the memcached protocol specification:
+	 * </p>
+	 *
+	 * <blockquote>
+	 * <p>
+	 * The actual value sent may either be
+	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
+	 * value), or a number of seconds starting from current time. In the
+	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
+	 * of seconds in 30 days); if the number sent by a client is larger than
+	 * that, the server will consider it to be real Unix time value rather
+	 * than an offset from current time.
+	 * </p>
+	 * </blockquote>
+	 *
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
@@ -575,15 +629,67 @@ public class MemcachedClient extends SpyThread {
 	}
 
 	/**
-	 * Shut down this client.
+	 * Shut down immediately.
 	 */
 	public void shutdown() {
-		running=false;
+		shutdown(-1, TimeUnit.MILLISECONDS);
+	}
+
+	/**
+	 * Shut down this client graceful.
+	 */
+	public boolean shutdown(long timeout, TimeUnit unit) {
+		shuttingDown=true;
+		String baseName=getName();
+		setName(baseName + " - SHUTTING DOWN");
+		boolean rv=false;
 		try {
-			conn.shutdown();
-		} catch (IOException e) {
-			getLogger().warn("exception while shutting down", e);
+			// Conditionally wait
+			if(timeout > 0) {
+				setName(baseName + " - SHUTTING DOWN (waiting)");
+				rv=waitForQueues(timeout, unit);
+			}
+		} finally {
+			// But always begin the shutdown sequence
+			try {
+				setName(baseName + " - SHUTTING DOWN (telling client)");
+				running=false;
+				conn.shutdown();
+				setName(baseName + " - SHUTTING DOWN (informed client)");
+			} catch (IOException e) {
+				getLogger().warn("exception while shutting down", e);
+			}
 		}
+		return rv;
+	}
+
+	/**
+	 * Wait for the queues to die down.
+	 */
+	public boolean waitForQueues(long timeout, TimeUnit unit) {
+		boolean rv=false;
+		final CountDownLatch latch=new CountDownLatch(conn.getNumConnections());
+
+		// This is implemented by directly adding VersionOperations to all the
+		// existing queues and then waiting for them to be processed.  We're
+		// directly adding to the queue instead of using addOp because we want
+		// to be able to do this during a shutdown after disallowing any
+		// additional operations.
+		for(int i=0; i<conn.getNumConnections(); i++) {
+			assert isAlive() : "IO Thread is not running.";
+			conn.addOperation(i, new VersionOperation(
+					new OperationCallback() {
+						public void receivedStatus(String s) {
+							latch.countDown();
+						}
+					}));
+		}
+		try {
+			rv=latch.await(timeout, unit);
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted waiting for queues", e);
+		}
+		return rv;
 	}
 
 	private int getServerForKey(String key) {
@@ -595,7 +701,7 @@ public class MemcachedClient extends SpyThread {
 			throw new IllegalArgumentException(
 					"Key contains invalid characters: " + key);
 		}
-		int rv=hashAlg.hash(key) % conn.getNumConnections();
+		int rv=(int)(hashAlg.hash(key) % conn.getNumConnections());
 		assert rv >= 0 : "Returned negative key for key " + key;
 		assert rv < conn.getNumConnections()
 			: "Invalid server number " + rv + " for key " + key;

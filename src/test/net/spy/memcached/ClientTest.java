@@ -2,11 +2,13 @@ package net.spy.memcached;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 
@@ -92,6 +94,33 @@ public class ClientTest extends TestCase {
 		assertFalse(client.add("test1", 5, "ignoredvalue").get());
 		// Should return the original value
 		assertEquals("test1value", client.get("test1"));
+	}
+
+	public void testAddNotSerializable() throws Exception {
+		try {
+			client.add("t1", 5, new Object());
+			fail("expected illegal argument exception");
+		} catch(IllegalArgumentException e) {
+			assertEquals("Non-serializable object", e.getMessage());
+		}
+	}
+
+	public void testSetNotSerializable() throws Exception {
+		try {
+			client.set("t1", 5, new Object());
+			fail("expected illegal argument exception");
+		} catch(IllegalArgumentException e) {
+			assertEquals("Non-serializable object", e.getMessage());
+		}
+	}
+
+	public void testReplaceNotSerializable() throws Exception {
+		try {
+			client.replace("t1", 5, new Object());
+			fail("expected illegal argument exception");
+		} catch(IllegalArgumentException e) {
+			assertEquals("Non-serializable object", e.getMessage());
+		}
 	}
 
 	public void testUpdate() throws Exception {
@@ -222,5 +251,43 @@ public class ClientTest extends TestCase {
 		assertEquals(2, ks.size());
 		assertTrue(ks.contains("test1"));
 		assertTrue(ks.contains("test2"));
+	}
+
+	public void testGracefulShutdown() throws Exception {
+		for(int i=0; i<1000; i++) {
+			client.set("t" + i, 10, i);
+		}
+		assertTrue("Couldn't shut down within five seconds",
+			client.shutdown(5, TimeUnit.SECONDS));
+
+		// Get a new client
+		client=new MemcachedClient(new InetSocketAddress("127.0.0.1", 11211));
+		Collection<String> keys=new ArrayList<String>();
+		for(int i=0; i<1000; i++) {
+			keys.add("t" + i);
+		}
+		Map<String, Object> m=client.getBulk(keys);
+		assertEquals(1000, m.size());
+		for(int i=0; i<1000; i++) {
+			assertEquals(i, m.get("t" + i));
+		}
+	}
+
+	public void testGracefulShutdownTooSlow() throws Exception {
+		for(int i=0; i<1000; i++) {
+			client.set("t" + i, 10, i);
+		}
+		assertFalse("Weird, shut down too fast",
+			client.shutdown(3, TimeUnit.MILLISECONDS));
+
+		try {
+			Map<SocketAddress, String> m = client.getVersions();
+			fail("Expected failure, got " + m);
+		} catch(IllegalStateException e) {
+			assertEquals("Shutting down", e.getMessage());
+		}
+
+		// Get a new client
+		client=new MemcachedClient(new InetSocketAddress("127.0.0.1", 11211));
 	}
 }

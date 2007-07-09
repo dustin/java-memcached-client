@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 
-<!-- Copyright (c) 2005  Dustin Sallings (dustin@spy.net)
-arch-tag: BFAE15E6-ED6E-4925-A5B2-79B8CBAE37D2
--->
+<!-- Copyright (c) 2005  Dustin Sallings (dustin@spy.net) -->
 
 <project>
 
@@ -10,7 +8,7 @@ arch-tag: BFAE15E6-ED6E-4925-A5B2-79B8CBAE37D2
 	<groupId>spy</groupId>
 	<artifactId>memcached</artifactId>
 	<name>memcached</name>
-	<currentVersion>1.1</currentVersion>
+	<currentVersion>1.2</currentVersion>
 	<inceptionYear>1995</inceptionYear>
 	<organization>
 		<name>SPY Internetworking</name>
@@ -32,6 +30,7 @@ arch-tag: BFAE15E6-ED6E-4925-A5B2-79B8CBAE37D2
 	</developers>
 
 	<versions>
+		<version><name>1.2</name></version>
 		<version><name>1.1</name></version>
 		<version><name>1.0.44</name></version>
 	</versions>

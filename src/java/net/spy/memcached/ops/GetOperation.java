@@ -1,5 +1,4 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
-// arch-tag: BF4AFE32-9321-4557-8562-AA617D263BF5
 
 package net.spy.memcached.ops;
 
@@ -20,14 +19,50 @@ public class GetOperation extends Operation {
 
 	private Callback cb=null;
 
+	/**
+	 * Construct an empty get operation.  Used for subclassing.
+	 */
+	protected GetOperation() {
+		super();
+	}
+
 	public GetOperation(String key, Callback c) {
 		this(Collections.singleton(key), c);
 	}
 
 	public GetOperation(Collection<String> k, Callback c) {
-		super();
+		this();
 		keys=k;
 		cb=c;
+	}
+
+	/**
+	 * Add some additional keys to fetch.
+	 */
+	protected void setKeys(Collection<String> to) {
+		keys=to;
+	}
+
+	/**
+	 * Get the keys this GetOperation is looking for.
+	 */
+	protected Collection<String> getKeys() {
+		assert keys != null : "Null keys in " + this;
+		return keys;
+	}
+
+	/**
+	 * Get the callback for this GetOperation.
+	 */
+	protected Callback getCallback() {
+		return cb;
+	}
+
+	/**
+	 * Set the callback for this instance.
+	 */
+	protected void setCallback(Callback to) {
+		cb=to;
 	}
 
 	@Override
@@ -100,7 +135,6 @@ public class GetOperation extends Operation {
 		b.put("\r\n".getBytes());
 		b.flip();
 		setBuffer(b);
-		keys=null;
 	}
 
 	/**

@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 
-<!-- Copyright (c) 2005  Dustin Sallings (dustin@spy.net)
-arch-tag: 865F81DF-F94F-4683-B984-762D3222CB1E
--->
+<!-- Copyright (c) 2005  Dustin Sallings (dustin@spy.net) -->
 
 <project default="jar">
 	<preGoal name="java:compile">
