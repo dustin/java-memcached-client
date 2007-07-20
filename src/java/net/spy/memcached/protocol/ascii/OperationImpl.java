@@ -8,7 +8,10 @@ import java.nio.ByteBuffer;
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationException;
+import net.spy.memcached.ops.OperationReadType;
+import net.spy.memcached.ops.OperationState;
 
 /**
  * Operations on a memcached connection.
@@ -18,8 +21,8 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	protected static final byte[] CRLF={'\r', '\n'};
 
 	private final StringBuilder currentLine=new StringBuilder();
-	private State state=State.WRITING;
-	private ReadType readType=ReadType.LINE;
+	private OperationState state=OperationState.WRITING;
+	private OperationReadType readType=OperationReadType.LINE;
 	private ByteBuffer cmd=null;
 	private boolean cancelled=false;
 	private boolean foundCr=false;
@@ -88,7 +91,7 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#getState()
 	 */
-	public final State getState() {
+	public final OperationState getState() {
 		return state;
 	}
 
@@ -112,14 +115,14 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	/**
 	 * Transition the state of this operation to the given state.
 	 */
-	protected final void transitionState(State newState) {
+	protected final void transitionState(OperationState newState) {
 		getLogger().debug("Transitioned state from %s to %s", state, newState);
 		state=newState;
 		// Discard our buffer when we no longer need it.
-		if(state != State.WRITING) {
+		if(state != OperationState.WRITING) {
 			cmd=null;
 		}
-		if(state == State.COMPLETE) {
+		if(state == OperationState.COMPLETE) {
 			callback.complete();
 		}
 	}
@@ -128,20 +131,20 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	 * @see net.spy.memcached.protocol.ascii.Operation#writeComplete()
 	 */
 	public final void writeComplete() {
-		transitionState(State.READING);
+		transitionState(OperationState.READING);
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#getReadType()
 	 */
-	public final ReadType getReadType() {
+	public final OperationReadType getReadType() {
 		return readType;
 	}
 
 	/**
 	 * Set the read type of this operation.
 	 */
-	protected final void setReadType(ReadType to) {
+	protected final void setReadType(OperationReadType to) {
 		readType=to;
 	}
 
@@ -171,8 +174,8 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	 */
 	public final void readFromBuffer(ByteBuffer data) throws IOException {
 		// Loop while there's data remaining to get it all drained.
-		while(state != State.COMPLETE && data.remaining() > 0) {
-			if(readType == ReadType.DATA) {
+		while(state != OperationState.COMPLETE && data.remaining() > 0) {
+			if(readType == OperationReadType.DATA) {
 				handleRead(data);
 			} else {
 				int offset=-1;
@@ -194,7 +197,7 @@ abstract class OperationImpl extends SpyObject implements Operation {
 					String line=currentLine.toString();
 					currentLine.delete(0, currentLine.length());
 					assert currentLine.length() == 0;
-					ErrorType eType=classifyError(line);
+					OperationErrorType eType=classifyError(line);
 					if(eType != null) {
 						handleError(eType, line);
 					} else {
@@ -205,7 +208,7 @@ abstract class OperationImpl extends SpyObject implements Operation {
 		}
 	}
 
-	private void handleError(ErrorType eType, String line) throws IOException {
+	private void handleError(OperationErrorType eType, String line) throws IOException {
 		getLogger().error("Error:  %s", line);
 		switch(eType) {
 			case GENERAL:
@@ -219,18 +222,18 @@ abstract class OperationImpl extends SpyObject implements Operation {
 				break;
 			default: assert false;
 		}
-		transitionState(State.COMPLETE);
+		transitionState(OperationState.COMPLETE);
 		throw exception;
 	}
 
-	private ErrorType classifyError(String line) {
-		ErrorType rv=null;
+	private OperationErrorType classifyError(String line) {
+		OperationErrorType rv=null;
 		if(line.startsWith("ERROR")) {
-			rv=ErrorType.GENERAL;
+			rv=OperationErrorType.GENERAL;
 		} else if(line.startsWith("CLIENT_ERROR")) {
-			rv=ErrorType.CLIENT;
+			rv=OperationErrorType.CLIENT;
 		} else if(line.startsWith("SERVER_ERROR")) {
-			rv=ErrorType.SERVER;
+			rv=OperationErrorType.SERVER;
 		}
 		return rv;
 	}

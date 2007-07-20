@@ -12,7 +12,7 @@ public interface StatsOperation extends Operation {
 	public interface Callback extends OperationCallback {
 		/**
 		 * Invoked once for every stat returned from the server.
-		 * 
+		 *
 		 * @param name the name of the stat
 		 * @param val the stat value.
 		 */

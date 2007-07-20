@@ -7,13 +7,13 @@ import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
+import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.ops.VersionOperation;
 import net.spy.memcached.ops.GetOperation.Callback;
-import net.spy.memcached.ops.MutatatorOperation.Mutator;
-import net.spy.memcached.ops.StoreOperation.StoreType;
 
 /**
  * Operation factory for the ascii protocol.

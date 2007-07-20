@@ -5,7 +5,9 @@ package net.spy.memcached.protocol.ascii;
 import java.nio.ByteBuffer;
 
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.StoreOperation;
+import net.spy.memcached.ops.StoreType;
 
 /**
  * Operation to store data in a memcached server.
@@ -34,10 +36,10 @@ final class StoreOperationImpl extends OperationImpl
 
 	@Override
 	public void handleLine(String line) {
-		assert getState() == State.READING
+		assert getState() == OperationState.READING
 			: "Read ``" + line + "'' when in " + getState() + " state";
 		getCallback().receivedStatus(line);
-		transitionState(State.COMPLETE);
+		transitionState(OperationState.COMPLETE);
 	}
 
 	@Override

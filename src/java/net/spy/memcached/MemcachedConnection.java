@@ -24,6 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationException;
+import net.spy.memcached.ops.OperationState;
 
 /**
  * Connection to a cluster of memcached servers.
@@ -297,7 +298,7 @@ public final class MemcachedConnection extends SpyObject {
 			while(rbuf.remaining() > 0) {
 				assert currentOp != null : "No read operation";
 				currentOp.readFromBuffer(rbuf);
-				if(currentOp.getState() == Operation.State.COMPLETE) {
+				if(currentOp.getState() == OperationState.COMPLETE) {
 					getLogger().debug(
 							"Completed read op: %s and giving the next %d bytes",
 							currentOp, rbuf.remaining());

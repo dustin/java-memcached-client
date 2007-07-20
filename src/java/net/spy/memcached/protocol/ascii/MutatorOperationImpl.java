@@ -5,7 +5,9 @@ package net.spy.memcached.protocol.ascii;
 import java.nio.ByteBuffer;
 
 import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationState;
 
 /**
  * Operation for mutating integers inside of memcached.
@@ -35,7 +37,7 @@ final class MutatorOperationImpl extends OperationImpl
 			found=line;
 		}
 		getCallback().receivedStatus(found);
-		transitionState(State.COMPLETE);
+		transitionState(OperationState.COMPLETE);
 	}
 
 	@Override

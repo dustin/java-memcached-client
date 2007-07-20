@@ -8,14 +8,14 @@ import java.io.IOException;
  */
 public final class OperationException extends IOException {
 
-	private final Operation.ErrorType type;
+	private final OperationErrorType type;
 
 	/**
 	 * General exception (no message).
 	 */
 	public OperationException() {
 		super();
-		type=Operation.ErrorType.GENERAL;
+		type=OperationErrorType.GENERAL;
 	}
 
 	/**
@@ -24,7 +24,7 @@ public final class OperationException extends IOException {
 	 * @param eType the type of error that occurred
 	 * @param msg the error message
 	 */
-	public OperationException(Operation.ErrorType eType, String msg) {
+	public OperationException(OperationErrorType eType, String msg) {
 		super(msg.substring(eType.getSize()));
 		type=eType;
 	}
@@ -32,14 +32,14 @@ public final class OperationException extends IOException {
 	/**
 	 * Get the type of error.
 	 */
-	public Operation.ErrorType getType() {
+	public OperationErrorType getType() {
 		return type;
 	}
 
 	@Override
 	public String toString() {
 		String rv=null;
-		if(type == Operation.ErrorType.GENERAL) {
+		if(type == OperationErrorType.GENERAL) {
 			rv="OperationException: " + type;
 		} else {
 			rv="OperationException: " + type + ": " + getMessage();

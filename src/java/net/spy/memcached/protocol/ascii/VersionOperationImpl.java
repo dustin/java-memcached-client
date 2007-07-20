@@ -5,6 +5,7 @@ package net.spy.memcached.protocol.ascii;
 import java.nio.ByteBuffer;
 
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.VersionOperation;
 
 /**
@@ -23,7 +24,7 @@ final class VersionOperationImpl extends OperationImpl
 	public void handleLine(String line) {
 		assert line.startsWith("VERSION ");
 		getCallback().receivedStatus(line.substring("VERSION ".length()));
-		transitionState(State.COMPLETE);
+		transitionState(OperationState.COMPLETE);
 	}
 
 	@Override

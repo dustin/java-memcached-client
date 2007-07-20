@@ -13,6 +13,7 @@ import net.spy.SpyObject;
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationState;
 
 /**
  * Represents a node with the memcached cluster, along with buffering and
@@ -111,7 +112,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 			getWbuf().clear();
 			Operation o=getCurrentWriteOp();
 			while(o != null && toWrite < getWbuf().capacity()) {
-				assert o.getState() == Operation.State.WRITING;
+				assert o.getState() == OperationState.WRITING;
 				ByteBuffer obuf=o.getBuffer();
 				int bytesToCopy=Math.min(getWbuf().remaining(),
 						obuf.remaining());
@@ -150,7 +151,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	public final void transitionWriteItem() {
 		Operation op=removeCurrentWriteOp();
 		assert op != null : "There is no write item to transition";
-		assert op.getState() == Operation.State.READING;
+		assert op.getState() == OperationState.READING;
 		getLogger().debug("Transitioning %s to read", op);
 		readQ.add(op);
 	}

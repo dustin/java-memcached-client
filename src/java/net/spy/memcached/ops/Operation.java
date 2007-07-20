@@ -8,65 +8,6 @@ import java.nio.ByteBuffer;
  * Base interface for all operations.
  */
 public interface Operation {
-	/**
-	 * State of this operation.
-	 */
-	public enum State {
-		/**
-		 * State indicating this operation is writing data to the server.
-		 */
-		WRITING,
-		/**
-		 * State indicating this operation is reading data from the server.
-		 */
-		READING,
-		/**
-		 * State indicating this operation is complete.
-		 */
-		COMPLETE
-	}
-
-	/**
-	 * Error classification.
-	 */
-	public enum ErrorType {
-		/**
-		 * General error.
-		 */
-		GENERAL(0),
-		/**
-		 * Error that occurred because the client did something stupid.
-		 */
-		CLIENT("CLIENT_ERROR ".length()),
-		/**
-		 * Error that occurred because the server did something stupid.
-		 */
-		SERVER("SERVER_ERROR ".length());
-
-		private final int size;
-
-		ErrorType(int s) {
-			size=s;
-		}
-
-		public int getSize() {
-			return size;
-		}
-	}
-
-	/**
-	 * Data read types.
-	 */
-	public enum ReadType {
-		/**
-		 * Read type indicating an operation currently wants to read lines.
-		 */
-		LINE,
-		/**
-		 * Read type indicating an operation currently wants to read raw data.
-		 */
-		DATA
-	}
 
 	/**
 	 * Has this operation been cancelled?
@@ -96,7 +37,7 @@ public interface Operation {
 	/**
 	 * Get the current state of this operation.
 	 */
-	State getState();
+	OperationState getState();
 
 	/**
 	 * Get the write buffer for this operation.
@@ -112,7 +53,7 @@ public interface Operation {
 	/**
 	 * Get the current read type of this operation.
 	 */
-	ReadType getReadType();
+	OperationReadType getReadType();
 
 	/**
 	 * Initialize this operation.  This is used to prepare output byte buffers

@@ -9,6 +9,8 @@ import java.util.HashSet;
 
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationReadType;
+import net.spy.memcached.ops.OperationState;
 
 /**
  * Operation for retrieving data.
@@ -70,7 +72,7 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 		if(line.equals("END")) {
 			getLogger().debug("Get complete!");
 			cb.receivedStatus(line);
-			transitionState(State.COMPLETE);
+			transitionState(OperationState.COMPLETE);
 			data=null;
 		} else if(line.startsWith("VALUE ")) {
 			getLogger().debug("Got line %s", line);
@@ -81,7 +83,7 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 			data=new byte[Integer.parseInt(stuff[3])];
 			readOffset=0;
 			getLogger().debug("Set read type to data");
-			setReadType(ReadType.DATA);
+			setReadType(OperationReadType.DATA);
 		} else {
 			assert false : "Unknown line type: " + line;
 		}
@@ -133,7 +135,7 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 				readOffset=0;
 				currentFlags=0;
 				getLogger().debug("Setting read type back to line.");
-				setReadType(ReadType.LINE);
+				setReadType(OperationReadType.LINE);
 			}
 		}
 	}

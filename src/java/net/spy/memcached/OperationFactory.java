@@ -6,11 +6,12 @@ import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
+import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.ops.VersionOperation;
-import net.spy.memcached.ops.StoreOperation.StoreType;
 
 /**
  * Factory that builds operations for protocol handlers.
@@ -64,7 +65,7 @@ public interface OperationFactory {
 	 * @param cb the status callback
 	 * @return the new mutator operation
 	 */
-	MutatatorOperation mutate(MutatatorOperation.Mutator m, String key, int by,
+	MutatatorOperation mutate(Mutator m, String key, int by,
 			OperationCallback cb);
 
 	/**

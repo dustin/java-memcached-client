@@ -4,6 +4,7 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.StatsOperation;
 
 /**
@@ -31,7 +32,7 @@ final class StatsOperationImpl extends OperationImpl
 	public void handleLine(String line) {
 		if(line.equals("END")) {
 			cb.receivedStatus(line);
-			transitionState(State.COMPLETE);
+			transitionState(OperationState.COMPLETE);
 		} else {
 			String[] parts=line.split(" ");
 			assert parts.length >= 3;
