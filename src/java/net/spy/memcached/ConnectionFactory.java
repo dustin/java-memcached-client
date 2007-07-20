@@ -5,7 +5,7 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
-import net.spy.memcached.ops.Operation;
+import net.spy.memcached.protocol.ascii.Operation;
 
 /**
  * Factory for creating instances of MemcachedConnection.

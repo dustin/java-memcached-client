@@ -10,9 +10,9 @@ import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.SpyObject;
-import net.spy.memcached.ops.GetOperation;
-import net.spy.memcached.ops.Operation;
-import net.spy.memcached.ops.OptimizedGet;
+import net.spy.memcached.protocol.ascii.GetOperation;
+import net.spy.memcached.protocol.ascii.Operation;
+import net.spy.memcached.protocol.ascii.OptimizedGet;
 
 /**
  * Represents a node with the memcached cluster, along with buffering and

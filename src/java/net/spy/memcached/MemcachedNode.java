@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
-import net.spy.memcached.ops.Operation;
+import net.spy.memcached.protocol.ascii.Operation;
 
 /**
  * Interface defining a connection to a memcached server.

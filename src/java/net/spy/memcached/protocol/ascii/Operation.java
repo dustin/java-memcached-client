@@ -1,6 +1,6 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
 
-package net.spy.memcached.ops;
+package net.spy.memcached.protocol.ascii;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

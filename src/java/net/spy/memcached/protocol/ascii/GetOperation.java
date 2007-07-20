@@ -1,6 +1,6 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
 
-package net.spy.memcached.ops;
+package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;

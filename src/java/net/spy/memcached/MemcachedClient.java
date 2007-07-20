@@ -24,15 +24,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.SpyThread;
-import net.spy.memcached.ops.DeleteOperation;
-import net.spy.memcached.ops.FlushOperation;
-import net.spy.memcached.ops.GetOperation;
-import net.spy.memcached.ops.MutatorOperation;
-import net.spy.memcached.ops.Operation;
-import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.StatsOperation;
-import net.spy.memcached.ops.StoreOperation;
-import net.spy.memcached.ops.VersionOperation;
+import net.spy.memcached.protocol.ascii.DeleteOperation;
+import net.spy.memcached.protocol.ascii.FlushOperation;
+import net.spy.memcached.protocol.ascii.GetOperation;
+import net.spy.memcached.protocol.ascii.MutatorOperation;
+import net.spy.memcached.protocol.ascii.Operation;
+import net.spy.memcached.protocol.ascii.OperationCallback;
+import net.spy.memcached.protocol.ascii.StatsOperation;
+import net.spy.memcached.protocol.ascii.StoreOperation;
+import net.spy.memcached.protocol.ascii.VersionOperation;
 
 /**
  * Client to a memcached server.

@@ -1,4 +1,4 @@
-package net.spy.memcached.ops;
+package net.spy.memcached.protocol.ascii;
 
 import java.util.ArrayList;
 import java.util.Collection;
