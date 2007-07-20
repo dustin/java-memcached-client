@@ -349,11 +349,6 @@ public class ClientTest extends ClientBaseCase {
 			@Override
 			public void initialize() {
 				setBuffer(ByteBuffer.wrap("garbage\r\n".getBytes()));
-			}
-
-			@Override
-			protected void wasCancelled() {
-				getLogger().info("I was cancelled.");
 			}});
 	}
 

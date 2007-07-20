@@ -32,9 +32,4 @@ final class VersionOperationImpl extends OperationImpl
 		setBuffer(ByteBuffer.wrap(REQUEST));
 	}
 
-	@Override
-	protected void wasCancelled() {
-		// nothing
-	}
-
 }

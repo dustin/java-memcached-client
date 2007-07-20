@@ -46,9 +46,4 @@ final class FlushOperationImpl extends OperationImpl
 		}
 		setBuffer(b);
 	}
-
-	@Override
-	protected void wasCancelled() {
-		// nothing -- no callback
-	}
 }

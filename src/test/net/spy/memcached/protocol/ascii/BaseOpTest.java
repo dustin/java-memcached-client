@@ -86,7 +86,7 @@ public class BaseOpTest extends BaseMockCase {
 
 	private static class SimpleOp extends OperationImpl {
 
-		private LinkedList<String> lines=new LinkedList<String>();
+		private final LinkedList<String> lines=new LinkedList<String>();
 		private byte[] currentBytes=null;
 		private int bytesToRead=0;
 		public int linesToRead=1;
@@ -133,11 +133,6 @@ public class BaseOpTest extends BaseMockCase {
 		@Override
 		public void initialize() {
 			setBuffer(ByteBuffer.allocate(0));
-		}
-
-		@Override
-		protected void wasCancelled() {
-			// nothing
 		}
 
 	}

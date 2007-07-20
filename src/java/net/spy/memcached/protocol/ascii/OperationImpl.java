@@ -86,7 +86,9 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	/**
 	 * This is called on each subclass whenever an operation was cancelled.
 	 */
-	protected abstract void wasCancelled();
+	protected void wasCancelled() {
+		getLogger().debug("was cancelled.");
+	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#getState()
