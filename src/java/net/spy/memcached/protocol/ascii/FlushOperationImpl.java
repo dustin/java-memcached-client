@@ -17,10 +17,6 @@ final class FlushOperationImpl extends OperationImpl
 	private static final byte[] FLUSH="flush_all\r\n".getBytes();
 	private final int delay;
 
-	public FlushOperationImpl(OperationCallback cb) {
-		this(-1, cb);
-	}
-
 	public FlushOperationImpl(int d, OperationCallback cb) {
 		super(cb);
 		delay=d;
