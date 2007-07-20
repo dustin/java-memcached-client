@@ -11,6 +11,7 @@ import java.util.concurrent.BlockingQueue;
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;
+import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
 
 /**
  * Default implementation of ConnectionFactory.
@@ -116,6 +117,10 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public HashAlgorithm getHashAlg() {
 		return hashAlg;
+	}
+
+	public OperationFactory getOperationFactory() {
+		return new AsciiOperationFactory();
 	}
 
 }

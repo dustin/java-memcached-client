@@ -13,7 +13,7 @@ import net.spy.memcached.ops.OperationCallback;
 /**
  * Operation for retrieving data.
  */
-public class GetOperationImpl extends OperationImpl implements GetOperation {
+class GetOperationImpl extends OperationImpl implements GetOperation {
 
 	private Collection<String> keys=null;
 	private String currentKey=null;
@@ -23,7 +23,7 @@ public class GetOperationImpl extends OperationImpl implements GetOperation {
 	// Character we're looking for after a data read
 	private byte lookingFor='\0';
 
-	private Callback cb=null;
+	private GetOperation.Callback cb=null;
 
 	/**
 	 * Construct an empty get operation.  Used for subclassing.
@@ -32,13 +32,13 @@ public class GetOperationImpl extends OperationImpl implements GetOperation {
 		super();
 	}
 
-	public GetOperationImpl(String key, Callback c) {
+	public GetOperationImpl(String key, GetOperation.Callback c) {
 		super(c);
 		keys=Collections.singleton(key);
 		cb=c;
 	}
 
-	public GetOperationImpl(Collection<String> k, Callback c) {
+	public GetOperationImpl(Collection<String> k, GetOperation.Callback c) {
 		super(c);
 		keys=new HashSet<String>(k);
 		cb=c;
@@ -62,7 +62,7 @@ public class GetOperationImpl extends OperationImpl implements GetOperation {
 	@Override
 	protected void setCallback(OperationCallback to) {
 		super.setCallback(to);
-		cb=(Callback)to;
+		cb=(GetOperation.Callback)to;
 	}
 
 	@Override
@@ -155,20 +155,6 @@ public class GetOperationImpl extends OperationImpl implements GetOperation {
 		b.put("\r\n".getBytes());
 		b.flip();
 		setBuffer(b);
-	}
-
-	/**
-	 * Operation callback for the get request.
-	 */
-	public interface Callback extends OperationCallback {
-		/**
-		 * Callback for each result from a get.
-		 * 
-		 * @param key the key that was retrieved
-		 * @param flags the flags for this value
-		 * @param data the data stored under this key
-		 */
-		void gotData(String key, int flags, byte[] data);
 	}
 
 	@Override

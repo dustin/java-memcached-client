@@ -10,7 +10,7 @@ import net.spy.memcached.ops.OperationCallback;
 /**
  * Operation to delete an item from the cache.
  */
-public class DeleteOperationImpl extends OperationImpl
+class DeleteOperationImpl extends OperationImpl
 	implements DeleteOperation {
 
 	private static final int OVERHEAD=32;

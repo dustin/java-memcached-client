@@ -1,0 +1,98 @@
+package net.spy.memcached;
+
+import java.util.Collection;
+
+import net.spy.memcached.ops.DeleteOperation;
+import net.spy.memcached.ops.FlushOperation;
+import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.StatsOperation;
+import net.spy.memcached.ops.StoreOperation;
+import net.spy.memcached.ops.VersionOperation;
+import net.spy.memcached.ops.StoreOperation.StoreType;
+
+/**
+ * Factory that builds operations for protocol handlers.
+ */
+public interface OperationFactory {
+
+	/**
+	 * Create a deletion operation.
+	 *
+	 * @param key the key to delete
+	 * @param when the locking duration
+	 * @param operationCallback the status callback
+	 * @return the new DeleteOperation
+	 */
+	DeleteOperation delete(String key, int when,
+			OperationCallback operationCallback);
+
+	/**
+	 * Create a flush operation.
+	 *
+	 * @param delay delay until flush.
+	 * @param operationCallback the status callback
+	 * @return the new FlushOperation
+	 */
+	FlushOperation flush(int delay, OperationCallback operationCallback);
+
+	/**
+	 * Create a get operation.
+	 *
+	 * @param key the key to get
+	 * @param callback the callback that will contain the results
+	 * @return a new GetOperation
+	 */
+	GetOperation get(String key, GetOperation.Callback callback);
+
+	/**
+	 * Create a get operation.
+	 *
+	 * @param key the collection of keys to get
+	 * @param callback the callback that will contain the results
+	 * @return a new GetOperation
+	 */
+	GetOperation get(Collection<String> value, GetOperation.Callback cb);
+
+	/**
+	 * Create a mutator operation.
+	 *
+	 * @param m the mutator type
+	 * @param key the mutatee key
+	 * @param by the amount to increment or decrement
+	 * @param cb the status callback
+	 * @return the new mutator operation
+	 */
+	MutatatorOperation mutate(MutatatorOperation.Mutator m, String key, int by,
+			OperationCallback cb);
+
+	/**
+	 * Get a new StatsOperation.
+	 *
+	 * @param arg the stat parameter (see protocol docs)
+	 * @param cb the stats callback
+	 * @return the new StatsOperation
+	 */
+	StatsOperation stats(String arg, StatsOperation.Callback cb);
+
+	/**
+	 * Create a store operation.
+	 *
+	 * @param storeType the type of store operation
+	 * @param key the key to store
+	 * @param flags the storage flags
+	 * @param exp the expiration time
+	 * @param data the data
+	 * @param cb the status callback
+	 * @return the new store operation
+	 */
+	StoreOperation store(StoreType storeType, String key, int flags, int exp,
+			byte[] data, OperationCallback cb);
+
+	/**
+	 * Create a new version operation.
+	 */
+	VersionOperation version(OperationCallback cb);
+
+}

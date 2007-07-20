@@ -40,4 +40,11 @@ public interface ConnectionFactory {
 	 * Create a NodeLocator instance for the given list of nodes.
 	 */
 	NodeLocator createLocator(List<MemcachedNode> nodes);
+
+	/**
+	 * Get the operation factory for connections built by this connection
+	 * factory.
+	 */
+	OperationFactory getOperationFactory();
+
 }

@@ -1,6 +1,9 @@
 package net.spy.memcached.ops;
 
-public interface StoreOperation {
+/**
+ * Operation that represents object storage.
+ */
+public interface StoreOperation extends Operation {
 
 	/**
 	 * The type of storage operation to perform.

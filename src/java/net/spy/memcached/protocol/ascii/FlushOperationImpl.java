@@ -10,7 +10,7 @@ import net.spy.memcached.ops.OperationCallback;
 /**
  * Memcached flush_all operation.
  */
-public class FlushOperationImpl extends OperationImpl
+class FlushOperationImpl extends OperationImpl
 	implements FlushOperation {
 
 	private static final byte[] FLUSH="flush_all\r\n".getBytes();
