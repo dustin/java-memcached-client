@@ -7,14 +7,14 @@ import java.nio.ByteBuffer;
 /**
  * Operation to delete an item from the cache.
  */
-public class DeleteOperation extends Operation {
+public class DeleteOperationImpl extends OperationImpl {
 
 	private static final int OVERHEAD=32;
 
 	private final String key;
 	private final int when;
 
-	public DeleteOperation(String k, int w, OperationCallback cb) {
+	public DeleteOperationImpl(String k, int w, OperationCallback cb) {
 		super(cb);
 		key=k;
 		when=w;

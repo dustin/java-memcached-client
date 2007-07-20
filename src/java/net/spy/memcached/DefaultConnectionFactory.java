@@ -7,7 +7,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.SpyObject;
-import net.spy.memcached.protocol.ascii.Operation;
+import net.spy.memcached.protocol.ascii.OperationImpl;
 
 /**
  * Default implementation of ConnectionFactory.
@@ -75,8 +75,8 @@ public class DefaultConnectionFactory extends SpyObject
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.ConnectionFactory#createOperationQueue()
 	 */
-	public BlockingQueue<Operation> createOperationQueue() {
-		return new ArrayBlockingQueue<Operation>(getOpQueueLen());
+	public BlockingQueue<OperationImpl> createOperationQueue() {
+		return new ArrayBlockingQueue<OperationImpl>(getOpQueueLen());
 	}
 
 	/* (non-Javadoc)

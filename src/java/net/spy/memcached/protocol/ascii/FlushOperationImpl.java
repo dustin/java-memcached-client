@@ -7,16 +7,16 @@ import java.nio.ByteBuffer;
 /**
  * Memcached flush_all operation.
  */
-public class FlushOperation extends Operation {
+public class FlushOperationImpl extends OperationImpl {
 
 	private static final byte[] FLUSH="flush_all\r\n".getBytes();
 	private final int delay;
 
-	public FlushOperation(OperationCallback cb) {
+	public FlushOperationImpl(OperationCallback cb) {
 		this(-1, cb);
 	}
 
-	public FlushOperation(int d, OperationCallback cb) {
+	public FlushOperationImpl(int d, OperationCallback cb) {
 		super(cb);
 		delay=d;
 	}

@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 /**
  * Operation to store data in a memcached server.
  */
-public class StoreOperation extends Operation {
+public class StoreOperationImpl extends OperationImpl {
 
 	/**
 	 * The type of storage operation to perform.
@@ -38,7 +38,7 @@ public class StoreOperation extends Operation {
 	private final int exp;
 	private final byte[] data;
 
-	public StoreOperation(StoreType t, String k, int f, int e,
+	public StoreOperationImpl(StoreType t, String k, int f, int e,
 			byte[] d, OperationCallback callback) {
 		super(callback);
 		this.type=t;

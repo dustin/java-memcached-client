@@ -10,7 +10,7 @@ import java.util.HashSet;
 /**
  * Operation for retrieving data.
  */
-public class GetOperation extends Operation {
+public class GetOperationImpl extends OperationImpl {
 
 	private Collection<String> keys=null;
 	private String currentKey=null;
@@ -25,17 +25,17 @@ public class GetOperation extends Operation {
 	/**
 	 * Construct an empty get operation.  Used for subclassing.
 	 */
-	protected GetOperation() {
+	protected GetOperationImpl() {
 		super();
 	}
 
-	public GetOperation(String key, Callback c) {
+	public GetOperationImpl(String key, Callback c) {
 		super(c);
 		keys=Collections.singleton(key);
 		cb=c;
 	}
 
-	public GetOperation(Collection<String> k, Callback c) {
+	public GetOperationImpl(Collection<String> k, Callback c) {
 		super(c);
 		keys=new HashSet<String>(k);
 		cb=c;

@@ -7,14 +7,14 @@ import java.nio.ByteBuffer;
 /**
  * Operation to retrieve statistics from a memcached server.
  */
-public class StatsOperation extends Operation {
+public class StatsOperationImpl extends OperationImpl {
 
 	private static final byte[] MSG="stats\r\n".getBytes();
 
 	private final byte[] msg;
 	private final Callback cb;
 
-	public StatsOperation(String arg, Callback c) {
+	public StatsOperationImpl(String arg, Callback c) {
 		super(c);
 		cb=c;
 		if(arg == null) {

@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 /**
  * Operation for mutating integers inside of memcached.
  */
-public class MutatorOperation extends Operation {
+public class MutatorOperationImpl extends OperationImpl {
 
 	public static final int OVERHEAD=32;
 
@@ -29,7 +29,8 @@ public class MutatorOperation extends Operation {
 	private final String key;
 	private final int amount;
 
-	public MutatorOperation(Mutator m, String k, int amt, OperationCallback c) {
+	public MutatorOperationImpl(Mutator m, String k, int amt,
+			OperationCallback c) {
 		super(c);
 		mutator=m;
 		key=k;

@@ -7,11 +7,11 @@ import java.nio.ByteBuffer;
 /**
  * Operation to request the version of a memcached server.
  */
-public class VersionOperation extends Operation {
+public class VersionOperationImpl extends OperationImpl {
 
 	private static final byte[] REQUEST="version\r\n".getBytes();
 
-	public VersionOperation(OperationCallback c) {
+	public VersionOperationImpl(OperationCallback c) {
 		super(c);
 	}
 

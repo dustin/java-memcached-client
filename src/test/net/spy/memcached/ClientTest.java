@@ -14,9 +14,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import net.spy.memcached.protocol.ascii.Operation;
 import net.spy.memcached.protocol.ascii.OperationCallback;
 import net.spy.memcached.protocol.ascii.OperationException;
+import net.spy.memcached.protocol.ascii.OperationImpl;
 import net.spy.test.SyncThread;
 
 /**
@@ -331,7 +331,7 @@ public class ClientTest extends ClientBaseCase {
 	}
 
 	public void testBadOperation() throws Exception {
-		client.addOp("x", new Operation(new OperationCallback(){
+		client.addOp("x", new OperationImpl(new OperationCallback(){
 			public void complete() {
 				System.err.println("Complete.");
 			}
@@ -371,7 +371,7 @@ public class ClientTest extends ClientBaseCase {
 		} catch(ExecutionException e) {
 			e.printStackTrace();
 			OperationException oe=(OperationException)e.getCause();
-			assertSame(Operation.ErrorType.SERVER, oe.getType());
+			assertSame(OperationImpl.ErrorType.SERVER, oe.getType());
 		}
 
 		// But I should still be able to do something.

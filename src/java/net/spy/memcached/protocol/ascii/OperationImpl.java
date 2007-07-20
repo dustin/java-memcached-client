@@ -10,7 +10,7 @@ import net.spy.SpyObject;
 /**
  * Operations on a memcached connection.
  */
-public abstract class Operation extends SpyObject {
+public abstract class OperationImpl extends SpyObject {
 	/**
 	 * State of this operation.
 	 */
@@ -82,11 +82,11 @@ public abstract class Operation extends SpyObject {
 	private OperationException exception=null;
 	private OperationCallback callback=null;
 
-	protected Operation() {
+	protected OperationImpl() {
 		super();
 	}
 
-	protected Operation(OperationCallback cb) {
+	protected OperationImpl(OperationCallback cb) {
 		super();
 		callback=cb;
 	}

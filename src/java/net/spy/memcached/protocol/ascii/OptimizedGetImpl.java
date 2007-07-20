@@ -8,8 +8,8 @@ import java.util.Map;
 /**
  * Optimized Get operation for folding a bunch of gets together.
  */
-public class OptimizedGet extends GetOperation
-	implements GetOperation.Callback {
+public class OptimizedGetImpl extends GetOperationImpl
+	implements GetOperationImpl.Callback {
 
 	private final Map<String, Collection<Callback>> callbacks=
 		new HashMap<String, Collection<Callback>>();
@@ -18,7 +18,7 @@ public class OptimizedGet extends GetOperation
 	/**
 	 * Construct an optimized get starting with the given get operation.
 	 */
-	public OptimizedGet(GetOperation firstGet) {
+	public OptimizedGetImpl(GetOperationImpl firstGet) {
 		super();
 		setKeys(callbacks.keySet());
 		setCallback(this);
@@ -28,7 +28,7 @@ public class OptimizedGet extends GetOperation
 	/**
 	 * Add a new GetOperation to get.
 	 */
-	public void addOperation(GetOperation o) {
+	public void addOperation(GetOperationImpl o) {
 		Callback c=new GetCallbackWrapper(o.getKeys().size(),
 				(Callback)o.getCallback());
 		allCallbacks.add(c);
