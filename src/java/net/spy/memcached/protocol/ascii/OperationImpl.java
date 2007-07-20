@@ -38,7 +38,7 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	/**
 	 * Get the operation callback associated with this operation.
 	 */
-	public OperationCallback getCallback() {
+	public final OperationCallback getCallback() {
 		return callback;
 	}
 
@@ -53,28 +53,28 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#isCancelled()
 	 */
-	public boolean isCancelled() {
+	public final boolean isCancelled() {
 		return cancelled;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#hasErrored()
 	 */
-	public boolean hasErrored() {
+	public final boolean hasErrored() {
 		return exception != null;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#getException()
 	 */
-	public OperationException getException() {
+	public final OperationException getException() {
 		return exception;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#cancel()
 	 */
-	public void cancel() {
+	public final void cancel() {
 		cancelled=true;
 		wasCancelled();
 		callback.complete();
@@ -88,14 +88,14 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#getState()
 	 */
-	public State getState() {
+	public final State getState() {
 		return state;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#getBuffer()
 	 */
-	public ByteBuffer getBuffer() {
+	public final ByteBuffer getBuffer() {
 		assert cmd != null : "No output buffer.";
 		return cmd;
 	}
@@ -103,7 +103,7 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	/**
 	 * Set the write buffer for this operation.
 	 */
-	protected void setBuffer(ByteBuffer to) {
+	protected final void setBuffer(ByteBuffer to) {
 		assert to != null : "Trying to set buffer to null";
 		cmd=to;
 		cmd.mark();
@@ -112,7 +112,7 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	/**
 	 * Transition the state of this operation to the given state.
 	 */
-	protected void transitionState(State newState) {
+	protected final void transitionState(State newState) {
 		getLogger().debug("Transitioned state from %s to %s", state, newState);
 		state=newState;
 		// Discard our buffer when we no longer need it.
@@ -127,28 +127,28 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#writeComplete()
 	 */
-	public void writeComplete() {
+	public final void writeComplete() {
 		transitionState(State.READING);
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#getReadType()
 	 */
-	public ReadType getReadType() {
+	public final ReadType getReadType() {
 		return readType;
 	}
 
 	/**
 	 * Set the read type of this operation.
 	 */
-	protected void setReadType(ReadType to) {
+	protected final void setReadType(ReadType to) {
 		readType=to;
 	}
 
 	/**
 	 * Set some arguments for an operation into the given byte buffer.
 	 */
-	protected void setArguments(ByteBuffer bb, Object... args) {
+	protected final void setArguments(ByteBuffer bb, Object... args) {
 		boolean wasFirst=true;
 		for(Object o : args) {
 			if(wasFirst) {

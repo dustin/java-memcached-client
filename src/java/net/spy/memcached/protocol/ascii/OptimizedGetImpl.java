@@ -10,7 +10,7 @@ import net.spy.memcached.ops.GetOperation;
 /**
  * Optimized Get operation for folding a bunch of gets together.
  */
-class OptimizedGetImpl extends GetOperationImpl
+final class OptimizedGetImpl extends GetOperationImpl
 	implements GetOperation.Callback {
 
 	private final Map<String, Collection<GetOperation.Callback>> callbacks=

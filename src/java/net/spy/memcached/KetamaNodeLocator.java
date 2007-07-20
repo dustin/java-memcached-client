@@ -17,7 +17,7 @@ import net.spy.SpyObject;
  *
  * @see http://www.last.fm/user/RJ/journal/2007/04/10/392555/
  */
-public class KetamaNodeLocator extends SpyObject implements NodeLocator {
+public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
 	static final int NUM_REPS = 100;
 

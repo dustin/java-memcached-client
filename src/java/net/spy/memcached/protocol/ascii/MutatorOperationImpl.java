@@ -10,7 +10,7 @@ import net.spy.memcached.ops.OperationCallback;
 /**
  * Operation for mutating integers inside of memcached.
  */
-class MutatorOperationImpl extends OperationImpl
+final class MutatorOperationImpl extends OperationImpl
 	implements MutatatorOperation {
 
 	public static final int OVERHEAD=32;

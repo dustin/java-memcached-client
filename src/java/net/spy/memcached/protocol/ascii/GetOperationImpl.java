@@ -47,26 +47,26 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	/**
 	 * Add some additional keys to fetch.
 	 */
-	protected void setKeys(Collection<String> to) {
+	protected final void setKeys(Collection<String> to) {
 		keys=to;
 	}
 
 	/**
 	 * Get the keys this GetOperation is looking for.
 	 */
-	public Collection<String> getKeys() {
+	public final Collection<String> getKeys() {
 		assert keys != null : "Null keys in " + this;
 		return keys;
 	}
 
 	@Override
-	protected void setCallback(OperationCallback to) {
+	protected final void setCallback(OperationCallback to) {
 		super.setCallback(to);
 		cb=(GetOperation.Callback)to;
 	}
 
 	@Override
-	public void handleLine(String line) {
+	public final void handleLine(String line) {
 		if(line.equals("END")) {
 			getLogger().debug("Get complete!");
 			cb.receivedStatus(line);
@@ -88,7 +88,7 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	}
 
 	@Override
-	public void handleRead(ByteBuffer b) {
+	public final void handleRead(ByteBuffer b) {
 		assert currentKey != null;
 		assert data != null;
 		// This will be the case, because we'll clear them when it's not.
@@ -139,7 +139,7 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	}
 
 	@Override
-	public void initialize() {
+	public final void initialize() {
 		// Figure out the length of the request
 		int size="get\r\n".length();
 		for(String s : keys) {
@@ -158,7 +158,7 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	}
 
 	@Override
-	protected void wasCancelled() {
+	protected final void wasCancelled() {
 		cb.receivedStatus("cancelled");
 	}
 }

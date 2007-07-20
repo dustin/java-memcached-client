@@ -6,7 +6,7 @@ import java.io.IOException;
 /**
  * Exceptions thrown when protocol errors occur.
  */
-public class OperationException extends IOException {
+public final class OperationException extends IOException {
 
 	private final Operation.ErrorType type;
 

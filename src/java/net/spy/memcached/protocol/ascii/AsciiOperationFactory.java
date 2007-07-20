@@ -18,7 +18,7 @@ import net.spy.memcached.ops.StoreOperation.StoreType;
 /**
  * Operation factory for the ascii protocol.
  */
-public class AsciiOperationFactory implements OperationFactory {
+public final class AsciiOperationFactory implements OperationFactory {
 
 	public DeleteOperation delete(String key, int when,
 			OperationCallback cb) {

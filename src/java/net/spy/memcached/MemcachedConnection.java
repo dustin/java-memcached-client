@@ -28,7 +28,7 @@ import net.spy.memcached.ops.OperationException;
 /**
  * Connection to a cluster of memcached servers.
  */
-public class MemcachedConnection extends SpyObject {
+public final class MemcachedConnection extends SpyObject {
 	// The number of empty selects we'll allow before taking action.  It's too
 	// easy to write a bug that causes it to loop uncontrollably.  This helps
 	// find those bugs and often works around them.

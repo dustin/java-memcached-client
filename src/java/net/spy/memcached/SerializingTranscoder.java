@@ -17,7 +17,8 @@ import net.spy.util.CloseUtil;
 /**
  * Transcoder that serializes and compresses objects.
  */
-public class SerializingTranscoder extends SpyObject implements Transcoder {
+public final class SerializingTranscoder extends SpyObject
+	implements Transcoder {
 
 	/**
 	 * Default compression threshold value.

@@ -9,7 +9,7 @@ import net.spy.memcached.ops.StatsOperation;
 /**
  * Operation to retrieve statistics from a memcached server.
  */
-class StatsOperationImpl extends OperationImpl
+final class StatsOperationImpl extends OperationImpl
 	implements StatsOperation {
 
 	private static final byte[] MSG="stats\r\n".getBytes();

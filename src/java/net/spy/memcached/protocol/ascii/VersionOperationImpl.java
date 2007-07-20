@@ -10,7 +10,7 @@ import net.spy.memcached.ops.VersionOperation;
 /**
  * Operation to request the version of a memcached server.
  */
-class VersionOperationImpl extends OperationImpl
+final class VersionOperationImpl extends OperationImpl
 	implements VersionOperation {
 
 	private static final byte[] REQUEST="version\r\n".getBytes();

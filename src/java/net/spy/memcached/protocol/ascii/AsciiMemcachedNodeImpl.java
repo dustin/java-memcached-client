@@ -11,7 +11,7 @@ import net.spy.memcached.protocol.TCPMemcachedNodeImpl;
 /**
  * Memcached node for the ASCII protocol.
  */
-public class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
+public final class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 
 	public AsciiMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
@@ -20,7 +20,7 @@ public class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 	}
 
 	@Override
-	protected final void optimize() {
+	protected void optimize() {
 		// make sure there are at least two get operations in a row before
 		// attempting to optimize them.
 		if(writeQ.peek() instanceof GetOperation) {

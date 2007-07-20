@@ -7,7 +7,7 @@ import java.util.Arrays;
 /**
  * Cached data with its attributes.
  */
-public class CachedData {
+public final class CachedData {
 
 	private final int flags;
 	private final byte[] data;

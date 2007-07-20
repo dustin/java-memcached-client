@@ -10,7 +10,7 @@ import net.spy.memcached.ops.StoreOperation;
 /**
  * Operation to store data in a memcached server.
  */
-class StoreOperationImpl extends OperationImpl
+final class StoreOperationImpl extends OperationImpl
 	implements StoreOperation {
 
 	// Overhead storage stuff to make sure the buffer pushes out far enough.
