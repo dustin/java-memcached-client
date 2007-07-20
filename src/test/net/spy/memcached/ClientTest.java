@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.protocol.ascii.ExtensibleOperationImpl;
-import net.spy.memcached.protocol.ascii.OperationException;
 import net.spy.test.SyncThread;
 
 /**

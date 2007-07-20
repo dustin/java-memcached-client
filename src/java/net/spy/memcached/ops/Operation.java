@@ -3,7 +3,6 @@ package net.spy.memcached.ops;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import net.spy.memcached.protocol.ascii.OperationException;
 
 /**
  * Base interface for all operations.

@@ -1,6 +1,7 @@
 package net.spy.memcached.protocol.ascii;
 
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationException;
 
 import junit.framework.TestCase;
 

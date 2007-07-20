@@ -23,7 +23,7 @@ import java.util.concurrent.CountDownLatch;
 
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
-import net.spy.memcached.protocol.ascii.OperationException;
+import net.spy.memcached.ops.OperationException;
 
 /**
  * Connection to a cluster of memcached servers.

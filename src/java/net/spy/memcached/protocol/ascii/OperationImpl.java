@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationException;
 
 /**
  * Operations on a memcached connection.

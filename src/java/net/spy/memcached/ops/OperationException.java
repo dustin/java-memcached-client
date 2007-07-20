@@ -1,15 +1,14 @@
-package net.spy.memcached.protocol.ascii;
+package net.spy.memcached.ops;
 
 import java.io.IOException;
 
-import net.spy.memcached.ops.Operation;
 
 /**
  * Exceptions thrown when protocol errors occur.
  */
 public class OperationException extends IOException {
 
-	private final OperationImpl.ErrorType type;
+	private final Operation.ErrorType type;
 
 	/**
 	 * General exception (no message).
@@ -25,7 +24,7 @@ public class OperationException extends IOException {
 	 * @param eType the type of error that occurred
 	 * @param msg the error message
 	 */
-	public OperationException(OperationImpl.ErrorType eType, String msg) {
+	public OperationException(Operation.ErrorType eType, String msg) {
 		super(msg.substring(eType.getSize()));
 		type=eType;
 	}
@@ -33,7 +32,7 @@ public class OperationException extends IOException {
 	/**
 	 * Get the type of error.
 	 */
-	public OperationImpl.ErrorType getType() {
+	public Operation.ErrorType getType() {
 		return type;
 	}
 
