@@ -68,9 +68,7 @@ public class MemcachedConnection extends SpyObject {
 		for(SocketAddress sa : a) {
 			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
-			MemcachedNode qa=new MemcachedNodeImpl(sa, ch, bufSize,
-				f.createOperationQueue(), f.createOperationQueue(),
-				f.createOperationQueue());
+			MemcachedNode qa=f.createMemcachedNode(sa, ch, bufSize);
 			int ops=0;
 			if(ch.connect(sa)) {
 				getLogger().info("Connected to %s immediately", qa);

@@ -1,4 +1,4 @@
-package net.spy.memcached;
+package net.spy.memcached.protocol.ascii;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -10,16 +10,15 @@ import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.SpyObject;
+import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
-import net.spy.memcached.protocol.ascii.GetOperationImpl;
-import net.spy.memcached.protocol.ascii.OptimizedGetImpl;
 
 /**
  * Represents a node with the memcached cluster, along with buffering and
  * operation queues.
  */
-class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
+public class AsciiMemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	private final SocketAddress socketAddress;
 	private final ByteBuffer rbuf;
 	private final ByteBuffer wbuf;
@@ -34,7 +33,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	private GetOperation getOp=null;
 	private SelectionKey sk=null;
 
-	public MemcachedNodeImpl(SocketAddress sa, SocketChannel c,
+	public AsciiMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
 			BlockingQueue<Operation> wq, BlockingQueue<Operation> iq) {
 		super();
