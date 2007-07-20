@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.spy.memcached.ops.OperationReadType;
 import net.spy.test.BaseMockCase;
 
 /**

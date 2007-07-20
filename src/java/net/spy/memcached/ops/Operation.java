@@ -51,11 +51,6 @@ public interface Operation {
 	void writeComplete();
 
 	/**
-	 * Get the current read type of this operation.
-	 */
-	OperationReadType getReadType();
-
-	/**
 	 * Initialize this operation.  This is used to prepare output byte buffers
 	 * and stuff.
 	 */

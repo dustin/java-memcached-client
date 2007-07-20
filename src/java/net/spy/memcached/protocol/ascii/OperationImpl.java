@@ -10,7 +10,6 @@ import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationException;
-import net.spy.memcached.ops.OperationReadType;
 import net.spy.memcached.ops.OperationState;
 
 /**
@@ -139,7 +138,7 @@ abstract class OperationImpl extends SpyObject implements Operation {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.protocol.ascii.Operation#getReadType()
 	 */
-	public final OperationReadType getReadType() {
+	protected final OperationReadType getReadType() {
 		return readType;
 	}
 

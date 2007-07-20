@@ -9,7 +9,6 @@ import java.util.HashSet;
 
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.OperationReadType;
 import net.spy.memcached.ops.OperationState;
 
 /**
