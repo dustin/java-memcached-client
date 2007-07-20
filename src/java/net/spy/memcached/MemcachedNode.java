@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
-import net.spy.memcached.protocol.ascii.OperationImpl;
+import net.spy.memcached.ops.Operation;
 
 /**
  * Interface defining a connection to a memcached server.
@@ -41,24 +41,24 @@ public interface MemcachedNode {
 	/**
 	 * Get the operation at the top of the queue that is requiring input.
 	 */
-	OperationImpl getCurrentReadOp();
+	Operation getCurrentReadOp();
 
 	/**
 	 * Remove the operation at the top of the queue that is requiring input.
 	 */
-	OperationImpl removeCurrentReadOp();
+	Operation removeCurrentReadOp();
 
 	/**
 	 * Get the operation at the top of the queue that has information available
 	 * to write.
 	 */
-	OperationImpl getCurrentWriteOp();
+	Operation getCurrentWriteOp();
 
 	/**
 	 * Remove the operation at the top of the queue that has information
 	 * available to write.
 	 */
-	OperationImpl removeCurrentWriteOp();
+	Operation removeCurrentWriteOp();
 
 	/**
 	 * True if an operation is available to read.
@@ -73,7 +73,7 @@ public interface MemcachedNode {
 	/**
 	 * Add an operation to the queue.
 	 */
-	void addOp(OperationImpl op);
+	void addOp(Operation op);
 
 	/**
 	 * Compute the appropriate selection operations for the channel this

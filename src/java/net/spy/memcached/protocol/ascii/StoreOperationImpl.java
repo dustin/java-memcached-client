@@ -4,30 +4,14 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.StoreOperation;
+
 /**
  * Operation to store data in a memcached server.
  */
-public class StoreOperationImpl extends OperationImpl {
-
-	/**
-	 * The type of storage operation to perform.
-	 */
-	public enum StoreType {
-		/**
-		 * Unconditionally store a value in the cache.
-		 */
-		set,
-		/**
-		 * Store a value in the cache iff there is not already something stored
-		 * for the given key.
-		 */
-		add,
-		/**
-		 * Store a value in the cache iff there is already something stored for
-		 * the given key.
-		 */
-		replace
-	}
+public class StoreOperationImpl extends OperationImpl
+	implements StoreOperation {
 
 	// Overhead storage stuff to make sure the buffer pushes out far enough.
 	private static final int OVERHEAD = 32;

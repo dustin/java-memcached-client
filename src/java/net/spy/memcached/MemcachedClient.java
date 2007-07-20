@@ -24,12 +24,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.SpyThread;
+import net.spy.memcached.ops.DeleteOperation;
+import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.protocol.ascii.DeleteOperationImpl;
 import net.spy.memcached.protocol.ascii.FlushOperationImpl;
 import net.spy.memcached.protocol.ascii.GetOperationImpl;
 import net.spy.memcached.protocol.ascii.MutatorOperationImpl;
-import net.spy.memcached.protocol.ascii.OperationCallback;
-import net.spy.memcached.protocol.ascii.OperationImpl;
 import net.spy.memcached.protocol.ascii.StatsOperationImpl;
 import net.spy.memcached.protocol.ascii.StoreOperationImpl;
 import net.spy.memcached.protocol.ascii.VersionOperationImpl;
@@ -170,7 +173,7 @@ public class MemcachedClient extends SpyThread {
 	 * @param op the operation to perform
 	 * @return the Operation
 	 */
-	OperationImpl addOp(final String key, final OperationImpl op) {
+	Operation addOp(final String key, final Operation op) {
 		if(shuttingDown) {
 			throw new IllegalStateException("Shutting down");
 		}
@@ -190,7 +193,7 @@ public class MemcachedClient extends SpyThread {
 		return op;
 	}
 
-	OperationImpl addOp(final MemcachedNode node, final OperationImpl op) {
+	Operation addOp(final MemcachedNode node, final Operation op) {
 		if(shuttingDown) {
 			throw new IllegalStateException("Shutting down");
 		}
@@ -218,7 +221,7 @@ public class MemcachedClient extends SpyThread {
 		CachedData co=transcoder.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
-		OperationImpl op=new StoreOperationImpl(storeType, key, co.getFlags(),
+		Operation op=new StoreOperationImpl(storeType, key, co.getFlags(),
 				exp, co.getData(), new OperationCallback() {
 					public void receivedStatus(String val) {
 						rv.set(val.equals("STORED"));
@@ -257,7 +260,7 @@ public class MemcachedClient extends SpyThread {
 	 * @return a future representing the processing of this operation
 	 */
 	public Future<Boolean> add(String key, int exp, Object o) {
-		return asyncStore(StoreOperationImpl.StoreType.add, key, exp, o);
+		return asyncStore(StoreOperation.StoreType.add, key, exp, o);
 	}
 
 	/**
@@ -286,7 +289,7 @@ public class MemcachedClient extends SpyThread {
 	 * @return a future representing the processing of this operation
 	 */
 	public Future<Boolean> set(String key, int exp, Object o) {
-		return asyncStore(StoreOperationImpl.StoreType.set, key, exp, o);
+		return asyncStore(StoreOperation.StoreType.set, key, exp, o);
 	}
 
 	/**
@@ -316,7 +319,7 @@ public class MemcachedClient extends SpyThread {
 	 * @return a future representing the processing of this operation
 	 */
 	public Future<Boolean> replace(String key, int exp, Object o) {
-		return asyncStore(StoreOperationImpl.StoreType.replace, key, exp, o);
+		return asyncStore(StoreOperation.StoreType.replace, key, exp, o);
 	}
 
 	/**
@@ -330,7 +333,7 @@ public class MemcachedClient extends SpyThread {
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<Object> rv=new OperationFuture<Object>(latch);
 
-		OperationImpl op=new GetOperationImpl(key,
+		Operation op=new GetOperationImpl(key,
 				new GetOperationImpl.Callback() {
 			private Object val=null;
 			public void receivedStatus(String line) {
@@ -402,7 +405,7 @@ public class MemcachedClient extends SpyThread {
 			ks.add(key);
 		}
 		final CountDownLatch latch=new CountDownLatch(chunks.size());
-		final Collection<OperationImpl> ops=new ArrayList<OperationImpl>();
+		final Collection<Operation> ops=new ArrayList<Operation>();
 
 		GetOperationImpl.Callback cb=new GetOperationImpl.Callback() {
 				@SuppressWarnings("synthetic-access")
@@ -468,7 +471,7 @@ public class MemcachedClient extends SpyThread {
 			new ConcurrentHashMap<SocketAddress, String>();
 
 		CountDownLatch blatch = broadcastOp(new OperationFactory(){
-			public OperationImpl newOp(final MemcachedNode n,
+			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
 				final SocketAddress sa=n.getSocketAddress();
 				return new VersionOperationImpl(
@@ -502,7 +505,7 @@ public class MemcachedClient extends SpyThread {
 			=new HashMap<SocketAddress, Map<String, String>>();
 
 		CountDownLatch blatch = broadcastOp(new OperationFactory(){
-			public OperationImpl newOp(final MemcachedNode n,
+			public Operation newOp(final MemcachedNode n,
 				final CountDownLatch latch) {
 				final SocketAddress sa=n.getSocketAddress();
 				rv.put(sa, new HashMap<String, String>());
@@ -559,7 +562,7 @@ public class MemcachedClient extends SpyThread {
 	 * @return the new value (-1 if the key doesn't exist)
 	 */
 	public long incr(String key, int by) {
-		return mutate(MutatorOperationImpl.Mutator.incr, key, by);
+		return mutate(MutatatorOperation.Mutator.incr, key, by);
 	}
 
 	/**
@@ -570,14 +573,14 @@ public class MemcachedClient extends SpyThread {
 	 * @return the new value (-1 if the key doesn't exist)
 	 */
 	public long decr(String key, int by) {
-		return mutate(MutatorOperationImpl.Mutator.decr, key, by);
+		return mutate(MutatatorOperation.Mutator.decr, key, by);
 	}
 
 	private long mutateWithDefault(MutatorOperationImpl.Mutator t, String key,
 			int by, long def) {
 		long rv=mutate(t, key, by);
 		if(rv == -1) {
-			Future<Boolean> f=asyncStore(StoreOperationImpl.StoreType.add,
+			Future<Boolean> f=asyncStore(StoreOperation.StoreType.add,
 					key, 0,	String.valueOf(def));
 			try {
 				if(f.get()) {
@@ -604,7 +607,7 @@ public class MemcachedClient extends SpyThread {
 	 * @return the new value, or -1 if we were unable to increment or add
 	 */
 	public long incr(String key, int by, long def) {
-		return mutateWithDefault(MutatorOperationImpl.Mutator.incr,
+		return mutateWithDefault(MutatatorOperation.Mutator.incr,
 				key, by, def);
 	}
 
@@ -617,7 +620,7 @@ public class MemcachedClient extends SpyThread {
 	 * @return the new value, or -1 if we were unable to decrement or add
 	 */
 	public long decr(String key, int by, long def) {
-		return mutateWithDefault(MutatorOperationImpl.Mutator.decr, key, by, def);
+		return mutateWithDefault(MutatatorOperation.Mutator.decr, key, by, def);
 	}
 
 	/**
@@ -629,7 +632,7 @@ public class MemcachedClient extends SpyThread {
 	public Future<Boolean> delete(String key, int when) {
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
-		DeleteOperationImpl op=new DeleteOperationImpl(key, when,
+		DeleteOperation op=new DeleteOperationImpl(key, when,
 				new OperationCallback() {
 					public void receivedStatus(String line) {
 						rv.set(line.equals("DELETED"));
@@ -657,7 +660,7 @@ public class MemcachedClient extends SpyThread {
 		final AtomicReference<Boolean> flushResult=
 			new AtomicReference<Boolean>(null);
 		CountDownLatch blatch = broadcastOp(new OperationFactory(){
-			public OperationImpl newOp(final MemcachedNode n,
+			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
 				return new FlushOperationImpl(delay, new OperationCallback(){
 					public void receivedStatus(String line) {
@@ -762,7 +765,7 @@ public class MemcachedClient extends SpyThread {
 	 */
 	public boolean waitForQueues(long timeout, TimeUnit unit) {
 		CountDownLatch blatch = broadcastOp(new OperationFactory(){
-			public OperationImpl newOp(final MemcachedNode n,
+			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
 				return new VersionOperationImpl(
 						new OperationCallback() {
@@ -785,12 +788,12 @@ public class MemcachedClient extends SpyThread {
 
 	static class BulkGetFuture implements Future<Map<String, Object>> {
 		private final Map<String, Object> rvMap;
-		private final Collection<OperationImpl> ops;
+		private final Collection<Operation> ops;
 		private final CountDownLatch latch;
 		private boolean cancelled=false;
 
 		public BulkGetFuture(Map<String, Object> m,
-				Collection<OperationImpl> getOps, CountDownLatch l) {
+				Collection<Operation> getOps, CountDownLatch l) {
 			super();
 			rvMap = m;
 			ops = getOps;
@@ -799,8 +802,8 @@ public class MemcachedClient extends SpyThread {
 
 		public boolean cancel(boolean ign) {
 			boolean rv=false;
-			for(OperationImpl op : ops) {
-				rv |= op.getState() == OperationImpl.State.WRITING;
+			for(Operation op : ops) {
+				rv |= op.getState() == Operation.State.WRITING;
 				op.cancel();
 			}
 			cancelled=true;
@@ -820,7 +823,7 @@ public class MemcachedClient extends SpyThread {
 			throws InterruptedException,
 			ExecutionException, TimeoutException {
 			latch.await(timeout, unit);
-			for(OperationImpl op : ops) {
+			for(Operation op : ops) {
 				if(op.isCancelled()) {
 					throw new ExecutionException(
 							new RuntimeException("Cancelled"));
@@ -845,7 +848,7 @@ public class MemcachedClient extends SpyThread {
 
 		private final CountDownLatch latch;
 		private final AtomicReference<T> objRef;
-		private OperationImpl op;
+		private Operation op;
 
 		public OperationFuture(CountDownLatch l) {
 			this(l, new AtomicReference<T>(null));
@@ -862,7 +865,7 @@ public class MemcachedClient extends SpyThread {
 			op.cancel();
 			// This isn't exactly correct, but it's close enough.  If we're in
 			// a writing state, we *probably* haven't started.
-			return op.getState() == OperationImpl.State.WRITING;
+			return op.getState() == Operation.State.WRITING;
 		}
 
 		public T get() throws InterruptedException, ExecutionException {
@@ -886,7 +889,7 @@ public class MemcachedClient extends SpyThread {
 			objRef.set(o);
 		}
 
-		void setOperation(OperationImpl to) {
+		void setOperation(Operation to) {
 			op=to;
 		}
 
@@ -897,7 +900,7 @@ public class MemcachedClient extends SpyThread {
 
 		public boolean isDone() {
 			assert op != null : "No operation";
-			return op.getState() == OperationImpl.State.COMPLETE;
+			return op.getState() == Operation.State.COMPLETE;
 		}
 		
 	}

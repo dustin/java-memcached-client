@@ -1,6 +1,6 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
 
-package net.spy.memcached.protocol.ascii;
+package net.spy.memcached.ops;
 
 /**
  * Callback that's invoked with the response of an operation.

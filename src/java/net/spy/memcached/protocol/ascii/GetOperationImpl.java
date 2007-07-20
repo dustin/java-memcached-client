@@ -7,10 +7,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.OperationCallback;
+
 /**
  * Operation for retrieving data.
  */
-public class GetOperationImpl extends OperationImpl {
+public class GetOperationImpl extends OperationImpl implements GetOperation {
 
 	private Collection<String> keys=null;
 	private String currentKey=null;
@@ -51,7 +54,7 @@ public class GetOperationImpl extends OperationImpl {
 	/**
 	 * Get the keys this GetOperation is looking for.
 	 */
-	protected Collection<String> getKeys() {
+	public Collection<String> getKeys() {
 		assert keys != null : "Null keys in " + this;
 		return keys;
 	}

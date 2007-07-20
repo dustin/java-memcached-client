@@ -4,10 +4,14 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.ops.DeleteOperation;
+import net.spy.memcached.ops.OperationCallback;
+
 /**
  * Operation to delete an item from the cache.
  */
-public class DeleteOperationImpl extends OperationImpl {
+public class DeleteOperationImpl extends OperationImpl
+	implements DeleteOperation {
 
 	private static final int OVERHEAD=32;
 

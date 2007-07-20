@@ -6,70 +6,13 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import net.spy.SpyObject;
+import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationCallback;
 
 /**
  * Operations on a memcached connection.
  */
-public abstract class OperationImpl extends SpyObject {
-	/**
-	 * State of this operation.
-	 */
-	public enum State {
-		/**
-		 * State indicating this operation is writing data to the server.
-		 */
-		WRITING,
-		/**
-		 * State indicating this operation is reading data from the server.
-		 */
-		READING,
-		/**
-		 * State indicating this operation is complete.
-		 */
-		COMPLETE
-	}
-
-	/**
-	 * Error classification.
-	 */
-	public enum ErrorType {
-		/**
-		 * General error.
-		 */
-		GENERAL(0),
-		/**
-		 * Error that occurred because the client did something stupid.
-		 */
-		CLIENT("CLIENT_ERROR ".length()),
-		/**
-		 * Error that occurred because the server did something stupid.
-		 */
-		SERVER("SERVER_ERROR ".length());
-
-		private final int size;
-
-		ErrorType(int s) {
-			size=s;
-		}
-
-		public int getSize() {
-			return size;
-		}
-	}
-
-	/**
-	 * Data read types.
-	 */
-	public enum ReadType {
-		/**
-		 * Read type indicating an operation currently wants to read lines.
-		 */
-		LINE,
-		/**
-		 * Read type indicating an operation currently wants to read raw data.
-		 */
-		DATA
-	}
+abstract class OperationImpl extends SpyObject implements Operation {
 
 	protected static final byte[] CRLF={'\r', '\n'};
 
@@ -94,7 +37,7 @@ public abstract class OperationImpl extends SpyObject {
 	/**
 	 * Get the operation callback associated with this operation.
 	 */
-	protected OperationCallback getCallback() {
+	public OperationCallback getCallback() {
 		return callback;
 	}
 
@@ -106,29 +49,29 @@ public abstract class OperationImpl extends SpyObject {
 		callback=to;
 	}
 
-	/**
-	 * Has this operation been cancelled?
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#isCancelled()
 	 */
 	public boolean isCancelled() {
 		return cancelled;
 	}
 
-	/**
-	 * True if an error occurred while processing this operation.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#hasErrored()
 	 */
 	public boolean hasErrored() {
 		return exception != null;
 	}
 
-	/**
-	 * Get the exception that occurred (or null if no exception occurred).
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#getException()
 	 */
 	public OperationException getException() {
 		return exception;
 	}
 
-	/**
-	 * Cancel this operation.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#cancel()
 	 */
 	public void cancel() {
 		cancelled=true;
@@ -141,15 +84,15 @@ public abstract class OperationImpl extends SpyObject {
 	 */
 	protected abstract void wasCancelled();
 
-	/**
-	 * Get the current state of this operation.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#getState()
 	 */
 	public State getState() {
 		return state;
 	}
 
-	/**
-	 * Get the write buffer for this operation.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#getBuffer()
 	 */
 	public ByteBuffer getBuffer() {
 		assert cmd != null : "No output buffer.";
@@ -180,16 +123,15 @@ public abstract class OperationImpl extends SpyObject {
 		}
 	}
 
-	/**
-	 * Invoked after having written all of the bytes from the supplied output
-	 * buffer.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#writeComplete()
 	 */
 	public void writeComplete() {
 		transitionState(State.READING);
 	}
 
-	/**
-	 * Get the current read type of this operation.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#getReadType()
 	 */
 	public ReadType getReadType() {
 		return readType;
@@ -218,15 +160,13 @@ public abstract class OperationImpl extends SpyObject {
 		bb.put(CRLF);
 	}
 
-	/**
-	 * Initialize this operation.  This is used to prepare output byte buffers
-	 * and stuff.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#initialize()
 	 */
 	public abstract void initialize();
 
-	/**
-	 * Read data from the given byte buffer and dispatch to the appropriate
-	 * read mechanism.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#readFromBuffer(java.nio.ByteBuffer)
 	 */
 	public final void readFromBuffer(ByteBuffer data) throws IOException {
 		// Loop while there's data remaining to get it all drained.
@@ -294,15 +234,15 @@ public abstract class OperationImpl extends SpyObject {
 		return rv;
 	}
 
-	/**
-	 * Handle a raw data read.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#handleRead(java.nio.ByteBuffer)
 	 */
 	public void handleRead(ByteBuffer data) {
 		assert false;
 	}
 
-	/**
-	 * Handle a textual read.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.protocol.ascii.Operation#handleLine(java.lang.String)
 	 */
 	public abstract void handleLine(String line);
 }

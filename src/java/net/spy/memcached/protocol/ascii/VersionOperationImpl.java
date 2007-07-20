@@ -4,10 +4,14 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.VersionOperation;
+
 /**
  * Operation to request the version of a memcached server.
  */
-public class VersionOperationImpl extends OperationImpl {
+public class VersionOperationImpl extends OperationImpl
+	implements VersionOperation {
 
 	private static final byte[] REQUEST="version\r\n".getBytes();
 

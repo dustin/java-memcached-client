@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 
 import net.spy.SpyObject;
+import net.spy.memcached.ops.Operation;
 import net.spy.memcached.protocol.ascii.OperationException;
-import net.spy.memcached.protocol.ascii.OperationImpl;
 
 /**
  * Connection to a cluster of memcached servers.
@@ -199,7 +199,7 @@ public class MemcachedConnection extends SpyObject {
 				while((qa=addedQueue.remove()) != null) {
 					boolean readyForIO=false;
 					if(qa.isActive()) {
-						OperationImpl op=qa.getCurrentWriteOp();
+						Operation op=qa.getCurrentWriteOp();
 						if(op != null) {
 							readyForIO=true;
 							getLogger().debug("Handling queued write %s", qa);
@@ -289,7 +289,7 @@ public class MemcachedConnection extends SpyObject {
 
 	private void handleReads(SelectionKey sk, MemcachedNode qa)
 		throws IOException {
-		OperationImpl currentOp = qa.getCurrentReadOp();
+		Operation currentOp = qa.getCurrentReadOp();
 		ByteBuffer rbuf=qa.getRbuf();
 		final SocketChannel channel = qa.getChannel();
 		int read=channel.read(rbuf);
@@ -299,11 +299,11 @@ public class MemcachedConnection extends SpyObject {
 			while(rbuf.remaining() > 0) {
 				assert currentOp != null : "No read operation";
 				currentOp.readFromBuffer(rbuf);
-				if(currentOp.getState() == OperationImpl.State.COMPLETE) {
+				if(currentOp.getState() == Operation.State.COMPLETE) {
 					getLogger().debug(
 							"Completed read op: %s and giving the next %d bytes",
 							currentOp, rbuf.remaining());
-					OperationImpl op=qa.removeCurrentReadOp();
+					Operation op=qa.removeCurrentReadOp();
 					assert op == currentOp
 					: "Expected to pop " + currentOp + " got " + op;
 					currentOp=qa.getCurrentReadOp();
@@ -388,7 +388,7 @@ public class MemcachedConnection extends SpyObject {
 	 * @param which the connection offset
 	 * @param o the operation
 	 */
-	public void addOperation(final String key, final OperationImpl o) {
+	public void addOperation(final String key, final Operation o) {
 		MemcachedNode placeIn=null;
 		MemcachedNode primary = locator.getPrimary(key);
 		if(primary.isActive()) {
@@ -413,7 +413,7 @@ public class MemcachedConnection extends SpyObject {
 		addOperation(placeIn, o);
 	}
 
-	public void addOperation(final MemcachedNode node, final OperationImpl o) {
+	public void addOperation(final MemcachedNode node, final Operation o) {
 		o.initialize();
 		node.addOp(o);
 		addedQueue.offer(node);
@@ -428,7 +428,7 @@ public class MemcachedConnection extends SpyObject {
 	public CountDownLatch broadcastOperation(final OperationFactory of) {
 		final CountDownLatch latch=new CountDownLatch(locator.getAll().size());
 		for(MemcachedNode node : locator.getAll()) {
-			OperationImpl op = of.newOp(node, latch);
+			Operation op = of.newOp(node, latch);
 			op.initialize();
 			node.addOp(op);
 			addedQueue.offer(node);

@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.spy.memcached.ops.GetOperation;
+
 /**
  * Optimized Get operation for folding a bunch of gets together.
  */
@@ -18,7 +20,7 @@ public class OptimizedGetImpl extends GetOperationImpl
 	/**
 	 * Construct an optimized get starting with the given get operation.
 	 */
-	public OptimizedGetImpl(GetOperationImpl firstGet) {
+	public OptimizedGetImpl(GetOperation firstGet) {
 		super();
 		setKeys(callbacks.keySet());
 		setCallback(this);
@@ -28,9 +30,9 @@ public class OptimizedGetImpl extends GetOperationImpl
 	/**
 	 * Add a new GetOperation to get.
 	 */
-	public void addOperation(GetOperationImpl o) {
+	public void addOperation(GetOperation o) {
 		Callback c=new GetCallbackWrapper(o.getKeys().size(),
-				(Callback)o.getCallback());
+				(GetOperationImpl.Callback)o.getCallback());
 		allCallbacks.add(c);
 		for(String s : o.getKeys()) {
 			Collection<Callback> cbs=callbacks.get(s);

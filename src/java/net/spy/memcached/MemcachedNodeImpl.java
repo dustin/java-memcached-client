@@ -10,8 +10,9 @@ import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.SpyObject;
+import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.Operation;
 import net.spy.memcached.protocol.ascii.GetOperationImpl;
-import net.spy.memcached.protocol.ascii.OperationImpl;
 import net.spy.memcached.protocol.ascii.OptimizedGetImpl;
 
 /**
@@ -22,20 +23,20 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	private final SocketAddress socketAddress;
 	private final ByteBuffer rbuf;
 	private final ByteBuffer wbuf;
-	private final BlockingQueue<OperationImpl> writeQ;
-	private final BlockingQueue<OperationImpl> readQ;
-	private final BlockingQueue<OperationImpl> inputQueue;
+	private final BlockingQueue<Operation> writeQ;
+	private final BlockingQueue<Operation> readQ;
+	private final BlockingQueue<Operation> inputQueue;
 	// This has been declared volatile so it can be used as an availability
 	// indicator.
 	private volatile int reconnectAttempt=1;
 	private SocketChannel channel;
 	private int toWrite=0;
-	private GetOperationImpl getOp=null;
+	private GetOperation getOp=null;
 	private SelectionKey sk=null;
 
 	public MemcachedNodeImpl(SocketAddress sa, SocketChannel c,
-			int bufSize, BlockingQueue<OperationImpl> rq,
-			BlockingQueue<OperationImpl> wq, BlockingQueue<OperationImpl> iq) {
+			int bufSize, BlockingQueue<Operation> rq,
+			BlockingQueue<Operation> wq, BlockingQueue<Operation> iq) {
 		super();
 		assert sa != null : "No SocketAddress";
 		assert c != null : "No SocketChannel";
@@ -57,7 +58,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	 * @see net.spy.memcached.MemcachedNode#copyInputQueue()
 	 */
 	public void copyInputQueue() {
-		Collection<OperationImpl> tmp=new ArrayList<OperationImpl>();
+		Collection<Operation> tmp=new ArrayList<Operation>();
 		inputQueue.drainTo(tmp);
 		writeQ.addAll(tmp);
 	}
@@ -68,7 +69,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	 */
 	public void setupResend() {
 		// First, reset the current write op.
-		OperationImpl op=getCurrentWriteOp();
+		Operation op=getCurrentWriteOp();
 		if(op != null) {
 			op.getBuffer().reset();
 		}
@@ -92,7 +93,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 		copyInputQueue();
 
 		// Now check the ops
-		OperationImpl nextOp=getCurrentWriteOp();
+		Operation nextOp=getCurrentWriteOp();
 		while(nextOp != null && nextOp.isCancelled()) {
 			getLogger().info("Removing cancelled operation: %s", nextOp);
 			removeCurrentWriteOp();
@@ -107,9 +108,9 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	public void fillWriteBuffer(boolean optimizeGets) {
 		if(toWrite == 0) {
 			getWbuf().clear();
-			OperationImpl o=getCurrentWriteOp();
+			Operation o=getCurrentWriteOp();
 			while(o != null && toWrite < getWbuf().capacity()) {
-				assert o.getState() == OperationImpl.State.WRITING;
+				assert o.getState() == Operation.State.WRITING;
 				ByteBuffer obuf=o.getBuffer();
 				int bytesToCopy=Math.min(getWbuf().remaining(),
 						obuf.remaining());
@@ -146,9 +147,9 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	 * @see net.spy.memcached.MemcachedNode#transitionWriteItem()
 	 */
 	public void transitionWriteItem() {
-		OperationImpl op=removeCurrentWriteOp();
+		Operation op=removeCurrentWriteOp();
 		assert op != null : "There is no write item to transition";
-		assert op.getState() == OperationImpl.State.READING;
+		assert op.getState() == Operation.State.READING;
 		getLogger().debug("Transitioning %s to read", op);
 		readQ.add(op);
 	}
@@ -159,13 +160,13 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	private void optimize() {
 		// make sure there are at least two get operations in a row before
 		// attempting to optimize them.
-		if(writeQ.peek() instanceof GetOperationImpl) {
+		if(writeQ.peek() instanceof GetOperation) {
 			getOp=(GetOperationImpl)writeQ.remove();
-			if(writeQ.peek() instanceof GetOperationImpl) {
+			if(writeQ.peek() instanceof GetOperation) {
 				OptimizedGetImpl og=new OptimizedGetImpl(getOp);
 				getOp=og;
 
-				while(writeQ.peek() instanceof GetOperationImpl) {
+				while(writeQ.peek() instanceof GetOperation) {
 					GetOperationImpl o=(GetOperationImpl) writeQ.remove();
 					if(!o.isCancelled()) {
 						og.addOperation(o);
@@ -174,7 +175,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 
 				// Initialize the new mega get
 				getOp.initialize();
-				assert getOp.getState() == OperationImpl.State.WRITING;
+				assert getOp.getState() == Operation.State.WRITING;
 				getLogger().debug(
 					"Set up %s with %s keys and %s callbacks",
 					this, og.numKeys(), og.numCallbacks());
@@ -185,29 +186,29 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getCurrentReadOp()
 	 */
-	public OperationImpl getCurrentReadOp() {
+	public Operation getCurrentReadOp() {
 		return readQ.peek();
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#removeCurrentReadOp()
 	 */
-	public OperationImpl removeCurrentReadOp() {
+	public Operation removeCurrentReadOp() {
 		return readQ.remove();
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getCurrentWriteOp()
 	 */
-	public OperationImpl getCurrentWriteOp() {
+	public Operation getCurrentWriteOp() {
 		return getOp == null ? writeQ.peek() : getOp;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#removeCurrentWriteOp()
 	 */
-	public OperationImpl removeCurrentWriteOp() {
-		OperationImpl rv=getOp;
+	public Operation removeCurrentWriteOp() {
+		Operation rv=getOp;
 		if(rv == null) {
 			rv=writeQ.remove();
 		} else {
@@ -233,7 +234,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#addOp(net.spy.memcached.ops.Operation)
 	 */
-	public void addOp(OperationImpl op) {
+	public void addOp(Operation op) {
 		boolean added=inputQueue.add(op);
 		assert added; // documented to throw an IllegalStateException
 	}

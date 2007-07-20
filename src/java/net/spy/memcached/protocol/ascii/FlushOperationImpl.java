@@ -4,10 +4,14 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.ops.FlushOperation;
+import net.spy.memcached.ops.OperationCallback;
+
 /**
  * Memcached flush_all operation.
  */
-public class FlushOperationImpl extends OperationImpl {
+public class FlushOperationImpl extends OperationImpl
+	implements FlushOperation {
 
 	private static final byte[] FLUSH="flush_all\r\n".getBytes();
 	private final int delay;
