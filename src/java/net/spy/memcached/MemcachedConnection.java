@@ -423,7 +423,7 @@ public class MemcachedConnection extends SpyObject {
 	/**
 	 * Broadcast an operation to all nodes.
 	 */
-	public CountDownLatch broadcastOperation(final OperationFactory of) {
+	public CountDownLatch broadcastOperation(final BroadcastOpFactory of) {
 		final CountDownLatch latch=new CountDownLatch(locator.getAll().size());
 		for(MemcachedNode node : locator.getAll()) {
 			Operation op = of.newOp(node, latch);

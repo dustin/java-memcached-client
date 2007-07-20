@@ -7,7 +7,7 @@ import net.spy.memcached.ops.Operation;
 /**
  * Factory for creating Operations to be broadcast.
  */
-public interface OperationFactory {
+public interface BroadcastOpFactory {
 
 	/**
 	 * Construct a new operation for delivery to the given node.

@@ -203,12 +203,12 @@ public class MemcachedClient extends SpyThread {
 	}
 
 
-	CountDownLatch broadcastOp(final OperationFactory of) {
+	CountDownLatch broadcastOp(final BroadcastOpFactory of) {
 		return broadcastOp(of, true);
 	}
 
 
-	private CountDownLatch broadcastOp(OperationFactory of,
+	private CountDownLatch broadcastOp(BroadcastOpFactory of,
 			boolean checkShuttingDown) {
 		if(checkShuttingDown && shuttingDown) {
 			throw new IllegalStateException("Shutting down");
@@ -470,7 +470,7 @@ public class MemcachedClient extends SpyThread {
 		final Map<SocketAddress, String>rv=
 			new ConcurrentHashMap<SocketAddress, String>();
 
-		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
 				final SocketAddress sa=n.getSocketAddress();
@@ -504,7 +504,7 @@ public class MemcachedClient extends SpyThread {
 		final Map<SocketAddress, Map<String, String>> rv
 			=new HashMap<SocketAddress, Map<String, String>>();
 
-		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 				final CountDownLatch latch) {
 				final SocketAddress sa=n.getSocketAddress();
@@ -659,7 +659,7 @@ public class MemcachedClient extends SpyThread {
 	public Future<Boolean> flush(final int delay) {
 		final AtomicReference<Boolean> flushResult=
 			new AtomicReference<Boolean>(null);
-		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
 				return new FlushOperationImpl(delay, new OperationCallback(){
@@ -764,7 +764,7 @@ public class MemcachedClient extends SpyThread {
 	 * Wait for the queues to die down.
 	 */
 	public boolean waitForQueues(long timeout, TimeUnit unit) {
-		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
 				return new VersionOperationImpl(
