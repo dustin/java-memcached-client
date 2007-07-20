@@ -139,6 +139,6 @@ public class BaseOpTest extends BaseMockCase {
 		protected void wasCancelled() {
 			// nothing
 		}
-		
+
 	}
 }

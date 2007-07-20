@@ -382,7 +382,7 @@ public class MemcachedConnection extends SpyObject {
 
 	/**
 	 * Add an operation to the given connection.
-	 * 
+	 *
 	 * @param which the connection offset
 	 * @param o the operation
 	 */

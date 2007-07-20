@@ -12,9 +12,9 @@ import net.spy.SpyObject;
  * This is an implementation of the Ketama consistent hash strategy from
  * last.fm.  This implementation may not be compatible with libketama as
  * hashing is considered separate from node location.
- * 
+ *
  * Note that this implementation does not currently supported weighted nodes.
- * 
+ *
  * @see http://www.last.fm/user/RJ/journal/2007/04/10/392555/
  */
 public class KetamaNodeLocator extends SpyObject implements NodeLocator {

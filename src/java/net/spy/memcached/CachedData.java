@@ -14,7 +14,7 @@ public class CachedData {
 
 	/**
 	 * Get a CachedData instance for the given flags and byte array.
-	 * 
+	 *
 	 * @param f the flags
 	 * @param d the data
 	 */

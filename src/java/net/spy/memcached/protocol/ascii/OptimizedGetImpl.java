@@ -111,6 +111,6 @@ class OptimizedGetImpl extends GetOperationImpl
 			cb.complete();
 			completed=true;
 		}
-		
+
 	}
 }

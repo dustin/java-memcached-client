@@ -25,11 +25,11 @@ class StoreOperationImpl extends OperationImpl
 	public StoreOperationImpl(StoreType t, String k, int f, int e,
 			byte[] d, OperationCallback callback) {
 		super(callback);
-		this.type=t;
-		this.key=k;
-		this.flags=f;
-		this.exp=e;
-		this.data=d;
+		type=t;
+		key=k;
+		flags=f;
+		exp=e;
+		data=d;
 	}
 
 	@Override

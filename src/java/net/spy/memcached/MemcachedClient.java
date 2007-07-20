@@ -34,21 +34,21 @@ import net.spy.memcached.ops.StoreOperation;
 
 /**
  * Client to a memcached server.
- * 
+ *
  * <h2>Basic usage</h2>
- * 
+ *
  * <pre>
  *  MemcachedClient c=new MemcachedClient(
  *      new InetSocketAddress("hostname", portNum));
- *  
+ *
  *  // Store a value (async) for one hour
  *  c.set("someKey", 3600, someObject);
  *  // Retrieve a value.
  *  Object myObject=c.get("someKey");
  *  </pre>
- *  
+ *
  *  <h2>Advanced Usage</h2>
- *  
+ *
  *  <p>
  *   MemcachedClient may be processing a great deal of asynchronous messages or
  *   possibly dealing with an unreachable memcached, which may delay processing.
@@ -58,7 +58,7 @@ import net.spy.memcached.ops.StoreOperation;
  *   one of the asynchronous mechanisms to time out a request and cancel the
  *   operation to the server.
  *  </p>
- *  
+ *
  *  <pre>
  *  // Get a memcached client connected to several servers
  *  MemcachedClient c=new MemcachedClient(
@@ -93,7 +93,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Get a memcache client operating on the specified memcached locations.
-	 * 
+	 *
 	 * @param ia the memcached locations
 	 * @throws IOException if connections cannot be established
 	 */
@@ -235,7 +235,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Add an object to the cache iff it does not exist already.
-	 * 
+	 *
 	 * <p>
 	 * The <code>exp</code> value is passed along to memcached exactly as
 	 * given, and will be processed per the memcached protocol specification:
@@ -252,7 +252,7 @@ public class MemcachedClient extends SpyThread {
 	 * than an offset from current time.
 	 * </p>
 	 * </blockquote>
-	 * 
+	 *
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
@@ -264,7 +264,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Set an object in the cache regardless of any existing value.
-	 * 
+	 *
 	 * <p>
 	 * The <code>exp</code> value is passed along to memcached exactly as
 	 * given, and will be processed per the memcached protocol specification:
@@ -281,7 +281,7 @@ public class MemcachedClient extends SpyThread {
 	 * than an offset from current time.
 	 * </p>
 	 * </blockquote>
-	 * 
+	 *
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
@@ -323,7 +323,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Get the given key asynchronously.
-	 * 
+	 *
 	 * @param key the key to fetch
 	 * @return a future that will hold the return value of the fetch
 	 */
@@ -352,7 +352,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Get with a single key.
-	 * 
+	 *
 	 * @param key the key to get
 	 * @return the result from the cache (null if there is none)
 	 */
@@ -368,7 +368,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Asynchronously get a bunch of objects from the cache.
-	 * 
+	 *
 	 * @param keys the keys to request
 	 * @return a Future result of that fetch
 	 */
@@ -429,7 +429,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Varargs wrapper for asynchronous bulk gets.
-	 * 
+	 *
 	 * @param keys one more more keys to get
 	 * @return the future values of those keys
 	 */
@@ -438,7 +438,7 @@ public class MemcachedClient extends SpyThread {
 	}
 	/**
 	 * Get the values for multiple keys from the cache.
-	 * 
+	 *
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 */
@@ -454,7 +454,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Get the values for multiple keys from the cache.
-	 * 
+	 *
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 */
@@ -555,7 +555,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Increment the given key by the given amount.
-	 * 
+	 *
 	 * @param key the key
 	 * @param by the amount to increment
 	 * @return the new value (-1 if the key doesn't exist)
@@ -566,7 +566,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Decrement the given key by the given value.
-	 * 
+	 *
 	 * @param key the key
 	 * @param by the value
 	 * @return the new value (-1 if the key doesn't exist)
@@ -599,7 +599,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Increment the given counter, returning the new value.
-	 * 
+	 *
 	 * @param key the key
 	 * @param by the amount to increment
 	 * @param def the default value (if the counter does not exist)
@@ -612,7 +612,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Decrement the given counter, returning the new value.
-	 * 
+	 *
 	 * @param key the key
 	 * @param by the amount to decrement
 	 * @param def the default value (if the counter does not exist)
@@ -624,7 +624,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Delete the given key from the cache.
-	 * 
+	 *
 	 * @param key the key to delete
 	 * @param when when the deletion should take effect
 	 */
@@ -705,7 +705,7 @@ public class MemcachedClient extends SpyThread {
 				rv.addAll(m.keySet());
 			}
 		}
-		
+
 		return rv;
 	}
 
@@ -901,6 +901,6 @@ public class MemcachedClient extends SpyThread {
 			assert op != null : "No operation";
 			return op.getState() == Operation.State.COMPLETE;
 		}
-		
+
 	}
 }
