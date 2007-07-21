@@ -10,7 +10,7 @@ public interface Transcoder {
 
 	/**
 	 * Encode the given object for storage.
-	 * 
+	 *
 	 * @param o the object
 	 * @return the CachedData representing what should be sent
 	 */
@@ -18,7 +18,7 @@ public interface Transcoder {
 
 	/**
 	 * Decode the cached object into the object it represents.
-	 * 
+	 *
 	 * @param d the data
 	 * @return the return value
 	 */

@@ -2,6 +2,8 @@ package net.spy.memcached;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -24,6 +26,12 @@ public interface ConnectionFactory {
 		throws IOException;
 
 	/**
+	 * Create a new memcached node.
+	 */
+	MemcachedNode createMemcachedNode(SocketAddress sa,
+			SocketChannel c, int bufSize);
+
+	/**
 	 * Create a BlockingQueue for operations for a connection.
 	 */
 	BlockingQueue<Operation> createOperationQueue();
@@ -32,4 +40,11 @@ public interface ConnectionFactory {
 	 * Create a NodeLocator instance for the given list of nodes.
 	 */
 	NodeLocator createLocator(List<MemcachedNode> nodes);
+
+	/**
+	 * Get the operation factory for connections built by this connection
+	 * factory.
+	 */
+	OperationFactory getOperationFactory();
+
 }

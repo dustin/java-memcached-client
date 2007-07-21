@@ -9,7 +9,7 @@ public interface OperationCallback {
 
 	/**
 	 * Method invoked with the status when the operation is complete.
-	 * 
+	 *
 	 * @param line the line containing the final status of the operation
 	 */
 	void receivedStatus(String line);

@@ -1,35 +1,28 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
 
-package net.spy.memcached.ops;
+package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
+
+import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.Mutator;
+import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationState;
 
 /**
  * Operation for mutating integers inside of memcached.
  */
-public class MutatorOperation extends Operation {
+final class MutatorOperationImpl extends OperationImpl
+	implements MutatatorOperation {
 
 	public static final int OVERHEAD=32;
-
-	/**
-	 * Type of mutation to perform.
-	 */
-	public enum Mutator {
-		/**
-		 * Increment a value on the memcached server.
-		 */
-		incr,
-		/**
-		 * Decrement a value on the memcached server.
-		 */
-		decr
-	}
 
 	private final Mutator mutator;
 	private final String key;
 	private final int amount;
 
-	public MutatorOperation(Mutator m, String k, int amt, OperationCallback c) {
+	public MutatorOperationImpl(Mutator m, String k, int amt,
+			OperationCallback c) {
 		super(c);
 		mutator=m;
 		key=k;
@@ -44,7 +37,7 @@ public class MutatorOperation extends Operation {
 			found=line;
 		}
 		getCallback().receivedStatus(found);
-		transitionState(State.COMPLETE);
+		transitionState(OperationState.COMPLETE);
 	}
 
 	@Override

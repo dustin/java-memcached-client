@@ -1,35 +1,8 @@
-// Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
-
 package net.spy.memcached.ops;
 
-import java.nio.ByteBuffer;
-
 /**
- * Operation to request the version of a memcached server.
+ * Version operation.
  */
-public class VersionOperation extends Operation {
-
-	private static final byte[] REQUEST="version\r\n".getBytes();
-
-	public VersionOperation(OperationCallback c) {
-		super(c);
-	}
-
-	@Override
-	public void handleLine(String line) {
-		assert line.startsWith("VERSION ");
-		getCallback().receivedStatus(line.substring("VERSION ".length()));
-		transitionState(State.COMPLETE);
-	}
-
-	@Override
-	public void initialize() {
-		setBuffer(ByteBuffer.wrap(REQUEST));
-	}
-
-	@Override
-	protected void wasCancelled() {
-		// nothing
-	}
-
+public interface VersionOperation extends Operation {
+	// nothing
 }

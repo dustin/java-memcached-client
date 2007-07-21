@@ -1,4 +1,4 @@
-package net.spy.memcached;
+package net.spy.memcached.protocol;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -10,19 +10,22 @@ import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.SpyObject;
+import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
-import net.spy.memcached.ops.OptimizedGet;
+import net.spy.memcached.ops.OperationState;
 
 /**
  * Represents a node with the memcached cluster, along with buffering and
  * operation queues.
  */
-class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
+public abstract class TCPMemcachedNodeImpl extends SpyObject
+	implements MemcachedNode {
+
 	private final SocketAddress socketAddress;
 	private final ByteBuffer rbuf;
 	private final ByteBuffer wbuf;
-	private final BlockingQueue<Operation> writeQ;
+	protected final BlockingQueue<Operation> writeQ;
 	private final BlockingQueue<Operation> readQ;
 	private final BlockingQueue<Operation> inputQueue;
 	// This has been declared volatile so it can be used as an availability
@@ -30,10 +33,10 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	private volatile int reconnectAttempt=1;
 	private SocketChannel channel;
 	private int toWrite=0;
-	private GetOperation getOp=null;
+	protected GetOperation getOp=null;
 	private SelectionKey sk=null;
 
-	public MemcachedNodeImpl(SocketAddress sa, SocketChannel c,
+	public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
 			BlockingQueue<Operation> wq, BlockingQueue<Operation> iq) {
 		super();
@@ -56,7 +59,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#copyInputQueue()
 	 */
-	public void copyInputQueue() {
+	public final void copyInputQueue() {
 		Collection<Operation> tmp=new ArrayList<Operation>();
 		inputQueue.drainTo(tmp);
 		writeQ.addAll(tmp);
@@ -66,7 +69,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#setupResend()
 	 */
-	public void setupResend() {
+	public final void setupResend() {
 		// First, reset the current write op.
 		Operation op=getCurrentWriteOp();
 		if(op != null) {
@@ -104,12 +107,12 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#fillWriteBuffer(boolean)
 	 */
-	public void fillWriteBuffer(boolean optimizeGets) {
+	public final void fillWriteBuffer(boolean optimizeGets) {
 		if(toWrite == 0) {
 			getWbuf().clear();
 			Operation o=getCurrentWriteOp();
 			while(o != null && toWrite < getWbuf().capacity()) {
-				assert o.getState() == Operation.State.WRITING;
+				assert o.getState() == OperationState.WRITING;
 				ByteBuffer obuf=o.getBuffer();
 				int bytesToCopy=Math.min(getWbuf().remaining(),
 						obuf.remaining());
@@ -145,10 +148,10 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#transitionWriteItem()
 	 */
-	public void transitionWriteItem() {
+	public final void transitionWriteItem() {
 		Operation op=removeCurrentWriteOp();
 		assert op != null : "There is no write item to transition";
-		assert op.getState() == Operation.State.READING;
+		assert op.getState() == OperationState.READING;
 		getLogger().debug("Transitioning %s to read", op);
 		readQ.add(op);
 	}
@@ -156,57 +159,33 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#optimize()
 	 */
-	private void optimize() {
-		// make sure there are at least two get operations in a row before
-		// attempting to optimize them.
-		if(writeQ.peek() instanceof GetOperation) {
-			getOp=(GetOperation)writeQ.remove();
-			if(writeQ.peek() instanceof GetOperation) {
-				OptimizedGet og=new OptimizedGet(getOp);
-				getOp=og;
-
-				while(writeQ.peek() instanceof GetOperation) {
-					GetOperation o=(GetOperation) writeQ.remove();
-					if(!o.isCancelled()) {
-						og.addOperation(o);
-					}
-				}
-
-				// Initialize the new mega get
-				getOp.initialize();
-				assert getOp.getState() == Operation.State.WRITING;
-				getLogger().debug(
-					"Set up %s with %s keys and %s callbacks",
-					this, og.numKeys(), og.numCallbacks());
-			}
-		}
-	}
+	protected abstract void optimize();
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getCurrentReadOp()
 	 */
-	public Operation getCurrentReadOp() {
+	public final Operation getCurrentReadOp() {
 		return readQ.peek();
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#removeCurrentReadOp()
 	 */
-	public Operation removeCurrentReadOp() {
+	public final Operation removeCurrentReadOp() {
 		return readQ.remove();
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getCurrentWriteOp()
 	 */
-	public Operation getCurrentWriteOp() {
+	public final Operation getCurrentWriteOp() {
 		return getOp == null ? writeQ.peek() : getOp;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#removeCurrentWriteOp()
 	 */
-	public Operation removeCurrentWriteOp() {
+	public final Operation removeCurrentWriteOp() {
 		Operation rv=getOp;
 		if(rv == null) {
 			rv=writeQ.remove();
@@ -219,21 +198,21 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#hasReadOp()
 	 */
-	public boolean hasReadOp() {
+	public final boolean hasReadOp() {
 		return !readQ.isEmpty();
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#hasWriteOp()
 	 */
-	public boolean hasWriteOp() {
+	public final boolean hasWriteOp() {
 		return !(getOp == null && writeQ.isEmpty());
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#addOp(net.spy.memcached.ops.Operation)
 	 */
-	public void addOp(Operation op) {
+	public final void addOp(Operation op) {
 		boolean added=inputQueue.add(op);
 		assert added; // documented to throw an IllegalStateException
 	}
@@ -241,7 +220,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getSelectionOps()
 	 */
-	public int getSelectionOps() {
+	public final int getSelectionOps() {
 		int rv=0;
 		if(getChannel().isConnected()) {
 			if(hasReadOp()) {
@@ -259,28 +238,28 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getRbuf()
 	 */
-	public ByteBuffer getRbuf() {
+	public final ByteBuffer getRbuf() {
 		return rbuf;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getWbuf()
 	 */
-	public ByteBuffer getWbuf() {
+	public final ByteBuffer getWbuf() {
 		return wbuf;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getSocketAddress()
 	 */
-	public SocketAddress getSocketAddress() {
+	public final SocketAddress getSocketAddress() {
 		return socketAddress;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#isActive()
 	 */
-	public boolean isActive() {
+	public final boolean isActive() {
 		return reconnectAttempt == 0
 			&& getChannel() != null && getChannel().isConnected();
 	}
@@ -288,21 +267,21 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#reconnecting()
 	 */
-	public void reconnecting() {
+	public final void reconnecting() {
 		reconnectAttempt++;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#connected()
 	 */
-	public void connected() {
+	public final void connected() {
 		reconnectAttempt=0;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getReconnectCount()
 	 */
-	public int getReconnectCount() {
+	public final int getReconnectCount() {
 		return reconnectAttempt;
 	}
 
@@ -310,7 +289,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	 * @see net.spy.memcached.MemcachedNode#toString()
 	 */
 	@Override
-	public String toString() {
+	public final String toString() {
 		int sops=0;
 		if(getSk()!= null && getSk().isValid()) {
 			sops=getSk().interestOps();
@@ -330,50 +309,50 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#registerChannel(java.nio.channels.SocketChannel, java.nio.channels.SelectionKey)
 	 */
-	public void registerChannel(SocketChannel ch, SelectionKey selectionKey) {
+	public final void registerChannel(SocketChannel ch, SelectionKey skey) {
 		setChannel(ch);
-		setSk(selectionKey);
+		setSk(skey);
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#setChannel(java.nio.channels.SocketChannel)
 	 */
-	public void setChannel(SocketChannel to) {
+	public final void setChannel(SocketChannel to) {
 		channel = to;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getChannel()
 	 */
-	public SocketChannel getChannel() {
+	public final SocketChannel getChannel() {
 		return channel;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#setSk(java.nio.channels.SelectionKey)
 	 */
-	public void setSk(SelectionKey to) {
+	public final void setSk(SelectionKey to) {
 		sk = to;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getSk()
 	 */
-	public SelectionKey getSk() {
+	public final SelectionKey getSk() {
 		return sk;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getBytesRemainingInBuffer()
 	 */
-	public int getBytesRemainingToWrite() {
+	public final int getBytesRemainingToWrite() {
 		return toWrite;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#writeSome()
 	 */
-	public int writeSome() throws IOException {
+	public final int writeSome() throws IOException {
 		int wrote=channel.write(wbuf);
 		assert wrote >= 0 : "Wrote negative bytes?";
 		toWrite -= wrote;
@@ -385,7 +364,7 @@ class MemcachedNodeImpl extends SpyObject implements MemcachedNode {
 	}
 
 
-	public void fixupOps() {
+	public final void fixupOps() {
 		if(sk != null && sk.isValid()) {
 			int iops=getSelectionOps();
 			getLogger().debug("Setting interested opts to %d", iops);

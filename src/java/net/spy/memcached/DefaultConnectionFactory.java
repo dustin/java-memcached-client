@@ -2,12 +2,16 @@ package net.spy.memcached;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;
+import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
 
 /**
  * Default implementation of ConnectionFactory.
@@ -30,6 +34,14 @@ public class DefaultConnectionFactory extends SpyObject
 	 * The read buffer size for each server connection from this factory.
 	 */
 	public static final int DEFAULT_READ_BUFFER_SIZE=16384;
+
+	public MemcachedNode createMemcachedNode(SocketAddress sa,
+			SocketChannel c, int bufSize) {
+		return new AsciiMemcachedNodeImpl(sa, c, bufSize,
+				createOperationQueue(),
+				createOperationQueue(),
+				createOperationQueue());
+	}
 
 	private final int opQueueLen;
 	private final int readBufSize;
@@ -105,6 +117,10 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public HashAlgorithm getHashAlg() {
 		return hashAlg;
+	}
+
+	public OperationFactory getOperationFactory() {
+		return new AsciiOperationFactory();
 	}
 
 }

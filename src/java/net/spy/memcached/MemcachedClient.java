@@ -25,32 +25,31 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.SpyThread;
 import net.spy.memcached.ops.DeleteOperation;
-import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
-import net.spy.memcached.ops.MutatorOperation;
+import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.StatsOperation;
-import net.spy.memcached.ops.StoreOperation;
-import net.spy.memcached.ops.VersionOperation;
+import net.spy.memcached.ops.StoreType;
 
 /**
  * Client to a memcached server.
- * 
+ *
  * <h2>Basic usage</h2>
- * 
+ *
  * <pre>
  *  MemcachedClient c=new MemcachedClient(
  *      new InetSocketAddress("hostname", portNum));
- *  
+ *
  *  // Store a value (async) for one hour
  *  c.set("someKey", 3600, someObject);
  *  // Retrieve a value.
  *  Object myObject=c.get("someKey");
  *  </pre>
- *  
+ *
  *  <h2>Advanced Usage</h2>
- *  
+ *
  *  <p>
  *   MemcachedClient may be processing a great deal of asynchronous messages or
  *   possibly dealing with an unreachable memcached, which may delay processing.
@@ -60,7 +59,7 @@ import net.spy.memcached.ops.VersionOperation;
  *   one of the asynchronous mechanisms to time out a request and cancel the
  *   operation to the server.
  *  </p>
- *  
+ *
  *  <pre>
  *  // Get a memcached client connected to several servers
  *  MemcachedClient c=new MemcachedClient(
@@ -79,26 +78,29 @@ import net.spy.memcached.ops.VersionOperation;
  *  }
  * </pre>
  */
-public class MemcachedClient extends SpyThread {
+public final class MemcachedClient extends SpyThread {
 
 	private static final int MAX_KEY_LENGTH = 250;
 
 	private volatile boolean running=true;
 	private volatile boolean shuttingDown=false;
-	private MemcachedConnection conn=null;
+
+	private final MemcachedConnection conn;
+	final OperationFactory opFact;
+
 	private HashAlgorithm hashAlg=HashAlgorithm.NATIVE_HASH;
+
 	Transcoder transcoder=null;
 
 	/**
 	 * Get a memcache client operating on the specified memcached locations.
-	 * 
+	 *
 	 * @param ia the memcached locations
 	 * @throws IOException if connections cannot be established
 	 */
 	public MemcachedClient(InetSocketAddress... ia) throws IOException {
 		this(new DefaultConnectionFactory(), Arrays.asList(ia));
 	}
-
 
 	/**
 	 * Get a memcache client over the specified memcached locations.
@@ -122,6 +124,7 @@ public class MemcachedClient extends SpyThread {
 		throws IOException {
 		transcoder=new SerializingTranscoder();
 		conn=cf.createConnection(addrs);
+		opFact=cf.getOperationFactory();
 		setName("Memcached IO over " + conn);
 		start();
 	}
@@ -200,12 +203,12 @@ public class MemcachedClient extends SpyThread {
 	}
 
 
-	CountDownLatch broadcastOp(final OperationFactory of) {
+	CountDownLatch broadcastOp(final BroadcastOpFactory of) {
 		return broadcastOp(of, true);
 	}
 
 
-	private CountDownLatch broadcastOp(OperationFactory of,
+	private CountDownLatch broadcastOp(BroadcastOpFactory of,
 			boolean checkShuttingDown) {
 		if(checkShuttingDown && shuttingDown) {
 			throw new IllegalStateException("Shutting down");
@@ -213,14 +216,15 @@ public class MemcachedClient extends SpyThread {
 		return conn.broadcastOperation(of);
 	}
 
-	private Future<Boolean> asyncStore(StoreOperation.StoreType storeType,
+	private Future<Boolean> asyncStore(StoreType storeType,
 			String key, int exp, Object value) {
 		CachedData co=transcoder.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
-		Operation op=new StoreOperation(storeType, key, co.getFlags(), exp,
-				co.getData(), new OperationCallback() {
+		Operation op=opFact.store(storeType, key, co.getFlags(),
+				exp, co.getData(), new OperationCallback() {
 					public void receivedStatus(String val) {
+						// XXX:  Protocol abstraction leak.
 						rv.set(val.equals("STORED"));
 					}
 					public void complete() {
@@ -233,7 +237,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Add an object to the cache iff it does not exist already.
-	 * 
+	 *
 	 * <p>
 	 * The <code>exp</code> value is passed along to memcached exactly as
 	 * given, and will be processed per the memcached protocol specification:
@@ -250,19 +254,19 @@ public class MemcachedClient extends SpyThread {
 	 * than an offset from current time.
 	 * </p>
 	 * </blockquote>
-	 * 
+	 *
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
 	 * @return a future representing the processing of this operation
 	 */
 	public Future<Boolean> add(String key, int exp, Object o) {
-		return asyncStore(StoreOperation.StoreType.add, key, exp, o);
+		return asyncStore(StoreType.add, key, exp, o);
 	}
 
 	/**
 	 * Set an object in the cache regardless of any existing value.
-	 * 
+	 *
 	 * <p>
 	 * The <code>exp</code> value is passed along to memcached exactly as
 	 * given, and will be processed per the memcached protocol specification:
@@ -279,14 +283,14 @@ public class MemcachedClient extends SpyThread {
 	 * than an offset from current time.
 	 * </p>
 	 * </blockquote>
-	 * 
+	 *
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
 	 * @return a future representing the processing of this operation
 	 */
 	public Future<Boolean> set(String key, int exp, Object o) {
-		return asyncStore(StoreOperation.StoreType.set, key, exp, o);
+		return asyncStore(StoreType.set, key, exp, o);
 	}
 
 	/**
@@ -316,12 +320,12 @@ public class MemcachedClient extends SpyThread {
 	 * @return a future representing the processing of this operation
 	 */
 	public Future<Boolean> replace(String key, int exp, Object o) {
-		return asyncStore(StoreOperation.StoreType.replace, key, exp, o);
+		return asyncStore(StoreType.replace, key, exp, o);
 	}
 
 	/**
 	 * Get the given key asynchronously.
-	 * 
+	 *
 	 * @param key the key to fetch
 	 * @return a future that will hold the return value of the fetch
 	 */
@@ -330,7 +334,8 @@ public class MemcachedClient extends SpyThread {
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<Object> rv=new OperationFuture<Object>(latch);
 
-		Operation op=new GetOperation(key, new GetOperation.Callback() {
+		Operation op=opFact.get(key,
+				new GetOperation.Callback() {
 			private Object val=null;
 			public void receivedStatus(String line) {
 				rv.set(val);
@@ -349,7 +354,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Get with a single key.
-	 * 
+	 *
 	 * @param key the key to get
 	 * @return the result from the cache (null if there is none)
 	 */
@@ -365,7 +370,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Asynchronously get a bunch of objects from the cache.
-	 * 
+	 *
 	 * @param keys the keys to request
 	 * @return a Future result of that fetch
 	 */
@@ -406,6 +411,7 @@ public class MemcachedClient extends SpyThread {
 		GetOperation.Callback cb=new GetOperation.Callback() {
 				@SuppressWarnings("synthetic-access")
 				public void receivedStatus(String line) {
+					// XXX:  Protocol abstraction leak.
 					if(!line.equals("END")) {
 						getLogger().warn("Expected ``END'', was ``%s''", line);
 					}
@@ -419,14 +425,14 @@ public class MemcachedClient extends SpyThread {
 		};
 		for(Map.Entry<MemcachedNode, Collection<String>> me
 				: chunks.entrySet()) {
-			ops.add(addOp(me.getKey(), new GetOperation(me.getValue(), cb)));
+			ops.add(addOp(me.getKey(), opFact.get(me.getValue(), cb)));
 		}
 		return new BulkGetFuture(m, ops, latch);
 	}
 
 	/**
 	 * Varargs wrapper for asynchronous bulk gets.
-	 * 
+	 *
 	 * @param keys one more more keys to get
 	 * @return the future values of those keys
 	 */
@@ -435,7 +441,7 @@ public class MemcachedClient extends SpyThread {
 	}
 	/**
 	 * Get the values for multiple keys from the cache.
-	 * 
+	 *
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 */
@@ -451,7 +457,7 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Get the values for multiple keys from the cache.
-	 * 
+	 *
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 */
@@ -466,11 +472,11 @@ public class MemcachedClient extends SpyThread {
 		final Map<SocketAddress, String>rv=
 			new ConcurrentHashMap<SocketAddress, String>();
 
-		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
 				final SocketAddress sa=n.getSocketAddress();
-				return new VersionOperation(
+				return opFact.version(
 						new OperationCallback() {
 							public void receivedStatus(String s) {
 								rv.put(sa, s);
@@ -500,18 +506,19 @@ public class MemcachedClient extends SpyThread {
 		final Map<SocketAddress, Map<String, String>> rv
 			=new HashMap<SocketAddress, Map<String, String>>();
 
-		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 				final CountDownLatch latch) {
 				final SocketAddress sa=n.getSocketAddress();
 				rv.put(sa, new HashMap<String, String>());
-				return new StatsOperation(arg,
+				return opFact.stats(arg,
 						new StatsOperation.Callback() {
 					public void gotStat(String name, String val) {
 						rv.get(sa).put(name, val);
 					}
 					@SuppressWarnings("synthetic-access")
 					public void receivedStatus(String line) {
+						// XXX:  Protocol abstraction leak.
 						if(!line.equals("END")) {
 							getLogger().warn("Expeted ``END'', was ``%s''",
 								line);
@@ -529,10 +536,10 @@ public class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
-	private long mutate(MutatorOperation.Mutator m, String key, int by) {
+	private long mutate(Mutator m, String key, int by) {
 		final AtomicLong rv=new AtomicLong();
 		final CountDownLatch latch=new CountDownLatch(1);
-		addOp(key, new MutatorOperation(m, key, by,
+		addOp(key, opFact.mutate(m, key, by,
 				new OperationCallback() {
 					public void receivedStatus(String val) {
 						rv.set(new Long(val==null?"-1":val));
@@ -552,32 +559,32 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Increment the given key by the given amount.
-	 * 
+	 *
 	 * @param key the key
 	 * @param by the amount to increment
 	 * @return the new value (-1 if the key doesn't exist)
 	 */
 	public long incr(String key, int by) {
-		return mutate(MutatorOperation.Mutator.incr, key, by);
+		return mutate(Mutator.incr, key, by);
 	}
 
 	/**
 	 * Decrement the given key by the given value.
-	 * 
+	 *
 	 * @param key the key
 	 * @param by the value
 	 * @return the new value (-1 if the key doesn't exist)
 	 */
 	public long decr(String key, int by) {
-		return mutate(MutatorOperation.Mutator.decr, key, by);
+		return mutate(Mutator.decr, key, by);
 	}
 
-	private long mutateWithDefault(MutatorOperation.Mutator t, String key,
+	private long mutateWithDefault(Mutator t, String key,
 			int by, long def) {
 		long rv=mutate(t, key, by);
 		if(rv == -1) {
-			Future<Boolean> f=asyncStore(StoreOperation.StoreType.add, key, 0,
-					String.valueOf(def));
+			Future<Boolean> f=asyncStore(StoreType.add,
+					key, 0,	String.valueOf(def));
 			try {
 				if(f.get()) {
 					rv=def;
@@ -596,40 +603,42 @@ public class MemcachedClient extends SpyThread {
 
 	/**
 	 * Increment the given counter, returning the new value.
-	 * 
+	 *
 	 * @param key the key
 	 * @param by the amount to increment
 	 * @param def the default value (if the counter does not exist)
 	 * @return the new value, or -1 if we were unable to increment or add
 	 */
 	public long incr(String key, int by, long def) {
-		return mutateWithDefault(MutatorOperation.Mutator.incr, key, by, def);
+		return mutateWithDefault(Mutator.incr,
+				key, by, def);
 	}
 
 	/**
 	 * Decrement the given counter, returning the new value.
-	 * 
+	 *
 	 * @param key the key
 	 * @param by the amount to decrement
 	 * @param def the default value (if the counter does not exist)
 	 * @return the new value, or -1 if we were unable to decrement or add
 	 */
 	public long decr(String key, int by, long def) {
-		return mutateWithDefault(MutatorOperation.Mutator.decr, key, by, def);
+		return mutateWithDefault(Mutator.decr, key, by, def);
 	}
 
 	/**
 	 * Delete the given key from the cache.
-	 * 
+	 *
 	 * @param key the key to delete
 	 * @param when when the deletion should take effect
 	 */
 	public Future<Boolean> delete(String key, int when) {
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
-		DeleteOperation op=new DeleteOperation(key, when,
+		DeleteOperation op=opFact.delete(key, when,
 				new OperationCallback() {
 					public void receivedStatus(String line) {
+						// XXX:  Protocol abstraction leak.
 						rv.set(line.equals("DELETED"));
 					}
 
@@ -654,11 +663,12 @@ public class MemcachedClient extends SpyThread {
 	public Future<Boolean> flush(final int delay) {
 		final AtomicReference<Boolean> flushResult=
 			new AtomicReference<Boolean>(null);
-		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
-				return new FlushOperation(delay, new OperationCallback(){
+				return opFact.flush(delay, new OperationCallback(){
 					public void receivedStatus(String line) {
+						// XXX:  Protocol abstraction leak.
 						flushResult.set(line.equals("OK"));
 					}
 
@@ -701,7 +711,7 @@ public class MemcachedClient extends SpyThread {
 				rv.addAll(m.keySet());
 			}
 		}
-		
+
 		return rv;
 	}
 
@@ -759,10 +769,10 @@ public class MemcachedClient extends SpyThread {
 	 * Wait for the queues to die down.
 	 */
 	public boolean waitForQueues(long timeout, TimeUnit unit) {
-		CountDownLatch blatch = broadcastOp(new OperationFactory(){
+		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
-				return new VersionOperation(
+				return opFact.version(
 						new OperationCallback() {
 							public void complete() {
 								latch.countDown();
@@ -797,7 +807,7 @@ public class MemcachedClient extends SpyThread {
 		public boolean cancel(boolean ign) {
 			boolean rv=false;
 			for(Operation op : ops) {
-				rv |= op.getState() == Operation.State.WRITING;
+				rv |= op.getState() == OperationState.WRITING;
 				op.cancel();
 			}
 			cancelled=true;
@@ -859,7 +869,7 @@ public class MemcachedClient extends SpyThread {
 			op.cancel();
 			// This isn't exactly correct, but it's close enough.  If we're in
 			// a writing state, we *probably* haven't started.
-			return op.getState() == Operation.State.WRITING;
+			return op.getState() == OperationState.WRITING;
 		}
 
 		public T get() throws InterruptedException, ExecutionException {
@@ -894,8 +904,8 @@ public class MemcachedClient extends SpyThread {
 
 		public boolean isDone() {
 			assert op != null : "No operation";
-			return op.getState() == Operation.State.COMPLETE;
+			return op.getState() == OperationState.COMPLETE;
 		}
-		
+
 	}
 }

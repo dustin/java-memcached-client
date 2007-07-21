@@ -24,11 +24,12 @@ import java.util.concurrent.CountDownLatch;
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationException;
+import net.spy.memcached.ops.OperationState;
 
 /**
  * Connection to a cluster of memcached servers.
  */
-public class MemcachedConnection extends SpyObject {
+public final class MemcachedConnection extends SpyObject {
 	// The number of empty selects we'll allow before taking action.  It's too
 	// easy to write a bug that causes it to loop uncontrollably.  This helps
 	// find those bugs and often works around them.
@@ -68,9 +69,7 @@ public class MemcachedConnection extends SpyObject {
 		for(SocketAddress sa : a) {
 			SocketChannel ch=SocketChannel.open();
 			ch.configureBlocking(false);
-			MemcachedNode qa=new MemcachedNodeImpl(sa, ch, bufSize,
-				f.createOperationQueue(), f.createOperationQueue(),
-				f.createOperationQueue());
+			MemcachedNode qa=f.createMemcachedNode(sa, ch, bufSize);
 			int ops=0;
 			if(ch.connect(sa)) {
 				getLogger().info("Connected to %s immediately", qa);
@@ -299,7 +298,7 @@ public class MemcachedConnection extends SpyObject {
 			while(rbuf.remaining() > 0) {
 				assert currentOp != null : "No read operation";
 				currentOp.readFromBuffer(rbuf);
-				if(currentOp.getState() == Operation.State.COMPLETE) {
+				if(currentOp.getState() == OperationState.COMPLETE) {
 					getLogger().debug(
 							"Completed read op: %s and giving the next %d bytes",
 							currentOp, rbuf.remaining());
@@ -384,7 +383,7 @@ public class MemcachedConnection extends SpyObject {
 
 	/**
 	 * Add an operation to the given connection.
-	 * 
+	 *
 	 * @param which the connection offset
 	 * @param o the operation
 	 */
@@ -425,7 +424,7 @@ public class MemcachedConnection extends SpyObject {
 	/**
 	 * Broadcast an operation to all nodes.
 	 */
-	public CountDownLatch broadcastOperation(final OperationFactory of) {
+	public CountDownLatch broadcastOperation(final BroadcastOpFactory of) {
 		final CountDownLatch latch=new CountDownLatch(locator.getAll().size());
 		for(MemcachedNode node : locator.getAll()) {
 			Operation op = of.newOp(node, latch);
