@@ -764,13 +764,12 @@ public class MemcachedClient extends SpyThread {
 					final CountDownLatch latch) {
 				return new VersionOperation(
 						new OperationCallback() {
-							// XXX:  Why do I count down the latch on two
-							// conditions?
-							public void receivedStatus(String s) {
-								latch.countDown();
-							}
 							public void complete() {
 								latch.countDown();
+							}
+							public void receivedStatus(String line) {
+								// Nothing special when receiving status, only
+								// necessary to complete the interface
 							}
 						});
 			}}, false);
