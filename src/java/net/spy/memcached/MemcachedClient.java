@@ -224,6 +224,7 @@ public final class MemcachedClient extends SpyThread {
 		Operation op=opFact.store(storeType, key, co.getFlags(),
 				exp, co.getData(), new OperationCallback() {
 					public void receivedStatus(String val) {
+						// XXX:  Protocol abstraction leak.
 						rv.set(val.equals("STORED"));
 					}
 					public void complete() {
@@ -410,6 +411,7 @@ public final class MemcachedClient extends SpyThread {
 		GetOperation.Callback cb=new GetOperation.Callback() {
 				@SuppressWarnings("synthetic-access")
 				public void receivedStatus(String line) {
+					// XXX:  Protocol abstraction leak.
 					if(!line.equals("END")) {
 						getLogger().warn("Expected ``END'', was ``%s''", line);
 					}
@@ -516,6 +518,7 @@ public final class MemcachedClient extends SpyThread {
 					}
 					@SuppressWarnings("synthetic-access")
 					public void receivedStatus(String line) {
+						// XXX:  Protocol abstraction leak.
 						if(!line.equals("END")) {
 							getLogger().warn("Expeted ``END'', was ``%s''",
 								line);
@@ -635,6 +638,7 @@ public final class MemcachedClient extends SpyThread {
 		DeleteOperation op=opFact.delete(key, when,
 				new OperationCallback() {
 					public void receivedStatus(String line) {
+						// XXX:  Protocol abstraction leak.
 						rv.set(line.equals("DELETED"));
 					}
 
@@ -664,6 +668,7 @@ public final class MemcachedClient extends SpyThread {
 					final CountDownLatch latch) {
 				return opFact.flush(delay, new OperationCallback(){
 					public void receivedStatus(String line) {
+						// XXX:  Protocol abstraction leak.
 						flushResult.set(line.equals("OK"));
 					}
 
