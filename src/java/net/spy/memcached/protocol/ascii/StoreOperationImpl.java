@@ -29,8 +29,8 @@ final class StoreOperationImpl extends OperationImpl
 	private final byte[] data;
 
 	public StoreOperationImpl(StoreType t, String k, int f, int e,
-			byte[] d, OperationCallback callback) {
-		super(callback);
+			byte[] d, OperationCallback cb) {
+		super(cb);
 		type=t;
 		key=k;
 		flags=f;
