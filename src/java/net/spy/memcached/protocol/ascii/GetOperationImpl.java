@@ -10,11 +10,15 @@ import java.util.HashSet;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
 
 /**
  * Operation for retrieving data.
  */
 class GetOperationImpl extends OperationImpl implements GetOperation {
+
+	private static final OperationStatus END=
+		new OperationStatus(true, "END");
 
 	private Collection<String> keys=null;
 	private String currentKey=null;
@@ -70,7 +74,7 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	public final void handleLine(String line) {
 		if(line.equals("END")) {
 			getLogger().debug("Get complete!");
-			cb.receivedStatus(line);
+			cb.receivedStatus(END);
 			transitionState(OperationState.COMPLETE);
 			data=null;
 		} else if(line.startsWith("VALUE ")) {
@@ -160,6 +164,6 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 
 	@Override
 	protected final void wasCancelled() {
-		cb.receivedStatus("cancelled");
+		cb.receivedStatus(CANCELLED);
 	}
 }

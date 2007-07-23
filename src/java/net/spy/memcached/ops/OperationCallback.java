@@ -12,7 +12,7 @@ public interface OperationCallback {
 	 *
 	 * @param line the line containing the final status of the operation
 	 */
-	void receivedStatus(String line);
+	void receivedStatus(OperationStatus status);
 
 	/**
 	 * Called whenever an operation completes.

@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationException;
+import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.ascii.ExtensibleOperationImpl;
 import net.spy.test.SyncThread;
 
@@ -337,7 +338,7 @@ public class ClientTest extends ClientBaseCase {
 				System.err.println("Complete.");
 			}
 
-			public void receivedStatus(String line) {
+			public void receivedStatus(OperationStatus s) {
 				System.err.println("Received a line.");
 			}}) {
 

@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 
@@ -17,6 +18,9 @@ final class StoreOperationImpl extends OperationImpl
 
 	// Overhead storage stuff to make sure the buffer pushes out far enough.
 	private static final int OVERHEAD = 32;
+
+	private static final OperationStatus STORED=
+		new OperationStatus(true, "STORED");
 
 	private final StoreType type;
 	private final String key;
@@ -38,7 +42,7 @@ final class StoreOperationImpl extends OperationImpl
 	public void handleLine(String line) {
 		assert getState() == OperationState.READING
 			: "Read ``" + line + "'' when in " + getState() + " state";
-		getCallback().receivedStatus(line);
+		getCallback().receivedStatus(matchStatus(line, STORED));
 		transitionState(OperationState.COMPLETE);
 	}
 
@@ -59,7 +63,7 @@ final class StoreOperationImpl extends OperationImpl
 	@Override
 	protected void wasCancelled() {
 		// XXX:  Replace this comment with why I did this
-		getCallback().receivedStatus("cancelled");
+		getCallback().receivedStatus(CANCELLED);
 	}
 
 }

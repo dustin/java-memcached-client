@@ -30,6 +30,7 @@ import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreType;
 
@@ -223,9 +224,8 @@ public final class MemcachedClient extends SpyThread {
 		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
 		Operation op=opFact.store(storeType, key, co.getFlags(),
 				exp, co.getData(), new OperationCallback() {
-					public void receivedStatus(String val) {
-						// XXX:  Protocol abstraction leak.
-						rv.set(val.equals("STORED"));
+					public void receivedStatus(OperationStatus val) {
+						rv.set(val.isSuccess());
 					}
 					public void complete() {
 						latch.countDown();
@@ -337,7 +337,7 @@ public final class MemcachedClient extends SpyThread {
 		Operation op=opFact.get(key,
 				new GetOperation.Callback() {
 			private Object val=null;
-			public void receivedStatus(String line) {
+			public void receivedStatus(OperationStatus status) {
 				rv.set(val);
 			}
 			public void gotData(String k, int flags, byte[] data) {
@@ -410,10 +410,9 @@ public final class MemcachedClient extends SpyThread {
 
 		GetOperation.Callback cb=new GetOperation.Callback() {
 				@SuppressWarnings("synthetic-access")
-				public void receivedStatus(String line) {
-					// XXX:  Protocol abstraction leak.
-					if(!line.equals("END")) {
-						getLogger().warn("Expected ``END'', was ``%s''", line);
+				public void receivedStatus(OperationStatus status) {
+					if(!status.isSuccess()) {
+						getLogger().warn("Unsuccessful get:  %s", status);
 					}
 				}
 				public void gotData(String k, int flags, byte[] data) {
@@ -478,10 +477,9 @@ public final class MemcachedClient extends SpyThread {
 				final SocketAddress sa=n.getSocketAddress();
 				return opFact.version(
 						new OperationCallback() {
-							public void receivedStatus(String s) {
-								rv.put(sa, s);
+							public void receivedStatus(OperationStatus s) {
+								rv.put(sa, s.getMessage());
 							}
-
 							public void complete() {
 								latch.countDown();
 							}
@@ -516,12 +514,11 @@ public final class MemcachedClient extends SpyThread {
 					public void gotStat(String name, String val) {
 						rv.get(sa).put(name, val);
 					}
-					@SuppressWarnings("synthetic-access")
-					public void receivedStatus(String line) {
-						// XXX:  Protocol abstraction leak.
-						if(!line.equals("END")) {
-							getLogger().warn("Expeted ``END'', was ``%s''",
-								line);
+					@SuppressWarnings("synthetic-access") // getLogger()
+					public void receivedStatus(OperationStatus status) {
+						if(!status.isSuccess()) {
+							getLogger().warn("Unsuccessful stat fetch:  %s",
+									status);
 						}
 					}
 					public void complete() {
@@ -541,10 +538,12 @@ public final class MemcachedClient extends SpyThread {
 		final CountDownLatch latch=new CountDownLatch(1);
 		addOp(key, opFact.mutate(m, key, by,
 				new OperationCallback() {
-					public void receivedStatus(String val) {
-						rv.set(new Long(val==null?"-1":val));
+					public void receivedStatus(OperationStatus s) {
+						// XXX:  Potential abstraction leak.
+						// The handling of incr/decr in the binary protocol is
+						// yet undefined.
+						rv.set(new Long(s.isSuccess()?s.getMessage():"-1"));
 					}
-
 					public void complete() {
 						latch.countDown();
 					}}));
@@ -637,11 +636,9 @@ public final class MemcachedClient extends SpyThread {
 		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
 		DeleteOperation op=opFact.delete(key, when,
 				new OperationCallback() {
-					public void receivedStatus(String line) {
-						// XXX:  Protocol abstraction leak.
-						rv.set(line.equals("DELETED"));
+					public void receivedStatus(OperationStatus s) {
+						rv.set(s.isSuccess());
 					}
-
 					public void complete() {
 						latch.countDown();
 					}});
@@ -667,11 +664,9 @@ public final class MemcachedClient extends SpyThread {
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
 				return opFact.flush(delay, new OperationCallback(){
-					public void receivedStatus(String line) {
-						// XXX:  Protocol abstraction leak.
-						flushResult.set(line.equals("OK"));
+					public void receivedStatus(OperationStatus s) {
+						flushResult.set(s.isSuccess());
 					}
-
 					public void complete() {
 						latch.countDown();
 					}});
@@ -777,7 +772,7 @@ public final class MemcachedClient extends SpyThread {
 							public void complete() {
 								latch.countDown();
 							}
-							public void receivedStatus(String line) {
+							public void receivedStatus(OperationStatus s) {
 								// Nothing special when receiving status, only
 								// necessary to complete the interface
 							}

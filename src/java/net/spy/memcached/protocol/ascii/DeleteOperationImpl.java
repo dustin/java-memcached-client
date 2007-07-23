@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
 
 /**
  * Operation to delete an item from the cache.
@@ -15,6 +16,11 @@ final class DeleteOperationImpl extends OperationImpl
 	implements DeleteOperation {
 
 	private static final int OVERHEAD=32;
+
+	private static final OperationStatus DELETED=
+		new OperationStatus(true, "DELETED");
+	private static final OperationStatus NOT_FOUND=
+		new OperationStatus(false, "NOT_FOUND");
 
 	private final String key;
 	private final int when;
@@ -28,8 +34,7 @@ final class DeleteOperationImpl extends OperationImpl
 	@Override
 	public void handleLine(String line) {
 		getLogger().debug("Delete of %s returned %s", key, line);
-		assert line.equals("DELETED") || line.equals("NOT_FOUND");
-		getCallback().receivedStatus(line);
+		getCallback().receivedStatus(matchStatus(line, DELETED, NOT_FOUND));
 		transitionState(OperationState.COMPLETE);
 	}
 

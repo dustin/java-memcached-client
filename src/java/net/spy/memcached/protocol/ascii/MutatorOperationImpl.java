@@ -8,6 +8,7 @@ import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
 
 /**
  * Operation for mutating integers inside of memcached.
@@ -16,6 +17,9 @@ final class MutatorOperationImpl extends OperationImpl
 	implements MutatatorOperation {
 
 	public static final int OVERHEAD=32;
+
+	private static final OperationStatus NOT_FOUND=
+		new OperationStatus(false, "NOT_FOUND");
 
 	private final Mutator mutator;
 	private final String key;
@@ -32,9 +36,11 @@ final class MutatorOperationImpl extends OperationImpl
 	@Override
 	public void handleLine(String line) {
 		getLogger().debug("Result:  %s", line);
-		String found=null;
-		if(!line.equals("NOT_FOUND")) {
-			found=line;
+		OperationStatus found=null;
+		if(line.equals("NOT_FOUND")) {
+			found=NOT_FOUND;
+		} else {
+			found=new OperationStatus(true, line);
 		}
 		getCallback().receivedStatus(found);
 		transitionState(OperationState.COMPLETE);
@@ -52,7 +58,7 @@ final class MutatorOperationImpl extends OperationImpl
 	@Override
 	protected void wasCancelled() {
 		// XXX:  Replace this comment with why the hell I did this.
-		getCallback().receivedStatus("cancelled");
+		getCallback().receivedStatus(CANCELLED);
 	}
 
 }

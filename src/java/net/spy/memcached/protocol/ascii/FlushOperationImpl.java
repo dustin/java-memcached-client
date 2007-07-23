@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
 
 /**
  * Memcached flush_all operation.
@@ -15,6 +16,10 @@ final class FlushOperationImpl extends OperationImpl
 	implements FlushOperation {
 
 	private static final byte[] FLUSH="flush_all\r\n".getBytes();
+
+	private static final OperationStatus OK=
+		new OperationStatus(true, "OK");
+
 	private final int delay;
 
 	public FlushOperationImpl(int d, OperationCallback cb) {
@@ -24,9 +29,8 @@ final class FlushOperationImpl extends OperationImpl
 
 	@Override
 	public void handleLine(String line) {
-		assert line.equals("OK") : "Expected OK, was " + line;
 		getLogger().debug("Flush completed successfully");
-		getCallback().receivedStatus(line);
+		getCallback().receivedStatus(matchStatus(line, OK));
 		transitionState(OperationState.COMPLETE);
 	}
 

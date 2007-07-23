@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.OperationStatus;
 
 /**
  * Optimized Get operation for folding a bunch of gets together.
@@ -15,7 +16,8 @@ final class OptimizedGetImpl extends GetOperationImpl
 
 	private final Map<String, Collection<GetOperation.Callback>> callbacks=
 		new HashMap<String, Collection<GetOperation.Callback>>();
-	private final Collection<GetOperation.Callback> allCallbacks=new ArrayList<GetOperation.Callback>();
+	private final Collection<GetOperation.Callback> allCallbacks=
+		new ArrayList<GetOperation.Callback>();
 
 	/**
 	 * Construct an optimized get starting with the given get operation.
@@ -64,9 +66,9 @@ final class OptimizedGetImpl extends GetOperationImpl
 		}
 	}
 
-	public void receivedStatus(String line) {
+	public void receivedStatus(OperationStatus status) {
 		for(GetOperation.Callback c : allCallbacks) {
-			c.receivedStatus(line);
+			c.receivedStatus(status);
 		}
 	}
 
@@ -80,6 +82,9 @@ final class OptimizedGetImpl extends GetOperationImpl
 	// Wrap a get callback to allow an operation that got rolled up into a
 	// multi-operation to return before the entire get operation completes.
 	private static class GetCallbackWrapper implements GetOperation.Callback {
+
+		private static final OperationStatus END=
+			new OperationStatus(true, "END");
 
 		private boolean completed=false;
 		private int remainingKeys=0;
@@ -96,13 +101,13 @@ final class OptimizedGetImpl extends GetOperationImpl
 			cb.gotData(key, flags, data);
 			if(--remainingKeys == 0) {
 				// Fake a status line
-				receivedStatus("END");
+				receivedStatus(END);
 			}
 		}
 
-		public void receivedStatus(String line) {
+		public void receivedStatus(OperationStatus status) {
 			if(!completed) {
-				cb.receivedStatus(line);
+				cb.receivedStatus(status);
 			}
 		}
 
