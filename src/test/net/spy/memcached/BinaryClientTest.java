@@ -2,10 +2,13 @@ package net.spy.memcached;
 
 import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 import net.spy.memcached.protocol.binary.BinaryMemcachedNodeImpl;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
@@ -169,7 +172,6 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertNull(client.get("test1"));
 	}
 
-	/*
 	// Just to make sure the sequence is being handled correctly
 	public void testMixedSetsAndUpdates() throws Exception {
 		Collection<Future<Boolean>> futures=new ArrayList<Future<Boolean>>();
@@ -190,7 +192,6 @@ public class BinaryClientTest extends ClientBaseCase {
 			assertFalse(i.next().get());
 		}
 	}
-	*/
 
 	public void testGetBulk() throws Exception {
 		Collection<String> keys=Arrays.asList("test1", "test2", "test3");
@@ -213,7 +214,6 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertEquals("val2", vals.get("test2"));
 	}
 
-	/*
 	public void testGetVersions() throws Exception {
 		Map<SocketAddress, String> vs=client.getVersions();
 		assertEquals(1, vs.size());
@@ -222,6 +222,7 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertNotNull(me.getValue());
 	}
 
+	/*
 	public void testGetStats() throws Exception {
 		Map<SocketAddress, Map<String, String>> stats = client.getStats();
 		assertEquals(1, stats.size());
@@ -258,7 +259,6 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertNull(client.get("test1"));
 	}
 
-	/*
 	public void testDeleteFuture() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
@@ -270,6 +270,7 @@ public class BinaryClientTest extends ClientBaseCase {
 			client.delete("test1").get());
 	}
 
+	/*
 	public void testDelayedDelete() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
@@ -298,6 +299,7 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertNull(client.get("test1"));
 		assertNull(client.get("test2"));
 	}
+	*/
 
 	public void testFlush() throws Exception {
 		assertNull(client.get("test1"));
@@ -310,6 +312,7 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertNull(client.get("test2"));
 	}
 
+	/*
 	public void testGetKeys() throws Exception {
 		client.set("test1", 5, "test1value");
 		client.set("test2", 5, "test2value");
@@ -318,7 +321,9 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertTrue(ks.contains("test1"));
 		assertTrue(ks.contains("test2"));
 	}
+	*/
 
+	/*
 	public void testGracefulShutdown() throws Exception {
 		for(int i=0; i<1000; i++) {
 			client.set("t" + i, 10, i);
@@ -338,7 +343,9 @@ public class BinaryClientTest extends ClientBaseCase {
 			assertEquals(i, m.get("t" + i));
 		}
 	}
+	*/
 
+	/*
 	public void testBadOperation() throws Exception {
 		client.addOp("x", new ExtensibleOperationImpl(new OperationCallback(){
 			public void complete() {

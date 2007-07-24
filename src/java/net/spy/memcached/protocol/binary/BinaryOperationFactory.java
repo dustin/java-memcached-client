@@ -56,8 +56,7 @@ public class BinaryOperationFactory implements OperationFactory {
 	}
 
 	public VersionOperation version(OperationCallback cb) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new VersionOperationImpl(cb);
 	}
 
 	public NoopOperation noop(OperationCallback cb) {
