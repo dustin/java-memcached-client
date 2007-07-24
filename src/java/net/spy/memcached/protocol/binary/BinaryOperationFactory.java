@@ -32,8 +32,7 @@ public class BinaryOperationFactory implements OperationFactory {
 	}
 
 	public GetOperation get(String key, Callback callback) {
-		// TODO Auto-generated method stub
-		return null;
+		return new GetOperationImpl(key, callback);
 	}
 
 	public GetOperation get(Collection<String> value, Callback cb) {
@@ -55,8 +54,7 @@ public class BinaryOperationFactory implements OperationFactory {
 
 	public StoreOperation store(StoreType storeType, String key, int flags,
 			int exp, byte[] data, OperationCallback cb) {
-		// TODO Auto-generated method stub
-		return null;
+		return new StoreOperationImpl(storeType, key, flags, exp, data, cb);
 	}
 
 	public VersionOperation version(OperationCallback cb) {

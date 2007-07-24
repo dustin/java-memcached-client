@@ -26,6 +26,11 @@ abstract class OperationImpl extends BaseOperationImpl {
 	private static final byte MAGIC = 0xf;
 	private static final int MIN_RECV_PACKET=12;
 
+	/**
+	 * Error code for items that were not found.
+	 */
+	protected static final int NOT_FOUND = 1;
+
 	protected static final byte[] EMPTY_BYTES = new byte[0];
 
 	protected static final OperationStatus STATUS_OK =
@@ -88,7 +93,9 @@ abstract class OperationImpl extends BaseOperationImpl {
 		}
 
 		// Now process the payload if we can.
-		if(payload.length > 0 && b.hasRemaining()) {
+		if(headerOffset >= MIN_RECV_PACKET && payload == null) {
+			finishedPayload(EMPTY_BYTES);
+		} else {
 			int toRead=payload.length - payloadOffset;
 			int available=b.remaining();
 			toRead=Math.min(toRead, available);
@@ -99,17 +106,32 @@ abstract class OperationImpl extends BaseOperationImpl {
 			// Have we read it all?
 			if(payloadOffset == payload.length) {
 				finishedPayload(payload);
+			} else {
+				System.err.printf("Have read %d of %d bytes\n",
+						payloadOffset, payload.length);
 			}
 		}
+
 	}
 
 	private void finishedPayload(byte[] pl) throws IOException {
-		transitionState(OperationState.COMPLETE);
 		if(errorCode != 0) {
-			handleError(OperationErrorType.GENERAL, new String(pl));
+			handleError(errorCode, pl);
 		} else {
 			decodePayload(pl);
+			transitionState(OperationState.COMPLETE);
 		}
+	}
+
+	/**
+	 * Handle a non-zero status code.
+	 *
+	 * @param errCode the status code
+	 * @param errPl the payload that came with the non-zero status code
+	 * @throws IOException if you don't like it.
+	 */
+	protected void handleError(int errCode, byte[] errPl) throws IOException {
+		handleError(OperationErrorType.SERVER, new String(errPl));
 	}
 
 	/**
@@ -120,7 +142,6 @@ abstract class OperationImpl extends BaseOperationImpl {
 	protected void decodePayload(byte[] pl) {
 		assert pl.length == 0 : "Payload has bytes, but decode isn't overridden";
 		getCallback().receivedStatus(STATUS_OK);
-		transitionState(OperationState.COMPLETE);
 	}
 
 	/**
@@ -129,17 +150,18 @@ abstract class OperationImpl extends BaseOperationImpl {
 	 * to always be the same as the request opaque.
 	 */
 	protected boolean opaqueIsValid() {
-		System.err.println("Expected " + opaque + ", got " + responseOpaque);
+		if(responseOpaque != opaque) {
+			System.err.printf("Expected opaque:  %d, got opaque:  %d\n",
+					responseOpaque, opaque);
+		}
 		return responseOpaque == opaque;
 	}
 
-	private int decodeInt(byte[] data, int i) {
-		System.out.printf("Decoding %d %d %d %d\n",
-				data[i], data[i+1], data[i+2], data[i+3]);
-		return data[i] << 24
-			| data[i+1] << 16
-			| data[i+2] << 8
-			| data[i+3];
+	static int decodeInt(byte[] data, int i) {
+		return (data[i]  & 0xff) << 24
+			| (data[i+1] & 0xff) << 16
+			| (data[i+2] & 0xff) << 8
+			| (data[i+3] & 0xff);
 	}
 
 	/**

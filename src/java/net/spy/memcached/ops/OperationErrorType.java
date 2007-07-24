@@ -7,23 +7,14 @@ public enum OperationErrorType {
 	/**
 	 * General error.
 	 */
-	GENERAL(0),
+	GENERAL,
 	/**
 	 * Error that occurred because the client did something stupid.
 	 */
-	CLIENT("CLIENT_ERROR ".length()),
+	CLIENT,
 	/**
 	 * Error that occurred because the server did something stupid.
 	 */
-	SERVER("SERVER_ERROR ".length());
+	SERVER;
 
-	private final int size;
-
-	OperationErrorType(int s) {
-		size=s;
-	}
-
-	public int getSize() {
-		return size;
-	}
 }

@@ -25,7 +25,7 @@ public final class OperationException extends IOException {
 	 * @param msg the error message
 	 */
 	public OperationException(OperationErrorType eType, String msg) {
-		super(msg.substring(eType.getSize()));
+		super(msg);
 		type=eType;
 	}
 

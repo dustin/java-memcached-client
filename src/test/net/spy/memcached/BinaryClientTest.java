@@ -2,9 +2,11 @@ package net.spy.memcached;
 
 import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.Callable;
 
 import net.spy.memcached.protocol.binary.BinaryMemcachedNodeImpl;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
+import net.spy.test.SyncThread;
 
 /**
  * This test assumes a client is running on localhost:11211.
@@ -32,7 +34,6 @@ public class BinaryClientTest extends ClientBaseCase {
 		// This runs through the startup/flush cycle
 	}
 
-	/*
 	public void testSimpleGet() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
@@ -123,6 +124,7 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertEquals(1, cnt);
 	}
 
+	/*
 	public void testAdd() throws Exception {
 		assertNull(client.get("test1"));
 		assertTrue(client.set("test1", 5, "test1value").get());
