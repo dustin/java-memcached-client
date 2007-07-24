@@ -20,14 +20,16 @@ public class OperationExceptionTest extends TestCase {
 		OperationException oe=new OperationException(
 			OperationErrorType.SERVER, "SERVER_ERROR figures");
 		assertSame(OperationErrorType.SERVER, oe.getType());
-		assertEquals("OperationException: SERVER: figures", String.valueOf(oe));
+		assertEquals("OperationException: SERVER: SERVER_ERROR figures",
+			String.valueOf(oe));
 	}
 
 	public void testClient() {
 		OperationException oe=new OperationException(
 			OperationErrorType.CLIENT, "CLIENT_ERROR nope");
 		assertSame(OperationErrorType.CLIENT, oe.getType());
-		assertEquals("OperationException: CLIENT: nope", String.valueOf(oe));
+		assertEquals("OperationException: CLIENT: CLIENT_ERROR nope",
+			String.valueOf(oe));
 	}
 
 	public void testGeneral() {
