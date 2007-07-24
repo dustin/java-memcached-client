@@ -8,6 +8,7 @@ import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
+import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
@@ -27,8 +28,7 @@ public class BinaryOperationFactory implements OperationFactory {
 	}
 
 	public FlushOperation flush(int delay, OperationCallback cb) {
-		// TODO Auto-generated method stub
-		return null;
+		return new FlushOperationImpl(cb);
 	}
 
 	public GetOperation get(String key, Callback callback) {
@@ -62,6 +62,10 @@ public class BinaryOperationFactory implements OperationFactory {
 	public VersionOperation version(OperationCallback cb) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public NoopOperation noop(OperationCallback cb) {
+		return new NoopOperationImpl(cb);
 	}
 
 }

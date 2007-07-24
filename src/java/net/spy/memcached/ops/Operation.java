@@ -67,9 +67,4 @@ public interface Operation {
 	 */
 	void handleRead(ByteBuffer data);
 
-	/**
-	 * Handle a textual read.
-	 */
-	void handleLine(String line);
-
 }

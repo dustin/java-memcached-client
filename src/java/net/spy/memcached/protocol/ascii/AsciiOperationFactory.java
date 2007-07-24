@@ -8,6 +8,7 @@ import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
+import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
@@ -52,6 +53,10 @@ public final class AsciiOperationFactory implements OperationFactory {
 	}
 
 	public VersionOperation version(OperationCallback cb) {
+		return new VersionOperationImpl(cb);
+	}
+
+	public NoopOperation noop(OperationCallback cb) {
 		return new VersionOperationImpl(cb);
 	}
 

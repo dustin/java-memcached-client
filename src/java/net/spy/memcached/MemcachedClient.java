@@ -767,7 +767,7 @@ public final class MemcachedClient extends SpyThread {
 		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
-				return opFact.version(
+				return opFact.noop(
 						new OperationCallback() {
 							public void complete() {
 								latch.countDown();
