@@ -12,8 +12,8 @@ public class GetOperationImpl extends OperationImpl implements GetOperation {
 
 	private final String key;
 
-	public GetOperationImpl(String k, Callback callback) {
-		super(CMD, generateOpaque(), callback);
+	public GetOperationImpl(String k, Callback cb) {
+		super(CMD, generateOpaque(), cb);
 		key=k;
 	}
 

@@ -15,7 +15,7 @@ import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.test.SyncThread;
 
 /**
- * This test assumes a client is running on localhost:11211.
+ * This test assumes a binary server is running on localhost:11212.
  */
 public class BinaryClientTest extends ClientBaseCase {
 
@@ -34,6 +34,12 @@ public class BinaryClientTest extends ClientBaseCase {
 			public OperationFactory getOperationFactory() {
 				return new BinaryOperationFactory();
 			}});
+	}
+
+	@Override
+	protected void initClient(ConnectionFactory cf) throws Exception {
+		client=new MemcachedClient(cf,
+			AddrUtil.getAddresses("127.0.0.1:11212"));
 	}
 
 	public void testNoop() {
@@ -218,7 +224,7 @@ public class BinaryClientTest extends ClientBaseCase {
 		Map<SocketAddress, String> vs=client.getVersions();
 		assertEquals(1, vs.size());
 		Map.Entry<SocketAddress, String> me=vs.entrySet().iterator().next();
-		assertEquals("/127.0.0.1:11211", me.getKey().toString());
+		assertEquals("/127.0.0.1:11212", me.getKey().toString());
 		assertNotNull(me.getValue());
 	}
 
