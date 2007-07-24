@@ -1,16 +1,14 @@
 package net.spy.memcached.protocol.binary;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 
 import net.spy.memcached.ops.GetOperation;
-import net.spy.memcached.ops.OperationErrorType;
-import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
 
 public class GetOperationImpl extends OperationImpl implements GetOperation {
 
-	private static final int CMD=0;
+	static final int CMD=0;
 
 	private final String key;
 
@@ -35,13 +33,12 @@ public class GetOperationImpl extends OperationImpl implements GetOperation {
 	}
 
 	@Override
-	protected void handleError(int errCode, byte[] errPl) throws IOException {
-		if(errCode == NOT_FOUND) {
-			getCallback().receivedStatus(STATUS_OK);
-			transitionState(OperationState.COMPLETE);
-		} else {
-			handleError(OperationErrorType.SERVER, new String(errPl));
+	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
+		OperationStatus rv=null;
+		if(errCode == ERR_NOT_FOUND) {
+			return NOT_FOUND_STATUS;
 		}
+		return rv;
 	}
 
 	public Collection<String> getKeys() {

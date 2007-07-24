@@ -1,6 +1,7 @@
 package net.spy.memcached.protocol.binary;
 
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 
@@ -38,6 +39,20 @@ class StoreOperationImpl extends OperationImpl implements StoreOperation {
 	@Override
 	public void initialize() {
 		prepareBuffer(key, data, flags, exp);
+	}
+
+	@Override
+	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
+		OperationStatus rv=null;
+		switch(errCode) {
+			case ERR_EXISTS:
+				rv=EXISTS_STATUS;
+				break;
+			case ERR_NOT_FOUND:
+				rv=NOT_FOUND_STATUS;
+				break;
+		}
+		return rv;
 	}
 
 }

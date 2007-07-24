@@ -23,13 +23,18 @@ abstract class OperationImpl extends BaseOperationImpl {
 	//  opaque (32-bits)
 	//  key length (32-bits)
 
-	private static final byte MAGIC = 0xf;
-	private static final int MIN_RECV_PACKET=12;
+	protected static final byte MAGIC = 0xf;
+	protected static final int MIN_RECV_PACKET=12;
 
 	/**
 	 * Error code for items that were not found.
 	 */
-	protected static final int NOT_FOUND = 1;
+	protected static final int ERR_NOT_FOUND = 1;
+	protected static final int ERR_EXISTS = 2;
+	protected static final OperationStatus NOT_FOUND_STATUS =
+		new OperationStatus(false, "Not Found");
+	protected static final OperationStatus EXISTS_STATUS =
+		new OperationStatus(false, "Object exists");
 
 	protected static final byte[] EMPTY_BYTES = new byte[0];
 
@@ -47,9 +52,9 @@ abstract class OperationImpl extends BaseOperationImpl {
 	private byte[] payload=null;
 
 	// Response header fields
-	private int responseCmd=0;
-	private int errorCode=0;
-	private int responseOpaque;
+	protected int responseCmd=0;
+	protected int errorCode=0;
+	protected int responseOpaque;
 
 	private int payloadOffset=0;
 
@@ -64,6 +69,12 @@ abstract class OperationImpl extends BaseOperationImpl {
 		cmd=c;
 		opaque=o;
 		setCallback(cb);
+	}
+
+	protected void resetInput() {
+		payload=null;
+		payloadOffset=0;
+		headerOffset=0;
 	}
 
 	@Override
@@ -82,7 +93,8 @@ abstract class OperationImpl extends BaseOperationImpl {
 				int magic=header[0];
 				assert magic == MAGIC : "Invalid magic:  " + magic;
 				responseCmd=header[1];
-				assert responseCmd == cmd : "Unexpected response command value";
+				assert cmd == -1 || responseCmd == cmd
+					: "Unexpected response command value";
 				errorCode=header[2];
 				assert header[3] == 0 : "Reserved byte was not 0";
 				responseOpaque=decodeInt(header, 4);
@@ -106,17 +118,20 @@ abstract class OperationImpl extends BaseOperationImpl {
 			// Have we read it all?
 			if(payloadOffset == payload.length) {
 				finishedPayload(payload);
-			} else {
-				System.err.printf("Have read %d of %d bytes\n",
-						payloadOffset, payload.length);
 			}
 		}
 
 	}
 
-	private void finishedPayload(byte[] pl) throws IOException {
+	protected void finishedPayload(byte[] pl) throws IOException {
 		if(errorCode != 0) {
-			handleError(errorCode, pl);
+			OperationStatus status=getStatusForErrorCode(errorCode, pl);
+			if(status == null) {
+				handleError(OperationErrorType.SERVER, new String(pl));
+			} else {
+				getCallback().receivedStatus(status);
+				transitionState(OperationState.COMPLETE);
+			}
 		} else {
 			decodePayload(pl);
 			transitionState(OperationState.COMPLETE);
@@ -124,14 +139,13 @@ abstract class OperationImpl extends BaseOperationImpl {
 	}
 
 	/**
-	 * Handle a non-zero status code.
+	 * Get the OperationStatus object for the given error code.
 	 *
-	 * @param errCode the status code
-	 * @param errPl the payload that came with the non-zero status code
-	 * @throws IOException if you don't like it.
+	 * @param errCode the error code
+	 * @return the status to return, or null if this is an exceptional case
 	 */
-	protected void handleError(int errCode, byte[] errPl) throws IOException {
-		handleError(OperationErrorType.SERVER, new String(errPl));
+	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
+		return null;
 	}
 
 	/**
@@ -151,7 +165,7 @@ abstract class OperationImpl extends BaseOperationImpl {
 	 */
 	protected boolean opaqueIsValid() {
 		if(responseOpaque != opaque) {
-			System.err.printf("Expected opaque:  %d, got opaque:  %d\n",
+			getLogger().warn("Expected opaque:  %d, got opaque:  %d\n",
 					responseOpaque, opaque);
 		}
 		return responseOpaque == opaque;

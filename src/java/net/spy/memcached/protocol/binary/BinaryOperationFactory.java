@@ -23,8 +23,7 @@ public class BinaryOperationFactory implements OperationFactory {
 
 	public DeleteOperation delete(String key, int when,
 			OperationCallback operationCallback) {
-		// TODO Auto-generated method stub
-		return null;
+		return new DeleteOperationImpl(key, operationCallback);
 	}
 
 	public FlushOperation flush(int delay, OperationCallback cb) {
@@ -36,20 +35,19 @@ public class BinaryOperationFactory implements OperationFactory {
 	}
 
 	public GetOperation get(Collection<String> value, Callback cb) {
-		// TODO Auto-generated method stub
-		return null;
+		return new MultiGetOperationImpl(value, cb);
 	}
 
 	public MutatatorOperation mutate(Mutator m, String key, int by,
 			OperationCallback cb) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	public StatsOperation stats(String arg,
 			net.spy.memcached.ops.StatsOperation.Callback cb) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	public StoreOperation store(StoreType storeType, String key, int flags,
@@ -59,7 +57,7 @@ public class BinaryOperationFactory implements OperationFactory {
 
 	public VersionOperation version(OperationCallback cb) {
 		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	public NoopOperation noop(OperationCallback cb) {

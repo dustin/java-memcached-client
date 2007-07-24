@@ -151,7 +151,6 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	public final void transitionWriteItem() {
 		Operation op=removeCurrentWriteOp();
 		assert op != null : "There is no write item to transition";
-		assert op.getState() == OperationState.READING;
 		getLogger().debug("Transitioning %s to read", op);
 		readQ.add(op);
 	}

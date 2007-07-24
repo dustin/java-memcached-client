@@ -2,6 +2,9 @@ package net.spy.memcached;
 
 import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import net.spy.memcached.protocol.binary.BinaryMemcachedNodeImpl;
@@ -124,7 +127,6 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertEquals(1, cnt);
 	}
 
-	/*
 	public void testAdd() throws Exception {
 		assertNull(client.get("test1"));
 		assertTrue(client.set("test1", 5, "test1value").get());
@@ -167,6 +169,7 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertNull(client.get("test1"));
 	}
 
+	/*
 	// Just to make sure the sequence is being handled correctly
 	public void testMixedSetsAndUpdates() throws Exception {
 		Collection<Future<Boolean>> futures=new ArrayList<Future<Boolean>>();
@@ -187,6 +190,7 @@ public class BinaryClientTest extends ClientBaseCase {
 			assertFalse(i.next().get());
 		}
 	}
+	*/
 
 	public void testGetBulk() throws Exception {
 		Collection<String> keys=Arrays.asList("test1", "test2", "test3");
@@ -209,6 +213,7 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertEquals("val2", vals.get("test2"));
 	}
 
+	/*
 	public void testGetVersions() throws Exception {
 		Map<SocketAddress, String> vs=client.getVersions();
 		assertEquals(1, vs.size());
@@ -243,6 +248,7 @@ public class BinaryClientTest extends ClientBaseCase {
 			}});
 		assertEquals(10, num);
 	}
+*/
 
 	public void testImmediateDelete() throws Exception {
 		assertNull(client.get("test1"));
@@ -252,6 +258,7 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertNull(client.get("test1"));
 	}
 
+	/*
 	public void testDeleteFuture() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
