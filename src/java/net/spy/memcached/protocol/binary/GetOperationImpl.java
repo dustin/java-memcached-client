@@ -34,11 +34,7 @@ public class GetOperationImpl extends OperationImpl implements GetOperation {
 
 	@Override
 	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
-		OperationStatus rv=null;
-		if(errCode == ERR_NOT_FOUND) {
-			return NOT_FOUND_STATUS;
-		}
-		return rv;
+		return errCode == ERR_NOT_FOUND ? NOT_FOUND_STATUS : null;
 	}
 
 	public Collection<String> getKeys() {

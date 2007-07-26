@@ -39,7 +39,7 @@ public final class AsciiOperationFactory implements OperationFactory {
 	}
 
 	public MutatatorOperation mutate(Mutator m, String key, int by,
-			OperationCallback cb) {
+			long exp, int def, OperationCallback cb) {
 		return new MutatorOperationImpl(m, key, by, cb);
 	}
 

@@ -178,6 +178,13 @@ abstract class OperationImpl extends BaseOperationImpl {
 			| (data[i+3] & 0xff);
 	}
 
+	static long decodeUnsignedInt(byte[] data, int i) {
+		return ((long)(data[i]  & 0xff) << 24)
+			| ((data[i+1] & 0xff) << 16)
+			| ((data[i+2] & 0xff) << 8)
+			| (data[i+3] & 0xff);
+	}
+
 	/**
 	 * Prepare a send buffer.
 	 *
@@ -192,6 +199,8 @@ abstract class OperationImpl extends BaseOperationImpl {
 		for(Object o : extraHeaders) {
 			if(o instanceof Integer) {
 				extraLen += 4;
+			} else if(o instanceof byte[]) {
+				extraLen += ((byte[])o).length;
 			} else {
 				assert false : "Unhandled extra header type:  " + o.getClass();
 			}
@@ -211,6 +220,8 @@ abstract class OperationImpl extends BaseOperationImpl {
 		for(Object o : extraHeaders) {
 			if(o instanceof Integer) {
 				bb.putInt((Integer)o);
+			} else if(o instanceof byte[]) {
+				bb.put((byte[])o);
 			} else {
 				assert false : "Unhandled extra header type:  " + o.getClass();
 			}

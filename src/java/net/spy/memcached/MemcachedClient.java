@@ -533,11 +533,10 @@ public final class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
-	private long mutate(Mutator m, String key, int by) {
+	private long mutate(Mutator m, String key, int by, long def, int exp) {
 		final AtomicLong rv=new AtomicLong();
 		final CountDownLatch latch=new CountDownLatch(1);
-		addOp(key, opFact.mutate(m, key, by,
-				new OperationCallback() {
+		addOp(key, opFact.mutate(m, key, by, def, exp, new OperationCallback() {
 					public void receivedStatus(OperationStatus s) {
 						// XXX:  Potential abstraction leak.
 						// The handling of incr/decr in the binary protocol is
@@ -564,7 +563,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @return the new value (-1 if the key doesn't exist)
 	 */
 	public long incr(String key, int by) {
-		return mutate(Mutator.incr, key, by);
+		return mutate(Mutator.incr, key, by, 0, -1);
 	}
 
 	/**
@@ -575,12 +574,14 @@ public final class MemcachedClient extends SpyThread {
 	 * @return the new value (-1 if the key doesn't exist)
 	 */
 	public long decr(String key, int by) {
-		return mutate(Mutator.decr, key, by);
+		return mutate(Mutator.decr, key, by, 0, -1);
 	}
 
 	private long mutateWithDefault(Mutator t, String key,
-			int by, long def) {
-		long rv=mutate(t, key, by);
+			int by, long def, int exp) {
+		long rv=mutate(t, key, by, def, exp);
+		// The ascii protocol doesn't support defaults, so I added them
+		// manually here.
 		if(rv == -1) {
 			Future<Boolean> f=asyncStore(StoreType.add,
 					key, 0,	String.valueOf(def));
@@ -588,7 +589,7 @@ public final class MemcachedClient extends SpyThread {
 				if(f.get()) {
 					rv=def;
 				} else {
-					rv=mutate(t, key, by);
+					rv=mutate(t, key, by, 0, 0);
 					assert rv != -1 : "Failed to mutate or init value";
 				}
 			} catch (InterruptedException e) {
@@ -608,9 +609,8 @@ public final class MemcachedClient extends SpyThread {
 	 * @param def the default value (if the counter does not exist)
 	 * @return the new value, or -1 if we were unable to increment or add
 	 */
-	public long incr(String key, int by, long def) {
-		return mutateWithDefault(Mutator.incr,
-				key, by, def);
+	public long incr(String key, int by, int def) {
+		return mutateWithDefault(Mutator.incr, key, by, def, 0);
 	}
 
 	/**
@@ -622,7 +622,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @return the new value, or -1 if we were unable to decrement or add
 	 */
 	public long decr(String key, int by, long def) {
-		return mutateWithDefault(Mutator.decr, key, by, def);
+		return mutateWithDefault(Mutator.decr, key, by, def, 0);
 	}
 
 	/**
