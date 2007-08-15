@@ -236,6 +236,7 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertTrue(oneStat.containsKey("total_items"));
 	}
 
+	*/
 	public void testNonexistentMutate() throws Exception {
 		assertEquals(-1, client.incr("nonexistent", 1));
 		assertEquals(-1, client.decr("nonexistent", 1));
@@ -255,7 +256,6 @@ public class BinaryClientTest extends ClientBaseCase {
 			}});
 		assertEquals(10, num);
 	}
-*/
 
 	public void testImmediateDelete() throws Exception {
 		assertNull(client.get("test1"));

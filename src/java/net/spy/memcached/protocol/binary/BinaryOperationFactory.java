@@ -39,9 +39,10 @@ public class BinaryOperationFactory implements OperationFactory {
 	}
 
 	public MutatatorOperation mutate(Mutator m, String key, int by,
-			OperationCallback cb) {
+			long def, int exp, OperationCallback cb) {
 		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
+		return new MutatorOperationImpl(m, key, by, def, exp, cb);
+
 	}
 
 	public StatsOperation stats(String arg,
