@@ -99,8 +99,13 @@ try {
 		<section name="Where to Get">
 			<h3>Binary Distributions</h3>
 			<p>
-				My <a href="http://bleu.west.spy.net/~dustin/repo/">maven 1
-				repository</a> has the latest binary version here:
+				You can fetch one of the <a href="downloads.html">official
+				releases</a>, or rummage through my
+				<a href="http://bleu.west.spy.net/~dustin/repo/">maven 1
+				repository</a>.
+			</p>
+			<p>
+				If you use maven 1, you can just add my repo to your list:
 				<blockquote>
 					http://bleu.west.spy.net/~dustin/repo/
 				</blockquote>
@@ -108,7 +113,7 @@ try {
 			<h3>Source Code</h3>
 			<p>
 				The source can be downloaded or checked out from my
-				<a href="http://rubik.west.spy.net/hg/memcached/">mercurial
+				<a href="http://hg.west.spy.net/hg/memcached/">mercurial
 				repository</a>.
 			</p>
 			<h3>Dependencies</h3>
