@@ -1,24 +1,28 @@
-package net.spy.memcached.ops;
+package net.spy.memcached.protocol.ascii;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.OperationStatus;
+
 /**
  * Optimized Get operation for folding a bunch of gets together.
  */
-public class OptimizedGet extends GetOperation
+final class OptimizedGetImpl extends GetOperationImpl
 	implements GetOperation.Callback {
 
-	private final Map<String, Collection<Callback>> callbacks=
-		new HashMap<String, Collection<Callback>>();
-	private final Collection<Callback> allCallbacks=new ArrayList<Callback>();
+	private final Map<String, Collection<GetOperation.Callback>> callbacks=
+		new HashMap<String, Collection<GetOperation.Callback>>();
+	private final Collection<GetOperation.Callback> allCallbacks=
+		new ArrayList<GetOperation.Callback>();
 
 	/**
 	 * Construct an optimized get starting with the given get operation.
 	 */
-	public OptimizedGet(GetOperation firstGet) {
+	public OptimizedGetImpl(GetOperation firstGet) {
 		super();
 		setKeys(callbacks.keySet());
 		setCallback(this);
@@ -29,13 +33,13 @@ public class OptimizedGet extends GetOperation
 	 * Add a new GetOperation to get.
 	 */
 	public void addOperation(GetOperation o) {
-		Callback c=new GetCallbackWrapper(o.getKeys().size(),
-				(Callback)o.getCallback());
+		GetOperation.Callback c=new GetCallbackWrapper(o.getKeys().size(),
+				(GetOperation.Callback)o.getCallback());
 		allCallbacks.add(c);
 		for(String s : o.getKeys()) {
-			Collection<Callback> cbs=callbacks.get(s);
+			Collection<GetOperation.Callback> cbs=callbacks.get(s);
 			if(cbs == null) {
-				cbs=new ArrayList<Callback>();
+				cbs=new ArrayList<GetOperation.Callback>();
 				callbacks.put(s, cbs);
 			}
 			cbs.add(c);
@@ -55,35 +59,38 @@ public class OptimizedGet extends GetOperation
 	//
 
 	public void gotData(String key, int flags, byte[] data) {
-		Collection<Callback> cbs=callbacks.get(key);
+		Collection<GetOperation.Callback> cbs=callbacks.get(key);
 		assert cbs != null : "No callbacks for key " + key;
-		for(Callback c : cbs) {
+		for(GetOperation.Callback c : cbs) {
 			c.gotData(key, flags, data);
 		}
 	}
 
-	public void receivedStatus(String line) {
-		for(Callback c : allCallbacks) {
-			c.receivedStatus(line);
+	public void receivedStatus(OperationStatus status) {
+		for(GetOperation.Callback c : allCallbacks) {
+			c.receivedStatus(status);
 		}
 	}
 
 
 	public void complete() {
-		for(Callback c : allCallbacks) {
+		for(GetOperation.Callback c : allCallbacks) {
 			c.complete();
 		}
 	}
 
 	// Wrap a get callback to allow an operation that got rolled up into a
 	// multi-operation to return before the entire get operation completes.
-	private static class GetCallbackWrapper implements Callback {
+	private static class GetCallbackWrapper implements GetOperation.Callback {
+
+		private static final OperationStatus END=
+			new OperationStatus(true, "END");
 
 		private boolean completed=false;
 		private int remainingKeys=0;
-		private Callback cb=null;
+		private GetOperation.Callback cb=null;
 
-		public GetCallbackWrapper(int k, Callback c) {
+		public GetCallbackWrapper(int k, GetOperation.Callback c) {
 			super();
 			remainingKeys=k;
 			cb=c;
@@ -94,13 +101,13 @@ public class OptimizedGet extends GetOperation
 			cb.gotData(key, flags, data);
 			if(--remainingKeys == 0) {
 				// Fake a status line
-				receivedStatus("END");
+				receivedStatus(END);
 			}
 		}
 
-		public void receivedStatus(String line) {
+		public void receivedStatus(OperationStatus status) {
 			if(!completed) {
-				cb.receivedStatus(line);
+				cb.receivedStatus(status);
 			}
 		}
 
@@ -109,6 +116,6 @@ public class OptimizedGet extends GetOperation
 			cb.complete();
 			completed=true;
 		}
-		
+
 	}
 }

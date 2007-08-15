@@ -7,14 +7,14 @@ import java.util.Arrays;
 /**
  * Cached data with its attributes.
  */
-public class CachedData {
+public final class CachedData {
 
 	private final int flags;
 	private final byte[] data;
 
 	/**
 	 * Get a CachedData instance for the given flags and byte array.
-	 * 
+	 *
 	 * @param f the flags
 	 * @param d the data
 	 */

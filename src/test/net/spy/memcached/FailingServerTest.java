@@ -14,7 +14,7 @@ public class FailingServerTest extends ClientBaseCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		serverList="127.0.0.1:11211 127.0.0.1:11212";
+		serverList="127.0.0.1:11211 127.0.0.1:11311";
 		super.setUp();
 	}
 

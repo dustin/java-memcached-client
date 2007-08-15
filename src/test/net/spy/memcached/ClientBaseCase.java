@@ -6,7 +6,7 @@ public abstract class ClientBaseCase extends TestCase {
 
 	protected MemcachedClient client = null;
 
-	private void initClient() throws Exception {
+	protected void initClient() throws Exception {
 		initClient(new DefaultConnectionFactory());
 	}
 

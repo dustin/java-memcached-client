@@ -1,35 +1,32 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
 
-package net.spy.memcached.ops;
+package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
+
+import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.Mutator;
+import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
 
 /**
  * Operation for mutating integers inside of memcached.
  */
-public class MutatorOperation extends Operation {
+final class MutatorOperationImpl extends OperationImpl
+	implements MutatatorOperation {
 
 	public static final int OVERHEAD=32;
 
-	/**
-	 * Type of mutation to perform.
-	 */
-	public enum Mutator {
-		/**
-		 * Increment a value on the memcached server.
-		 */
-		incr,
-		/**
-		 * Decrement a value on the memcached server.
-		 */
-		decr
-	}
+	private static final OperationStatus NOT_FOUND=
+		new OperationStatus(false, "NOT_FOUND");
 
 	private final Mutator mutator;
 	private final String key;
 	private final int amount;
 
-	public MutatorOperation(Mutator m, String k, int amt, OperationCallback c) {
+	public MutatorOperationImpl(Mutator m, String k, int amt,
+			OperationCallback c) {
 		super(c);
 		mutator=m;
 		key=k;
@@ -39,12 +36,14 @@ public class MutatorOperation extends Operation {
 	@Override
 	public void handleLine(String line) {
 		getLogger().debug("Result:  %s", line);
-		String found=null;
-		if(!line.equals("NOT_FOUND")) {
-			found=line;
+		OperationStatus found=null;
+		if(line.equals("NOT_FOUND")) {
+			found=NOT_FOUND;
+		} else {
+			found=new OperationStatus(true, line);
 		}
 		getCallback().receivedStatus(found);
-		transitionState(State.COMPLETE);
+		transitionState(OperationState.COMPLETE);
 	}
 
 	@Override
@@ -59,7 +58,7 @@ public class MutatorOperation extends Operation {
 	@Override
 	protected void wasCancelled() {
 		// XXX:  Replace this comment with why the hell I did this.
-		getCallback().receivedStatus("cancelled");
+		getCallback().receivedStatus(CANCELLED);
 	}
 
 }

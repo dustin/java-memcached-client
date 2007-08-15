@@ -1,38 +1,49 @@
 package net.spy.memcached;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
-import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.OperationErrorType;
-import net.spy.memcached.ops.OperationException;
-import net.spy.memcached.ops.OperationStatus;
-import net.spy.memcached.protocol.ascii.ExtensibleOperationImpl;
+import net.spy.memcached.protocol.binary.BinaryMemcachedNodeImpl;
+import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.test.SyncThread;
 
 /**
- * This test assumes a client is running on localhost:11211.
+ * This test assumes a binary server is running on localhost:11212.
  */
-public class ClientTest extends ClientBaseCase {
+public class BinaryClientTest extends ClientBaseCase {
 
-	public void testAssertions() {
-		try {
-			assert false;
-			fail("Assertions are not enabled.");
-		} catch(AssertionError e) {
-			// ok
-		}
+	@Override
+	protected void initClient() throws Exception {
+		initClient(new DefaultConnectionFactory(){
+			@Override
+			public MemcachedNode createMemcachedNode(SocketAddress sa,
+					SocketChannel c, int bufSize) {
+				return new BinaryMemcachedNodeImpl(sa, c, bufSize,
+					createOperationQueue(),
+					createOperationQueue(),
+					createOperationQueue());
+			}
+			@Override
+			public OperationFactory getOperationFactory() {
+				return new BinaryOperationFactory();
+			}});
+	}
+
+	@Override
+	protected void initClient(ConnectionFactory cf) throws Exception {
+		client=new MemcachedClient(cf,
+			AddrUtil.getAddresses("127.0.0.1:11212"));
+	}
+
+	public void testNoop() {
+		// This runs through the startup/flush cycle
 	}
 
 	public void testSimpleGet() throws Exception {
@@ -213,10 +224,11 @@ public class ClientTest extends ClientBaseCase {
 		Map<SocketAddress, String> vs=client.getVersions();
 		assertEquals(1, vs.size());
 		Map.Entry<SocketAddress, String> me=vs.entrySet().iterator().next();
-		assertEquals("/127.0.0.1:11211", me.getKey().toString());
+		assertEquals("/127.0.0.1:11212", me.getKey().toString());
 		assertNotNull(me.getValue());
 	}
 
+	/*
 	public void testGetStats() throws Exception {
 		Map<SocketAddress, Map<String, String>> stats = client.getStats();
 		assertEquals(1, stats.size());
@@ -243,6 +255,7 @@ public class ClientTest extends ClientBaseCase {
 			}});
 		assertEquals(10, num);
 	}
+*/
 
 	public void testImmediateDelete() throws Exception {
 		assertNull(client.get("test1"));
@@ -263,6 +276,7 @@ public class ClientTest extends ClientBaseCase {
 			client.delete("test1").get());
 	}
 
+	/*
 	public void testDelayedDelete() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
@@ -291,6 +305,7 @@ public class ClientTest extends ClientBaseCase {
 		assertNull(client.get("test1"));
 		assertNull(client.get("test2"));
 	}
+	*/
 
 	public void testFlush() throws Exception {
 		assertNull(client.get("test1"));
@@ -303,6 +318,7 @@ public class ClientTest extends ClientBaseCase {
 		assertNull(client.get("test2"));
 	}
 
+	/*
 	public void testGetKeys() throws Exception {
 		client.set("test1", 5, "test1value");
 		client.set("test2", 5, "test2value");
@@ -311,7 +327,9 @@ public class ClientTest extends ClientBaseCase {
 		assertTrue(ks.contains("test1"));
 		assertTrue(ks.contains("test2"));
 	}
+	*/
 
+	/*
 	public void testGracefulShutdown() throws Exception {
 		for(int i=0; i<1000; i++) {
 			client.set("t" + i, 10, i);
@@ -331,7 +349,9 @@ public class ClientTest extends ClientBaseCase {
 			assertEquals(i, m.get("t" + i));
 		}
 	}
+	*/
 
+	/*
 	public void testBadOperation() throws Exception {
 		client.addOp("x", new ExtensibleOperationImpl(new OperationCallback(){
 			public void complete() {
@@ -393,5 +413,5 @@ public class ClientTest extends ClientBaseCase {
 		// Get a new client
 		client=new MemcachedClient(new InetSocketAddress("127.0.0.1", 11211));
 	}
-
+	 */
 }

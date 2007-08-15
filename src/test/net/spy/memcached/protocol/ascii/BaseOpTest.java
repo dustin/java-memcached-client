@@ -1,6 +1,6 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
 
-package net.spy.memcached.ops;
+package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -24,8 +24,8 @@ public class BaseOpTest extends BaseMockCase {
 	}
 
 	public void testDataReadType() throws Exception {
-		SimpleOp op=new SimpleOp(Operation.ReadType.DATA);
-		assertSame(Operation.ReadType.DATA, op.getReadType());
+		SimpleOp op=new SimpleOp(OperationReadType.DATA);
+		assertSame(OperationReadType.DATA, op.getReadType());
 		// Make sure lines aren't handled
 		try {
 			op.handleLine("x");
@@ -38,8 +38,8 @@ public class BaseOpTest extends BaseMockCase {
 	}
 
 	public void testLineReadType() throws Exception {
-		SimpleOp op=new SimpleOp(Operation.ReadType.LINE);
-		assertSame(Operation.ReadType.LINE, op.getReadType());
+		SimpleOp op=new SimpleOp(OperationReadType.LINE);
+		assertSame(OperationReadType.LINE, op.getReadType());
 		// Make sure lines aren't handled
 		try {
 			op.handleRead(ByteBuffer.allocate(3));
@@ -53,7 +53,7 @@ public class BaseOpTest extends BaseMockCase {
 	public void testLineParser() throws Exception {
 		String input="This is a multiline string\r\nhere is line two\r\n";
 		ByteBuffer b=ByteBuffer.wrap(input.getBytes());
-		SimpleOp op=new SimpleOp(Operation.ReadType.LINE);
+		SimpleOp op=new SimpleOp(OperationReadType.LINE);
 		op.linesToRead=2;
 		op.readFromBuffer(b);
 		assertEquals("This is a multiline string", op.getLines().get(0));
@@ -70,7 +70,7 @@ public class BaseOpTest extends BaseMockCase {
 		String input1="this is a ";
 		String input2="test\r\n";
 		ByteBuffer b=ByteBuffer.allocate(20);
-		SimpleOp op=new SimpleOp(Operation.ReadType.LINE);
+		SimpleOp op=new SimpleOp(OperationReadType.LINE);
 
 		b.put(input1.getBytes());
 		b.flip();
@@ -83,14 +83,14 @@ public class BaseOpTest extends BaseMockCase {
 		assertEquals("this is a test", op.getCurrentLine());
 	}
 
-	private static class SimpleOp extends Operation {
+	private static class SimpleOp extends OperationImpl {
 
-		private LinkedList<String> lines=new LinkedList<String>();
+		private final LinkedList<String> lines=new LinkedList<String>();
 		private byte[] currentBytes=null;
 		private int bytesToRead=0;
 		public int linesToRead=1;
 
-		public SimpleOp(ReadType t) {
+		public SimpleOp(OperationReadType t) {
 			setReadType(t);
 		}
 
@@ -112,16 +112,16 @@ public class BaseOpTest extends BaseMockCase {
 
 		@Override
 		public void handleLine(String line) {
-			assert getReadType() == Operation.ReadType.LINE;
+			assert getReadType() == OperationReadType.LINE;
 			lines.add(line);
 			if(--linesToRead == 0) {
-				setReadType(Operation.ReadType.DATA);
+				setReadType(OperationReadType.DATA);
 			}
 		}
 
 		@Override
 		public void handleRead(ByteBuffer data) {
-			assert getReadType() == Operation.ReadType.DATA;
+			assert getReadType() == OperationReadType.DATA;
 			assert bytesToRead > 0;
 			if(bytesToRead > 0) {
 				currentBytes=new byte[bytesToRead];
@@ -134,10 +134,5 @@ public class BaseOpTest extends BaseMockCase {
 			setBuffer(ByteBuffer.allocate(0));
 		}
 
-		@Override
-		protected void wasCancelled() {
-			// nothing
-		}
-		
 	}
 }
