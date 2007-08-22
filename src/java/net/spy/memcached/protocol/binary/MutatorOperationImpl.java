@@ -47,9 +47,8 @@ public class MutatorOperationImpl extends OperationImpl implements
 
 	@Override
 	protected void decodePayload(byte[] pl) {
-		assert pl.length == 8 : "expected 8 bytes, got " + pl.length;
 		getCallback().receivedStatus(new OperationStatus(true,
-				String.valueOf(decodeLong(pl, 0))));
+			new String(pl)));
 	}
 
 }
