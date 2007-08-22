@@ -13,7 +13,7 @@ import net.spy.memcached.ops.OperationState;
 
 class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 
-	private static final int CMD_GETQ=9;
+	private static final int CMD_GETQ=8;
 
 	private final Map<Integer, String> keys=new HashMap<Integer, String>();
 

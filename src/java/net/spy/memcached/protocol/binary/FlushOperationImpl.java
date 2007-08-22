@@ -5,7 +5,7 @@ import net.spy.memcached.ops.OperationCallback;
 
 class FlushOperationImpl extends OperationImpl implements FlushOperation {
 
-	private static final int CMD=8;
+	private static final int CMD=7;
 
 	public FlushOperationImpl(OperationCallback cb) {
 		super(CMD, generateOpaque(), cb);
