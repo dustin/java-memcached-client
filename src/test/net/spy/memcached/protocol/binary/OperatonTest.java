@@ -30,4 +30,9 @@ public class OperatonTest extends TestCase {
 		assertEquals(129L * 256L * 256L * 256L,
 				decodeUnsignedInt(new byte[]{(byte)0x81, 0, 0, 0}, 0));
 	}
+
+	public void testOperationStatusString() {
+		String s=String.valueOf(OperationImpl.STATUS_OK);
+		assertEquals("{OperationStatus success=true:  OK}", s);
+	}
 }
