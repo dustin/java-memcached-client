@@ -95,6 +95,20 @@ try {
     // Do other timeout related stuff
 }
 </pre>
+		<h2>Binary Protocol Support</h2>
+		<p>
+			As of release 2.0, the new binary wire protocol for memcached is
+			supported.  Below is an example of how you might connect to a server
+			using the binary protocol:
+		</p>
+<pre>
+// Get a memcached client connected to several servers with the binary protocol
+MemcachedClient c=new MemcachedClient(
+	new BinaryConnectionFactory(),
+	AddrUtil.getAddresses("server1:11212 server2:11212"));
+
+// Proceed to do cool stuff with memcached using the binary protocol.
+</pre>
 		</section>
 		<section name="Where to Get">
 			<h3>Binary Distributions</h3>
