@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import net.spy.test.SyncThread;
 
@@ -314,7 +315,6 @@ public class BinaryClientTest extends ClientBaseCase {
 	}
 	*/
 
-	/*
 	public void testGracefulShutdown() throws Exception {
 		for(int i=0; i<1000; i++) {
 			client.set("t" + i, 10, i);
@@ -323,7 +323,7 @@ public class BinaryClientTest extends ClientBaseCase {
 			client.shutdown(5, TimeUnit.SECONDS));
 
 		// Get a new client
-		client=new MemcachedClient(new InetSocketAddress("127.0.0.1", 11211));
+		initClient();
 		Collection<String> keys=new ArrayList<String>();
 		for(int i=0; i<1000; i++) {
 			keys.add("t" + i);
@@ -334,7 +334,6 @@ public class BinaryClientTest extends ClientBaseCase {
 			assertEquals(i, m.get("t" + i));
 		}
 	}
-	*/
 
 	/*
 	public void testBadOperation() throws Exception {
@@ -380,6 +379,7 @@ public class BinaryClientTest extends ClientBaseCase {
 		client.set("k", 5, "Blah");
 		assertEquals("Blah", client.get("k"));
 	}
+	*/
 
 	public void testGracefulShutdownTooSlow() throws Exception {
 		for(int i=0; i<10000; i++) {
@@ -396,7 +396,6 @@ public class BinaryClientTest extends ClientBaseCase {
 		}
 
 		// Get a new client
-		client=new MemcachedClient(new InetSocketAddress("127.0.0.1", 11211));
+		initClient();
 	}
-	 */
 }
