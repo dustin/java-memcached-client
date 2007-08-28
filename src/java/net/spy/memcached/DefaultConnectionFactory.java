@@ -35,14 +35,6 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public static final int DEFAULT_READ_BUFFER_SIZE=16384;
 
-	public MemcachedNode createMemcachedNode(SocketAddress sa,
-			SocketChannel c, int bufSize) {
-		return new AsciiMemcachedNodeImpl(sa, c, bufSize,
-				createOperationQueue(),
-				createOperationQueue(),
-				createOperationQueue());
-	}
-
 	private final int opQueueLen;
 	private final int readBufSize;
 	private final HashAlgorithm hashAlg;
@@ -74,6 +66,14 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public DefaultConnectionFactory() {
 		this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE);
+	}
+
+	public MemcachedNode createMemcachedNode(SocketAddress sa,
+			SocketChannel c, int bufSize) {
+		return new AsciiMemcachedNodeImpl(sa, c, bufSize,
+				createOperationQueue(),
+				createOperationQueue(),
+				createOperationQueue());
 	}
 
 	/* (non-Javadoc)

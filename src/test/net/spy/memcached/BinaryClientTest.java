@@ -1,7 +1,6 @@
 package net.spy.memcached;
 
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,8 +9,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import net.spy.memcached.protocol.binary.BinaryMemcachedNodeImpl;
-import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.test.SyncThread;
 
 /**
@@ -21,19 +18,7 @@ public class BinaryClientTest extends ClientBaseCase {
 
 	@Override
 	protected void initClient() throws Exception {
-		initClient(new DefaultConnectionFactory(){
-			@Override
-			public MemcachedNode createMemcachedNode(SocketAddress sa,
-					SocketChannel c, int bufSize) {
-				return new BinaryMemcachedNodeImpl(sa, c, bufSize,
-					createOperationQueue(),
-					createOperationQueue(),
-					createOperationQueue());
-			}
-			@Override
-			public OperationFactory getOperationFactory() {
-				return new BinaryOperationFactory();
-			}});
+		initClient(new BinaryConnectionFactory());
 	}
 
 	@Override
