@@ -9,11 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -679,35 +677,6 @@ public final class MemcachedClient extends SpyThread {
 	 */
 	public Future<Boolean> flush() {
 		return flush(-1);
-	}
-
-	/**
-	 * Find keys matching a given prefix.
-	 * This method uses undocumented mechanisms in the memcached wire protocol,
-	 * so it may just altogether stop working at some point.
-	 */
-	public Collection<String> findKeys(String prefix) {
-		Map<SocketAddress, Map<String, String>> stats = getStats("items");
-		Collection<String> chunks=new HashSet<String>();
-		for(Map<String, String> m : stats.values()) {
-			for(String stuff : m.keySet()) {
-				String parts[]=stuff.split(":");
-				assert parts.length == 3
-					: "Incorrect number of parts in " + stuff;
-				chunks.add(parts[1]);
-			}
-		}
-
-		// Now that we know what chunks we need, ask for the keys
-		Collection<String> rv=new TreeSet<String>();
-		for(String chunk : chunks) {
-			for(Map<String, String> m
-					: getStats("cachedump " + chunk + " 10000000").values()) {
-				rv.addAll(m.keySet());
-			}
-		}
-
-		return rv;
 	}
 
 	/**

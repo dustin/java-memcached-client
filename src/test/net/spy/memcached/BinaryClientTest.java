@@ -304,17 +304,6 @@ public class BinaryClientTest extends ClientBaseCase {
 		assertNull(client.get("test2"));
 	}
 
-	/*
-	public void testGetKeys() throws Exception {
-		client.set("test1", 5, "test1value");
-		client.set("test2", 5, "test2value");
-		Collection<String> ks=client.findKeys("");
-		assertEquals(2, ks.size());
-		assertTrue(ks.contains("test1"));
-		assertTrue(ks.contains("test2"));
-	}
-	*/
-
 	public void testGracefulShutdown() throws Exception {
 		for(int i=0; i<1000; i++) {
 			client.set("t" + i, 10, i);
