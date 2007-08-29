@@ -20,7 +20,7 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	private static final OperationStatus END=
 		new OperationStatus(true, "END");
 
-	private Collection<String> keys=null;
+	private final Collection<String> keys;
 	private String currentKey=null;
 	private int currentFlags=0;
 	private byte[] data=null;
@@ -29,13 +29,6 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	private byte lookingFor='\0';
 
 	private GetOperation.Callback cb=null;
-
-	/**
-	 * Construct an empty get operation.  Used for subclassing.
-	 */
-	protected GetOperationImpl() {
-		super();
-	}
 
 	public GetOperationImpl(String key, GetOperation.Callback c) {
 		super(c);
@@ -50,17 +43,9 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	}
 
 	/**
-	 * Add some additional keys to fetch.
-	 */
-	protected final void setKeys(Collection<String> to) {
-		keys=to;
-	}
-
-	/**
 	 * Get the keys this GetOperation is looking for.
 	 */
 	public final Collection<String> getKeys() {
-		assert keys != null : "Null keys in " + this;
 		return keys;
 	}
 

@@ -7,8 +7,8 @@ import java.util.concurrent.BlockingQueue;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.protocol.ProxyCallback;
 import net.spy.memcached.protocol.TCPMemcachedNodeImpl;
-import net.spy.memcached.protocol.binary.OptimizedGetImpl.ProxyCallback;
 
 /**
  * Implementation of MemcachedNode for speakers of the binary protocol.

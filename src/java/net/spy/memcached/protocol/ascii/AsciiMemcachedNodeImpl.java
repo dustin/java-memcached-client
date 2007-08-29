@@ -7,6 +7,7 @@ import java.util.concurrent.BlockingQueue;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.protocol.ProxyCallback;
 import net.spy.memcached.protocol.TCPMemcachedNodeImpl;
 
 /**
@@ -40,9 +41,12 @@ public final class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 				// Initialize the new mega get
 				getOp.initialize();
 				assert getOp.getState() == OperationState.WRITING;
-				getLogger().debug(
-					"Set up %s with %s keys and %s callbacks",
-					this, og.numKeys(), og.numCallbacks());
+				if(getLogger().isDebugEnabled()) {
+					ProxyCallback pcb=(ProxyCallback) og.getCallback();
+					getLogger().debug(
+							"Set up %s with %s keys and %s callbacks",
+							this, pcb.numKeys(), pcb.numCallbacks());
+				}
 			}
 		}
 	}
