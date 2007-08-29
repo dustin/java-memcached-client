@@ -7,6 +7,7 @@ import java.util.Map;
 
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.protocol.GetCallbackWrapper;
 
 /**
  * Optimized Get operation for folding a bunch of gets together.
@@ -77,45 +78,5 @@ final class OptimizedGetImpl extends GetOperationImpl
 		for(GetOperation.Callback c : allCallbacks) {
 			c.complete();
 		}
-	}
-
-	// Wrap a get callback to allow an operation that got rolled up into a
-	// multi-operation to return before the entire get operation completes.
-	private static class GetCallbackWrapper implements GetOperation.Callback {
-
-		private static final OperationStatus END=
-			new OperationStatus(true, "END");
-
-		private boolean completed=false;
-		private int remainingKeys=0;
-		private GetOperation.Callback cb=null;
-
-		public GetCallbackWrapper(int k, GetOperation.Callback c) {
-			super();
-			remainingKeys=k;
-			cb=c;
-		}
-
-		public void gotData(String key, int flags, byte[] data) {
-			assert !completed : "Got data for a completed wrapped op";
-			cb.gotData(key, flags, data);
-			if(--remainingKeys == 0) {
-				// Fake a status line
-				receivedStatus(END);
-			}
-		}
-
-		public void receivedStatus(OperationStatus status) {
-			if(!completed) {
-				cb.receivedStatus(status);
-			}
-		}
-
-		public void complete() {
-			assert !completed;
-			cb.complete();
-			completed=true;
-		}
-
 	}
 }

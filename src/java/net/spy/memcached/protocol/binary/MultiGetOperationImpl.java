@@ -16,15 +16,28 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 	private static final int CMD_GETQ=8;
 
 	private final Map<Integer, String> keys=new HashMap<Integer, String>();
+	private final Map<String, Integer> rkeys=new HashMap<String, Integer>();
 
-	private final int terminalOpaque;
+	private final int terminalOpaque=generateOpaque();
 
 	public MultiGetOperationImpl(Collection<String> k, OperationCallback cb) {
 		super(-1, -1, cb);
-		terminalOpaque=generateOpaque();
 		for(String s : new HashSet<String>(k)) {
-			keys.put(generateOpaque(), s);
+			addKey(s);
 		}
+	}
+
+	/**
+	 * Add a key (and return its new opaque value).
+	 */
+	protected int addKey(String k) {
+		Integer rv=rkeys.get(k);
+		if(rv == null) {
+			rv=generateOpaque();
+			keys.put(rv, k);
+			rkeys.put(k, rv);
+		}
+		return rv;
 	}
 
 	@Override
