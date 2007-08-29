@@ -838,11 +838,11 @@ public final class MemcachedClient extends SpyThread {
 
 		public T get() throws InterruptedException, ExecutionException {
 			latch.await();
-			if(op != null && op.isCancelled()) {
-				throw new ExecutionException(new RuntimeException("Cancelled"));
-			}
 			if(op != null && op.hasErrored()) {
 				throw new ExecutionException(op.getException());
+			}
+			if(op != null && op.isCancelled()) {
+				throw new ExecutionException(new RuntimeException("Cancelled"));
 			}
 			return objRef.get();
 		}
