@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import net.spy.memcached.ops.GetOperation;
-import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 
@@ -47,12 +46,6 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	 */
 	public final Collection<String> getKeys() {
 		return keys;
-	}
-
-	@Override
-	protected final void setCallback(OperationCallback to) {
-		super.setCallback(to);
-		cb=(GetOperation.Callback)to;
 	}
 
 	@Override
