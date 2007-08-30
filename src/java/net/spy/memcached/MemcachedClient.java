@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -658,18 +659,48 @@ public final class MemcachedClient extends SpyThread {
 	public Future<Boolean> flush(final int delay) {
 		final AtomicReference<Boolean> flushResult=
 			new AtomicReference<Boolean>(null);
+		final ConcurrentLinkedQueue<Operation> ops=
+			new ConcurrentLinkedQueue<Operation>();
 		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
-				return opFact.flush(delay, new OperationCallback(){
+				Operation op=opFact.flush(delay, new OperationCallback(){
 					public void receivedStatus(OperationStatus s) {
 						flushResult.set(s.isSuccess());
 					}
 					public void complete() {
 						latch.countDown();
 					}});
+				ops.add(op);
+				return op;
 			}});
-		return new OperationFuture<Boolean>(blatch, flushResult);
+		return new OperationFuture<Boolean>(blatch, flushResult) {
+			@Override
+			public boolean cancel(boolean ign) {
+				boolean rv=false;
+				for(Operation op : ops) {
+					op.cancel();
+					rv |= op.getState() == OperationState.WRITING;
+				}
+				return rv;
+			}
+			@Override
+			public boolean isCancelled() {
+				boolean rv=false;
+				for(Operation op : ops) {
+					rv |= op.isCancelled();
+				}
+				return rv;
+			}
+			@Override
+			public boolean isDone() {
+				boolean rv=true;
+				for(Operation op : ops) {
+					rv &= op.getState() == OperationState.COMPLETE;
+				}
+				return rv;
+			}
+		};
 	}
 
 	/**
@@ -841,7 +872,7 @@ public final class MemcachedClient extends SpyThread {
 			if(op != null && op.hasErrored()) {
 				throw new ExecutionException(op.getException());
 			}
-			if(op != null && op.isCancelled()) {
+			if(isCancelled()) {
 				throw new ExecutionException(new RuntimeException("Cancelled"));
 			}
 			return objRef.get();
