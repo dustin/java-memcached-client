@@ -15,7 +15,8 @@ public abstract class BaseOperationImpl extends SpyObject {
 	/**
 	 * Status object for cancelled operations.
 	 */
-	protected static final OperationStatus CANCELLED = new OperationStatus(false, "cancelled");
+	protected static final OperationStatus CANCELLED =
+		new OperationStatus(false, "cancelled");
 	private OperationState state = OperationState.WRITING;
 	private ByteBuffer cmd = null;
 	private boolean cancelled = false;

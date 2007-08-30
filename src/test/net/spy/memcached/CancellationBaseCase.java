@@ -23,6 +23,8 @@ public abstract class CancellationBaseCase extends ClientBaseCase {
 
 	protected void tryCancellation(Future<?> f) throws Exception {
 		f.cancel(true);
+		assertTrue(f.isCancelled());
+		assertTrue(f.isDone());
 		try {
 			Object o=f.get();
 			fail("Expected cancellation, got " + o);

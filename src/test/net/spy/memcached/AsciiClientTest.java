@@ -3,12 +3,8 @@ package net.spy.memcached;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.ExecutionException;
 
 import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.OperationErrorType;
-import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.ascii.ExtensibleOperationImpl;
 
@@ -72,29 +68,6 @@ public class AsciiClientTest extends ProtocolBaseCase {
 			public void initialize() {
 				setBuffer(ByteBuffer.wrap("garbage\r\n".getBytes()));
 			}});
-	}
-
-	public void testStupidlyLargeSet() throws Exception {
-		Random r=new Random();
-		SerializingTranscoder st=new SerializingTranscoder();
-		st.setCompressionThreshold(Integer.MAX_VALUE);
-		client.setTranscoder(st);
-
-		byte data[]=new byte[10*1024*1024];
-		r.nextBytes(data);
-
-		try {
-			client.set("bigassthing", 60, data).get();
-			fail("Didn't fail setting bigass thing.");
-		} catch(ExecutionException e) {
-			e.printStackTrace();
-			OperationException oe=(OperationException)e.getCause();
-			assertSame(OperationErrorType.SERVER, oe.getType());
-		}
-
-		// But I should still be able to do something.
-		client.set("k", 5, "Blah");
-		assertEquals("Blah", client.get("k"));
 	}
 
 	@Override

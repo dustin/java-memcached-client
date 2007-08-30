@@ -245,8 +245,9 @@ abstract class OperationImpl extends BaseOperationImpl {
 	static int generateOpaque() {
 		int rv=seqNumber.incrementAndGet();
 		while(rv < 0) {
-			seqNumber.compareAndSet(rv, 0);
-			rv=seqNumber.incrementAndGet();
+			if(seqNumber.compareAndSet(rv, 0)) {
+				rv=seqNumber.incrementAndGet();
+			}
 		}
 		return rv;
 	}

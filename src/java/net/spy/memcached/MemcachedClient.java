@@ -698,7 +698,7 @@ public final class MemcachedClient extends SpyThread {
 				for(Operation op : ops) {
 					rv &= op.getState() == OperationState.COMPLETE;
 				}
-				return rv;
+				return rv || isCancelled();
 			}
 		};
 	}
@@ -869,6 +869,7 @@ public final class MemcachedClient extends SpyThread {
 
 		public T get() throws InterruptedException, ExecutionException {
 			latch.await();
+			assert isDone() : "Latch released, but operation wasn't done.";
 			if(op != null && op.hasErrored()) {
 				throw new ExecutionException(op.getException());
 			}
@@ -899,7 +900,8 @@ public final class MemcachedClient extends SpyThread {
 
 		public boolean isDone() {
 			assert op != null : "No operation";
-			return op.getState() == OperationState.COMPLETE;
+			return latch.getCount() == 0 ||
+				op.isCancelled() || op.getState() == OperationState.COMPLETE;
 		}
 
 	}

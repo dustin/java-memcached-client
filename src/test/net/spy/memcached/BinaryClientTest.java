@@ -21,4 +21,12 @@ public class BinaryClientTest extends ProtocolBaseCase {
 	protected String getExpectedVersionSource() {
 		return "/127.0.0.1:11212";
 	}
+
+	public void testStats() {
+		try {
+			client.getStats();
+		} catch(UnsupportedOperationException e) {
+			// We don't have stats for the binary protocol yet.
+		}
+	}
 }

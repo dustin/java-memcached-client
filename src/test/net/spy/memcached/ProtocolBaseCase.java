@@ -6,10 +6,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import net.spy.memcached.ops.OperationErrorType;
+import net.spy.memcached.ops.OperationException;
 import net.spy.test.SyncThread;
 
 
@@ -112,6 +116,24 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 				}
 				for(int i=0; i<10; i++) {
 					assertEquals("value" + i, client.get("test" + i));
+				}
+				return Boolean.TRUE;
+			}});
+		assertEquals(1, cnt);
+	}
+
+	public void testParallelSetMultiGet() throws Throwable {
+		int cnt=SyncThread.getDistinctResultCount(10, new Callable<Boolean>(){
+			public Boolean call() throws Exception {
+				for(int i=0; i<10; i++) {
+					client.set("test" + i, 5, "value" + i);
+					assertEquals("value" + i, client.get("test" + i));
+				}
+				Map<String, Object> m=client.getBulk("test0", "test1", "test2",
+					"test3", "test4", "test5", "test6", "test7", "test8",
+					"test9", "test10"); // Yes, I intentionally ran over.
+				for(int i=0; i<10; i++) {
+					assertEquals("value" + i, m.get("test" + i));
 				}
 				return Boolean.TRUE;
 			}});
@@ -300,5 +322,77 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		initClient();
 	}
 
+	public void testStupidlyLargeSet() throws Exception {
+		Random r=new Random();
+		SerializingTranscoder st=new SerializingTranscoder();
+		st.setCompressionThreshold(Integer.MAX_VALUE);
+		client.setTranscoder(st);
 
+		byte data[]=new byte[10*1024*1024];
+		r.nextBytes(data);
+
+		try {
+			client.set("bigassthing", 60, data).get();
+			fail("Didn't fail setting bigass thing.");
+		} catch(ExecutionException e) {
+			e.printStackTrace();
+			OperationException oe=(OperationException)e.getCause();
+			assertSame(OperationErrorType.SERVER, oe.getType());
+		}
+
+		// But I should still be able to do something.
+		client.set("k", 5, "Blah");
+		assertEquals("Blah", client.get("k"));
+	}
+
+	public void testQueueAfterShutdown() throws Exception {
+		client.shutdown();
+		try {
+			Object o=client.get("k");
+			fail("Expected IllegalStateException, got " + o);
+		} catch(IllegalStateException e) {
+			// OK
+		} finally {
+			initClient(); // init for tearDown
+		}
+	}
+
+	public void testMultiReqAfterShutdown() throws Exception {
+		client.shutdown();
+		try {
+			Map<String, ?> m=client.getBulk("k1", "k2", "k3");
+			fail("Expected IllegalStateException, got " + m);
+		} catch(IllegalStateException e) {
+			// OK
+		} finally {
+			initClient(); // init for tearDown
+		}
+	}
+
+	public void testBroadcastAfterShutdown() throws Exception {
+		client.shutdown();
+		try {
+			Future<?> f=client.flush();
+			fail("Expected IllegalStateException, got " + f.get());
+		} catch(IllegalStateException e) {
+			// OK
+		} finally {
+			initClient(); // init for tearDown
+		}
+	}
+
+	public void testABunchOfCancelledOperations() throws Exception {
+		Collection<Future<?>> futures=new ArrayList<Future<?>>();
+		for(int i=0; i<1000; i++) {
+			futures.add(client.set("x", 5, "xval"));
+			futures.add(client.asyncGet("x"));
+		}
+		Future<Boolean> sf=client.set("x", 5, "myxval");
+		Future<Object> gf=client.asyncGet("x");
+		for(Future<?> f : futures) {
+			f.cancel(true);
+		}
+		assertTrue(sf.get());
+		assertEquals("myxval", gf.get());
+	}
 }

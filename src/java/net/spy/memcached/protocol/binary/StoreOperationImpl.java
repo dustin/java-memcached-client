@@ -22,8 +22,9 @@ class StoreOperationImpl extends OperationImpl implements StoreOperation {
 			case set: rv=SET; break;
 			case add: rv=ADD; break;
 			case replace: rv=REPLACE; break;
-			default: assert false: "Unhandled store type: " + t;
 		}
+		// Check fall-through.
+		assert rv != -1 : "Unhandled store type:  " + t;
 		return rv;
 	}
 

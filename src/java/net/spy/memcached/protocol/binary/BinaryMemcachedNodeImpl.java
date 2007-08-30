@@ -32,7 +32,7 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 				getOp=og;
 
 				while(writeQ.peek() instanceof GetOperation) {
-					GetOperationImpl o=(GetOperationImpl) writeQ.remove();
+					GetOperation o=(GetOperation) writeQ.remove();
 					if(!o.isCancelled()) {
 						og.addOperation(o);
 					}
@@ -41,12 +41,9 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 				// Initialize the new mega get
 				getOp.initialize();
 				assert getOp.getState() == OperationState.WRITING;
-				if(getLogger().isDebugEnabled()) {
-					ProxyCallback pcb=(ProxyCallback) og.getCallback();
-					getLogger().debug(
-							"Set up %s with %s keys and %s callbacks",
-							this, pcb.numKeys(), pcb.numCallbacks());
-				}
+				ProxyCallback pcb=(ProxyCallback) og.getCallback();
+				getLogger().debug("Set up %s with %s keys and %s callbacks",
+					this, pcb.numKeys(), pcb.numCallbacks());
 			}
 		}
 	}
