@@ -12,8 +12,9 @@ public class HashAlgorithmTest extends TestCase {
 
 	private void assertHash(HashAlgorithm ha, String key, long exp) {
 		assertTrue(exp >= 0L);
-		assertEquals("Invalid " + ha + " for key " + key, exp, ha.hash(key));
 		// System.out.println(ha + "(" + key + ") = " + exp);
+		assertEquals("Invalid " + ha + " for key ``" + key + "''",
+			exp, ha.hash(key));
 	}
 
 	// I don't hardcode any values here because they're subject to change
@@ -39,20 +40,68 @@ public class HashAlgorithmTest extends TestCase {
 		}
 	}
 
-	// Thanks much to pierre@demartines.com for this unit test.
-	public void testFowlerNollVoHash() {
+	public void testFnv1_64() {
 		HashMap<String, Long> exp = new HashMap<String, Long>();
-		exp.put("", 0xcbf29ce484222325L);
-		exp.put(" ", 0xaf63bd4c8601b7ffL);
-		exp.put("hello world!", new Long(0x58735284b97b86bcL));
+		exp.put("", 0x84222325L);
+		exp.put(" ", 0x8601b7ffL);
+		exp.put("hello world!", 0xb97b86bcL);
 		exp.put("Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
-				0x536c9cdee87c054aL);
-		exp.put("wd:com.google", 0xcf4e7986071b08f8L);
-		exp.put("wd:com.google ", 0x5d6176be12f03d48L);
+				0xe87c054aL);
+		exp.put("wd:com.google", 0x071b08f8L);
+		exp.put("wd:com.google ", 0x12f03d48L);
 
 		for (Map.Entry<String, Long> me : exp.entrySet()) {
-			assertHash(HashAlgorithm.FNV_HASH, me.getKey(), Math.abs(me
-					.getValue()));
+			assertHash(HashAlgorithm.FNV1_64_HASH, me.getKey(),
+				Math.abs(me.getValue()));
+		}
+	}
+
+	// Thanks much to pierre@demartines.com for this unit test.
+	public void testFnv1a_64() {
+		HashMap<String, Long> exp = new HashMap<String, Long>();
+		exp.put("", 0x84222325L);
+		exp.put(" ", 0x8601817fL);
+		exp.put("hello world!", 0xcd5a2672L);
+		exp.put("Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+				0xbec309a8L);
+		exp.put("wd:com.google", 0x097b3f26L);
+		exp.put("wd:com.google ", 0x1c6c1732L);
+
+		for (Map.Entry<String, Long> me : exp.entrySet()) {
+			assertHash(HashAlgorithm.FNV1A_64_HASH, me.getKey(),
+				Math.abs(me.getValue()));
+		}
+	}
+
+	public void testFnv1_32() {
+		HashMap<String, Long> exp = new HashMap<String, Long>();
+		exp.put("", 0x811c9dc5L);
+		exp.put(" ", 0x050c5d3fL);
+		exp.put("hello world!", 0x8a01b99cL);
+		exp.put("Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+				0x9277524aL);
+		exp.put("wd:com.google", 0x455e0df8L);
+		exp.put("wd:com.google ", 0x2b0ffd48L);
+
+		for (Map.Entry<String, Long> me : exp.entrySet()) {
+			assertHash(HashAlgorithm.FNV1_32_HASH, me.getKey(),
+				Math.abs(me.getValue()));
+		}
+	}
+
+	public void testFnv1a_32() {
+		HashMap<String, Long> exp = new HashMap<String, Long>();
+		exp.put("", 0x811c9dc5L);
+		exp.put(" ", 0x250c8f7fL);
+		exp.put("hello world!", 0xb034fff2L);
+		exp.put("Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
+				0xa9795ec8L);
+		exp.put("wd:com.google", 0xaa90fcc6L);
+		exp.put("wd:com.google ", 0x683e1e12L);
+
+		for (Map.Entry<String, Long> me : exp.entrySet()) {
+			assertHash(HashAlgorithm.FNV1A_32_HASH, me.getKey(),
+				Math.abs(me.getValue()));
 		}
 	}
 

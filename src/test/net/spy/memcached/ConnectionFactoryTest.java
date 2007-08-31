@@ -18,6 +18,6 @@ public class ConnectionFactoryTest extends TestCase {
 	}
 
 	public void testBinaryAnIntAnotherIntAndAHashAlgorithmCons() {
-		new BinaryConnectionFactory(5, 5, HashAlgorithm.FNV_HASH);
+		new BinaryConnectionFactory(5, 5, HashAlgorithm.FNV1_64_HASH);
 	}
 }

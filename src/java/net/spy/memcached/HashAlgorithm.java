@@ -6,6 +6,9 @@ import java.util.zip.CRC32;
 
 /**
  * Known hashing algorithms for locating a server for a key.
+ * Note that all hash algorithms return 64-bits of hash, but only the lower
+ * 32-bits are significant.  This allows a positive 32-bit number to be
+ * returned for all cases.
  */
 public enum HashAlgorithm {
 
@@ -27,15 +30,29 @@ public enum HashAlgorithm {
 	 * @see http://www.isthe.com/chongo/tech/comp/fnv/
 	 * @see http://en.wikipedia.org/wiki/Fowler_Noll_Vo_hash
 	 */
-	FNV_HASH,
+	FNV1_64_HASH,
+	/**
+	 * Variation of FNV.
+	 */
+	FNV1A_64_HASH,
+	/**
+	 * 32-bit FNV1.
+	 */
+	FNV1_32_HASH,
+	/**
+	 * 32-bit FNV1a.
+	 */
+	FNV1A_32_HASH,
 	/**
 	 * MD5-based hash algorithm used by ketama.
 	 */
 	KETAMA_HASH;
 
-	private static final long FNV1_64_INIT = 0xcbf29ce484222325L;
-
+	private static final long FNV_64_INIT = 0xcbf29ce484222325L;
 	private static final long FNV_64_PRIME = 0x100000001b3L;
+
+	private static final long FNV_32_INIT = 2166136261L;
+	private static final long FNV_32_PRIME = 16777619;
 
 	/**
 	 * Compute the hash for the given key.
@@ -52,16 +69,43 @@ public enum HashAlgorithm {
 				// return (crc32(shift) >> 16) & 0x7fff;
 				CRC32 crc32 = new CRC32();
 				crc32.update(k.getBytes());
-				rv = (crc32.getValue() & 0xffffffff);
-				rv = (rv >> 16) & 0x7fff;
+				rv = (crc32.getValue() >> 16) & 0x7fff;
 				break;
-			case FNV_HASH:
-				// Thanks to pierre@demartines.com for the pointer
-				rv = FNV1_64_INIT;
-				int len = k.length();
-				for (int i = 0; i < len; i++) {
-					rv *= FNV_64_PRIME;
-					rv ^= k.charAt(i);
+			case FNV1_64_HASH: {
+					// Thanks to pierre@demartines.com for the pointer
+					rv = FNV_64_INIT;
+					int len = k.length();
+					for (int i = 0; i < len; i++) {
+						rv *= FNV_64_PRIME;
+						rv ^= k.charAt(i);
+					}
+				}
+				break;
+			case FNV1A_64_HASH: {
+					rv = FNV_64_INIT;
+					int len = k.length();
+					for (int i = 0; i < len; i++) {
+						rv ^= k.charAt(i);
+						rv *= FNV_64_PRIME;
+					}
+				}
+				break;
+			case FNV1_32_HASH: {
+					rv = FNV_32_INIT;
+					int len = k.length();
+					for (int i = 0; i < len; i++) {
+						rv *= FNV_32_PRIME;
+						rv ^= k.charAt(i);
+					}
+				}
+				break;
+			case FNV1A_32_HASH: {
+					rv = FNV_32_INIT;
+					int len = k.length();
+					for (int i = 0; i < len; i++) {
+						rv ^= k.charAt(i);
+						rv *= FNV_32_PRIME;
+					}
 				}
 				break;
 			case KETAMA_HASH:
@@ -74,7 +118,7 @@ public enum HashAlgorithm {
 			default:
 				assert false;
 		}
-		return Math.abs(rv);
+		return rv & 0xffffffffL; /* Truncate to 32-bits */
 	}
 
 	/**

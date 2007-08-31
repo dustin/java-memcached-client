@@ -50,11 +50,17 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 				}
 			} else {
 				for(int i=0; i<NUM_REPS; i++) {
-					long hash = hashAlg.hash(sockStr + "-" + i);
-					ketamaNodes.put(hash, node);
+					ketamaNodes.put(hashAlg.hash(sockStr + "-" + i), node);
 				}
 			}
 		}
+		assert ketamaNodes.size() == NUM_REPS * nodes.size();
+		/*
+		for(Map.Entry<Long, MemcachedNode> me : ketamaNodes.entrySet()) {
+			System.out.println(me.getKey() + "\t"
+					+ me.getValue().getSocketAddress());
+		}
+		*/
 	}
 
 	public Collection<MemcachedNode> getAll() {
@@ -65,6 +71,10 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 		MemcachedNode rv=getNodeForKey(hashAlg.hash(k));
 		assert rv != null : "Found no node for key " + k;
 		return rv;
+	}
+
+	long getMaxKey() {
+		return ketamaNodes.lastKey();
 	}
 
 	MemcachedNode getNodeForKey(long hash) {
@@ -104,9 +114,10 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
 		private void nextHash() {
 			// this.calculateHash(Integer.toString(tries)+key).hashCode();
-			long tmpKey=hashAlg.hash(numTries + key);
+			long tmpKey=hashAlg.hash((numTries++) + key);
 			// This echos the implementation of Long.hashCode()
 			hashVal += (int)(tmpKey ^ (tmpKey >>> 32));
+			hashVal &= 0xffffffff; /* truncate to 32-bits */
 			remainingTries--;
 		}
 

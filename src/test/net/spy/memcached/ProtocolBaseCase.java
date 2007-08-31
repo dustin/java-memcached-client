@@ -80,8 +80,8 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
 	public void testSetHashAlg() {
 		assertSame(HashAlgorithm.NATIVE_HASH, client.getHashAlgorithm());
-		client.setHashAlgorithm(HashAlgorithm.FNV_HASH);
-		assertSame(HashAlgorithm.FNV_HASH, client.getHashAlgorithm());
+		client.setHashAlgorithm(HashAlgorithm.FNV1_64_HASH);
+		assertSame(HashAlgorithm.FNV1_64_HASH, client.getHashAlgorithm());
 	}
 
 	public void testInvalidTranscoder() {
