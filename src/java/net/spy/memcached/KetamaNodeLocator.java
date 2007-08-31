@@ -117,7 +117,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 			long tmpKey=hashAlg.hash((numTries++) + key);
 			// This echos the implementation of Long.hashCode()
 			hashVal += (int)(tmpKey ^ (tmpKey >>> 32));
-			hashVal &= 0xffffffff; /* truncate to 32-bits */
+			hashVal &= 0xffffffffL; /* truncate to 32-bits */
 			remainingTries--;
 		}
 
