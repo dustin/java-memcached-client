@@ -65,15 +65,7 @@ public enum HashAlgorithm {
 				}
 				break;
 			case KETAMA_HASH:
-				MessageDigest md5;
-				try {
-					md5 = MessageDigest.getInstance("MD5");
-				} catch (NoSuchAlgorithmException e) {
-					throw new RuntimeException("MD5 not supported", e);
-				}
-				md5.reset();
-				md5.update(k.getBytes());
-				byte[] bKey = md5.digest();
+				byte[] bKey=computeMd5(k);
 				rv = ((long) (bKey[3] & 0xFF) << 24)
 						| ((long) (bKey[2] & 0xFF) << 16)
 						| ((long) (bKey[1] & 0xFF) << 8)
@@ -83,5 +75,20 @@ public enum HashAlgorithm {
 				assert false;
 		}
 		return Math.abs(rv);
+	}
+
+	/**
+	 * Get the md5 of the given key.
+	 */
+	public static byte[] computeMd5(String k) {
+		MessageDigest md5;
+		try {
+			md5 = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			throw new RuntimeException("MD5 not supported", e);
+		}
+		md5.reset();
+		md5.update(k.getBytes());
+		return md5.digest();
 	}
 }

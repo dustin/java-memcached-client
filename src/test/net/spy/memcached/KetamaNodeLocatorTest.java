@@ -14,7 +14,7 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
 		super.setupNodes(n);
 
 		for(int i=0; i<nodeMocks.length; i++) {
-			nodeMocks[i].expects(once())
+			nodeMocks[i].expects(atLeastOnce())
 				.method("getSocketAddress")
 				.will(returnValue(InetSocketAddress.createUnresolved(
 						"127.0.0.1", 10000 + i)));
@@ -38,7 +38,7 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
 		setupNodes(4);
 		assertSame(nodes[0], locator.getPrimary("dustin"));
 		assertSame(nodes[2], locator.getPrimary("noelani"));
-		assertSame(nodes[1], locator.getPrimary("some other key"));
+		assertSame(nodes[0], locator.getPrimary("some other key"));
 	}
 
 	public void testContinuumWrapping() {
@@ -54,29 +54,41 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
 		*/
 
 		setupNodes(4);
-		assertSame(nodes[3], locator.getPrimary("7QHNPFVC"));
-		assertSame(nodes[3], locator.getPrimary("N6H4245M"));
+		assertSame(nodes[1], locator.getPrimary("7QHNPFVC"));
+		assertSame(nodes[1], locator.getPrimary("N6H4245M"));
 	}
 
 	public void testClusterResizing() {
 		setupNodes(4);
 		assertSame(nodes[0], locator.getPrimary("dustin"));
 		assertSame(nodes[2], locator.getPrimary("noelani"));
-		assertSame(nodes[1], locator.getPrimary("some other key"));
+		assertSame(nodes[0], locator.getPrimary("some other key"));
 
 		setupNodes(5);
 		assertSame(nodes[0], locator.getPrimary("dustin"));
 		assertSame(nodes[2], locator.getPrimary("noelani"));
-		assertSame(nodes[1], locator.getPrimary("some other key"));
+		assertSame(nodes[4], locator.getPrimary("some other key"));
 	}
 
 	public void testSequence1() {
 		setupNodes(4);
-		assertSequence("dustin", 0, 1, 1, 3);
+		assertSequence("dustin", 0, 2, 1, 1);
 	}
 
 	public void testSequence2() {
 		setupNodes(4);
-		assertSequence("noelani", 2, 0, 0, 0);
+		assertSequence("noelani", 2, 1, 3, 0);
+	}
+
+	private void assertPosForKey(String k, int nid) {
+		assertSame(nodes[nid], locator.getPrimary(k));
+	}
+
+	public void testLibKetamaCompat() {
+		setupNodes(5);
+		assertPosForKey("36", 2);
+		assertPosForKey("10037", 3);
+		assertPosForKey("22051", 1);
+		assertPosForKey("49044", 4);
 	}
 }
