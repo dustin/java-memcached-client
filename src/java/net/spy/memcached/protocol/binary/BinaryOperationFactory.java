@@ -23,7 +23,7 @@ public class BinaryOperationFactory implements OperationFactory {
 
 	public DeleteOperation delete(String key, int when,
 			OperationCallback operationCallback) {
-		return new DeleteOperationImpl(key, operationCallback);
+		return new DeleteOperationImpl(key, when, operationCallback);
 	}
 
 	public FlushOperation flush(int delay, OperationCallback cb) {

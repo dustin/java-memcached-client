@@ -273,6 +273,23 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 			client.delete("test1").get());
 	}
 
+	public void testDelayedDelete() throws Exception {
+		assertNull(client.get("test1"));
+		client.set("test1", 5, "test1value");
+		assertEquals("test1value", client.get("test1"));
+		client.delete("test1", 5);
+		assertNull(client.get("test1"));
+		// Add should fail, even though the get returns null
+		client.add("test1", 5, "test1value");
+		assertNull(client.get("test1"));
+		// Replace should also fail
+		client.replace("test1", 5, "test1value");
+		assertNull(client.get("test1"));
+		// Set should be fine, though.
+		client.set("test1", 5, "test1value");
+		assertEquals("test1value", client.get("test1"));
+	}
+
 	public void testFlush() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
