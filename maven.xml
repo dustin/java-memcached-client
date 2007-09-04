@@ -2,13 +2,16 @@
 
 <!-- Copyright (c) 2005  Dustin Sallings (dustin@spy.net) -->
 
-<project default="jar">
+<project default="jar" xmlns:ant="jelly:ant">
 	<preGoal name="java:compile">
 		<attainGoal name="hg:versions"/>
 		<attainGoal name="spy:buildinfo"/>
 		<attainGoal name="hg:changelog"/>
 		<attainGoal name="copySources"/>
 	</preGoal>
+	<postGoal name="clean">
+		<ant:delete file="cobertura.ser"/>
+	</postGoal>
 	<!-- make sources available within the jar file. -->
 	<goal name="copySources">
 		<copy todir="${maven.build.dir}/classes">
