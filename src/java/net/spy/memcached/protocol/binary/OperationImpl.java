@@ -23,7 +23,8 @@ abstract class OperationImpl extends BaseOperationImpl {
 	//  opaque (32-bits)
 	//  key length (32-bits)
 
-	protected static final byte MAGIC = 0xf;
+	protected static final byte REQ_MAGIC = 0x0f;
+	protected static final byte RES_MAGIC = (byte)0xf0;
 	protected static final int MIN_RECV_PACKET=12;
 
 	/**
@@ -91,7 +92,7 @@ abstract class OperationImpl extends BaseOperationImpl {
 			// We've completed reading the header.  Prepare body read.
 			if(headerOffset == MIN_RECV_PACKET) {
 				int magic=header[0];
-				assert magic == MAGIC : "Invalid magic:  " + magic;
+				assert magic == RES_MAGIC : "Invalid magic:  " + magic;
 				responseCmd=header[1];
 				assert cmd == -1 || responseCmd == cmd
 					: "Unexpected response command value";
@@ -211,7 +212,7 @@ abstract class OperationImpl extends BaseOperationImpl {
 
 		// set up the initial header stuff
 		ByteBuffer bb=ByteBuffer.allocate(bufSize + extraLen);
-		bb.put(MAGIC);
+		bb.put(REQ_MAGIC);
 		bb.put((byte)cmd);
 		bb.put((byte)key.length());
 		bb.put((byte)0);

@@ -50,7 +50,7 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 		ByteBuffer bb=ByteBuffer.allocate(size);
 		for(Map.Entry<Integer, String> me : keys.entrySet()) {
 			String key=me.getValue();
-			bb.put(MAGIC);
+			bb.put(REQ_MAGIC);
 			bb.put((byte)CMD_GETQ);
 			bb.put((byte)key.length());
 			bb.put((byte)0);
@@ -59,7 +59,7 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 			bb.put(key.getBytes());
 		}
 		// Add the noop
-		bb.put(MAGIC);
+		bb.put(REQ_MAGIC);
 		bb.put((byte)NoopOperationImpl.CMD);
 		bb.put((byte)0);
 		bb.put((byte)0);
