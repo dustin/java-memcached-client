@@ -1,0 +1,156 @@
+<?xml version="1.0"?>
+
+<!-- Copyright (c) 2007  Dustin Sallings (dustin@spy.net) -->
+
+<document>
+	<properties>
+		<author email="dustin@spy.net">Dustin Sallings</author>
+		<title>java memcached client - optimization</title>
+	</properties>
+
+	<body>
+
+		<section name="Overview">
+			<p>
+				There are several elements of the design that each allow high
+				throughput.
+			</p>
+		</section>
+
+		<section name="Single-threaded IO">
+			<p>
+				The IO thread mirrors the server-side design of memcached by
+				multiplexing asynchronous IO across multiple connections to multiple
+				servers.
+			</p>
+			<p>
+				Each MemcachedClient instance establishes and maintains a single
+				connection to each server in your cluster.  Data are sent as soon as
+				they become available and are able to be received by the remote sides
+				and are similarly collected as soon as they arrive.
+			</p>
+		</section>
+
+		<section name="Very Low Contention">
+			<p>
+				There is a single point where client threads (i.e. your code) and the IO
+				thread meet.  Whenever a caller needs to issue a request against
+				memcached, it does so by building an object that represents the request
+				and queueing it into a java.util.concurrent.BlockingQueue instance
+				(with a non-blocking insertion).
+			</p>
+		</section>
+
+		<section name="Asynchronous Interface">
+			<p>
+				With an asynchronous interface, it's possible to <q>fire and forget</q>
+				requests such as sets and deletes.  You can <em>optionally</em> wait
+				for the results, but if it's not necessary for your application, I
+				won't make you do it.
+			</p>
+			<p>
+				For every enqueued request, there's a
+				<code>java.lang.concurrent.Future</code> returned that is used to track
+				the progress of the request.  All of the communication from the IO
+				thread to the callers is done by way of futures.  This also allows you
+				to do things like processing between a get request and the response
+				from it.
+			</p>
+		</section>
+
+		<section name="Multi-get Escalation">
+			<p>
+				In the process of finding data to write over the wire, the IO thread
+				will notice when there are multiple get requests in a row and collapse
+				them into a single multi-get request with deduplicated keys.
+			</p>
+			<p>
+				For example, if there are several outstanding requests in a queue for a
+				single server the look like this:
+				<code>[a], [b], [a, b, c], [a], [d]</code>, they will be collapsed into
+				a single request for <code>[a, b, c, d]</code> and then the results
+				will be delivered to the respective callers (five in this case).
+			</p>
+		</section>
+
+		<section name="Protocol Pipelining">
+			<p>
+				Another effect of having a single connection to each server is that the
+				process of converting a request to the wire format doesn't actually
+				care about the requests themselves, so it can effectively ignore
+				natural boundaries.
+			</p>
+			<p>
+				For example, if the queue contains a few gets and sets and deletes,
+				it's possible to send all of those in a single packet.
+			</p>
+		</section>
+
+		<section name="Altogether Now">
+			<p>
+				<img src="MemcachedOptimization.png" style="float: right"
+					alt="diagram"/>
+				Consider an example where a memcached instance has two values,
+				<code>x</code> and <code>y</code>, both set to <code>1</code>.  No
+				other values exist within this instance.  Six threads issue requests as
+				shown in the diagram at the right at approximately the same time, and
+				get queued top to bottom.
+			</p>
+			<ol>
+				<li>
+					The first request will immediately hit the wire since enqueuing a
+					request causes the loop to look for IO.  This returns the value
+					<code>1</code> to <code>t1</code>.  <code>t1</code> is happen and
+					goes home.
+				</li>
+				<li>The next time through the loop, more items have made it into the
+					queue, so they're processed together (at least, until the transmit
+					buffer is full).
+					<ol>
+						<li>
+							The next time we're ready to transmit, the IO thread will notice
+							that there are three gets in a row (the optimizer does not look
+							past anything that will mutate data), and combine them into a
+							single get.  The gets have overlapping keys, so the keys will be
+							deduplicated so that the write buffer receives a multi-get for
+							the keys <code>y</code> and <code>z</code>.
+						</li>
+						<li>
+							The write buffer is not full, so we look to the input queue again
+							and see there's a set ready, so we add that to the buffer.
+						</li>
+						<li>
+							The write buffer is still not full, so we look at the input queue
+							yet again and see another get.  There are no more gets, so we
+							enqueue this one.
+						</li>
+						<li>
+							The write buffer is not full, but the input queue is empty, so we
+							transmit this data.
+						</li>
+					</ol>
+				</li>
+				<li>
+					The multi-get for <code>y</code> and <code>z</code> returns, so we
+					send <code>t2</code> and <code>t4</code> the value <code>1</code> for
+					<code>y</code> and <code>t3</code> a <code>null</code> for
+					<code>z</code> (since z was not in our cache).  Threads
+					<code>t2</code>, <code>t3</code>, and <code>t4</code> now have all of
+					the necessary results.
+				</li>
+				<li>
+					The set returns and the results (we'll call it a success) are sent to
+					the future given to <code>t5</code>.  If <code>t5</code> cares about
+					the result, it now has it.  If it doesn't, it's off doing something
+					else by now.
+				</li>
+				<li>
+					Finally, the second get request for <code>y</code> returns, this time
+					with the value <code>2</code>, which is provided to the
+					<code>t6</code>.
+				</li>
+			</ol>
+		</section>
+
+	</body>
+</document>

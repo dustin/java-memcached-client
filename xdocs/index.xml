@@ -46,6 +46,11 @@
 					servers to which the client is connected, only one thread will ever
 					be allocated to a given MemcachedClient.
 				</li>
+				<li>
+					<strong>Aggressively optimized.</strong>
+					There are <a href="optimization.html">many optimizations</a> that
+					combine to provide high throughput.
+				</li>
 			</ul>
 		</section>
 		<section name="Example Usage">
