@@ -37,10 +37,9 @@
 				There are two points where client threads (i.e. your code) and the IO
 				thread meet.  Whenever a caller needs to issue a request against
 				memcached, it does so by building an object that represents the request
-				which it queues it <code>into a
-				java.util.concurrent.BlockingQueue</code> instance (with a non-blocking
-				insertion).  A <code>java.util.concurrent.Future</code> is returned to
-				the caller.
+				which it queues into a <code>java.util.concurrent.BlockingQueue</code>
+				instance (with a non-blocking insertion).  A
+				<code>java.util.concurrent.Future</code> is returned to the caller.
 			</p>
 			<p>
 				When a request is complete and the response is available, the IO
