@@ -63,7 +63,7 @@
 				class.
 			</p>
 			<h2>Basic Usage</h2>
-<pre>
+<source>
 MemcachedClient c=new MemcachedClient(
     new InetSocketAddress("hostname", portNum));
 
@@ -71,7 +71,7 @@ MemcachedClient c=new MemcachedClient(
 c.set("someKey", 3600, someObject);
 // Retrieve a value (synchronously).
 Object myObject=c.get("someKey");
-</pre>
+</source>
 
 			<h2>Advanced Usage</h2>
 			<p>
@@ -83,7 +83,7 @@ Object myObject=c.get("someKey");
 			you can use one of the asynchronous mechanisms to time out a request and
 			cancel the operation to the server.
 			</p>
-<pre>
+<source>
 // Get a memcached client connected to several servers
 MemcachedClient c=new MemcachedClient(
 	AddrUtil.getAddresses("server1:11211 server2:11211"));
@@ -99,21 +99,21 @@ try {
     f.cancel();
     // Do other timeout related stuff
 }
-</pre>
+</source>
 		<h2>Binary Protocol Support</h2>
 		<p>
 			As of release 2.0, the new binary wire protocol for memcached is
 			supported.  Below is an example of how you might connect to a server
 			using the binary protocol:
 		</p>
-<pre>
+<source>
 // Get a memcached client connected to several servers with the binary protocol
 MemcachedClient c=new MemcachedClient(
 	new BinaryConnectionFactory(),
 	AddrUtil.getAddresses("server1:11212 server2:11212"));
 
 // Proceed to do cool stuff with memcached using the binary protocol.
-</pre>
+</source>
 		</section>
 		<section name="Where to Get">
 			<h3>Binary Distributions</h3>

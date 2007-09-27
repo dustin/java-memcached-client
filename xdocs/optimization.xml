@@ -5,15 +5,16 @@
 <document>
 	<properties>
 		<author email="dustin@spy.net">Dustin Sallings</author>
-		<title>java memcached client - optimization</title>
+		<title>optimization</title>
 	</properties>
 
 	<body>
 
-		<section name="Overview">
+		<section name="Optimization Overview">
 			<p>
 				There are several elements of the design that each allow high
-				throughput.
+				throughput.  Each is discussed below along with an example case
+				showing many of them working together.
 			</p>
 		</section>
 
@@ -26,18 +27,31 @@
 			<p>
 				Each MemcachedClient instance establishes and maintains a single
 				connection to each server in your cluster.  Data are sent as soon as
-				they become available and are able to be received by the remote sides
-				and are similarly collected as soon as they arrive.
+				they become available and are able to be received by the remote sides.
+				Responses are similarly collected as soon as they arrive.
 			</p>
 		</section>
 
 		<section name="Very Low Contention">
 			<p>
-				There is a single point where client threads (i.e. your code) and the IO
+				There are two points where client threads (i.e. your code) and the IO
 				thread meet.  Whenever a caller needs to issue a request against
 				memcached, it does so by building an object that represents the request
-				and queueing it into a java.util.concurrent.BlockingQueue instance
-				(with a non-blocking insertion).
+				which it queues it <code>into a
+				java.util.concurrent.BlockingQueue</code> instance (with a non-blocking
+				insertion).  A <code>java.util.concurrent.Future</code> is returned to
+				the caller.
+			</p>
+			<p>
+				When a request is complete and the response is available, the IO
+				thread feeds it back into this future.
+			</p>
+			<p>
+				The contention on the enqueuing is as small as java's concurrency
+				utilities allow (in practice, this is quite low).  As for the result,
+				the typical scenario involves a single thread waiting on a latch.  It's
+				hard to imagine a case where either of these would contribute a
+				detectable amount of latency.
 			</p>
 		</section>
 
@@ -65,9 +79,9 @@
 				them into a single multi-get request with deduplicated keys.
 			</p>
 			<p>
-				For example, if there are several outstanding requests in a queue for a
-				single server the look like this:
-				<code>[a], [b], [a, b, c], [a], [d]</code>, they will be collapsed into
+				For example, several outstanding requests in a queue for a
+				single server that look like this:
+				<code>[a], [b], [a, b, c], [a], [d]</code>, will be collapsed into
 				a single request for <code>[a, b, c, d]</code> and then the results
 				will be delivered to the respective callers (five in this case).
 			</p>
@@ -81,7 +95,7 @@
 				natural boundaries.
 			</p>
 			<p>
-				For example, if the queue contains a few gets and sets and deletes,
+				For example, if the queue contains a few gets, sets and deletes,
 				it's possible to send all of those in a single packet.
 			</p>
 		</section>
@@ -100,7 +114,7 @@
 				<li>
 					The first request will immediately hit the wire since enqueuing a
 					request causes the loop to look for IO.  This returns the value
-					<code>1</code> to <code>t1</code>.  <code>t1</code> is happen and
+					<code>1</code> to <code>t1</code>.  <code>t1</code> is happy and
 					goes home.
 				</li>
 				<li>The next time through the loop, more items have made it into the
