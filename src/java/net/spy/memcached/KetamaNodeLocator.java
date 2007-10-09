@@ -55,12 +55,6 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 			}
 		}
 		assert ketamaNodes.size() == NUM_REPS * nodes.size();
-		/*
-		for(Map.Entry<Long, MemcachedNode> me : ketamaNodes.entrySet()) {
-			System.out.println(me.getKey() + "\t"
-					+ me.getValue().getSocketAddress());
-		}
-		*/
 	}
 
 	public Collection<MemcachedNode> getAll() {
