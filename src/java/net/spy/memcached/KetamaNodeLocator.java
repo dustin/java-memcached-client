@@ -39,13 +39,13 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 			if(alg == HashAlgorithm.KETAMA_HASH) {
 				for(int i=0; i<NUM_REPS / 4; i++) {
 					byte[] digest=HashAlgorithm.computeMd5(sockStr + "-" + i);
-	                for(int h=0;h<4;h++) {
-	                    Long k = ((long)(digest[3+h*4]&0xFF) << 24)
-	                        | ((long)(digest[2+h*4]&0xFF) << 16)
-	                        | ((long)(digest[1+h*4]&0xFF) << 8)
-	                        | (digest[h*4]&0xFF);
-	                    ketamaNodes.put(k, node);
-	                }
+					for(int h=0;h<4;h++) {
+						Long k = ((long)(digest[3+h*4]&0xFF) << 24)
+							| ((long)(digest[2+h*4]&0xFF) << 16)
+							| ((long)(digest[1+h*4]&0xFF) << 8)
+							| (digest[h*4]&0xFF);
+						ketamaNodes.put(k, node);
+					}
 
 				}
 			} else {
