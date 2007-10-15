@@ -165,6 +165,20 @@ public final class MemcachedClient extends SpyThread {
 		return transcoder;
 	}
 
+	private void validateKey(String key) {
+		if(key.length() > MAX_KEY_LENGTH) {
+			throw new IllegalArgumentException("Key is too long (maxlen = "
+					+ MAX_KEY_LENGTH + ")");
+		}
+		// Validate the key
+		for(char c : key.toCharArray()) {
+			if(Character.isWhitespace(c) || Character.isISOControl(c)) {
+				throw new IllegalArgumentException(
+					"Key contains invalid characters:  ``" + key + "''");
+			}
+		}
+	}
+
 	/**
 	 * (internal use) Add a raw operation to a numbered connection.
 	 * This method is exposed for testing.
@@ -177,17 +191,7 @@ public final class MemcachedClient extends SpyThread {
 		if(shuttingDown) {
 			throw new IllegalStateException("Shutting down");
 		}
-		if(key.length() > MAX_KEY_LENGTH) {
-			throw new IllegalArgumentException("Key is too long (maxlen = "
-					+ MAX_KEY_LENGTH + ")");
-		}
-		// Validate the key
-		for(char c : key.toCharArray()) {
-			if(Character.isWhitespace(c) || Character.isISOControl(c)) {
-				throw new IllegalArgumentException(
-					"Key contains invalid characters:  ``" + key + "''");
-			}
-		}
+		validateKey(key);
 		assert isAlive() : "IO Thread is not running.";
 		conn.addOperation(key, op);
 		return op;
@@ -380,6 +384,7 @@ public final class MemcachedClient extends SpyThread {
 			=new HashMap<MemcachedNode, Collection<String>>();
 		final NodeLocator locator=conn.getLocator();
 		for(String key : keys) {
+			validateKey(key);
 			final MemcachedNode primaryNode=locator.getPrimary(key);
 			MemcachedNode node=null;
 			if(primaryNode.isActive()) {

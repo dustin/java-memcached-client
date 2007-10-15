@@ -69,6 +69,15 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 	}
 
+	public void testInvalidKeyBulk() throws Exception {
+		try {
+			Object val=client.getBulk("Key key2");
+			fail("Expected IllegalArgumentException, got " + val);
+		} catch(IllegalArgumentException e) {
+			// pass
+		}
+	}
+
 	public void testInvalidAlgorithm() {
 		try {
 			client.setHashAlgorithm(null);
@@ -134,6 +143,18 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 					"test9", "test10"); // Yes, I intentionally ran over.
 				for(int i=0; i<10; i++) {
 					assertEquals("value" + i, m.get("test" + i));
+				}
+				return Boolean.TRUE;
+			}});
+		assertEquals(1, cnt);
+	}
+
+	public void testParallelSetAutoMultiGet() throws Throwable {
+		int cnt=SyncThread.getDistinctResultCount(10, new Callable<Boolean>(){
+			public Boolean call() throws Exception {
+				client.set("testparallel", 5, "parallelvalue");
+				for(int i=0; i<10; i++) {
+					assertEquals("parallelvalue", client.get("testparallel"));
 				}
 				return Boolean.TRUE;
 			}});
