@@ -420,7 +420,12 @@ public final class MemcachedClient extends SpyThread {
 					}
 				}
 				public void gotData(String k, int flags, byte[] data) {
-					m.put(k, transcoder.decode(new CachedData(flags, data)));
+					Object val = transcoder.decode(new CachedData(flags, data));
+					// val may be null if the transcoder did not understand
+					// the value.
+					if(val != null) {
+						m.put(k, val);
+					}
 				}
 				public void complete() {
 					latch.countDown();
