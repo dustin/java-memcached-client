@@ -37,7 +37,7 @@ public class LongClientTest extends ClientBaseCase {
 		final int hashcode=Arrays.hashCode(data);
 		final Collection<String> keys=new ArrayList<String>();
 		for(int i=0; i<50; i++) {
-			client.set("k" + i, 30, data);
+			client.set("k" + i, 60, data);
 			keys.add("k" + i);
 		}
 
@@ -50,7 +50,9 @@ public class LongClientTest extends ClientBaseCase {
 					Map<String, Object> m = client.getBulk(keys);
 					for(String s : keys) {
 						byte b[]=(byte[])m.get(s);
-						assert Arrays.hashCode(b) == hashcode;
+						assert Arrays.hashCode(b) == hashcode
+							: "Expected " + hashcode + " was "
+								+ Arrays.hashCode(b);
 					}
 				}
 				return hashcode;
