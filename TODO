@@ -1,1 +1,9 @@
 - JSON Transcoder
+
+- Bug related to nio on java:
+	Thread dump below looking at it, it might be a manifestation of what's
+	described in
+	http://forum.java.sun.com/thread.jspa?forumID=535&threadID=5135128 which
+	looks like it is
+	http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=2147719 which is
+	claimed to be fixed in the NEXT release of java.
