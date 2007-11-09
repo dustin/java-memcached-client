@@ -1,3 +1,7 @@
+- State indicators
+  - getAvailableServers()
+  - getUnavailableServers()
+
 - JSON Transcoder
 
 - Bug related to nio on java:
