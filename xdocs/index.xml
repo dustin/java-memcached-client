@@ -96,7 +96,7 @@ try {
 } catch(TimeoutException e) {
     // Since we don't need this, go ahead and cancel the operation.  This
     // is not strictly necessary, but it'll save some work on the server.
-    f.cancel();
+    f.cancel(false);
     // Do other timeout related stuff
 }
 </source>
