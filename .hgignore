@@ -8,3 +8,4 @@
 ^memcached.state.old$
 ^memcached.state.journal$
 ^target($|/)
+^reports($|/)
