@@ -139,7 +139,7 @@ MemcachedClient c=new MemcachedClient(
 			<p>
 				Note that this also requires
 				<a href="http://bleu.west.spy.net/~dustin/projects/spyjar/">spy.jar</a>
-				(2.2.44 or so) from the same repository.
+				(2.4 or so) from the same repository.
 			</p>
 		</section>
 		<section name="License">
