@@ -19,6 +19,7 @@ repositories.remote << "http://bleu.west.spy.net/~dustin/m2repo/"
 require 'buildr/cobertura'
 
 plugins=[
+  'spy:m1compat:rake:1.0',
   'spy:site:rake:1.2',
   'spy:hg_tree_version:rake:1.0',
   'spy:build_info:rake:1.0'
@@ -41,7 +42,7 @@ define "memcached" do
   project.version = VERSION_NUMBER
   project.group = GROUP
   manifest["Implementation-Vendor"] = COPYRIGHT
-  compile.with "spy:spy:jar:2.4"
+  compile.with m1("spy:spy:jar:2.4")
 
   # Gen build
   gen_build_info "net.spy.memcached"
