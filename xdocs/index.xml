@@ -125,10 +125,10 @@ MemcachedClient c=new MemcachedClient(
 			</p>
 			<p>
 				If you use maven 1, you can just add my repo to your list:
-				<blockquote>
-					http://bleu.west.spy.net/~dustin/repo/
-				</blockquote>
 			</p>
+			<blockquote>
+				<p>http://bleu.west.spy.net/~dustin/repo/</p>
+			</blockquote>
 			<h3>Source Code</h3>
 			<p>
 				The source can be downloaded or checked out from my
