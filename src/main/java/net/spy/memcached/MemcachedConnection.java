@@ -418,7 +418,7 @@ public final class MemcachedConnection extends SpyObject {
 		addedQueue.offer(node);
 		Selector s=selector.wakeup();
 		assert s == selector : "Wakeup returned the wrong selector.";
-		getLogger().debug("Added %s to %d", o, node);
+		getLogger().debug("Added %s to %s", o, node);
 	}
 
 	/**
