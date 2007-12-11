@@ -179,6 +179,13 @@ public final class MemcachedClient extends SpyThread {
 		}
 	}
 
+	private void checkState() {
+		if(shuttingDown) {
+			throw new IllegalStateException("Shutting down");
+		}
+		assert isAlive() : "IO Thread is not running.";
+	}
+
 	/**
 	 * (internal use) Add a raw operation to a numbered connection.
 	 * This method is exposed for testing.
@@ -188,24 +195,17 @@ public final class MemcachedClient extends SpyThread {
 	 * @return the Operation
 	 */
 	Operation addOp(final String key, final Operation op) {
-		if(shuttingDown) {
-			throw new IllegalStateException("Shutting down");
-		}
 		validateKey(key);
-		assert isAlive() : "IO Thread is not running.";
+		checkState();
 		conn.addOperation(key, op);
 		return op;
 	}
 
 	Operation addOp(final MemcachedNode node, final Operation op) {
-		if(shuttingDown) {
-			throw new IllegalStateException("Shutting down");
-		}
-		assert isAlive() : "IO Thread is not running.";
+		checkState();
 		conn.addOperation(node, op);
 		return op;
 	}
-
 
 	CountDownLatch broadcastOp(final BroadcastOpFactory of) {
 		return broadcastOp(of, true);
@@ -409,6 +409,7 @@ public final class MemcachedClient extends SpyThread {
 			}
 			ks.add(key);
 		}
+
 		final CountDownLatch latch=new CountDownLatch(chunks.size());
 		final Collection<Operation> ops=new ArrayList<Operation>();
 
@@ -431,10 +432,21 @@ public final class MemcachedClient extends SpyThread {
 					latch.countDown();
 				}
 		};
+
+		// Now that we know how many servers it breaks down into, and the latch
+		// is all set up, convert all of these strings collections to operations
+		final Map<MemcachedNode, Operation> mops=
+			new HashMap<MemcachedNode, Operation>();
+
 		for(Map.Entry<MemcachedNode, Collection<String>> me
 				: chunks.entrySet()) {
-			ops.add(addOp(me.getKey(), opFact.get(me.getValue(), cb)));
+			Operation op=opFact.get(me.getValue(), cb);
+			mops.put(me.getKey(), op);
+			ops.add(op);
 		}
+		assert mops.size() == chunks.size();
+		checkState();
+		conn.addOperations(mops);
 		return new BulkGetFuture(m, ops, latch);
 	}
 

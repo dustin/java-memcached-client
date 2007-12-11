@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
@@ -419,6 +420,19 @@ public final class MemcachedConnection extends SpyObject {
 		Selector s=selector.wakeup();
 		assert s == selector : "Wakeup returned the wrong selector.";
 		getLogger().debug("Added %s to %s", o, node);
+	}
+
+	public void addOperations(final Map<MemcachedNode, Operation> ops) {
+
+		for(Map.Entry<MemcachedNode, Operation> me : ops.entrySet()) {
+			final MemcachedNode node=me.getKey();
+			Operation o=me.getValue();
+			o.initialize();
+			node.addOp(o);
+			addedQueue.offer(node);
+		}
+		Selector s=selector.wakeup();
+		assert s == selector : "Wakeup returned the wrong selector.";
 	}
 
 	/**
