@@ -1,22 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <classpath>
-  <classpathentry excluding="" kind="src" path="src/java">
-  </classpathentry>
-  <classpathentry output="target/test-classes" kind="src" path="src/test">
-  </classpathentry>
-  <classpathentry kind="var" path="MAVEN_REPO/junit/jars/junit-3.8.2.jar">
-  </classpathentry>
-  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
-  </classpathentry>
-  <classpathentry kind="var" path="MAVEN_REPO/spy/jars/spy-2.2.44.jar">
-  </classpathentry>
-  <classpathentry kind="var" path="MAVEN_REPO/jmock/jars/jmock-1.0.1.jar">
-  </classpathentry>
-  <classpathentry kind="var" path="MAVEN_REPO/jmock/jars/jmock-cglib-1.0.1.jar">
-  </classpathentry>
-  <classpathentry kind="var" path="MAVEN_REPO/cglib/jars/cglib-full-2.0.2.jar">
-  </classpathentry>
-  <classpathentry kind="output" path="target/classes">
-  </classpathentry>
+  <classpathentry kind="src" path="src/main/java"/>
+  <classpathentry output="target/test-classes" kind="src" path="src/test/java"/>
+  <classpathentry kind="src" path="target/generated-src"/>
+  <classpathentry kind="output" path="target/classes"/>
+  <classpathentry kind="var" path="M2_REPO/jmock/jmock/1.2.0/jmock-1.2.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/junit/junit/4.3.1/junit-4.3.1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/spy/spy/2.4/spy-2.4.jar"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 </classpath>

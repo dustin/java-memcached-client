@@ -1,15 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
 <projectDescription>
   <name>memcached</name>
-  <comment>Memcached client.</comment>
-  <projects>
-  </projects>
+  <projects/>
   <buildSpec>
     <buildCommand>
       <name>org.eclipse.jdt.core.javabuilder</name>
-      <arguments>
-      </arguments>
     </buildCommand>
   </buildSpec>
   <natures>
