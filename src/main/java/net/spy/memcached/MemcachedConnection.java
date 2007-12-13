@@ -24,7 +24,6 @@ import java.util.concurrent.CountDownLatch;
 
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
-import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.OperationState;
 
 /**
@@ -174,10 +173,6 @@ public final class MemcachedConnection extends SpyObject {
 					selected, selectedKeys.size());
 			emptySelects=0;
 			for(SelectionKey sk : selectedKeys) {
-				getLogger().debug(
-						"Got selection key:  %s (r=%s, w=%s, c=%s, op=%s)",
-						sk, sk.isReadable(), sk.isWritable(),
-						sk.isConnectable(), sk.attachment());
 				handleIO(sk);
 			} // for each selector
 			selectedKeys.clear();
@@ -230,11 +225,14 @@ public final class MemcachedConnection extends SpyObject {
 	// Handle IO for a specific selector.  Any IOException will cause a
 	// reconnect
 	private void handleIO(SelectionKey sk) {
-		assert !sk.isAcceptable() : "We don't do accepting here.";
 		MemcachedNode qa=(MemcachedNode)sk.attachment();
-		if(sk.isConnectable()) {
-			getLogger().info("Connection state changed for %s", sk);
-			try {
+		try {
+			getLogger().debug(
+					"Handling IO for:  %s (r=%s, w=%s, c=%s, op=%s)",
+					sk, sk.isReadable(), sk.isWritable(),
+					sk.isConnectable(), sk.attachment());
+			if(sk.isConnectable()) {
+				getLogger().info("Connection state changed for %s", sk);
 				final SocketChannel channel=qa.getChannel();
 				if(channel.finishConnect()) {
 					assert channel.isConnected() : "Not connected.";
@@ -246,32 +244,20 @@ public final class MemcachedConnection extends SpyObject {
 				} else {
 					assert !channel.isConnected() : "connected";
 				}
-			} catch(IOException e) {
-				getLogger().warn("Problem handling connect", e);
-				queueReconnect(qa);
-			}
-		} else {
-			if(sk.isWritable()) {
-				try {
+			} else {
+				if(sk.isWritable()) {
 					handleWrites(sk, qa);
-				} catch (IOException e) {
-					getLogger().info("IOException handling %s, reconnecting",
-							qa.getCurrentWriteOp(), e);
-					queueReconnect(qa);
 				}
-			}
-			if(sk.isReadable()) {
-				try {
+				if(sk.isReadable()) {
 					handleReads(sk, qa);
-				} catch (OperationException e) {
-					// Reconnect if we have trouble executing an operation.
-					queueReconnect(qa);
-				} catch (IOException e) {
-					getLogger().info("IOException handling %s, reconnecting",
-							qa.getCurrentReadOp(), e);
-					queueReconnect(qa);
 				}
 			}
+		} catch(Exception e) {
+			// Various errors occur on Linux that wind up here.  However, any
+			// particular error processing an item should simply cause us to
+			// reconnect to the server.
+			getLogger().info("Reconnecting due to exception on %s", qa, e);
+			queueReconnect(qa);
 		}
 		qa.fixupOps();
 	}
@@ -340,7 +326,12 @@ public final class MemcachedConnection extends SpyObject {
 			}
 			qa.reconnecting();
 			try {
-				qa.getChannel().socket().close();
+				if(qa.getChannel() != null && qa.getChannel().socket() != null) {
+					qa.getChannel().socket().close();
+				} else {
+					getLogger().info("The channel or socket was null for %s",
+						qa);
+				}
 			} catch(IOException e) {
 				getLogger().warn("IOException trying to close a socket", e);
 			}

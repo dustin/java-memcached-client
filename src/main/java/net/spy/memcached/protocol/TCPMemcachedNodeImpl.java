@@ -317,6 +317,8 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 * @see net.spy.memcached.MemcachedNode#setChannel(java.nio.channels.SocketChannel)
 	 */
 	public final void setChannel(SocketChannel to) {
+		assert channel == null || !channel.isOpen()
+			: "Attempting to overwrite channel";
 		channel = to;
 	}
 
