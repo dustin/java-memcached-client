@@ -12,6 +12,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -189,34 +190,41 @@ public final class MemcachedConnection extends SpyObject {
 			getLogger().debug("Handling queue");
 			// If there's stuff in the added queue.  Try to process it.
 			Collection<MemcachedNode> toAdd=new HashSet<MemcachedNode>();
+			// Transfer the queue into a hashset.  There are very likely more
+			// additions than there are nodes.
+			Collection<MemcachedNode> todo=new HashSet<MemcachedNode>();
 			try {
 				MemcachedNode qa=null;
 				while((qa=addedQueue.remove()) != null) {
-					boolean readyForIO=false;
-					if(qa.isActive()) {
-						Operation op=qa.getCurrentWriteOp();
-						if(op != null) {
-							readyForIO=true;
-							getLogger().debug("Handling queued write %s", qa);
-						}
-					} else {
-						toAdd.add(qa);
-					}
-					qa.copyInputQueue();
-					if(readyForIO) {
-						try {
-							if(qa.getWbuf().hasRemaining()) {
-								handleWrites(qa.getSk(), qa);
-							}
-						} catch(IOException e) {
-							getLogger().warn("Exception handling write", e);
-							queueReconnect(qa);
-						}
-					}
-					qa.fixupOps();
+					todo.add(qa);
 				}
 			} catch(NoSuchElementException e) {
-				// out of stuff.
+				// Found everything
+			}
+
+			// Now process the queue.
+			for(MemcachedNode qa : todo) {
+				boolean readyForIO=false;
+				if(qa.isActive()) {
+					if(qa.getCurrentWriteOp() != null) {
+						readyForIO=true;
+						getLogger().debug("Handling queued write %s", qa);
+					}
+				} else {
+					toAdd.add(qa);
+				}
+				qa.copyInputQueue();
+				if(readyForIO) {
+					try {
+						if(qa.getWbuf().hasRemaining()) {
+							handleWrites(qa.getSk(), qa);
+						}
+					} catch(IOException e) {
+						getLogger().warn("Exception handling write", e);
+						queueReconnect(qa);
+					}
+				}
+				qa.fixupOps();
 			}
 			addedQueue.addAll(toAdd);
 		}
@@ -347,22 +355,31 @@ public final class MemcachedConnection extends SpyObject {
 	}
 
 	private void attemptReconnects() throws IOException {
-		long now=System.currentTimeMillis();
+		final long now=System.currentTimeMillis();
+		final Map<MemcachedNode, Boolean> seen=
+			new IdentityHashMap<MemcachedNode, Boolean>();
 		for(Iterator<MemcachedNode> i=
 				reconnectQueue.headMap(now).values().iterator(); i.hasNext();) {
-			MemcachedNode qa=i.next();
+			final MemcachedNode qa=i.next();
 			i.remove();
-			getLogger().info("Reconnecting %s", qa);
-			SocketChannel ch=SocketChannel.open();
-			ch.configureBlocking(false);
-			int ops=0;
-			if(ch.connect(qa.getSocketAddress())) {
-				getLogger().info("Immediately reconnected to %s", qa);
-				assert ch.isConnected();
+			if(!seen.containsKey(qa)) {
+				seen.put(qa, Boolean.TRUE);
+				getLogger().info("Reconnecting %s", qa);
+				final SocketChannel ch=SocketChannel.open();
+				ch.configureBlocking(false);
+				int ops=0;
+				if(ch.connect(qa.getSocketAddress())) {
+					getLogger().info("Immediately reconnected to %s", qa);
+					assert ch.isConnected();
+				} else {
+					ops=SelectionKey.OP_CONNECT;
+				}
+				qa.registerChannel(ch, ch.register(selector, ops, qa));
+				assert qa.getChannel() == ch : "Channel was lost.";
 			} else {
-				ops=SelectionKey.OP_CONNECT;
+				getLogger().debug("Skipping duplicate reconnect request for %s",
+					qa);
 			}
-			qa.registerChannel(ch, ch.register(selector, ops, qa));
 		}
 	}
 
