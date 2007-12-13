@@ -31,10 +31,15 @@ import net.spy.memcached.ops.OperationState;
  * Connection to a cluster of memcached servers.
  */
 public final class MemcachedConnection extends SpyObject {
-	// The number of empty selects we'll allow before taking action.  It's too
+
+	// The number of empty selects we'll allow before assuming we may have
+	// missed one and should check the current selectors.  This generally
+	// indicates a bug, but we'll check it nonetheless.
+	private static final int DOUBLE_CHECK_EMPTY = 256;
+	// The number of empty selects we'll allow before blowing up.  It's too
 	// easy to write a bug that causes it to loop uncontrollably.  This helps
 	// find those bugs and often works around them.
-	private static final int EXCESSIVE_EMPTY = 100;
+	private static final int EXCESSIVE_EMPTY = 0x1000000;
 	// maximum amount of time to wait between reconnect attempts
 	private static final long MAX_DELAY = 30000;
 
@@ -155,7 +160,7 @@ public final class MemcachedConnection extends SpyObject {
 		if(selectedKeys.isEmpty()) {
 			getLogger().debug("No selectors ready, interrupted: "
 					+ Thread.interrupted());
-			if(++emptySelects > EXCESSIVE_EMPTY) {
+			if(++emptySelects > DOUBLE_CHECK_EMPTY) {
 				for(SelectionKey sk : selector.keys()) {
 					getLogger().info("%s has %s, interested in %s",
 							sk, sk.readyOps(), sk.interestOps());
@@ -166,7 +171,7 @@ public final class MemcachedConnection extends SpyObject {
 						queueReconnect((MemcachedNode)sk.attachment());
 					}
 				}
-				assert emptySelects < EXCESSIVE_EMPTY + 10
+				assert emptySelects < EXCESSIVE_EMPTY
 					: "Too many empty selects";
 			}
 		} else {
