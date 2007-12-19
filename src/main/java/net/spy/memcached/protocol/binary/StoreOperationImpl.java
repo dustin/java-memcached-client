@@ -14,6 +14,7 @@ class StoreOperationImpl extends OperationImpl implements StoreOperation {
 	private final String key;
 	private final int flags;
 	private final int exp;
+	private final long cas;
 	private final byte[] data;
 
 	private static int cmdMap(StoreType t) {
@@ -30,16 +31,22 @@ class StoreOperationImpl extends OperationImpl implements StoreOperation {
 
 	public StoreOperationImpl(StoreType t, String k, int f, int e,
 			byte[] d, OperationCallback cb) {
+		this(t, k, f, e, d, 0, cb);
+	}
+
+	public StoreOperationImpl(StoreType t, String k, int f, int e,
+			byte[] d, long c, OperationCallback cb) {
 		super(cmdMap(t), generateOpaque(), cb);
 		key=k;
 		flags=f;
 		exp=e;
 		data=d;
+		cas=c;
 	}
 
 	@Override
 	public void initialize() {
-		prepareBuffer(key, data, flags, exp);
+		prepareBuffer(key, data, flags, exp, cas);
 	}
 
 	@Override

@@ -10,6 +10,11 @@ public class GetOperationImpl extends OperationImpl implements GetOperation {
 
 	static final int CMD=0;
 
+	/**
+	 * Length of the extra header stuff for a GET response.
+	 */
+	static final int EXTRA_HDR_LEN=12;
+
 	private final String key;
 
 	public GetOperationImpl(String k, Callback cb) {
@@ -25,8 +30,9 @@ public class GetOperationImpl extends OperationImpl implements GetOperation {
 	@Override
 	protected void decodePayload(byte[] pl) {
 		final int flags=decodeInt(pl, 0);
-		final byte[] data=new byte[pl.length - 4];
-		System.arraycopy(pl, 4, data, 0, pl.length-4);
+		// TODO:  CAS handling 4-12
+		final byte[] data=new byte[pl.length - EXTRA_HDR_LEN];
+		System.arraycopy(pl, EXTRA_HDR_LEN, data, 0, pl.length-EXTRA_HDR_LEN);
 		Callback cb=(Callback)getCallback();
 		cb.gotData(key, flags, data);
 		cb.receivedStatus(STATUS_OK);

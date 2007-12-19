@@ -1,5 +1,7 @@
 package net.spy.memcached.protocol.binary;
 
+import static net.spy.memcached.protocol.binary.GetOperationImpl.EXTRA_HDR_LEN;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
@@ -13,7 +15,7 @@ import net.spy.memcached.ops.OperationState;
 
 class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 
-	private static final int CMD_GETQ=8;
+	private static final int CMD_GETQ=9;
 
 	private final Map<Integer, String> keys=new HashMap<Integer, String>();
 	private final Map<String, Integer> rkeys=new HashMap<String, Integer>();
@@ -50,21 +52,27 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 		ByteBuffer bb=ByteBuffer.allocate(size);
 		for(Map.Entry<Integer, String> me : keys.entrySet()) {
 			String key=me.getValue();
+			// Custom header
 			bb.put(REQ_MAGIC);
 			bb.put((byte)CMD_GETQ);
-			bb.put((byte)key.length());
-			bb.put((byte)0);
-			bb.putInt(me.getKey());
+			bb.putShort((short)key.length());
+			bb.put((byte)0); // extralen
+			bb.put((byte)0); // data type
+			bb.putShort((short)0); // reserved
 			bb.putInt(key.length());
+			bb.putInt(me.getKey());
+			// the actual key
 			bb.put(key.getBytes());
 		}
 		// Add the noop
 		bb.put(REQ_MAGIC);
 		bb.put((byte)NoopOperationImpl.CMD);
-		bb.put((byte)0);
-		bb.put((byte)0);
-		bb.putInt(terminalOpaque);
+		bb.putShort((short)0);
+		bb.put((byte)0); // extralen
+		bb.put((byte)0); // data type
+		bb.putShort((short)0); // reserved
 		bb.putInt(0);
+		bb.putInt(terminalOpaque);
 
 		bb.flip();
 		setBuffer(bb);
@@ -80,8 +88,9 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 				keys.get(responseOpaque), new String(pl), errorCode);
 		} else {
 			final int flags=decodeInt(pl, 0);
-			final byte[] data=new byte[pl.length - 4];
-			System.arraycopy(pl, 4, data, 0, pl.length-4);
+			final byte[] data=new byte[pl.length - EXTRA_HDR_LEN];
+			System.arraycopy(pl, EXTRA_HDR_LEN, data,
+					0, pl.length-EXTRA_HDR_LEN);
 			Callback cb=(Callback)getCallback();
 			cb.gotData(keys.get(responseOpaque), flags, data);
 		}

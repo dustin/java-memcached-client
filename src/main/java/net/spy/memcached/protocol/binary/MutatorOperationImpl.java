@@ -9,6 +9,7 @@ public class MutatorOperationImpl extends OperationImpl implements
 		MutatatorOperation {
 
 	private static final int CMD_INCR=5;
+	private static final int CMD_DECR=6;
 
 	private final String key;
 	private final long by;
@@ -17,10 +18,10 @@ public class MutatorOperationImpl extends OperationImpl implements
 
 	public MutatorOperationImpl(Mutator m, String k, long b,
 			long d, int e, OperationCallback cb) {
-		super(CMD_INCR, generateOpaque(), cb);
+		super(m == Mutator.incr ? CMD_INCR : CMD_DECR, generateOpaque(), cb);
 		assert d >= 0 : "Default value is below zero";
 		key=k;
-		by=m == Mutator.incr ? b : 0-b;
+		by=b;
 		exp=e;
 		def=d;
 	}

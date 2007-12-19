@@ -2,6 +2,7 @@ package net.spy.memcached.protocol.binary;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.spy.memcached.ops.OperationCallback;
@@ -15,17 +16,9 @@ import net.spy.memcached.protocol.BaseOperationImpl;
  */
 abstract class OperationImpl extends BaseOperationImpl {
 
-	// Base response packet format:
-	//  magic (8-bits)
-	//  cmd   (8 bits)
-	//  error code (8 bits)
-	//  reserved (8 bits)
-	//  opaque (32-bits)
-	//  key length (32-bits)
-
-	protected static final byte REQ_MAGIC = 0x0f;
-	protected static final byte RES_MAGIC = (byte)0xf0;
-	protected static final int MIN_RECV_PACKET=12;
+	protected static final byte REQ_MAGIC = (byte)0x80;
+	protected static final byte RES_MAGIC = (byte)0x80;
+	protected static final int MIN_RECV_PACKET=16;
 
 	/**
 	 * Error code for items that were not found.
@@ -78,6 +71,10 @@ abstract class OperationImpl extends BaseOperationImpl {
 		headerOffset=0;
 	}
 
+	// Base response packet format:
+	//	# magic, opcode, status, extralen, datatype, [reserved], bodylen, opaque
+	//	RES_PKT_FMT=">BBHBBxxII"
+
 	@Override
 	public void readFromBuffer(ByteBuffer b) throws IOException {
 		// First process headers if we haven't completed them yet
@@ -96,12 +93,13 @@ abstract class OperationImpl extends BaseOperationImpl {
 				responseCmd=header[1];
 				assert cmd == -1 || responseCmd == cmd
 					: "Unexpected response command value";
-				errorCode=header[2];
-				assert header[3] == 0 : "Reserved byte was not 0";
-				responseOpaque=decodeInt(header, 4);
-				assert opaqueIsValid() : "Opaque is not valid";
+				errorCode=decodeShort(header, 2);
+				// TODO:  Examine extralen and datatype
 				int bytesToRead=decodeInt(header, 8);
 				payload=new byte[bytesToRead];
+				responseOpaque=decodeInt(header, 12);
+				assert opaqueIsValid() : "Opaque is not valid";
+
 			}
 		}
 
@@ -172,6 +170,11 @@ abstract class OperationImpl extends BaseOperationImpl {
 		return responseOpaque == opaque;
 	}
 
+	static int decodeShort(byte[] data, int i) {
+		return (data[i] & 0xff) << 8
+			| (data[i+1] & 0xff);
+	}
+
 	static int decodeInt(byte[] data, int i) {
 		return (data[i]  & 0xff) << 24
 			| (data[i+1] & 0xff) << 16
@@ -210,14 +213,21 @@ abstract class OperationImpl extends BaseOperationImpl {
 		}
 		int bufSize=MIN_RECV_PACKET + key.length() + val.length;
 
+		//	# magic, opcode, keylen, extralen, datatype, [reserved],
+		//           bodylen, opaque
+		//	REQ_PKT_FMT=">BBHBBxxII"
+
 		// set up the initial header stuff
 		ByteBuffer bb=ByteBuffer.allocate(bufSize + extraLen);
+		assert bb.order() == ByteOrder.BIG_ENDIAN;
 		bb.put(REQ_MAGIC);
 		bb.put((byte)cmd);
-		bb.put((byte)key.length());
-		bb.put((byte)0);
-		bb.putInt(opaque);
+		bb.putShort((short)key.length());
+		bb.put((byte)extraLen);
+		bb.put((byte)0); // data type
+		bb.putShort((short)0); // reserved
 		bb.putInt(key.length() + val.length + extraLen);
+		bb.putInt(opaque);
 
 		// Add the extra headers.
 		for(Object o : extraHeaders) {

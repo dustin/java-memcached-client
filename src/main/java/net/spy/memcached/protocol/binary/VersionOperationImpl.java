@@ -6,7 +6,7 @@ import net.spy.memcached.ops.VersionOperation;
 
 class VersionOperationImpl extends OperationImpl implements VersionOperation {
 
-	private static final int CMD = 10;
+	private static final int CMD = 11;
 
 	public VersionOperationImpl(OperationCallback cb) {
 		super(CMD, generateOpaque(), cb);
