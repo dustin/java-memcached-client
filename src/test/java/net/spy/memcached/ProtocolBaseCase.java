@@ -38,6 +38,13 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("test1value", client.get("test1"));
 	}
 
+	public void testExtendedUTF8Key() throws Exception {
+		String key="\u2013\u00ba\u2013\u220f\u2014\u00c4";
+		assertNull(client.get(key));
+		client.set(key, 5, "test1value");
+		assertEquals("test1value", client.get(key));
+	}
+
 	public void testInvalidKey1() throws Exception {
 		try {
 			client.get("key with spaces");

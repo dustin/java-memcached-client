@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 
+import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
@@ -125,15 +126,16 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	public final void initialize() {
 		// Figure out the length of the request
 		int size="get\r\n".length();
-		for(String s : keys) {
-			size+=s.length();
+		Collection<byte[]> keyBytes=KeyUtil.getKeyBytes(keys);
+		for(byte[] k : keyBytes) {
+			size+=k.length;
 			size++;
 		}
 		ByteBuffer b=ByteBuffer.allocate(size);
 		b.put("get".getBytes());
-		for(String s : keys) {
+		for(byte[] k : keyBytes) {
 			b.put((byte)' ');
-			b.put(s.getBytes());
+			b.put(k);
 		}
 		b.put("\r\n".getBytes());
 		b.flip();

@@ -4,6 +4,7 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.OperationCallback;
@@ -48,7 +49,7 @@ final class MutatorOperationImpl extends OperationImpl
 
 	@Override
 	public void initialize() {
-		int size=key.length() + OVERHEAD;
+		int size=KeyUtil.getKeyBytes(key).length + OVERHEAD;
 		ByteBuffer b=ByteBuffer.allocate(size);
 		setArguments(b, mutator.name(), key, amount);
 		b.flip();

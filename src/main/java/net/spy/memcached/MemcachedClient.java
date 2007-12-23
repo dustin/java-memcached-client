@@ -80,7 +80,10 @@ import net.spy.memcached.ops.StoreType;
  */
 public final class MemcachedClient extends SpyThread {
 
-	private static final int MAX_KEY_LENGTH = 250;
+	/**
+	 * Maximum supported key length.
+	 */
+	public static final int MAX_KEY_LENGTH = 250;
 
 	private volatile boolean running=true;
 	private volatile boolean shuttingDown=false;

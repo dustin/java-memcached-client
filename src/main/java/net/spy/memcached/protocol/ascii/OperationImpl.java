@@ -2,9 +2,11 @@
 
 package net.spy.memcached.protocol.ascii;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
@@ -18,10 +20,12 @@ import net.spy.memcached.protocol.BaseOperationImpl;
 abstract class OperationImpl extends BaseOperationImpl implements Operation {
 
 	protected static final byte[] CRLF={'\r', '\n'};
+	private static final String CHARSET = "UTF-8";
 
-	final StringBuilder currentLine=new StringBuilder();
+	private final ByteArrayOutputStream byteBuffer=new ByteArrayOutputStream();
 	OperationReadType readType=OperationReadType.LINE;
 	boolean foundCr=false;
+
 	protected OperationImpl() {
 		super();
 	}
@@ -79,7 +83,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 			} else {
 				bb.put((byte)' ');
 			}
-			bb.put(String.valueOf(o).getBytes());
+			bb.put(KeyUtil.getKeyBytes(String.valueOf(o)));
 		}
 		bb.put(CRLF);
 	}
@@ -115,13 +119,12 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 						break;
 					} else {
 						assert !foundCr : "got a \\r without a \\n";
-						currentLine.append((char)b);
+						byteBuffer.write(b);
 					}
 				}
 				if(offset >= 0) {
-					String line=currentLine.toString();
-					currentLine.delete(0, currentLine.length());
-					assert currentLine.length() == 0;
+					String line=new String(byteBuffer.toByteArray(), CHARSET);
+					byteBuffer.reset();
 					OperationErrorType eType=classifyError(line);
 					if(eType != null) {
 						handleError(eType, line);
