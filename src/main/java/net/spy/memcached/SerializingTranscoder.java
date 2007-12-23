@@ -7,6 +7,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -40,7 +41,10 @@ public final class SerializingTranscoder extends SpyObject
 	private static final int SPECIAL_DOUBLE=(7<<8);
 	private static final int SPECIAL_BYTEARRAY=(8<<8);
 
+	private static final String DEFAULT_CHARSET = "UTF-8";
+
 	private int compressionThreshold=DEFAULT_COMPRESSION_THRESHOLD;
+	private String charset=DEFAULT_CHARSET;
 
 	/**
 	 * Set the compression threshold to the given number of bytes.  This
@@ -51,6 +55,19 @@ public final class SerializingTranscoder extends SpyObject
 	 */
 	public void setCompressionThreshold(int to) {
 		compressionThreshold=to;
+	}
+
+	/**
+	 * Set the character set for string value transcoding (defaults to UTF-8).
+	 */
+	public void setCharset(String to) {
+		// Validate the character set.
+		try {
+			new String(new byte[97], to);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+		charset=to;
 	}
 
 	/* (non-Javadoc)
@@ -93,7 +110,11 @@ public final class SerializingTranscoder extends SpyObject
 				default: assert false;
 			}
 		} else {
-			rv=new String(data);
+			try {
+				rv=new String(data, charset);
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		return rv;
 	}
@@ -106,7 +127,11 @@ public final class SerializingTranscoder extends SpyObject
 		byte[] b=null;
 		int flags=0;
 		if(o instanceof String) {
-			b=((String)o).getBytes();
+			try {
+				b=((String)o).getBytes(charset);
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
 		} else if(o instanceof Long) {
 			b=encodeLong((Long)o);
 			flags |= SPECIAL_LONG;

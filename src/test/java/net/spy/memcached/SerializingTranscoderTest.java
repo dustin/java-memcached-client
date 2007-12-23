@@ -2,6 +2,7 @@
 
 package net.spy.memcached;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -43,6 +44,38 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		assertEquals(0, cd.getFlags());
 		assertTrue(Arrays.equals(s1.getBytes(), cd.getData()));
 		assertEquals(s1, tc.decode(cd));
+	}
+
+	public void testUTF8String() throws Exception {
+		String s1="\u2013\u00f3\u2013\u00a5\u2014\u00c4\u2013\u221e\u2013"
+			+ "\u2264\u2014\u00c5\u2014\u00c7\u2013\u2264\u2014\u00c9\u2013"
+			+ "\u03c0, \u2013\u00ba\u2013\u220f\u2014\u00c4.";
+		CachedData cd=tc.encode(s1);
+		// Test the stringification while we're here.
+		String exp="{CachedData flags=0 data=[-30, -128, -109, -61, -77, -30, "
+			+ "-128, -109, -62, -91, -30, -128, -108, -61, -124, -30, "
+			+ "-128, -109, -30, -120, -98, -30, -128, -109, -30, -119, "
+			+ "-92, -30, -128, -108, -61, -123, -30, -128, -108, -61, -121, "
+			+ "-30, -128, -109, -30, -119, -92, -30, -128, -108, -61, -119, "
+			+ "-30, -128, -109, -49, -128, 44, 32, -30, -128, -109, -62, -70, "
+			+ "-30, -128, -109, -30, -120, -113, -30, -128, -108, -61, -124, "
+			+ "46]}";
+		assertEquals(exp, String.valueOf(cd));
+		assertEquals(0, cd.getFlags());
+		assertTrue(Arrays.equals(s1.getBytes("UTF-8"), cd.getData()));
+		assertEquals(s1, tc.decode(cd));
+	}
+
+	public void testValidCharacterSet() {
+		tc.setCharset("KOI8");
+	}
+
+	public void testInvalidCharacterSet() {
+		try {
+			tc.setCharset("Dustin's Kick Ass Character Set");
+		} catch(RuntimeException e) {
+			assertTrue(e.getCause() instanceof UnsupportedEncodingException);
+		}
 	}
 
 	public void testCompressedStringNotSmaller() throws Exception {
