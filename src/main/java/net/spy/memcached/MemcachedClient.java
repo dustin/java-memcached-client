@@ -169,13 +169,14 @@ public final class MemcachedClient extends SpyThread {
 	}
 
 	private void validateKey(String key) {
-		if(key.length() > MAX_KEY_LENGTH) {
+		byte[] keyBytes=KeyUtil.getKeyBytes(key);
+		if(keyBytes.length > MAX_KEY_LENGTH) {
 			throw new IllegalArgumentException("Key is too long (maxlen = "
 					+ MAX_KEY_LENGTH + ")");
 		}
 		// Validate the key
-		for(char c : key.toCharArray()) {
-			if(Character.isWhitespace(c) || Character.isISOControl(c)) {
+		for(byte b : keyBytes) {
+			if(b == ' ' || b == '\n' || b == '\r' || b == 0) {
 				throw new IllegalArgumentException(
 					"Key contains invalid characters:  ``" + key + "''");
 			}
