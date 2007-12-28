@@ -34,6 +34,7 @@ public class HashAlgorithmTest extends TestCase {
 		exp.put("Test2", 21114L);
 		exp.put("Test3", 9597L);
 		exp.put("Test4", 15129L);
+		exp.put("UDATA:edevil@sapo.pt", 558L);
 
 		for (Map.Entry<String, Long> me : exp.entrySet()) {
 			assertHash(HashAlgorithm.CRC32_HASH, me.getKey(), me.getValue());
