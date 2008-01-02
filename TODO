@@ -1,3 +1,7 @@
+- Kill off MemcachedClient.setHashAlgorithm and getHashAlgorithm.  They're not
+  used here, and the place that they are used doesn't check this, which just
+  leads to confusion.
+
 - State indicators
   - getAvailableServers()
   - getUnavailableServers()
