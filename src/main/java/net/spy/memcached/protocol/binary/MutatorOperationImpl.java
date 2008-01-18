@@ -49,7 +49,7 @@ public class MutatorOperationImpl extends OperationImpl implements
 	@Override
 	protected void decodePayload(byte[] pl) {
 		getCallback().receivedStatus(new OperationStatus(true,
-			new String(pl)));
+			String.valueOf(decodeLong(pl, 0))));
 	}
 
 }
