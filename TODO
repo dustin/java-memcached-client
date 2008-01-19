@@ -2,6 +2,9 @@
   used here, and the place that they are used doesn't check this, which just
   leads to confusion.
 
+- Add some reasonably long and configurable absolute limits to prevent node
+  failures from hanging forever.
+
 - State indicators
   - getAvailableServers()
   - getUnavailableServers()
