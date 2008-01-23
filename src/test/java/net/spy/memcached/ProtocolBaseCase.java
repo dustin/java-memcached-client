@@ -85,21 +85,6 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 	}
 
-	public void testInvalidAlgorithm() {
-		try {
-			client.setHashAlgorithm(null);
-			fail("Allowed null hash algorithm.");
-		} catch(NullPointerException e) {
-			assertEquals("Null hash algorithm not allowed", e.getMessage());
-		}
-	}
-
-	public void testSetHashAlg() {
-		assertSame(HashAlgorithm.NATIVE_HASH, client.getHashAlgorithm());
-		client.setHashAlgorithm(HashAlgorithm.FNV1_64_HASH);
-		assertSame(HashAlgorithm.FNV1_64_HASH, client.getHashAlgorithm());
-	}
-
 	public void testInvalidTranscoder() {
 		try {
 			client.setTranscoder(null);

@@ -91,8 +91,6 @@ public final class MemcachedClient extends SpyThread {
 	private final MemcachedConnection conn;
 	final OperationFactory opFact;
 
-	private HashAlgorithm hashAlg=HashAlgorithm.NATIVE_HASH;
-
 	Transcoder transcoder=null;
 
 	/**
@@ -130,24 +128,6 @@ public final class MemcachedClient extends SpyThread {
 		opFact=cf.getOperationFactory();
 		setName("Memcached IO over " + conn);
 		start();
-	}
-
-	/**
-	 * Set the hash algorithm.
-	 */
-	public HashAlgorithm getHashAlgorithm() {
-		return hashAlg;
-	}
-
-	/**
-	 * Set the hash algorithm for computing which server should receive
-	 * requests for a given key.
-	 */
-	public void setHashAlgorithm(HashAlgorithm to) {
-		if(to == null) {
-			throw new NullPointerException("Null hash algorithm not allowed");
-		}
-		hashAlg=to;
 	}
 
 	/**
