@@ -440,4 +440,26 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertTrue(sf.get());
 		assertEquals("myxval", gf.get());
 	}
+
+	public void testUTF8Key() throws Exception {
+		final String key = "junit.Здравствуйте." + System.currentTimeMillis();
+		final String value = "Skiing rocks if you can find the time to go!";
+
+		assertTrue(client.set(key, 6000, value).get());
+		Object output = client.get(key);
+		assertNotNull("output is null", output);
+		assertEquals("output is not equal", value, output);
+	}
+
+	public void testUTF8Value() throws Exception {
+		final String key = "junit.plaintext." + System.currentTimeMillis();
+		final String value = "Здравствуйте Здравствуйте Здравствуйте "
+			+ "Skiing rocks if you can find the time to go!";
+
+		assertTrue(client.set(key, 6000, value).get());
+		Object output = client.get(key);
+		assertNotNull("output is null", output);
+		assertEquals("output is not equal", value, output);
+	}
+
 }

@@ -4,6 +4,7 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
@@ -48,8 +49,8 @@ final class StoreOperationImpl extends OperationImpl
 
 	@Override
 	public void initialize() {
-		ByteBuffer bb=ByteBuffer.allocate(data.length + key.length()
-				+ OVERHEAD);
+		ByteBuffer bb=ByteBuffer.allocate(data.length
+				+ KeyUtil.getKeyBytes(key).length + OVERHEAD);
 		setArguments(bb, type.name(), key, flags, exp, data.length);
 		assert bb.remaining() >= data.length + 2
 			: "Not enough room in buffer, need another "
