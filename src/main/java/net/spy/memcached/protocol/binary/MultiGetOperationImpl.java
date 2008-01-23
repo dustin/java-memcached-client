@@ -19,6 +19,7 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 	private static final int CMD_GETQ=9;
 
 	private final Map<Integer, String> keys=new HashMap<Integer, String>();
+	private final Map<Integer, byte[]> bkeys=new HashMap<Integer, byte[]>();
 	private final Map<String, Integer> rkeys=new HashMap<String, Integer>();
 
 	private final int terminalOpaque=generateOpaque();
@@ -38,6 +39,7 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 		if(rv == null) {
 			rv=generateOpaque();
 			keys.put(rv, k);
+			bkeys.put(rv, KeyUtil.getKeyBytes(k));
 			rkeys.put(k, rv);
 		}
 		return rv;
@@ -46,19 +48,18 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 	@Override
 	public void initialize() {
 		int size=(1+keys.size()) * MIN_RECV_PACKET;
-		for(byte[] b : KeyUtil.getKeyBytes(keys.values())) {
+		for(byte[] b : bkeys.values()) {
 			size += b.length;
 		}
 		// set up the initial header stuff
 		ByteBuffer bb=ByteBuffer.allocate(size);
-		for(Map.Entry<Integer, String> me : keys.entrySet()) {
-			final String key=me.getValue();
-			final byte[] keyBytes=KeyUtil.getKeyBytes(key);
+		for(Map.Entry<Integer, byte[]> me : bkeys.entrySet()) {
+			final byte[] keyBytes=me.getValue();
 
 			// Custom header
 			bb.put(REQ_MAGIC);
 			bb.put((byte)CMD_GETQ);
-			bb.putShort((short)KeyUtil.getKeyBytes(key).length);
+			bb.putShort((short)keyBytes.length);
 			bb.put((byte)0); // extralen
 			bb.put((byte)0); // data type
 			bb.putShort((short)0); // reserved
