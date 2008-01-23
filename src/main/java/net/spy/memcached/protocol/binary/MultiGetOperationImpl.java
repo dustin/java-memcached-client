@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
@@ -45,24 +46,26 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 	@Override
 	public void initialize() {
 		int size=(1+keys.size()) * MIN_RECV_PACKET;
-		for(String s : keys.values()) {
-			size += s.length();
+		for(byte[] b : KeyUtil.getKeyBytes(keys.values())) {
+			size += b.length;
 		}
 		// set up the initial header stuff
 		ByteBuffer bb=ByteBuffer.allocate(size);
 		for(Map.Entry<Integer, String> me : keys.entrySet()) {
-			String key=me.getValue();
+			final String key=me.getValue();
+			final byte[] keyBytes=KeyUtil.getKeyBytes(key);
+
 			// Custom header
 			bb.put(REQ_MAGIC);
 			bb.put((byte)CMD_GETQ);
-			bb.putShort((short)key.length());
+			bb.putShort((short)KeyUtil.getKeyBytes(key).length);
 			bb.put((byte)0); // extralen
 			bb.put((byte)0); // data type
 			bb.putShort((short)0); // reserved
-			bb.putInt(key.length());
+			bb.putInt(keyBytes.length);
 			bb.putInt(me.getKey());
 			// the actual key
-			bb.put(key.getBytes());
+			bb.put(keyBytes);
 		}
 		// Add the noop
 		bb.put(REQ_MAGIC);

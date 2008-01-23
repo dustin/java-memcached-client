@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationState;
@@ -222,7 +223,8 @@ abstract class OperationImpl extends BaseOperationImpl {
 				assert false : "Unhandled extra header type:  " + o.getClass();
 			}
 		}
-		int bufSize=MIN_RECV_PACKET + key.length() + val.length;
+		final byte[] keyBytes=KeyUtil.getKeyBytes(key);
+		int bufSize=MIN_RECV_PACKET + keyBytes.length + val.length;
 
 		//	# magic, opcode, keylen, extralen, datatype, [reserved],
 		//           bodylen, opaque
@@ -233,11 +235,11 @@ abstract class OperationImpl extends BaseOperationImpl {
 		assert bb.order() == ByteOrder.BIG_ENDIAN;
 		bb.put(REQ_MAGIC);
 		bb.put((byte)cmd);
-		bb.putShort((short)key.length());
+		bb.putShort((short)keyBytes.length);
 		bb.put((byte)extraLen);
 		bb.put((byte)0); // data type
 		bb.putShort((short)0); // reserved
-		bb.putInt(key.length() + val.length + extraLen);
+		bb.putInt(keyBytes.length + val.length + extraLen);
 		bb.putInt(opaque);
 
 		// Add the extra headers.
@@ -254,7 +256,7 @@ abstract class OperationImpl extends BaseOperationImpl {
 		}
 
 		// Add the normal stuff
-		bb.put(key.getBytes());
+		bb.put(keyBytes);
 		bb.put(val);
 
 		bb.flip();

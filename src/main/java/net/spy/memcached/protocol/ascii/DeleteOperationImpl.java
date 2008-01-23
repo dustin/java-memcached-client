@@ -4,6 +4,7 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
@@ -40,7 +41,8 @@ final class DeleteOperationImpl extends OperationImpl
 
 	@Override
 	public void initialize() {
-		ByteBuffer b=ByteBuffer.allocate(key.length() + OVERHEAD);
+		ByteBuffer b=ByteBuffer.allocate(
+			KeyUtil.getKeyBytes(key).length + OVERHEAD);
 		setArguments(b, "delete", key, when);
 		b.flip();
 		setBuffer(b);

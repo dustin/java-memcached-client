@@ -436,6 +436,33 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("output is not equal", value, output);
 	}
 
+	public void testUTF8KeyDelete() throws Exception {
+		final String key = "junit.Здравствуйте." + System.currentTimeMillis();
+		final String value = "Skiing rocks if you can find the time to go!";
+
+		assertTrue(client.set(key, 6000, value).get());
+		assertTrue(client.delete(key).get());
+		assertNull(client.get(key));
+	}
+
+	public void testUTF8MultiGet() throws Exception {
+		final String value = "Skiing rocks if you can find the time to go!";
+		Collection<String> keys=new ArrayList<String>();
+		for(int i=0; i<50; i++) {
+			final String key = "junit.Здравствуйте."
+				+ System.currentTimeMillis() + "." + i;
+			assertTrue(client.set(key, 6000, value).get());
+			keys.add(key);
+		}
+
+		Map<String, Object> vals = client.getBulk(keys);
+		assertEquals(keys.size(), vals.size());
+		for(Object o : vals.values()) {
+			assertEquals(value, o);
+		}
+		assertTrue(keys.containsAll(vals.keySet()));
+	}
+
 	public void testUTF8Value() throws Exception {
 		final String key = "junit.plaintext." + System.currentTimeMillis();
 		final String value = "Здравствуйте Здравствуйте Здравствуйте "
