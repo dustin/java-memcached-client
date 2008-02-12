@@ -821,7 +821,9 @@ public final class MemcachedClient extends SpyThread {
 		public Map<String, Object> get(long timeout, TimeUnit unit)
 			throws InterruptedException,
 			ExecutionException, TimeoutException {
-			latch.await(timeout, unit);
+			if(!latch.await(timeout, unit)) {
+				throw new TimeoutException("Operation timed out.");
+			}
 			for(Operation op : ops) {
 				if(op.isCancelled()) {
 					throw new ExecutionException(
@@ -881,7 +883,9 @@ public final class MemcachedClient extends SpyThread {
 
 		public T get(long duration, TimeUnit units)
 			throws InterruptedException, TimeoutException {
-			latch.await(duration, units);
+			if(!latch.await(duration, units)) {
+				throw new TimeoutException("Timed out waiting for operation");
+			}
 			return objRef.get();
 		}
 

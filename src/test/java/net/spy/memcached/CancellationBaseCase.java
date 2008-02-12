@@ -3,6 +3,8 @@ package net.spy.memcached;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Base class for cancellation tests.
@@ -21,7 +23,7 @@ public abstract class CancellationBaseCase extends ClientBaseCase {
 			AddrUtil.getAddresses("127.0.0.1:11213"));
 	}
 
-	protected void tryCancellation(Future<?> f) throws Exception {
+	private void tryCancellation(Future<?> f) throws Exception {
 		f.cancel(true);
 		assertTrue(f.isCancelled());
 		assertTrue(f.isDone());
@@ -34,43 +36,57 @@ public abstract class CancellationBaseCase extends ClientBaseCase {
 		}
 	}
 
+	private void tryTimeout(Future<?> f) throws Exception {
+		try {
+			Object o=f.get(10, TimeUnit.MILLISECONDS);
+			fail("Expected timeout, got " + o);
+		} catch(TimeoutException e) {
+			// expected
+		}
+	}
+
+	protected void tryTestSequence(Future<?> f) throws Exception {
+		tryTimeout(f);
+		tryCancellation(f);
+	}
+
 	public void testAsyncGetCancellation() throws Exception {
-		tryCancellation(client.asyncGet("k"));
+		tryTestSequence(client.asyncGet("k"));
 	}
 
 	public void testAsyncGetBulkCancellationCollection() throws Exception {
-		tryCancellation(client.asyncGetBulk(Arrays.asList("k", "k2")));
+		tryTestSequence(client.asyncGetBulk(Arrays.asList("k", "k2")));
 	}
 
 	public void testAsyncGetBulkCancellationVararg() throws Exception {
-		tryCancellation(client.asyncGetBulk("k", "k2"));
+		tryTestSequence(client.asyncGetBulk("k", "k2"));
 	}
 
 	public void testDeleteCancellation() throws Exception {
-		tryCancellation(client.delete("x"));
+		tryTestSequence(client.delete("x"));
 	}
 
 	public void testDelayedDeleteCancellation() throws Exception {
-		tryCancellation(client.delete("x", 5));
+		tryTestSequence(client.delete("x", 5));
 	}
 
 	public void testflushCancellation() throws Exception {
-		tryCancellation(client.flush());
+		tryTestSequence(client.flush());
 	}
 
 	public void testDelayedflushCancellation() throws Exception {
-		tryCancellation(client.flush(3));
+		tryTestSequence(client.flush(3));
 	}
 
 	public void testReplaceCancellation() throws Exception {
-		tryCancellation(client.replace("x", 3, "y"));
+		tryTestSequence(client.replace("x", 3, "y"));
 	}
 
 	public void testAddCancellation() throws Exception {
-		tryCancellation(client.add("x", 3, "y"));
+		tryTestSequence(client.add("x", 3, "y"));
 	}
 
 	public void testSetCancellation() throws Exception {
-		tryCancellation(client.set("x", 3, "y"));
+		tryTestSequence(client.set("x", 3, "y"));
 	}
 }
