@@ -218,6 +218,49 @@ public final class MemcachedClient extends SpyThread {
 	}
 
 	/**
+	 * Asynchronous CAS operation.
+	 *
+	 * @param key the key
+	 * @param casId the CAS identifier (from a gets operation)
+	 * @param value the new value
+	 * @return a future that will indicate whether the CAS was successful
+	 */
+	public Future<Boolean> asyncCAS(String key, long casId, Object value) {
+		CachedData co=transcoder.encode(value);
+		final CountDownLatch latch=new CountDownLatch(1);
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
+		Operation op=opFact.cas(key, casId, co.getFlags(),
+				co.getData(), new OperationCallback() {
+					public void receivedStatus(OperationStatus val) {
+						rv.set(val.isSuccess());
+					}
+					public void complete() {
+						latch.countDown();
+					}});
+		rv.setOperation(op);
+		addOp(key, op);
+		return rv;
+	}
+
+	/**
+	 * Perform a synchronous CAS operation.
+	 *
+	 * @param key the key
+	 * @param casId the CAS identifier (from a gets operation)
+	 * @param value the new value
+	 * @return true if the store succeeded
+	 */
+	public boolean cas(String key, long casId, Object value) {
+		try {
+			return asyncCAS(key, casId, value).get();
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted waiting for value", e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException("Exception waiting for value", e);
+		}
+	}
+
+	/**
 	 * Add an object to the cache iff it does not exist already.
 	 *
 	 * <p>
@@ -354,6 +397,7 @@ public final class MemcachedClient extends SpyThread {
 			}
 			public void gotData(String k, int flags, long cas, byte[] data) {
 				assert key.equals(k) : "Wrong key returned";
+				assert cas > 0 : "CAS was less than zero:  " + cas;
 				val=new CASValue(cas,
 					transcoder.decode(new CachedData(flags, data)));
 			}
