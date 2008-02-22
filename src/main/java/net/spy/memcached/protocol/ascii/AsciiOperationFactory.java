@@ -3,6 +3,7 @@ package net.spy.memcached.protocol.ascii;
 import java.util.Collection;
 
 import net.spy.memcached.OperationFactory;
+import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
@@ -62,6 +63,11 @@ public final class AsciiOperationFactory implements OperationFactory {
 
 	public NoopOperation noop(OperationCallback cb) {
 		return new VersionOperationImpl(cb);
+	}
+
+	public CASOperation cas(String key, long casId, int flags,
+			byte[] data, OperationCallback cb) {
+		return new CASOperationImpl(key, casId, flags, data, cb);
 	}
 
 }
