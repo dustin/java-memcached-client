@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.SpyThread;
+import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
@@ -223,16 +224,22 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param value the new value
-	 * @return a future that will indicate whether the CAS was successful
+	 * @return a future that will indicate the status of the CAS
 	 */
-	public Future<Boolean> asyncCAS(String key, long casId, Object value) {
+	public Future<CASResponse> asyncCAS(String key, long casId, Object value) {
 		CachedData co=transcoder.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
+		final OperationFuture<CASResponse> rv=new OperationFuture<CASResponse>(
+				latch);
 		Operation op=opFact.cas(key, casId, co.getFlags(),
 				co.getData(), new OperationCallback() {
 					public void receivedStatus(OperationStatus val) {
-						rv.set(val.isSuccess());
+						if(val instanceof CASOperationStatus) {
+							rv.set(((CASOperationStatus)val).getCASResponse());
+						} else {
+							throw new RuntimeException(
+								"Unhandled state: " + val);
+						}
 					}
 					public void complete() {
 						latch.countDown();
@@ -248,9 +255,9 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param value the new value
-	 * @return true if the store succeeded
+	 * @return a CASResponse
 	 */
-	public boolean cas(String key, long casId, Object value) {
+	public CASResponse cas(String key, long casId, Object value) {
 		try {
 			return asyncCAS(key, casId, value).get();
 		} catch (InterruptedException e) {
