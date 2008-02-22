@@ -13,16 +13,14 @@ import net.spy.memcached.ops.GetOperation;
  */
 class GetOperationImpl extends BaseGetOpImpl implements GetOperation {
 
+	private static final String CMD="get";
+
 	public GetOperationImpl(String key, GetOperation.Callback c) {
-		super(c, Collections.singleton(key));
+		super(CMD, c, Collections.singleton(key));
 	}
 
 	public GetOperationImpl(Collection<String> k, GetOperation.Callback c) {
-		super(c, new HashSet<String>(k));
+		super(CMD, c, new HashSet<String>(k));
 	}
 
-	@Override
-	protected String getCmd() {
-		return "get";
-	}
 }

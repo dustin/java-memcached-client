@@ -16,6 +16,7 @@ import net.spy.memcached.ops.OperationStatus;
 public abstract class BaseGetOpImpl extends OperationImpl {
 
 	private static final OperationStatus END = new OperationStatus(true, "END");
+	private final String cmd;
 	private final Collection<String> keys;
 	private String currentKey = null;
 	private long casValue=0;
@@ -24,8 +25,10 @@ public abstract class BaseGetOpImpl extends OperationImpl {
 	private int readOffset = 0;
 	private byte lookingFor = '\0';
 
-	public BaseGetOpImpl(OperationCallback cb, Collection<String> k) {
+	public BaseGetOpImpl(String c,
+			OperationCallback cb, Collection<String> k) {
 		super(cb);
+		cmd=c;
 		keys=k;
 	}
 
@@ -121,8 +124,6 @@ public abstract class BaseGetOpImpl extends OperationImpl {
 		}
 	}
 
-	protected abstract String getCmd();
-
 	@Override
 	public final void initialize() {
 		// Figure out the length of the request
@@ -133,7 +134,7 @@ public abstract class BaseGetOpImpl extends OperationImpl {
 			size++;
 		}
 		ByteBuffer b=ByteBuffer.allocate(size);
-		b.put(getCmd().getBytes());
+		b.put(cmd.getBytes());
 		for(byte[] k : keyBytes) {
 			b.put((byte)' ');
 			b.put(k);
