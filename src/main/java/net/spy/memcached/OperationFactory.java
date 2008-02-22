@@ -5,6 +5,7 @@ import java.util.Collection;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.NoopOperation;
@@ -55,6 +56,16 @@ public interface OperationFactory {
 	 * @return a new GetOperation
 	 */
 	GetOperation get(String key, GetOperation.Callback callback);
+
+	/**
+	 * Create a gets operation.
+	 *
+	 * @param key the key to get
+	 * @param callback the callback that will contain the results
+	 * @return a new GetsOperation
+	 */
+	GetsOperation gets(String key, GetsOperation.Callback callback);
+
 
 	/**
 	 * Create a get operation.
