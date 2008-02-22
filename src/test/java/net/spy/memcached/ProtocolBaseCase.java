@@ -38,6 +38,12 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("test1value", client.get("test1"));
 	}
 
+	public void testSimpleCASGets() throws Exception {
+		assertNull(client.gets("test1"));
+		client.set("test1", 5, "test1value");
+		assertEquals("test1value", client.gets("test1").getValue());
+	}
+
 	public void testExtendedUTF8Key() throws Exception {
 		String key="\u2013\u00ba\u2013\u220f\u2014\u00c4";
 		assertNull(client.get(key));

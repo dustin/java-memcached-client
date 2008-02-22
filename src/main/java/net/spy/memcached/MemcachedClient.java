@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.spy.SpyThread;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
@@ -331,6 +332,53 @@ public final class MemcachedClient extends SpyThread {
 		rv.setOperation(op);
 		addOp(key, op);
 		return rv;
+	}
+
+	/**
+	 * Gets (with CAS support) the given key asynchronously.
+	 *
+	 * @param key the key to fetch
+	 * @return a future that will hold the return value of the fetch
+	 */
+	public Future<CASValue> asyncGets(final String key) {
+
+		final CountDownLatch latch=new CountDownLatch(1);
+		final OperationFuture<CASValue> rv=
+			new OperationFuture<CASValue>(latch);
+
+		Operation op=opFact.gets(key,
+				new GetsOperation.Callback() {
+			private CASValue val=null;
+			public void receivedStatus(OperationStatus status) {
+				rv.set(val);
+			}
+			public void gotData(String k, int flags, long cas, byte[] data) {
+				assert key.equals(k) : "Wrong key returned";
+				val=new CASValue(cas,
+					transcoder.decode(new CachedData(flags, data)));
+			}
+			public void complete() {
+				latch.countDown();
+			}});
+		rv.setOperation(op);
+		addOp(key, op);
+		return rv;
+	}
+
+	/**
+	 * Gets (with CAS support) with a single key.
+	 *
+	 * @param key the key to get
+	 * @return the result from the cache and CAS id (null if there is none)
+	 */
+	public CASValue gets(String key) {
+		try {
+			return asyncGets(key).get();
+		} catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted waiting for value", e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException("Exception waiting for value", e);
+		}
 	}
 
 	/**
