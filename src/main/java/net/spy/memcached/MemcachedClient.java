@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.SpyThread;
 import net.spy.memcached.ops.CASOperationStatus;
+import net.spy.memcached.ops.CancelledOperationStatus;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
@@ -236,6 +237,8 @@ public final class MemcachedClient extends SpyThread {
 					public void receivedStatus(OperationStatus val) {
 						if(val instanceof CASOperationStatus) {
 							rv.set(((CASOperationStatus)val).getCASResponse());
+						} else if(val instanceof CancelledOperationStatus) {
+							// Cancelled, ignore and let it float up
 						} else {
 							throw new RuntimeException(
 								"Unhandled state: " + val);
