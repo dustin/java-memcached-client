@@ -4,6 +4,26 @@ import net.spy.SpyObject;
 
 /**
  * Object that provides mutation via CAS over a given memcache client.
+ *
+ * <p>Example usage (reinventing incr):</p>
+ *
+ * <pre>
+ * // Get or create a client.
+ * MemcachedClient client=[...];
+ *
+ * // Get a mutator instance that uses that client.
+ * CASMutator&lt;Long&gt; mutator=new CASMutator&lt;Long&gt;(client);
+ *
+ * // Get a mutation that knows what to do when a value is found.
+ * CASMutation&lt;Long&gt; mutation=new CASMutation&lt;Long&gt;() {
+ *     public Long getNewValue(Long current) {
+ *         return current + 1;
+ *     }
+ * };
+ *
+ * // Do a mutation.
+ * long currentValue=mutator.cas(someKey, 0L, 0, mutation);
+ * </pre>
  */
 public class CASMutator<T> extends SpyObject {
 
