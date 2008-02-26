@@ -10,7 +10,7 @@ import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 
-public class CASOperationImpl extends OperationImpl implements CASOperation {
+class CASOperationImpl extends OperationImpl implements CASOperation {
 
 	// Overhead storage stuff to make sure the buffer pushes out far enough.
 	private static final int OVERHEAD = 32;

@@ -13,7 +13,7 @@ import net.spy.memcached.ops.OperationStatus;
 /**
  * Base class for get and gets handlers.
  */
-public abstract class BaseGetOpImpl extends OperationImpl {
+abstract class BaseGetOpImpl extends OperationImpl {
 
 	private static final OperationStatus END = new OperationStatus(true, "END");
 	private final String cmd;
