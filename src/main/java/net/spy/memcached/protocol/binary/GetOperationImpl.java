@@ -4,9 +4,11 @@ import java.util.Collection;
 import java.util.Collections;
 
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.OperationStatus;
 
-class GetOperationImpl extends OperationImpl implements GetOperation {
+class GetOperationImpl extends OperationImpl
+	implements GetOperation, GetsOperation {
 
 	static final int CMD=0;
 
@@ -17,7 +19,12 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 
 	private final String key;
 
-	public GetOperationImpl(String k, Callback cb) {
+	public GetOperationImpl(String k, GetOperation.Callback cb) {
+		super(CMD, generateOpaque(), cb);
+		key=k;
+	}
+
+	public GetOperationImpl(String k, GetsOperation.Callback cb) {
 		super(CMD, generateOpaque(), cb);
 		key=k;
 	}
@@ -30,12 +37,17 @@ class GetOperationImpl extends OperationImpl implements GetOperation {
 	@Override
 	protected void decodePayload(byte[] pl) {
 		final int flags=decodeInt(pl, 0);
-		// TODO:  CAS handling 4-12
 		final byte[] data=new byte[pl.length - EXTRA_HDR_LEN];
 		System.arraycopy(pl, EXTRA_HDR_LEN, data, 0, pl.length-EXTRA_HDR_LEN);
-		Callback cb=(Callback)getCallback();
-		cb.gotData(key, flags, data);
-		cb.receivedStatus(STATUS_OK);
+		// Assume we're processing a get unless the cast fails.
+		try {
+			GetOperation.Callback cb=(GetOperation.Callback)getCallback();
+			cb.gotData(key, flags, data);
+		} catch(ClassCastException e) {
+			GetsOperation.Callback cb=(GetsOperation.Callback)getCallback();
+			cb.gotData(key, flags, decodeLong(pl, 4), data);
+		}
+		getCallback().receivedStatus(STATUS_OK);
 	}
 
 	@Override

@@ -54,6 +54,10 @@ public abstract class CancellationBaseCase extends ClientBaseCase {
 		tryTestSequence(client.asyncGet("k"));
 	}
 
+	public void testAsyncGetsCancellation() throws Exception {
+		tryTestSequence(client.asyncGets("k"));
+	}
+
 	public void testAsyncGetBulkCancellationCollection() throws Exception {
 		tryTestSequence(client.asyncGetBulk(Arrays.asList("k", "k2")));
 	}
@@ -88,5 +92,9 @@ public abstract class CancellationBaseCase extends ClientBaseCase {
 
 	public void testSetCancellation() throws Exception {
 		tryTestSequence(client.set("x", 3, "y"));
+	}
+
+	public void testCASCancellation() throws Exception {
+		tryTestSequence(client.asyncCAS("x", 3, "y"));
 	}
 }
