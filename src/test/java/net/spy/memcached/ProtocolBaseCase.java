@@ -38,6 +38,45 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("test1value", client.get("test1"));
 	}
 
+	public void testSimpleCASGets() throws Exception {
+		assertNull(client.gets("test1"));
+		client.set("test1", 5, "test1value");
+		assertEquals("test1value", client.gets("test1").getValue());
+	}
+
+	public void testCAS() throws Exception {
+		final String key="castestkey";
+		// First, make sure it doesn't work for a non-existing value.
+		assertSame("Expected error CASing with no existing value.",
+			CASResponse.NOT_FOUND,
+			client.cas(key, 0x7fffffffffl, "bad value"));
+
+		// OK, stick a value in here.
+		assertTrue(client.add(key, 5, "original value").get());
+		CASValue getsVal = client.gets(key);
+		assertEquals("original value", getsVal.getValue());
+
+		// Now try it with an existing value, but wrong CAS id
+		assertSame("Expected error CASing with invalid id",
+			CASResponse.EXISTS,
+			client.cas(key, getsVal.getCas() + 1, "broken value"));
+		// Validate the original value is still in tact.
+		assertEquals("original value", getsVal.getValue());
+
+		// OK, now do a valid update
+		assertSame("Expected successful CAS with correct id ("
+			+ getsVal.getCas() + ")",
+			CASResponse.OK,
+			client.cas(key, getsVal.getCas(), "new value"));
+		assertEquals("new value", client.get(key));
+
+		// Test a CAS replay
+		assertSame("Expected unsuccessful CAS with replayed id",
+			CASResponse.EXISTS,
+			client.cas(key, getsVal.getCas(), "crap value"));
+		assertEquals("new value", client.get(key));
+	}
+
 	public void testExtendedUTF8Key() throws Exception {
 		String key="\u2013\u00ba\u2013\u220f\u2014\u00c4";
 		assertNull(client.get(key));
