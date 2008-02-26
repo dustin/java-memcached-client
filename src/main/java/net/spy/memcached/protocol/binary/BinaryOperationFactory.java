@@ -3,9 +3,11 @@ package net.spy.memcached.protocol.binary;
 import java.util.Collection;
 
 import net.spy.memcached.OperationFactory;
+import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.NoopOperation;
@@ -38,16 +40,17 @@ public class BinaryOperationFactory implements OperationFactory {
 		return new MultiGetOperationImpl(value, cb);
 	}
 
+	public GetsOperation gets(String key, GetsOperation.Callback cb) {
+		return new GetOperationImpl(key, cb);
+	}
+
 	public MutatatorOperation mutate(Mutator m, String key, int by,
 			long def, int exp, OperationCallback cb) {
-		// TODO Auto-generated method stub
 		return new MutatorOperationImpl(m, key, by, def, exp, cb);
-
 	}
 
 	public StatsOperation stats(String arg,
 			net.spy.memcached.ops.StatsOperation.Callback cb) {
-		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
@@ -62,6 +65,12 @@ public class BinaryOperationFactory implements OperationFactory {
 
 	public NoopOperation noop(OperationCallback cb) {
 		return new NoopOperationImpl(cb);
+	}
+
+	public CASOperation cas(String key, long casId, int flags,
+			byte[] data, OperationCallback cb) {
+		return new StoreOperationImpl(StoreType.set, key, flags, 0, data,
+				casId, cb);
 	}
 
 }
