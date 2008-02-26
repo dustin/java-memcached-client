@@ -12,6 +12,9 @@ public class AddrUtil {
 	/**
 	 * Split a string in the form of "host:port host2:port" into a List of
 	 * InetSocketAddress instances suitable for instantiating a MemcachedClient.
+	 *
+	 * Note that colon-delimited IPv6 is also supported.
+	 * For example:  ::1:11211
 	 */
 	public static List<InetSocketAddress> getAddresses(String s) {
 		if(s == null) {
@@ -25,14 +28,17 @@ public class AddrUtil {
 			new ArrayList<InetSocketAddress>();
 
 		for(String hoststuff : s.split(" ")) {
-			String[] parts=hoststuff.split(":");
-			if(parts.length != 2) {
+			int finalColon=hoststuff.lastIndexOf(':');
+			if(finalColon < 1) {
 				throw new IllegalArgumentException("Invalid server ``"
-						+ hoststuff + "'' in list:  " + s);
-			}
+					+ hoststuff + "'' in list:  " + s);
 
-			addrs.add(new InetSocketAddress(parts[0],
-					Integer.parseInt(parts[1])));
+			}
+			String hostPart=hoststuff.substring(0, finalColon);
+			String portNum=hoststuff.substring(finalColon+1);
+
+			addrs.add(new InetSocketAddress(hostPart,
+					Integer.parseInt(portNum)));
 		}
 		assert !addrs.isEmpty() : "No addrs found";
 		return addrs;

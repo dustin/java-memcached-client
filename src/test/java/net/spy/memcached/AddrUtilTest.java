@@ -33,9 +33,9 @@ public class AddrUtilTest extends TestCase {
 		try {
 			List<InetSocketAddress> addrs=AddrUtil.getAddresses(s);
 			fail("Expected failure, got " + addrs);
-		} catch(IllegalArgumentException e) {
-			assertEquals("Invalid server ``www.yahoo.com:81:more'' in list:  "
-					+ s, e.getMessage());
+		} catch(NumberFormatException e) {
+			e.printStackTrace();
+			assertEquals("For input string: \"more\"", e.getMessage());
 		}
 	}
 
@@ -78,5 +78,13 @@ public class AddrUtilTest extends TestCase {
 		} catch(NullPointerException e) {
 			assertEquals("Null host list", e.getMessage());
 		}
+	}
+
+	public void testIPv6Host() throws Exception {
+		List<InetSocketAddress> addrs=
+			AddrUtil.getAddresses("::1:80");
+		assertEquals(1, addrs.size());
+		assertEquals("localhost", addrs.get(0).getHostName());
+		assertEquals(80, addrs.get(0).getPort());
 	}
 }
