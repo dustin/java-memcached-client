@@ -6,7 +6,7 @@ import java.util.Collections;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationStatus;
 
-public class GetOperationImpl extends OperationImpl implements GetOperation {
+class GetOperationImpl extends OperationImpl implements GetOperation {
 
 	static final int CMD=0;
 

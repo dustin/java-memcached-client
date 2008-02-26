@@ -6,7 +6,7 @@ import net.spy.memcached.ops.OperationCallback;
 /**
  * Implementation of a noop operation.
  */
-public class NoopOperationImpl extends OperationImpl implements NoopOperation {
+class NoopOperationImpl extends OperationImpl implements NoopOperation {
 
 	static final int CMD=10;
 

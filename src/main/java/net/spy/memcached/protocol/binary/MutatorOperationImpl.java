@@ -5,7 +5,7 @@ import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 
-public class MutatorOperationImpl extends OperationImpl implements
+class MutatorOperationImpl extends OperationImpl implements
 		MutatatorOperation {
 
 	private static final int CMD_INCR=5;

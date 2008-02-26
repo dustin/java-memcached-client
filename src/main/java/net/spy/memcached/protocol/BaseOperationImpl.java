@@ -10,6 +10,9 @@ import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 
+/** 
+ * Base class for protocol-specific operation implementations.
+ */
 public abstract class BaseOperationImpl extends SpyObject {
 
 	/**
