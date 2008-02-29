@@ -21,8 +21,8 @@ require 'buildr/cobertura'
 plugins=[
   'spy:m1compat:rake:1.0',
   'spy:site:rake:1.2.3',
-  'spy:hg_tree_version:rake:1.0',
-  'spy:build_info:rake:1.0.1'
+  'spy:git_tree_version:rake:1.0',
+  'spy:build_info:rake:1.1'
 ] 
 
 plugins.each do |spec|
@@ -45,7 +45,7 @@ define "memcached" do
   compile.with m1("spy:spy:jar:2.4")
 
   # Gen build
-  gen_build_info "net.spy.memcached"
+  gen_build_info "net.spy.memcached", "git"
   compile.from "target/generated-src"
   resources.from "target/generated-rsrc"
 
