@@ -132,7 +132,7 @@ MemcachedClient c=new MemcachedClient(
 			<h3>Source Code</h3>
 			<p>
 				The source can be downloaded or checked out from my
-				<a href="http://hg.west.spy.net/hg/memcached/">mercurial
+				<a href="http://github.com/dustin/java-memcached-client/tree">git
 				repository</a>.
 			</p>
 			<h3>Dependencies</h3>
