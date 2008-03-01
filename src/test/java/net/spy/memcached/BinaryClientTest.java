@@ -12,14 +12,8 @@ public class BinaryClientTest extends ProtocolBaseCase {
 	}
 
 	@Override
-	protected void initClient(ConnectionFactory cf) throws Exception {
-		client=new MemcachedClient(cf,
-			AddrUtil.getAddresses("127.0.0.1:11212"));
-	}
-
-	@Override
 	protected String getExpectedVersionSource() {
-		return "/127.0.0.1:11212";
+		return "/127.0.0.1:11211";
 	}
 
 	public void testStats() {
