@@ -5,6 +5,8 @@ package net.spy.memcached;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.nio.channels.CancelledKeyException;
+import java.nio.channels.ClosedSelectorException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -812,6 +814,16 @@ public final class MemcachedClient extends SpyThread {
 		return flush(-1);
 	}
 
+	private void logRunException(Exception e) {
+		if(shuttingDown) {
+			// There are a couple types of errors that occur during the
+			// shutdown sequence that are considered OK.  Log at debug.
+			getLogger().debug("Exception occurred during shutdown", e);
+		} else {
+			getLogger().warn("Problem handling memcached IO", e);
+		}
+	}
+
 	/**
 	 * Infinitely loop processing IO.
 	 */
@@ -821,7 +833,11 @@ public final class MemcachedClient extends SpyThread {
 			try {
 				conn.handleIO();
 			} catch(IOException e) {
-				getLogger().warn("Problem handling memcached IO", e);
+				logRunException(e);
+			} catch(CancelledKeyException e) {
+				logRunException(e);
+			} catch(ClosedSelectorException e) {
+				logRunException(e);
 			}
 		}
 		getLogger().info("Shut down memcached client");

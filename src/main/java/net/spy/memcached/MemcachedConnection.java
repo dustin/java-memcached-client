@@ -157,7 +157,7 @@ public final class MemcachedConnection extends SpyObject {
 		int selected=selector.select(delay);
 		Set<SelectionKey> selectedKeys=selector.selectedKeys();
 
-		if(selectedKeys.isEmpty()) {
+		if(selectedKeys.isEmpty() && !shutDown) {
 			getLogger().debug("No selectors ready, interrupted: "
 					+ Thread.interrupted());
 			if(++emptySelects > DOUBLE_CHECK_EMPTY) {
@@ -184,7 +184,7 @@ public final class MemcachedConnection extends SpyObject {
 			selectedKeys.clear();
 		}
 
-		if(!reconnectQueue.isEmpty()) {
+		if(!shutDown && !reconnectQueue.isEmpty()) {
 			attemptReconnects();
 		}
 	}
@@ -468,6 +468,9 @@ public final class MemcachedConnection extends SpyObject {
 	 * Shut down all of the connections.
 	 */
 	public void shutdown() throws IOException {
+		shutDown=true;
+		Selector s=selector.wakeup();
+		assert s == selector : "Wakeup returned the wrong selector.";
 		for(MemcachedNode qa : locator.getAll()) {
 			if(qa.getChannel() != null) {
 				qa.getChannel().close();
