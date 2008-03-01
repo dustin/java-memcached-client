@@ -1,8 +1,5 @@
 = SOONER
 
-- Clean up shutdown to not try to avoid erroring, and not report expected
-  errors.
-
 - Extract an interface from MemcachedClient and add a factory for setting these
   up.  Configuration is getting a bit gross, so containing these would be good.
 
