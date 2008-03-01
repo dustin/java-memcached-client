@@ -2,9 +2,11 @@ package net.spy.memcached;
 
 import java.util.Collection;
 
+import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.NoopOperation;
@@ -57,6 +59,16 @@ public interface OperationFactory {
 	GetOperation get(String key, GetOperation.Callback callback);
 
 	/**
+	 * Create a gets operation.
+	 *
+	 * @param key the key to get
+	 * @param callback the callback that will contain the results
+	 * @return a new GetsOperation
+	 */
+	GetsOperation gets(String key, GetsOperation.Callback callback);
+
+
+	/**
 	 * Create a get operation.
 	 *
 	 * @param key the collection of keys to get
@@ -101,6 +113,20 @@ public interface OperationFactory {
 	 */
 	StoreOperation store(StoreType storeType, String key, int flags, int exp,
 			byte[] data, OperationCallback cb);
+
+	/**
+	 * Create a CAS operation.
+	 *
+	 * @param key the key to store
+	 * @param casId the CAS identifier value (from a gets operation)
+	 * @param flags the storage flags
+	 * @param exp the expiration time
+	 * @param data the data
+	 * @param cb the status callback
+	 * @return the new store operation
+	 */
+	CASOperation cas(String key, long casId, int flags, byte[] data,
+			OperationCallback cb);
 
 	/**
 	 * Create a new version operation.

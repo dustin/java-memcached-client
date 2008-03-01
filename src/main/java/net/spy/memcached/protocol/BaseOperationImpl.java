@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import net.spy.SpyObject;
+import net.spy.memcached.ops.CancelledOperationStatus;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationException;
@@ -18,8 +19,8 @@ public abstract class BaseOperationImpl extends SpyObject {
 	/**
 	 * Status object for cancelled operations.
 	 */
-	protected static final OperationStatus CANCELLED =
-		new OperationStatus(false, "cancelled");
+	public static final OperationStatus CANCELLED =
+		new CancelledOperationStatus();
 	private OperationState state = OperationState.WRITING;
 	private ByteBuffer cmd = null;
 	private boolean cancelled = false;

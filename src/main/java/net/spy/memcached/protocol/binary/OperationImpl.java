@@ -5,7 +5,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.spy.memcached.CASResponse;
 import net.spy.memcached.KeyUtil;
+import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationState;
@@ -27,14 +29,14 @@ abstract class OperationImpl extends BaseOperationImpl {
 	protected static final int ERR_NOT_FOUND = 1;
 	protected static final int ERR_EXISTS = 2;
 	protected static final OperationStatus NOT_FOUND_STATUS =
-		new OperationStatus(false, "Not Found");
+		new CASOperationStatus(false, "Not Found", CASResponse.NOT_FOUND);
 	protected static final OperationStatus EXISTS_STATUS =
-		new OperationStatus(false, "Object exists");
+		new CASOperationStatus(false, "Object exists", CASResponse.EXISTS);
 
 	protected static final byte[] EMPTY_BYTES = new byte[0];
 
 	protected static final OperationStatus STATUS_OK =
-		new OperationStatus(true, "OK");
+		new CASOperationStatus(true, "OK", CASResponse.OK);
 
 	private static final AtomicInteger seqNumber=new AtomicInteger(0);
 

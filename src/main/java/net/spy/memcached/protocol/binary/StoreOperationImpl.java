@@ -1,11 +1,13 @@
 package net.spy.memcached.protocol.binary;
 
+import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 
-class StoreOperationImpl extends OperationImpl implements StoreOperation {
+class StoreOperationImpl extends OperationImpl
+	implements StoreOperation, CASOperation {
 
 	private static int SET=1;
 	private static int ADD=2;
