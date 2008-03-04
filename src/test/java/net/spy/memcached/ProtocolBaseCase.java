@@ -32,6 +32,11 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		// This runs through the startup/flush cycle
 	}
 
+	public void testDoubleShutdown() {
+		client.shutdown();
+		client.shutdown();
+	}
+
 	public void testSimpleGet() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
