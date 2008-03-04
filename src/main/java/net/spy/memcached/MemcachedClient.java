@@ -234,7 +234,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param value the new value
-	 * @param tc the transcoder to serialize and unserialize value
+	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future that will indicate the status of the CAS
 	 */
 	public <T> Future<CASResponse> asyncCAS(String key, long casId, T value, Transcoder<T> tc) {
@@ -272,7 +272,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param value the new value
-	 * @param tc the transcoder to serialize and unserialize value
+	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a CASResponse
 	 */
 	public <T> CASResponse cas(String key, long casId, T value, Transcoder<T> tc) {
@@ -312,7 +312,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize value
+	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future representing the processing of this operation
 	 */
 	public <T> Future<Boolean> add(String key, int exp, T o, Transcoder<T> tc) {
@@ -346,7 +346,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize value
+	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future representing the processing of this operation
 	 */
 	public <T> Future<Boolean> set(String key, int exp, T o, Transcoder<T> tc) {
@@ -381,7 +381,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize value
+	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future representing the processing of this operation
 	 */
 	public <T> Future<Boolean> replace(String key, int exp, T o, Transcoder<T> tc) {
