@@ -2,19 +2,6 @@
 
 package net.spy.memcached.transcoders;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
-import net.spy.SpyObject;
-import net.spy.util.CloseUtil;
-
 import net.spy.memcached.CachedData;
 
 /**
