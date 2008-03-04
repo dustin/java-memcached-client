@@ -139,11 +139,11 @@ public final class MemcachedClient extends SpyThread {
 	 * Set the transcoder for managing the cache representations of objects
 	 * going in and out of the cache.
 	 */
-	public void setTranscoder(Transcoder<Object> to) {
-		if(to == null) {
+	public void setTranscoder(Transcoder<Object> tc) {
+		if(tc == null) {
 			throw new NullPointerException("Can't use a null transcoder");
 		}
-		transcoder=to;
+		transcoder=tc;
 	}
 
 	/**
