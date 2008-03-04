@@ -96,7 +96,7 @@ public final class MemcachedClient extends SpyThread {
 	private final MemcachedConnection conn;
 	final OperationFactory opFact;
 
-	Transcoder transcoder=null;
+	Transcoder<Object> transcoder=null;
 
 	/**
 	 * Get a memcache client operating on the specified memcached locations.
@@ -139,7 +139,7 @@ public final class MemcachedClient extends SpyThread {
 	 * Set the transcoder for managing the cache representations of objects
 	 * going in and out of the cache.
 	 */
-	public void setTranscoder(Transcoder to) {
+	public void setTranscoder(Transcoder<Object> to) {
 		if(to == null) {
 			throw new NullPointerException("Can't use a null transcoder");
 		}
@@ -149,7 +149,7 @@ public final class MemcachedClient extends SpyThread {
 	/**
 	 * Get the current transcoder that's in use.
 	 */
-	public Transcoder getTranscoder() {
+	public Transcoder<Object> getTranscoder() {
 		return transcoder;
 	}
 

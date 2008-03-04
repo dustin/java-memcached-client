@@ -139,9 +139,9 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	}
 
 	public void testSetTranscoder() {
-		Transcoder tc=client.getTranscoder();
+		Transcoder<Object> tc=client.getTranscoder();
 		assertTrue(tc instanceof SerializingTranscoder);
-		Transcoder tmptc=new Transcoder(){
+		Transcoder<Object> tmptc=new Transcoder<Object>(){
 			public Object decode(CachedData d) {
 				throw new RuntimeException("Not implemented.");
 			}

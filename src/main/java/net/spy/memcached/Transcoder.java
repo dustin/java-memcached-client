@@ -6,7 +6,7 @@ package net.spy.memcached;
  * Transcoder is an interface for classes that convert between byte arrays and
  * objects for storage in the cache.
  */
-public interface Transcoder {
+public interface Transcoder<T> {
 
 	/**
 	 * Encode the given object for storage.
@@ -14,7 +14,7 @@ public interface Transcoder {
 	 * @param o the object
 	 * @return the CachedData representing what should be sent
 	 */
-	CachedData encode(Object o);
+	CachedData encode(T o);
 
 	/**
 	 * Decode the cached object into the object it represents.
@@ -22,5 +22,5 @@ public interface Transcoder {
 	 * @param d the data
 	 * @return the return value
 	 */
-	Object decode(CachedData d);
+	T decode(CachedData d);
 }
