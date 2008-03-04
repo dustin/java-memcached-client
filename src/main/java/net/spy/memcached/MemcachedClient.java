@@ -203,9 +203,9 @@ public final class MemcachedClient extends SpyThread {
 		return conn.broadcastOperation(of);
 	}
 
-	private Future<Boolean> asyncStore(StoreType storeType,
-			String key, int exp, Object value) {
-		CachedData co=transcoder.encode(value);
+	private <T> Future<Boolean> asyncStore(StoreType storeType, String key,
+					       int exp, T value, Transcoder<T> tc) {
+		CachedData co=tc.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
 		Operation op=opFact.store(storeType, key, co.getFlags(),
@@ -221,16 +221,22 @@ public final class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
+	private Future<Boolean> asyncStore(StoreType storeType,
+			String key, int exp, Object value) {
+		return asyncStore(storeType, key, exp, value, transcoder);
+	}
+
 	/**
 	 * Asynchronous CAS operation.
 	 *
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param value the new value
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a future that will indicate the status of the CAS
 	 */
-	public Future<CASResponse> asyncCAS(String key, long casId, Object value) {
-		CachedData co=transcoder.encode(value);
+	public <T> Future<CASResponse> asyncCAS(String key, long casId, T value, Transcoder<T> tc) {
+		CachedData co=tc.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASResponse> rv=new OperationFuture<CASResponse>(
 				latch);
@@ -254,22 +260,31 @@ public final class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
+	public Future<CASResponse> asyncCAS(String key, long casId, Object value) {
+		return asyncCAS(key, casId, value, transcoder);
+	}
+
 	/**
 	 * Perform a synchronous CAS operation.
 	 *
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param value the new value
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a CASResponse
 	 */
-	public CASResponse cas(String key, long casId, Object value) {
+	public <T> CASResponse cas(String key, long casId, T value, Transcoder<T> tc) {
 		try {
-			return asyncCAS(key, casId, value).get();
+			return asyncCAS(key, casId, value, tc).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for value", e);
 		} catch (ExecutionException e) {
 			throw new RuntimeException("Exception waiting for value", e);
 		}
+	}
+
+	public CASResponse cas(String key, long casId, Object value) {
+		return cas(key, casId, value, transcoder);
 	}
 
 	/**
@@ -295,10 +310,15 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a future representing the processing of this operation
 	 */
+	public <T> Future<Boolean> add(String key, int exp, T o, Transcoder<T> tc) {
+		return asyncStore(StoreType.add, key, exp, o, tc);
+	}
+
 	public Future<Boolean> add(String key, int exp, Object o) {
-		return asyncStore(StoreType.add, key, exp, o);
+		return asyncStore(StoreType.add, key, exp, o, transcoder);
 	}
 
 	/**
@@ -324,10 +344,15 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a future representing the processing of this operation
 	 */
+	public <T> Future<Boolean> set(String key, int exp, T o, Transcoder<T> tc) {
+		return asyncStore(StoreType.set, key, exp, o, tc);
+	}
+
 	public Future<Boolean> set(String key, int exp, Object o) {
-		return asyncStore(StoreType.set, key, exp, o);
+		return asyncStore(StoreType.set, key, exp, o, transcoder);
 	}
 
 	/**
@@ -354,32 +379,38 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a future representing the processing of this operation
 	 */
+	public <T> Future<Boolean> replace(String key, int exp, T o, Transcoder<T> tc) {
+		return asyncStore(StoreType.replace, key, exp, o, tc);
+	}
+
 	public Future<Boolean> replace(String key, int exp, Object o) {
-		return asyncStore(StoreType.replace, key, exp, o);
+		return asyncStore(StoreType.replace, key, exp, o, transcoder);
 	}
 
 	/**
 	 * Get the given key asynchronously.
 	 *
 	 * @param key the key to fetch
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a future that will hold the return value of the fetch
 	 */
-	public Future<Object> asyncGet(final String key) {
+	public <T> Future<T> asyncGet(final String key, final Transcoder<T> tc) {
 
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<Object> rv=new OperationFuture<Object>(latch);
+		final OperationFuture<T> rv=new OperationFuture<T>(latch);
 
 		Operation op=opFact.get(key,
 				new GetOperation.Callback() {
-			private Object val=null;
+			private T val=null;
 			public void receivedStatus(OperationStatus status) {
 				rv.set(val);
 			}
 			public void gotData(String k, int flags, byte[] data) {
 				assert key.equals(k) : "Wrong key returned";
-				val=transcoder.decode(new CachedData(flags, data));
+				val=tc.decode(new CachedData(flags, data));
 			}
 			public void complete() {
 				latch.countDown();
@@ -389,13 +420,18 @@ public final class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
+	public Future<Object> asyncGet(final String key) {
+		return asyncGet(key, transcoder);
+	}
+
 	/**
 	 * Gets (with CAS support) the given key asynchronously.
 	 *
 	 * @param key the key to fetch
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a future that will hold the return value of the fetch
 	 */
-	public Future<CASValue> asyncGets(final String key) {
+	public <T> Future<CASValue> asyncGets(final String key, final Transcoder<T> tc) {
 
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASValue> rv=
@@ -411,7 +447,7 @@ public final class MemcachedClient extends SpyThread {
 				assert key.equals(k) : "Wrong key returned";
 				assert cas > 0 : "CAS was less than zero:  " + cas;
 				val=new CASValue(cas,
-					transcoder.decode(new CachedData(flags, data)));
+					tc.decode(new CachedData(flags, data)));
 			}
 			public void complete() {
 				latch.countDown();
@@ -421,31 +457,41 @@ public final class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
+	public Future<CASValue> asyncGets(final String key) {
+		return asyncGets(key, transcoder);
+	}
+
 	/**
 	 * Gets (with CAS support) with a single key.
 	 *
 	 * @param key the key to get
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return the result from the cache and CAS id (null if there is none)
 	 */
-	public CASValue gets(String key) {
+	public <T> CASValue gets(String key, Transcoder<T> tc) {
 		try {
-			return asyncGets(key).get();
+			return asyncGets(key, tc).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for value", e);
 		} catch (ExecutionException e) {
 			throw new RuntimeException("Exception waiting for value", e);
 		}
+	}
+
+	public CASValue gets(String key) {
+		return gets(key, transcoder);
 	}
 
 	/**
 	 * Get with a single key.
 	 *
 	 * @param key the key to get
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return the result from the cache (null if there is none)
 	 */
-	public Object get(String key) {
+	public <T> T get(String key, Transcoder<T> tc) {
 		try {
-			return asyncGet(key).get();
+			return asyncGet(key, tc).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for value", e);
 		} catch (ExecutionException e) {
@@ -453,14 +499,19 @@ public final class MemcachedClient extends SpyThread {
 		}
 	}
 
+	public Object get(String key) {
+		return get(key, transcoder);
+	}
+
 	/**
 	 * Asynchronously get a bunch of objects from the cache.
 	 *
 	 * @param keys the keys to request
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a Future result of that fetch
 	 */
-	public Future<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
-		final Map<String, Object> m=new ConcurrentHashMap<String, Object>();
+	public <T> Future<Map<String, T>> asyncGetBulk(Collection<String> keys, final Transcoder<T> tc) {
+		final Map<String, T> m=new ConcurrentHashMap<String, T>();
 		// Break the gets down into groups by key
 		final Map<MemcachedNode, Collection<String>> chunks
 			=new HashMap<MemcachedNode, Collection<String>>();
@@ -503,7 +554,7 @@ public final class MemcachedClient extends SpyThread {
 					}
 				}
 				public void gotData(String k, int flags, byte[] data) {
-					Object val = transcoder.decode(new CachedData(flags, data));
+					T val = tc.decode(new CachedData(flags, data));
 					// val may be null if the transcoder did not understand
 					// the value.
 					if(val != null) {
@@ -529,27 +580,38 @@ public final class MemcachedClient extends SpyThread {
 		assert mops.size() == chunks.size();
 		checkState();
 		conn.addOperations(mops);
-		return new BulkGetFuture(m, ops, latch);
+		return new BulkGetFuture<T>(m, ops, latch);
+	}
+
+	public Future<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
+		return asyncGetBulk(keys, transcoder);
 	}
 
 	/**
 	 * Varargs wrapper for asynchronous bulk gets.
 	 *
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @param keys one more more keys to get
 	 * @return the future values of those keys
 	 */
-	public Future<Map<String, Object>> asyncGetBulk(String... keys) {
-		return asyncGetBulk(Arrays.asList(keys));
+	public <T> Future<Map<String, T>> asyncGetBulk(Transcoder<T> tc, String... keys) {
+		return asyncGetBulk(Arrays.asList(keys), tc);
 	}
+
+	public Future<Map<String, Object>> asyncGetBulk(String... keys) {
+		return asyncGetBulk(Arrays.asList(keys), transcoder);
+	}
+
 	/**
 	 * Get the values for multiple keys from the cache.
 	 *
 	 * @param keys the keys
+	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a map of the values (for each value that exists)
 	 */
-	public Map<String, Object> getBulk(Collection<String> keys) {
+	public <T> Map<String, T> getBulk(Collection<String> keys, Transcoder<T> tc) {
 		try {
-			return asyncGetBulk(keys).get();
+			return asyncGetBulk(keys, tc).get();
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted getting bulk values", e);
 		} catch (ExecutionException e) {
@@ -563,8 +625,29 @@ public final class MemcachedClient extends SpyThread {
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 */
+	public Map<String, Object> getBulk(Collection<String> keys) {
+		return getBulk(keys, transcoder);
+	}
+
+	/**
+	 * Get the values for multiple keys from the cache.
+	 *
+	 * @param tc the transcoder to serialize and unserialize value
+	 * @param keys the keys
+	 * @return a map of the values (for each value that exists)
+	 */
+	public <T> Map<String, T> getBulk(Transcoder<T> tc, String... keys) {
+		return getBulk(Arrays.asList(keys), tc);
+	}
+
+	/**
+	 * Get the values for multiple keys from the cache.
+	 *
+	 * @param keys the keys
+	 * @return a map of the values (for each value that exists)
+	 */
 	public Map<String, Object> getBulk(String... keys) {
-		return getBulk(Arrays.asList(keys));
+		return getBulk(Arrays.asList(keys), transcoder);
 	}
 
 	/**
@@ -908,13 +991,13 @@ public final class MemcachedClient extends SpyThread {
 		}
 	}
 
-	static class BulkGetFuture implements Future<Map<String, Object>> {
-		private final Map<String, Object> rvMap;
+	static class BulkGetFuture<T> implements Future<Map<String, T>> {
+		private final Map<String, T> rvMap;
 		private final Collection<Operation> ops;
 		private final CountDownLatch latch;
 		private boolean cancelled=false;
 
-		public BulkGetFuture(Map<String, Object> m,
+		public BulkGetFuture(Map<String, T> m,
 				Collection<Operation> getOps, CountDownLatch l) {
 			super();
 			rvMap = m;
@@ -932,7 +1015,7 @@ public final class MemcachedClient extends SpyThread {
 			return rv;
 		}
 
-		public Map<String, Object> get()
+		public Map<String, T> get()
 			throws InterruptedException, ExecutionException {
 			try {
 				return get(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
@@ -941,7 +1024,7 @@ public final class MemcachedClient extends SpyThread {
 			}
 		}
 
-		public Map<String, Object> get(long timeout, TimeUnit unit)
+		public Map<String, T> get(long timeout, TimeUnit unit)
 			throws InterruptedException,
 			ExecutionException, TimeoutException {
 			if(!latch.await(timeout, unit)) {
