@@ -1,6 +1,8 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
 
-package net.spy.memcached;
+package net.spy.memcached.transcoders;
+
+import net.spy.memcached.CachedData;
 
 /**
  * Transcoder is an interface for classes that convert between byte arrays and

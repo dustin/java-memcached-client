@@ -1,6 +1,6 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
 
-package net.spy.memcached;
+package net.spy.memcached.transcoders;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+
+import net.spy.memcached.CachedData;
 
 import net.spy.test.BaseMockCase;
 

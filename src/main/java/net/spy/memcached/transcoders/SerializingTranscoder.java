@@ -1,6 +1,6 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
 
-package net.spy.memcached;
+package net.spy.memcached.transcoders;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,6 +14,8 @@ import java.util.zip.GZIPOutputStream;
 
 import net.spy.SpyObject;
 import net.spy.util.CloseUtil;
+
+import net.spy.memcached.CachedData;
 
 /**
  * Transcoder that serializes and compresses objects.
