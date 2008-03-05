@@ -1,7 +1,6 @@
 package net.spy.memcached;
 
 import net.spy.SpyObject;
-
 import net.spy.memcached.transcoders.Transcoder;
 
 /**
@@ -32,19 +31,35 @@ import net.spy.memcached.transcoders.Transcoder;
  */
 public class CASMutator<T> extends SpyObject {
 
+	private static final int MAX_TRIES=8192;
+
 	private final MemcachedClient client;
 	private final Transcoder<T> transcoder;
+	private final int max;
 
 	/**
 	 * Construct a CASMutator that uses the given client.
 	 *
 	 * @param c the client
 	 * @param tc the Transcoder to use
+	 * @param max_tries the maximum number of attempts to get a CAS to succeed
 	 */
-	public CASMutator(MemcachedClient c, Transcoder<T> tc) {
+	public CASMutator(MemcachedClient c, Transcoder<T> tc, int max_tries) {
 		super();
 		client=c;
 		transcoder=tc;
+		max=max_tries;
+	}
+
+	/**
+	 * Construct a CASMutator that uses the given client.
+	 *
+	 * @param c the client
+	 * @param tc the Transcoder to use
+	 * @param max_tries the maximum number of attempts to get a CAS to succeed
+	 */
+	public CASMutator(MemcachedClient c, Transcoder<T> tc) {
+		this(c, tc, MAX_TRIES);
 	}
 
 	/**
@@ -62,7 +77,7 @@ public class CASMutator<T> extends SpyObject {
 		T rv=initial;
 
 		boolean done=false;
-		while(!done) {
+		for(int i=0; !done && i<max; i++) {
 			CASValue<T> casval=client.gets(key, transcoder);
 			T current=null;
 			// If there were a CAS value, check to see if it's compatible.
@@ -81,16 +96,21 @@ public class CASMutator<T> extends SpyObject {
 				// behavior will be fine in this code -- we'll do another gets
 				// and follow it up with either an add or another cas depending
 				// on whether it exists the next time.
-				if(client.cas(key, casval.getCas(), rv) == CASResponse.OK) {
+				if(client.cas(key, casval.getCas(), rv, transcoder)
+						== CASResponse.OK) {
 					done=true;
 				}
 			} else {
 				// No value found, try an add.
-				if(client.add(key, 0, initial).get()) {
+				if(client.add(key, 0, initial, transcoder).get()) {
 					done=true;
 					rv=initial;
 				}
 			}
+		}
+		if(!done) {
+			throw new RuntimeException("Couldn't get a CAS in " + max
+				+ " attempts");
 		}
 
 		return rv;

@@ -236,7 +236,8 @@ public final class MemcachedClient extends SpyThread {
 	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future that will indicate the status of the CAS
 	 */
-	public <T> Future<CASResponse> asyncCAS(String key, long casId, T value, Transcoder<T> tc) {
+	public <T> Future<CASResponse> asyncCAS(String key, long casId, T value,
+			Transcoder<T> tc) {
 		CachedData co=tc.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASResponse> rv=new OperationFuture<CASResponse>(
@@ -536,7 +537,8 @@ public final class MemcachedClient extends SpyThread {
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a future that will hold the return value of the fetch
 	 */
-	public <T> Future<CASValue<T>> asyncGets(final String key, final Transcoder<T> tc) {
+	public <T> Future<CASValue<T>> asyncGets(final String key,
+			final Transcoder<T> tc) {
 
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASValue<T>> rv=

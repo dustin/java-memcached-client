@@ -3,7 +3,6 @@ package net.spy.memcached;
 import java.util.concurrent.Callable;
 
 import net.spy.memcached.transcoders.LongTranscoder;
-
 import net.spy.test.SyncThread;
 
 /**
@@ -22,7 +21,7 @@ public class CASMutatorTest extends ClientBaseCase {
 				return current+1;
 			}
 		};
-		mutator=new CASMutator<Long>(client, new LongTranscoder());
+		mutator=new CASMutator<Long>(client, new LongTranscoder(), 50);
 	}
 
 	public void testConcurrentCAS() throws Throwable {
@@ -38,10 +37,15 @@ public class CASMutatorTest extends ClientBaseCase {
 		client.set("x", 0, "not a long");
 		try {
 			Long rv=mutator.cas("x", 1L, 0, mutation);
-			fail("Expected ClassCastException on invalid type mutation, got "
+			fail("Expected RuntimeException on invalid type mutation, got "
 				+ rv);
-		} catch(ClassCastException e) {
-			// pass
+		} catch(RuntimeException e) {
+			assertEquals("Couldn't get a CAS in 50 attempts", e.getMessage());
 		}
+	}
+
+	public void testCASValueToString() {
+		CASValue<String> c=new CASValue<String>(717L, "hi");
+		assertEquals("{CasValue 717/hi}", c.toString());
 	}
 }
