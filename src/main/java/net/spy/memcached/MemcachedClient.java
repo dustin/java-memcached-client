@@ -420,7 +420,6 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future representing the processing of this operation
 	 */
 	public Future<Boolean> set(String key, int exp, Object o) {
@@ -482,7 +481,6 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future representing the processing of this operation
 	 */
 	public Future<Boolean> replace(String key, int exp, Object o) {
