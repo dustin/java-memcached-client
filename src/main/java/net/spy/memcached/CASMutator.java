@@ -1,7 +1,6 @@
 package net.spy.memcached;
 
 import net.spy.SpyObject;
-
 /**
  * Object that provides mutation via CAS over a given memcache client.
  *
@@ -27,7 +26,22 @@ import net.spy.SpyObject;
  */
 public class CASMutator<T> extends SpyObject {
 
+	private static final int MAX_TRIES=8192;
+
 	private final MemcachedClient client;
+	private final int max;
+
+	/**
+	 * Construct a CASMutator that uses the given client.
+	 *
+	 * @param c the client
+	 * @param max_tries the maximum number of attempts to get a CAS to succeed
+	 */
+	public CASMutator(MemcachedClient c, int max_tries) {
+		super();
+		client=c;
+		max=max_tries;
+	}
 
 	/**
 	 * Construct a CASMutator that uses the given client.
@@ -35,8 +49,7 @@ public class CASMutator<T> extends SpyObject {
 	 * @param c the client
 	 */
 	public CASMutator(MemcachedClient c) {
-		super();
-		client=c;
+		this(c, MAX_TRIES);
 	}
 
 	/**
@@ -54,7 +67,7 @@ public class CASMutator<T> extends SpyObject {
 		T rv=initial;
 
 		boolean done=false;
-		while(!done) {
+		for(int i=0; !done && i<max; i++) {
 			CASValue casval=client.gets(key);
 			T current=null;
 			// If there were a CAS value, check to see if it's compatible.
@@ -84,6 +97,10 @@ public class CASMutator<T> extends SpyObject {
 					rv=initial;
 				}
 			}
+		}
+		if(!done) {
+			throw new RuntimeException("Couldn't get a CAS in " + max
+				+ " attempts");
 		}
 
 		return rv;

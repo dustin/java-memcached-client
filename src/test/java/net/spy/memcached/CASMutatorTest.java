@@ -36,10 +36,11 @@ public class CASMutatorTest extends ClientBaseCase {
 		client.set("x", 0, "not a long");
 		try {
 			Long rv=mutator.cas("x", 1L, 0, mutation);
-			fail("Expected ClassCastException on invalid type mutation, got "
+			fail("Expected RuntimeException on invalid type mutation, got "
 				+ rv);
 		} catch(ClassCastException e) {
 			// pass
 		}
 	}
+
 }
