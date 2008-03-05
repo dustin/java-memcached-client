@@ -2,8 +2,6 @@
 
 package net.spy.memcached.transcoders;
 
-import net.spy.memcached.CachedData;
-
 /**
  * Utility class for transcoding Java types.
  */

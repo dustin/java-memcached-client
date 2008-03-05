@@ -60,7 +60,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
 		// OK, stick a value in here.
 		assertTrue(client.add(key, 5, "original value").get());
-		CASValue getsVal = client.gets(key);
+		CASValue<?> getsVal = client.gets(key);
 		assertEquals("original value", getsVal.getValue());
 
 		// Now try it with an existing value, but wrong CAS id
