@@ -138,8 +138,8 @@ public final class MemcachedClient extends SpyThread {
 	}
 
 	/**
-	 * Set the transcoder for managing the cache representations of objects
-	 * going in and out of the cache.
+	 * Set the default transcoder for managing the cache representations
+	 * of objects going in and out of the cache.
 	 */
 	public void setTranscoder(Transcoder<Object> tc) {
 		if(tc == null) {
@@ -149,7 +149,7 @@ public final class MemcachedClient extends SpyThread {
 	}
 
 	/**
-	 * Get the current transcoder that's in use.
+	 * Get the default transcoder that's in use.
 	 */
 	public Transcoder<Object> getTranscoder() {
 		return transcoder;
@@ -195,7 +195,6 @@ public final class MemcachedClient extends SpyThread {
 	CountDownLatch broadcastOp(final BroadcastOpFactory of) {
 		return broadcastOp(of, true);
 	}
-
 
 	private CountDownLatch broadcastOp(BroadcastOpFactory of,
 			boolean checkShuttingDown) {
@@ -262,6 +261,14 @@ public final class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
+	/**
+	 * Asynchronous CAS operation using the default transcoder.
+	 *
+	 * @param key the key
+	 * @param casId the CAS identifier (from a gets operation)
+	 * @param value the new value
+	 * @return a future that will indicate the status of the CAS
+	 */
 	public Future<CASResponse> asyncCAS(String key, long casId, Object value) {
 		return asyncCAS(key, casId, value, transcoder);
 	}
@@ -285,6 +292,14 @@ public final class MemcachedClient extends SpyThread {
 		}
 	}
 
+	/**
+	 * Perform a synchronous CAS operation with the default transcoder.
+	 *
+	 * @param key the key
+	 * @param casId the CAS identifier (from a gets operation)
+	 * @param value the new value
+	 * @return a CASResponse
+	 */
 	public CASResponse cas(String key, long casId, Object value) {
 		return cas(key, casId, value, transcoder);
 	}
@@ -318,6 +333,33 @@ public final class MemcachedClient extends SpyThread {
 	public <T> Future<Boolean> add(String key, int exp, T o, Transcoder<T> tc) {
 		return asyncStore(StoreType.add, key, exp, o, tc);
 	}
+
+	/**
+	 * Add an object to the cache (using the default transcoder)
+	 * iff it does not exist already.
+	 *
+	 * <p>
+	 * The <code>exp</code> value is passed along to memcached exactly as
+	 * given, and will be processed per the memcached protocol specification:
+	 * </p>
+	 *
+	 * <blockquote>
+	 * <p>
+	 * The actual value sent may either be
+	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
+	 * value), or a number of seconds starting from current time. In the
+	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
+	 * of seconds in 30 days); if the number sent by a client is larger than
+	 * that, the server will consider it to be real Unix time value rather
+	 * than an offset from current time.
+	 * </p>
+	 * </blockquote>
+	 *
+	 * @param key the key under which this object should be added.
+	 * @param exp the expiration of this object
+	 * @param o the object to store
+	 * @return a future representing the processing of this operation
+	 */
 
 	public Future<Boolean> add(String key, int exp, Object o) {
 		return asyncStore(StoreType.add, key, exp, o, transcoder);
@@ -353,6 +395,33 @@ public final class MemcachedClient extends SpyThread {
 		return asyncStore(StoreType.set, key, exp, o, tc);
 	}
 
+	/**
+	 * Set an object in the cache (using the default transcoder)
+	 * regardless of any existing value.
+	 *
+	 * <p>
+	 * The <code>exp</code> value is passed along to memcached exactly as
+	 * given, and will be processed per the memcached protocol specification:
+	 * </p>
+	 *
+	 * <blockquote>
+	 * <p>
+	 * The actual value sent may either be
+	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
+	 * value), or a number of seconds starting from current time. In the
+	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
+	 * of seconds in 30 days); if the number sent by a client is larger than
+	 * that, the server will consider it to be real Unix time value rather
+	 * than an offset from current time.
+	 * </p>
+	 * </blockquote>
+	 *
+	 * @param key the key under which this object should be added.
+	 * @param exp the expiration of this object
+	 * @param o the object to store
+	 * @param tc the transcoder to serialize and unserialize the value
+	 * @return a future representing the processing of this operation
+	 */
 	public Future<Boolean> set(String key, int exp, Object o) {
 		return asyncStore(StoreType.set, key, exp, o, transcoder);
 	}
@@ -388,6 +457,33 @@ public final class MemcachedClient extends SpyThread {
 		return asyncStore(StoreType.replace, key, exp, o, tc);
 	}
 
+	/**
+	 * Replace an object with the given value (transcoded with the default
+	 * transcoder) iff there is already a value for the given key.
+	 *
+	 * <p>
+	 * The <code>exp</code> value is passed along to memcached exactly as
+	 * given, and will be processed per the memcached protocol specification:
+	 * </p>
+	 *
+	 * <blockquote>
+	 * <p>
+	 * The actual value sent may either be
+	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
+	 * value), or a number of seconds starting from current time. In the
+	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
+	 * of seconds in 30 days); if the number sent by a client is larger than
+	 * that, the server will consider it to be real Unix time value rather
+	 * than an offset from current time.
+	 * </p>
+	 * </blockquote>
+	 *
+	 * @param key the key under which this object should be added.
+	 * @param exp the expiration of this object
+	 * @param o the object to store
+	 * @param tc the transcoder to serialize and unserialize the value
+	 * @return a future representing the processing of this operation
+	 */
 	public Future<Boolean> replace(String key, int exp, Object o) {
 		return asyncStore(StoreType.replace, key, exp, o, transcoder);
 	}
@@ -422,6 +518,13 @@ public final class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
+	/**
+	 * Get the given key asynchronously and decode with the default
+	 * transcoder.
+	 *
+	 * @param key the key to fetch
+	 * @return a future that will hold the return value of the fetch
+	 */
 	public Future<Object> asyncGet(final String key) {
 		return asyncGet(key, transcoder);
 	}
@@ -459,6 +562,13 @@ public final class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
+	/**
+	 * Gets (with CAS support) the given key asynchronously and decode using
+	 * the default transcoder.
+	 *
+	 * @param key the key to fetch
+	 * @return a future that will hold the return value of the fetch
+	 */
 	public Future<CASValue<Object>> asyncGets(final String key) {
 		return asyncGets(key, transcoder);
 	}
@@ -480,6 +590,12 @@ public final class MemcachedClient extends SpyThread {
 		}
 	}
 
+	/**
+	 * Gets (with CAS support) with a single key using the default transcoder.
+	 *
+	 * @param key the key to get
+	 * @return the result from the cache and CAS id (null if there is none)
+	 */
 	public CASValue<Object> gets(String key) {
 		return gets(key, transcoder);
 	}
@@ -501,6 +617,12 @@ public final class MemcachedClient extends SpyThread {
 		}
 	}
 
+	/**
+	 * Get with a single key and decode using the default transcoder.
+	 *
+	 * @param key the key to get
+	 * @return the result from the cache (null if there is none)
+	 */
 	public Object get(String key) {
 		return get(key, transcoder);
 	}
@@ -585,6 +707,13 @@ public final class MemcachedClient extends SpyThread {
 		return new BulkGetFuture<T>(m, ops, latch);
 	}
 
+	/**
+	 * Asynchronously get a bunch of objects from the cache and decode them
+	 * with the given transcoder.
+	 *
+	 * @param keys the keys to request
+	 * @return a Future result of that fetch
+	 */
 	public Future<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
 		return asyncGetBulk(keys, transcoder);
 	}
@@ -600,6 +729,12 @@ public final class MemcachedClient extends SpyThread {
 		return asyncGetBulk(Arrays.asList(keys), tc);
 	}
 
+	/**
+	 * Varargs wrapper for asynchronous bulk gets with the default transcoder.
+	 *
+	 * @param keys one more more keys to get
+	 * @return the future values of those keys
+	 */
 	public Future<Map<String, Object>> asyncGetBulk(String... keys) {
 		return asyncGetBulk(Arrays.asList(keys), transcoder);
 	}
