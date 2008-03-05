@@ -51,5 +51,9 @@ define "memcached" do
 
   package(:jar).with :manifest =>
     manifest.merge("Main-Class" => "net.spy.memcached.BuildInfo\n")
+
+  package :sources
+  package :javadoc
+
 end
 # vim: syntax=ruby et ts=2
