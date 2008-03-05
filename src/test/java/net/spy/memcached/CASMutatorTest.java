@@ -2,6 +2,8 @@ package net.spy.memcached;
 
 import java.util.concurrent.Callable;
 
+import net.spy.memcached.transcoders.LongTranscoder;
+
 import net.spy.test.SyncThread;
 
 /**
@@ -20,7 +22,7 @@ public class CASMutatorTest extends ClientBaseCase {
 				return current+1;
 			}
 		};
-		mutator=new CASMutator<Long>(client);
+		mutator=new CASMutator<Long>(client, new LongTranscoder());
 	}
 
 	public void testConcurrentCAS() throws Throwable {
