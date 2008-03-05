@@ -208,6 +208,16 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("test1value", client.get("test1"));
 	}
 
+	public void testAddWithTranscoder() throws Exception {
+		Transcoder<String> t=new TestTranscoder();
+		assertNull(client.get("test1", t));
+		assertTrue(client.set("test1", 5, "test1value", t).get());
+		assertEquals("test1value", client.get("test1", t));
+		assertFalse(client.add("test1", 5, "ignoredvalue", t).get());
+		// Should return the original value
+		assertEquals("test1value", client.get("test1", t));
+	}
+
 	public void testAddNotSerializable() throws Exception {
 		try {
 			client.add("t1", 5, new Object());
@@ -239,6 +249,13 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertNull(client.get("test1"));
 		client.replace("test1", 5, "test1value");
 		assertNull(client.get("test1"));
+	}
+
+	public void testUpdateWithTranscoder() throws Exception {
+		Transcoder<String> t=new TestTranscoder();
+		assertNull(client.get("test1", t));
+		client.replace("test1", 5, "test1value", t);
+		assertNull(client.get("test1", t));
 	}
 
 	// Just to make sure the sequence is being handled correctly
@@ -278,6 +295,17 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		client.set("test1", 5, "val1");
 		client.set("test2", 5, "val2");
 		Map<String, Object> vals=client.getBulk("test1", "test2", "test3");
+		assertEquals(2, vals.size());
+		assertEquals("val1", vals.get("test1"));
+		assertEquals("val2", vals.get("test2"));
+	}
+
+	public void testGetBulkVarargWithTranscoder() throws Exception {
+		Transcoder<String> t=new TestTranscoder();
+		assertEquals(0, client.getBulk(t, "test1", "test2", "test3").size());
+		client.set("test1", 5, "val1", t);
+		client.set("test2", 5, "val2", t);
+		Map<String, String> vals=client.getBulk(t, "test1", "test2", "test3");
 		assertEquals(2, vals.size());
 		assertEquals("val1", vals.get("test1"));
 		assertEquals("val2", vals.get("test2"));
@@ -520,4 +548,17 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("output is not equal", value, output);
 	}
 
+
+	private static class TestTranscoder implements Transcoder<String> {
+		private final int flags=238885206;
+
+		public String decode(CachedData d) {
+			assert d.getFlags() == flags;
+			return new String(d.getData());
+		}
+
+		public CachedData encode(String o) {
+			return new CachedData(flags, o.getBytes());
+		}
+	}
 }

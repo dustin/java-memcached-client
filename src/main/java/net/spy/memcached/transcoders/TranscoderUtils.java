@@ -6,19 +6,6 @@ package net.spy.memcached.transcoders;
  * Utility class for transcoding Java types.
  */
 public final class TranscoderUtils {
-	/**
-	 * Hash any integer (positive or negative) into a value safe for
-	 * use as a Memcached flags value, an unsigned 32-bit value.
-	 *
-	 * @param i any integer
-	 * @return a non-negative integer
-	 */
-	public static int hashForFlags(int i) {
-		// Because Math.abs(java.lang.Integer.MIN_VALUE) is equal to
-		// java.lang.Integer.MIN_VALUE and MAX_VALUE < -MIN_VALUE,
-		// this will always return a non-negative number.
-		return Math.abs(i % java.lang.Integer.MAX_VALUE);
-	}
 
 	/**
 	 * Hash any long (positive or negative) into a value safe for
