@@ -3,9 +3,9 @@ package net.spy.memcached;
 /**
  * A value with a CAS identifier.
  */
-public class CASValue {
+public class CASValue<T> {
 	private final long cas;
-	private final Object value;
+	private final T value;
 
 	/**
 	 * Construct a new CASValue with the given identifer and value.
@@ -13,7 +13,7 @@ public class CASValue {
 	 * @param c the CAS identifier
 	 * @param v the value
 	 */
-	public CASValue(long c, Object v) {
+	public CASValue(long c, T v) {
 		super();
 		cas=c;
 		value=v;
@@ -29,7 +29,7 @@ public class CASValue {
 	/**
 	 * Get the object value.
 	 */
-	public Object getValue() {
+	public T getValue() {
 		return value;
 	}
 

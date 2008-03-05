@@ -2,6 +2,8 @@ package net.spy.memcached;
 
 import net.spy.SpyObject;
 
+import net.spy.memcached.transcoders.Transcoder;
+
 /**
  * Object that provides mutation via CAS over a given memcache client.
  *
@@ -11,8 +13,11 @@ import net.spy.SpyObject;
  * // Get or create a client.
  * MemcachedClient client=[...];
  *
+ * // Get a Transcoder.
+ * Transcoder<Long> tc = new LongTranscoder();
+ *
  * // Get a mutator instance that uses that client.
- * CASMutator&lt;Long&gt; mutator=new CASMutator&lt;Long&gt;(client);
+ * CASMutator&lt;Long&gt; mutator=new CASMutator&lt;Long&gt;(client, tc);
  *
  * // Get a mutation that knows what to do when a value is found.
  * CASMutation&lt;Long&gt; mutation=new CASMutation&lt;Long&gt;() {
@@ -28,15 +33,18 @@ import net.spy.SpyObject;
 public class CASMutator<T> extends SpyObject {
 
 	private final MemcachedClient client;
+	private final Transcoder<T> transcoder;
 
 	/**
 	 * Construct a CASMutator that uses the given client.
 	 *
 	 * @param c the client
+	 * @param tc the Transcoder to use
 	 */
-	public CASMutator(MemcachedClient c) {
+	public CASMutator(MemcachedClient c, Transcoder<T> tc) {
 		super();
 		client=c;
+		transcoder=tc;
 	}
 
 	/**
@@ -55,12 +63,11 @@ public class CASMutator<T> extends SpyObject {
 
 		boolean done=false;
 		while(!done) {
-			CASValue casval=client.gets(key);
+			CASValue<T> casval=client.gets(key, transcoder);
 			T current=null;
 			// If there were a CAS value, check to see if it's compatible.
 			if(casval != null) {
-				@SuppressWarnings("unchecked")
-				T tmp = (T)casval.getValue();
+				T tmp = casval.getValue();
 				current=tmp;
 			}
 			// If we have anything mutate and CAS, else add.

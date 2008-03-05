@@ -234,7 +234,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param value the new value
-	 * @param tc the transcoder to serialize and unserialize value
+	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future that will indicate the status of the CAS
 	 */
 	public <T> Future<CASResponse> asyncCAS(String key, long casId, T value, Transcoder<T> tc) {
@@ -272,7 +272,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param value the new value
-	 * @param tc the transcoder to serialize and unserialize value
+	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a CASResponse
 	 */
 	public <T> CASResponse cas(String key, long casId, T value, Transcoder<T> tc) {
@@ -312,7 +312,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize value
+	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future representing the processing of this operation
 	 */
 	public <T> Future<Boolean> add(String key, int exp, T o, Transcoder<T> tc) {
@@ -346,7 +346,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize value
+	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future representing the processing of this operation
 	 */
 	public <T> Future<Boolean> set(String key, int exp, T o, Transcoder<T> tc) {
@@ -381,7 +381,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize value
+	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future representing the processing of this operation
 	 */
 	public <T> Future<Boolean> replace(String key, int exp, T o, Transcoder<T> tc) {
@@ -433,23 +433,23 @@ public final class MemcachedClient extends SpyThread {
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a future that will hold the return value of the fetch
 	 */
-	public <T> Future<CASValue> asyncGets(final String key, final Transcoder<T> tc) {
+	public <T> Future<CASValue<T>> asyncGets(final String key, final Transcoder<T> tc) {
 
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<CASValue> rv=
-			new OperationFuture<CASValue>(latch);
+		final OperationFuture<CASValue<T>> rv=
+			new OperationFuture<CASValue<T>>(latch);
 
 		Operation op=opFact.gets(key,
 				new GetsOperation.Callback() {
-			private CASValue val=null;
+			private CASValue<T> val=null;
 			public void receivedStatus(OperationStatus status) {
 				rv.set(val);
 			}
 			public void gotData(String k, int flags, long cas, byte[] data) {
 				assert key.equals(k) : "Wrong key returned";
 				assert cas > 0 : "CAS was less than zero:  " + cas;
-				val=new CASValue(cas,
-					tc.decode(new CachedData(flags, data)));
+				val=new CASValue<T>(cas,
+					            tc.decode(new CachedData(flags, data)));
 			}
 			public void complete() {
 				latch.countDown();
@@ -459,7 +459,7 @@ public final class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
-	public Future<CASValue> asyncGets(final String key) {
+	public Future<CASValue<Object>> asyncGets(final String key) {
 		return asyncGets(key, transcoder);
 	}
 
@@ -470,7 +470,7 @@ public final class MemcachedClient extends SpyThread {
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return the result from the cache and CAS id (null if there is none)
 	 */
-	public <T> CASValue gets(String key, Transcoder<T> tc) {
+	public <T> CASValue<T> gets(String key, Transcoder<T> tc) {
 		try {
 			return asyncGets(key, tc).get();
 		} catch (InterruptedException e) {
@@ -480,7 +480,7 @@ public final class MemcachedClient extends SpyThread {
 		}
 	}
 
-	public CASValue gets(String key) {
+	public CASValue<Object> gets(String key) {
 		return gets(key, transcoder);
 	}
 
