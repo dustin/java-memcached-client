@@ -86,25 +86,25 @@ public final class SerializingTranscoder extends SpyObject
 		} else if((d.getFlags() & SPECIAL_MASK) != 0) {
 			switch(d.getFlags() & SPECIAL_MASK) {
 				case SPECIAL_BOOLEAN:
-					rv=Boolean.valueOf(decodeBoolean(data));
+					rv=Boolean.valueOf(TranscoderUtils.decodeBoolean(data));
 					break;
 				case SPECIAL_INT:
-					rv=new Integer(decodeInt(data));
+					rv=new Integer(TranscoderUtils.decodeInt(data));
 					break;
 				case SPECIAL_LONG:
-					rv=new Long(decodeLong(data));
+					rv=new Long(TranscoderUtils.decodeLong(data));
 					break;
 				case SPECIAL_DATE:
-					rv=new Date(decodeLong(data));
+					rv=new Date(TranscoderUtils.decodeLong(data));
 					break;
 				case SPECIAL_BYTE:
-					rv=new Byte(decodeByte(data));
+					rv=new Byte(TranscoderUtils.decodeByte(data));
 					break;
 				case SPECIAL_FLOAT:
-					rv=new Float(Float.intBitsToFloat(decodeInt(data)));
+					rv=new Float(Float.intBitsToFloat(TranscoderUtils.decodeInt(data)));
 					break;
 				case SPECIAL_DOUBLE:
-					rv=new Double(Double.longBitsToDouble(decodeLong(data)));
+					rv=new Double(Double.longBitsToDouble(TranscoderUtils.decodeLong(data)));
 					break;
 				case SPECIAL_BYTEARRAY:
 					rv=data;
@@ -135,25 +135,25 @@ public final class SerializingTranscoder extends SpyObject
 				throw new RuntimeException(e);
 			}
 		} else if(o instanceof Long) {
-			b=encodeLong((Long)o);
+			b=TranscoderUtils.encodeLong((Long)o);
 			flags |= SPECIAL_LONG;
 		} else if(o instanceof Integer) {
-			b=encodeInt((Integer)o);
+			b=TranscoderUtils.encodeInt((Integer)o);
 			flags |= SPECIAL_INT;
 		} else if(o instanceof Boolean) {
-			b=encodeBoolean((Boolean)o);
+			b=TranscoderUtils.encodeBoolean((Boolean)o);
 			flags |= SPECIAL_BOOLEAN;
 		} else if(o instanceof Date) {
-			b=encodeLong(((Date)o).getTime());
+			b=TranscoderUtils.encodeLong(((Date)o).getTime());
 			flags |= SPECIAL_DATE;
 		} else if(o instanceof Byte) {
-			b=encodeByte((Byte)o);
+			b=TranscoderUtils.encodeByte((Byte)o);
 			flags |= SPECIAL_BYTE;
 		} else if(o instanceof Float) {
-			b=encodeInt(Float.floatToRawIntBits((Float)o));
+			b=TranscoderUtils.encodeInt(Float.floatToRawIntBits((Float)o));
 			flags |= SPECIAL_FLOAT;
 		} else if(o instanceof Double) {
-			b=encodeLong(Double.doubleToRawLongBits((Double)o));
+			b=TranscoderUtils.encodeLong(Double.doubleToRawLongBits((Double)o));
 			flags |= SPECIAL_DOUBLE;
 		} else if(o instanceof byte[]) {
 			b=(byte[])o;
@@ -251,70 +251,6 @@ public final class SerializingTranscoder extends SpyObject
 			throw new RuntimeException("Error decompressing data", e);
 		}
 		return bos.toByteArray();
-	}
-
-	private byte[] encodeNum(long l, int maxBytes) {
-		byte[] rv=new byte[maxBytes];
-		for(int i=0; i<rv.length; i++) {
-			int pos=rv.length-i-1;
-			rv[pos]=(byte) ((l >> (8 * i)) & 0xff);
-		}
-		int firstNonZero=0;
-		for(;firstNonZero<rv.length && rv[firstNonZero]==0; firstNonZero++) {
-			// Just looking for what we can reduce
-		}
-		if(firstNonZero > 0) {
-			byte[] tmp=new byte[rv.length - firstNonZero];
-			System.arraycopy(rv, firstNonZero, tmp, 0, rv.length-firstNonZero);
-			rv=tmp;
-		}
-		return rv;
-	}
-
-	byte[] encodeLong(long l) {
-		return encodeNum(l, 8);
-	}
-
-	long decodeLong(byte[] b) {
-		long rv=0;
-		for(byte i : b) {
-			rv = (rv << 8) | (i<0?256+i:i);
-		}
-		return rv;
-	}
-
-	byte[] encodeInt(int in) {
-		return encodeNum(in, 4);
-	}
-
-	int decodeInt(byte[] in) {
-		assert in.length <= 4
-			: "Too long to be an int (" + in.length + ") bytes";
-		return (int)decodeLong(in);
-	}
-
-	byte[] encodeByte(byte in) {
-		return new byte[]{in};
-	}
-
-	byte decodeByte(byte[] in) {
-		assert in.length <= 1 : "Too long for a byte";
-		byte rv=0;
-		if(in.length == 1) {
-			rv=in[0];
-		}
-		return rv;
-	}
-
-	byte[] encodeBoolean(boolean b) {
-		byte[] rv=new byte[1];
-		rv[0]=(byte)(b?'1':'0');
-		return rv;
-	}
-
-	boolean decodeBoolean(byte[] in) {
-		assert in.length == 1 : "Wrong length for a boolean";
-		return in[0] == '1';
 	}
 
 }

@@ -179,8 +179,8 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		assertDouble(Double.NEGATIVE_INFINITY);
 	}
 	private void assertLong(long l) {
-		byte[] encoded=tc.encodeLong(l);
-		long decoded=tc.decodeLong(encoded);
+		byte[] encoded=TranscoderUtils.encodeLong(l);
+		long decoded=TranscoderUtils.decodeLong(encoded);
 		assertEquals(l, decoded);
 	}
 
@@ -205,8 +205,8 @@ public class SerializingTranscoderTest extends BaseMockCase {
 	}
 
 	private void assertInt(int i) {
-		byte[] encoded=tc.encodeInt(i);
-		int decoded=tc.decodeInt(encoded);
+		byte[] encoded=TranscoderUtils.encodeInt(i);
+		int decoded=TranscoderUtils.decodeInt(encoded);
 		assertEquals(i, decoded);
 	}
 
@@ -221,8 +221,8 @@ public class SerializingTranscoderTest extends BaseMockCase {
 	}
 
 	public void testBooleanEncoding() throws Exception {
-		assertTrue(tc.decodeBoolean(tc.encodeBoolean(true)));
-		assertFalse(tc.decodeBoolean(tc.encodeBoolean(false)));
+		assertTrue(TranscoderUtils.decodeBoolean(TranscoderUtils.encodeBoolean(true)));
+		assertFalse(TranscoderUtils.decodeBoolean(TranscoderUtils.encodeBoolean(false)));
 	}
 
 	public void testByteArray() throws Exception {
