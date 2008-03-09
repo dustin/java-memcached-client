@@ -33,14 +33,14 @@ public final class SerializingTranscoder extends SpyObject
 
 	// Special flags for specially handled types.
 	private static final int SPECIAL_MASK=0xff00;
-	private static final int SPECIAL_BOOLEAN=(1<<8);
-	private static final int SPECIAL_INT=(2<<8);
-	private static final int SPECIAL_LONG=(3<<8);
-	private static final int SPECIAL_DATE=(4<<8);
-	private static final int SPECIAL_BYTE=(5<<8);
-	private static final int SPECIAL_FLOAT=(6<<8);
-	private static final int SPECIAL_DOUBLE=(7<<8);
-	private static final int SPECIAL_BYTEARRAY=(8<<8);
+	static final int SPECIAL_BOOLEAN=(1<<8);
+	static final int SPECIAL_INT=(2<<8);
+	static final int SPECIAL_LONG=(3<<8);
+	static final int SPECIAL_DATE=(4<<8);
+	static final int SPECIAL_BYTE=(5<<8);
+	static final int SPECIAL_FLOAT=(6<<8);
+	static final int SPECIAL_DOUBLE=(7<<8);
+	static final int SPECIAL_BYTEARRAY=(8<<8);
 
 	private static final String DEFAULT_CHARSET = "UTF-8";
 

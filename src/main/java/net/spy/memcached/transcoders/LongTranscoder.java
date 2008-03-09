@@ -2,8 +2,6 @@
 
 package net.spy.memcached.transcoders;
 
-import java.io.ObjectStreamClass;
-
 import net.spy.SpyObject;
 import net.spy.memcached.CachedData;
 
@@ -13,8 +11,7 @@ import net.spy.memcached.CachedData;
 public final class LongTranscoder extends SpyObject
 	implements Transcoder<Long> {
 
-	private static final int flags = TranscoderUtils.hashForFlags(
-		ObjectStreamClass.lookup(Long.class).getSerialVersionUID());
+	private static final int flags = SerializingTranscoder.SPECIAL_LONG;
 
 	public CachedData encode(java.lang.Long l) {
 		return new CachedData(flags, TranscoderUtils.encodeLong(l));

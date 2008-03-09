@@ -2,8 +2,6 @@
 
 package net.spy.memcached.transcoders;
 
-import java.io.ObjectStreamClass;
-
 import net.spy.SpyObject;
 import net.spy.memcached.CachedData;
 
@@ -13,8 +11,7 @@ import net.spy.memcached.CachedData;
 public final class IntegerTranscoder extends SpyObject
 	implements Transcoder<Integer> {
 
-	private static final int flags = TranscoderUtils.hashForFlags(
-		ObjectStreamClass.lookup(Integer.class).getSerialVersionUID());
+	private static final int flags = SerializingTranscoder.SPECIAL_INT;
 
 	public CachedData encode(java.lang.Integer l) {
 		return new CachedData(flags, TranscoderUtils.encodeInt(l));

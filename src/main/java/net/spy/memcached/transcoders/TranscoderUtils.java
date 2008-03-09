@@ -7,20 +7,6 @@ package net.spy.memcached.transcoders;
  */
 public final class TranscoderUtils {
 
-	/**
-	 * Hash any long (positive or negative) into a value safe for
-	 * use as a Memcached flags value, an unsigned 32-bit value.
-	 *
-	 * @param l any long
-	 * @return a non-negative integer
-	 */
-	public static int hashForFlags(long l) {
-		// Because Math.abs(java.lang.Long.MIN_VALUE) is equal to
-		// java.lang.Long.MIN_VALUE and MAX_VALUE < -MIN_VALUE,
-		// this will always return a non-negative number.
-		return Math.abs((int)(l % java.lang.Integer.MAX_VALUE));
-	}
-
 	public static byte[] encodeNum(long l, int maxBytes) {
 		byte[] rv=new byte[maxBytes];
 		for(int i=0; i<rv.length; i++) {
