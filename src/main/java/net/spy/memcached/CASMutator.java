@@ -72,7 +72,7 @@ public class CASMutator<T> extends SpyObject {
 	 *          key
 	 * @return the new value that was set
 	 */
-	public T cas(final String key, final T initial, long initialExp,
+	public T cas(final String key, final T initial, int initialExp,
 			final CASMutation<T> m) throws Exception {
 		T rv=initial;
 
@@ -102,7 +102,7 @@ public class CASMutator<T> extends SpyObject {
 				}
 			} else {
 				// No value found, try an add.
-				if(client.add(key, 0, initial, transcoder).get()) {
+				if(client.add(key, initialExp, initial, transcoder).get()) {
 					done=true;
 					rv=initial;
 				}
