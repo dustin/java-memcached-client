@@ -553,7 +553,8 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		private final int flags=238885206;
 
 		public String decode(CachedData d) {
-			assert d.getFlags() == flags;
+			assert d.getFlags() == flags
+				: "expected " + flags + " got " + d.getFlags();
 			return new String(d.getData());
 		}
 

@@ -36,7 +36,7 @@ class GetOperationImpl extends OperationImpl
 
 	@Override
 	protected void decodePayload(byte[] pl) {
-		final int flags=decodeInt(pl, 0);
+		final int flags=decodeInt(pl, 8);
 		final byte[] data=new byte[pl.length - EXTRA_HDR_LEN];
 		System.arraycopy(pl, EXTRA_HDR_LEN, data, 0, pl.length-EXTRA_HDR_LEN);
 		// Assume we're processing a get unless the cast fails.
@@ -45,7 +45,7 @@ class GetOperationImpl extends OperationImpl
 			cb.gotData(key, flags, data);
 		} catch(ClassCastException e) {
 			GetsOperation.Callback cb=(GetsOperation.Callback)getCallback();
-			cb.gotData(key, flags, decodeLong(pl, 4), data);
+			cb.gotData(key, flags, decodeLong(pl, 0), data);
 		}
 		getCallback().receivedStatus(STATUS_OK);
 	}

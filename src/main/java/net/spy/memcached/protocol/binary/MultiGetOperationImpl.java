@@ -91,7 +91,7 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 			getLogger().warn("Error on key %s:  %s (%d)",
 				keys.get(responseOpaque), new String(pl), errorCode);
 		} else {
-			final int flags=decodeInt(pl, 0);
+			final int flags=decodeInt(pl, 8);
 			final byte[] data=new byte[pl.length - EXTRA_HDR_LEN];
 			System.arraycopy(pl, EXTRA_HDR_LEN, data,
 					0, pl.length-EXTRA_HDR_LEN);
