@@ -130,9 +130,21 @@ public final class MemcachedClient extends SpyThread {
 	 */
 	public MemcachedClient(ConnectionFactory cf, List<InetSocketAddress> addrs)
 		throws IOException {
+		if(cf == null) {
+			throw new NullPointerException("Connection factory required");
+		}
+		if(addrs == null) {
+			throw new NullPointerException("Server list required");
+		}
+		if(addrs.isEmpty()) {
+			throw new IllegalArgumentException(
+				"You must have at least one server to connect to");
+		}
 		transcoder=new SerializingTranscoder();
-		conn=cf.createConnection(addrs);
 		opFact=cf.getOperationFactory();
+		assert opFact != null : "Connection factory failed to make op factory";
+		conn=cf.createConnection(addrs);
+		assert conn != null : "Connection factory failed to make a connection";
 		setName("Memcached IO over " + conn);
 		start();
 	}
