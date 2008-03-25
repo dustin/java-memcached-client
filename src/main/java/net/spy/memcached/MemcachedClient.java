@@ -874,8 +874,8 @@ public final class MemcachedClient extends SpyThread {
 		addOp(key, opFact.mutate(m, key, by, def, exp, new OperationCallback() {
 					public void receivedStatus(OperationStatus s) {
 						// XXX:  Potential abstraction leak.
-						// The handling of incr/decr in the binary protocol is
-						// yet undefined.
+						// The handling of incr/decr in the binary protocol
+						// Allows us to avoid string processing.
 						rv.set(new Long(s.isSuccess()?s.getMessage():"-1"));
 					}
 					public void complete() {
