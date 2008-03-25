@@ -122,6 +122,25 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 	}
 
+	public void testInvalidKey4() throws Exception {
+		try {
+			Object val=client.get("Key\r");
+			fail("Expected IllegalArgumentException, got " + val);
+		} catch(IllegalArgumentException e) {
+			// pass
+		}
+	}
+
+	public void testInvalidKey5() throws Exception {
+		try {
+			Object val=client.get("Key\0");
+			fail("Expected IllegalArgumentException, got " + val);
+		} catch(IllegalArgumentException e) {
+			// pass
+		}
+	}
+
+
 	public void testInvalidKeyBulk() throws Exception {
 		try {
 			Object val=client.getBulk("Key key2");
