@@ -20,7 +20,7 @@ import net.spy.memcached.protocol.BaseOperationImpl;
 abstract class OperationImpl extends BaseOperationImpl {
 
 	protected static final byte REQ_MAGIC = (byte)0x80;
-	protected static final byte RES_MAGIC = (byte)0x80;
+	protected static final byte RES_MAGIC = (byte)0x81;
 	protected static final int MIN_RECV_PACKET=16;
 
 	/**
