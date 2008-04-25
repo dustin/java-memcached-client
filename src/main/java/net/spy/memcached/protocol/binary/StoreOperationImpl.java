@@ -48,7 +48,7 @@ class StoreOperationImpl extends OperationImpl
 
 	@Override
 	public void initialize() {
-		prepareBuffer(key, data, cas, flags, exp);
+		prepareBuffer(key, cas, data, flags, exp);
 	}
 
 	@Override

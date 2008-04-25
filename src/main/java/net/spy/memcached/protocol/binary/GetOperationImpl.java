@@ -15,7 +15,7 @@ class GetOperationImpl extends OperationImpl
 	/**
 	 * Length of the extra header stuff for a GET response.
 	 */
-	static final int EXTRA_HDR_LEN=12;
+	static final int EXTRA_HDR_LEN=4;
 
 	private final String key;
 
@@ -31,12 +31,12 @@ class GetOperationImpl extends OperationImpl
 
 	@Override
 	public void initialize() {
-		prepareBuffer(key, EMPTY_BYTES);
+		prepareBuffer(key, 0, EMPTY_BYTES);
 	}
 
 	@Override
 	protected void decodePayload(byte[] pl) {
-		final int flags=decodeInt(pl, 8);
+		final int flags=decodeInt(pl, 0);
 		final byte[] data=new byte[pl.length - EXTRA_HDR_LEN];
 		System.arraycopy(pl, EXTRA_HDR_LEN, data, 0, pl.length-EXTRA_HDR_LEN);
 		// Assume we're processing a get unless the cast fails.
@@ -45,7 +45,7 @@ class GetOperationImpl extends OperationImpl
 			cb.gotData(key, flags, data);
 		} catch(ClassCastException e) {
 			GetsOperation.Callback cb=(GetsOperation.Callback)getCallback();
-			cb.gotData(key, flags, decodeLong(pl, 0), data);
+			cb.gotData(key, flags, responseCas, data);
 		}
 		getCallback().receivedStatus(STATUS_OK);
 	}

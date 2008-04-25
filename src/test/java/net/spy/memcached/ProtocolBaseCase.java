@@ -369,14 +369,15 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	}
 
 	public void testDeleteFuture() throws Exception {
-		assertNull(client.get("test1"));
-		client.set("test1", 5, "test1value");
-		assertEquals("test1value", client.get("test1"));
-		Future<Boolean> f=client.delete("test1");
-		assertNull(client.get("test1"));
+		String key="deleteFuture";
+		assertNull(client.get(key));
+		client.set(key, 5, "test1value");
+		assertEquals("test1value", client.get(key));
+		Future<Boolean> f=client.delete(key);
+		assertNull(client.get(key));
 		assertTrue("Deletion didn't return true", f.get());
 		assertFalse("Second deletion returned true",
-			client.delete("test1").get());
+			client.delete(key).get());
 	}
 
 	public void testDelayedDelete() throws Exception {

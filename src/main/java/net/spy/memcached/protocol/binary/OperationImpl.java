@@ -21,7 +21,7 @@ abstract class OperationImpl extends BaseOperationImpl {
 
 	protected static final byte REQ_MAGIC = (byte)0x80;
 	protected static final byte RES_MAGIC = (byte)0x81;
-	protected static final int MIN_RECV_PACKET=16;
+	protected static final int MIN_RECV_PACKET=24;
 
 	/**
 	 * Error code for items that were not found.
@@ -49,9 +49,10 @@ abstract class OperationImpl extends BaseOperationImpl {
 	private byte[] payload=null;
 
 	// Response header fields
-	protected int responseCmd=0;
-	protected int errorCode=0;
+	protected int responseCmd;
+	protected int errorCode;
 	protected int responseOpaque;
+	protected long responseCas;
 
 	private int payloadOffset=0;
 
@@ -75,8 +76,11 @@ abstract class OperationImpl extends BaseOperationImpl {
 	}
 
 	// Base response packet format:
-	//	# magic, opcode, status, extralen, datatype, [reserved], bodylen, opaque
-	//	RES_PKT_FMT=">BBHBBxxII"
+	//    0      1       2  3    4         5         6  7    8 9 10 11
+	//	# magic, opcode, keylen, extralen, datatype, status, bodylen,
+	//    12,3,4,5  16
+	//    opaque, cas
+	//	RES_PKT_FMT=">BBHBBHIIQ"
 
 	@Override
 	public void readFromBuffer(ByteBuffer b) throws IOException {
@@ -96,13 +100,13 @@ abstract class OperationImpl extends BaseOperationImpl {
 				responseCmd=header[1];
 				assert cmd == -1 || responseCmd == cmd
 					: "Unexpected response command value";
-				errorCode=decodeShort(header, 2);
 				// TODO:  Examine extralen and datatype
+				errorCode=decodeShort(header, 6);
 				int bytesToRead=decodeInt(header, 8);
 				payload=new byte[bytesToRead];
 				responseOpaque=decodeInt(header, 12);
+				responseCas=decodeLong(header, 16);
 				assert opaqueIsValid() : "Opaque is not valid";
-
 			}
 		}
 
@@ -211,7 +215,7 @@ abstract class OperationImpl extends BaseOperationImpl {
 	 * @param val the data payload
 	 * @param extraHeaders any additional headers that need to be sent
 	 */
-	protected void prepareBuffer(String key, byte[] val,
+	protected void prepareBuffer(String key, long cas, byte[] val,
 			Object... extraHeaders) {
 		int extraLen=0;
 		for(Object o : extraHeaders) {
@@ -229,8 +233,8 @@ abstract class OperationImpl extends BaseOperationImpl {
 		int bufSize=MIN_RECV_PACKET + keyBytes.length + val.length;
 
 		//	# magic, opcode, keylen, extralen, datatype, [reserved],
-		//           bodylen, opaque
-		//	REQ_PKT_FMT=">BBHBBxxII"
+		//    bodylen, opaque, cas
+		//	REQ_PKT_FMT=">BBHBBxxIIQ"
 
 		// set up the initial header stuff
 		ByteBuffer bb=ByteBuffer.allocate(bufSize + extraLen);
@@ -243,6 +247,7 @@ abstract class OperationImpl extends BaseOperationImpl {
 		bb.putShort((short)0); // reserved
 		bb.putInt(keyBytes.length + val.length + extraLen);
 		bb.putInt(opaque);
+		bb.putLong(cas);
 
 		// Add the extra headers.
 		for(Object o : extraHeaders) {

@@ -16,7 +16,7 @@ class NoopOperationImpl extends OperationImpl implements NoopOperation {
 
 	@Override
 	public void initialize() {
-		prepareBuffer("", EMPTY_BYTES);
+		prepareBuffer("", 0, EMPTY_BYTES);
 	}
 
 }

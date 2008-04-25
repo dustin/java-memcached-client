@@ -11,16 +11,22 @@ class DeleteOperationImpl extends OperationImpl implements
 
 	private final String key;
 	private final int when;
+	private final long cas;
 
 	public DeleteOperationImpl(String k, int w, OperationCallback cb) {
+		this(k, w, 0, cb);
+	}
+
+	public DeleteOperationImpl(String k, int w, long c, OperationCallback cb) {
 		super(CMD, generateOpaque(), cb);
 		key=k;
 		when=w;
+		cas=c;
 	}
 
 	@Override
 	public void initialize() {
-		prepareBuffer(key, EMPTY_BYTES, when);
+		prepareBuffer(key, cas, EMPTY_BYTES, when);
 	}
 
 	@Override
