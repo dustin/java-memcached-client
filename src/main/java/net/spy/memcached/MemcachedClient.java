@@ -92,10 +92,17 @@ public final class MemcachedClient extends SpyThread {
 	 */
 	public static final int MAX_KEY_LENGTH = 250;
 
+    /**
+     * Default operation timeout in milliseconds.
+     */
+    public static final long DEFAULT_OPERATION_TIMEOUT = 1000;
+
 	private volatile boolean running=true;
 	private volatile boolean shuttingDown=false;
 
-	private final MemcachedConnection conn;
+    private final long globalOperationTimeout = DEFAULT_OPERATION_TIMEOUT;
+
+    private final MemcachedConnection conn;
 	final OperationFactory opFact;
 
 	Transcoder<Object> transcoder=null;
@@ -220,7 +227,7 @@ public final class MemcachedClient extends SpyThread {
 					       int exp, T value, Transcoder<T> tc) {
 		CachedData co=tc.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch, globalOperationTimeout);
 		Operation op=opFact.store(storeType, key, co.getFlags(),
 				exp, co.getData(), new OperationCallback() {
 					public void receivedStatus(OperationStatus val) {
@@ -253,7 +260,7 @@ public final class MemcachedClient extends SpyThread {
 		CachedData co=tc.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASResponse> rv=new OperationFuture<CASResponse>(
-				latch);
+				latch, globalOperationTimeout);
 		Operation op=opFact.cas(key, casId, co.getFlags(),
 				co.getData(), new OperationCallback() {
 					public void receivedStatus(OperationStatus val) {
@@ -294,16 +301,19 @@ public final class MemcachedClient extends SpyThread {
 	 * @param value the new value
 	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a CASResponse
+     * @throws OperationTimeoutException if global operation timeout is exceeded
 	 */
-	public <T> CASResponse cas(String key, long casId, T value, Transcoder<T> tc) {
+	public <T> CASResponse cas(String key, long casId, T value, Transcoder<T> tc) throws OperationTimeoutException {
 		try {
-			return asyncCAS(key, casId, value, tc).get();
+			return asyncCAS(key, casId, value, tc).get(globalOperationTimeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for value", e);
 		} catch (ExecutionException e) {
 			throw new RuntimeException("Exception waiting for value", e);
-		}
-	}
+		} catch (TimeoutException e) {
+            throw new OperationTimeoutException("Timeout waiting for value", e);
+        }
+    }
 
 	/**
 	 * Perform a synchronous CAS operation with the default transcoder.
@@ -509,7 +519,7 @@ public final class MemcachedClient extends SpyThread {
 	public <T> Future<T> asyncGet(final String key, final Transcoder<T> tc) {
 
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<T> rv=new OperationFuture<T>(latch);
+		final OperationFuture<T> rv=new OperationFuture<T>(latch, globalOperationTimeout);
 
 		Operation op=opFact.get(key,
 				new GetOperation.Callback() {
@@ -552,7 +562,7 @@ public final class MemcachedClient extends SpyThread {
 
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASValue<T>> rv=
-			new OperationFuture<CASValue<T>>(latch);
+			new OperationFuture<CASValue<T>>(latch, globalOperationTimeout);
 
 		Operation op=opFact.gets(key,
 				new GetsOperation.Callback() {
@@ -591,16 +601,19 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key to get
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return the result from the cache and CAS id (null if there is none)
+     * @throws OperationTimeoutException if global operation timeout is exceeded
 	 */
-	public <T> CASValue<T> gets(String key, Transcoder<T> tc) {
+	public <T> CASValue<T> gets(String key, Transcoder<T> tc) throws OperationTimeoutException {
 		try {
-			return asyncGets(key, tc).get();
+			return asyncGets(key, tc).get(globalOperationTimeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for value", e);
 		} catch (ExecutionException e) {
 			throw new RuntimeException("Exception waiting for value", e);
-		}
-	}
+		} catch (TimeoutException e) {
+            throw new OperationTimeoutException("Timeout waiting for value", e);
+        }
+    }
 
 	/**
 	 * Gets (with CAS support) with a single key using the default transcoder.
@@ -618,16 +631,19 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key to get
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return the result from the cache (null if there is none)
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public <T> T get(String key, Transcoder<T> tc) {
+	public <T> T get(String key, Transcoder<T> tc) throws OperationTimeoutException {
 		try {
-			return asyncGet(key, tc).get();
+			return asyncGet(key, tc).get(globalOperationTimeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for value", e);
 		} catch (ExecutionException e) {
 			throw new RuntimeException("Exception waiting for value", e);
-		}
-	}
+		} catch (TimeoutException e) {
+            throw new OperationTimeoutException("Timeout waiting for value", e);
+        }
+    }
 
 	/**
 	 * Get with a single key and decode using the default transcoder.
@@ -757,16 +773,19 @@ public final class MemcachedClient extends SpyThread {
 	 * @param keys the keys
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a map of the values (for each value that exists)
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public <T> Map<String, T> getBulk(Collection<String> keys, Transcoder<T> tc) {
+	public <T> Map<String, T> getBulk(Collection<String> keys, Transcoder<T> tc) throws OperationTimeoutException {
 		try {
-			return asyncGetBulk(keys, tc).get();
+			return asyncGetBulk(keys, tc).get(globalOperationTimeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted getting bulk values", e);
 		} catch (ExecutionException e) {
 			throw new RuntimeException("Failed getting bulk values", e);
-		}
-	}
+		} catch (TimeoutException e) {
+            throw new OperationTimeoutException("Timeout waiting for bulkvalues", e);
+        }
+    }
 
 	/**
 	 * Get the values for multiple keys from the cache.
@@ -821,7 +840,7 @@ public final class MemcachedClient extends SpyThread {
 						});
 			}});
 		try {
-			blatch.await();
+			blatch.await(globalOperationTimeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for versions", e);
 		}
@@ -861,7 +880,7 @@ public final class MemcachedClient extends SpyThread {
 					}});
 			}});
 		try {
-			blatch.await();
+			blatch.await(globalOperationTimeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for stats", e);
 		}
@@ -882,7 +901,9 @@ public final class MemcachedClient extends SpyThread {
 						latch.countDown();
 					}}));
 		try {
-			latch.await();
+			if (!latch.await(globalOperationTimeout, TimeUnit.MILLISECONDS)) {
+                rv.set(-1);
+            }
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted", e);
 		}
@@ -913,7 +934,7 @@ public final class MemcachedClient extends SpyThread {
 	}
 
 	private long mutateWithDefault(Mutator t, String key,
-			int by, long def, int exp) {
+			int by, long def, int exp) throws OperationTimeoutException {
 		long rv=mutate(t, key, by, def, exp);
 		// The ascii protocol doesn't support defaults, so I added them
 		// manually here.
@@ -921,7 +942,7 @@ public final class MemcachedClient extends SpyThread {
 			Future<Boolean> f=asyncStore(StoreType.add,
 					key, 0,	String.valueOf(def));
 			try {
-				if(f.get()) {
+				if(f.get(globalOperationTimeout, TimeUnit.MILLISECONDS)) {
 					rv=def;
 				} else {
 					rv=mutate(t, key, by, 0, 0);
@@ -931,8 +952,10 @@ public final class MemcachedClient extends SpyThread {
 				throw new RuntimeException("Interrupted waiting for store", e);
 			} catch (ExecutionException e) {
 				throw new RuntimeException("Failed waiting for store", e);
-			}
-		}
+			} catch (TimeoutException e) {
+                throw new OperationTimeoutException("Timeout waiting to mutate or init value", e);
+            }
+        }
 		return rv;
 	}
 
@@ -943,8 +966,9 @@ public final class MemcachedClient extends SpyThread {
 	 * @param by the amount to increment
 	 * @param def the default value (if the counter does not exist)
 	 * @return the new value, or -1 if we were unable to increment or add
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public long incr(String key, int by, int def) {
+	public long incr(String key, int by, int def) throws OperationTimeoutException {
 		return mutateWithDefault(Mutator.incr, key, by, def, 0);
 	}
 
@@ -955,8 +979,9 @@ public final class MemcachedClient extends SpyThread {
 	 * @param by the amount to decrement
 	 * @param def the default value (if the counter does not exist)
 	 * @return the new value, or -1 if we were unable to decrement or add
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public long decr(String key, int by, long def) {
+	public long decr(String key, int by, long def) throws OperationTimeoutException {
 		return mutateWithDefault(Mutator.decr, key, by, def, 0);
 	}
 
@@ -968,7 +993,7 @@ public final class MemcachedClient extends SpyThread {
 	 */
 	public Future<Boolean> delete(String key, int when) {
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch);
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch, globalOperationTimeout);
 		DeleteOperation op=opFact.delete(key, when,
 				new OperationCallback() {
 					public void receivedStatus(OperationStatus s) {
@@ -1010,7 +1035,7 @@ public final class MemcachedClient extends SpyThread {
 				ops.add(op);
 				return op;
 			}});
-		return new OperationFuture<Boolean>(blatch, flushResult) {
+		return new OperationFuture<Boolean>(blatch, flushResult, globalOperationTimeout) {
 			@Override
 			public boolean cancel(boolean ign) {
 				boolean rv=false;
@@ -1205,16 +1230,18 @@ public final class MemcachedClient extends SpyThread {
 		private final CountDownLatch latch;
 		private final AtomicReference<T> objRef;
 		private Operation op;
+        private final long globalOperationTimeout;
 
-		public OperationFuture(CountDownLatch l) {
-			this(l, new AtomicReference<T>(null));
+        public OperationFuture(CountDownLatch l, long globalOperationTimeout) {
+			this(l, new AtomicReference<T>(null), globalOperationTimeout);
 		}
 
-		public OperationFuture(CountDownLatch l, AtomicReference<T> oref) {
+		public OperationFuture(CountDownLatch l, AtomicReference<T> oref, long globalOperationTimeout) {
 			super();
 			latch=l;
 			objRef=oref;
-		}
+            this.globalOperationTimeout = globalOperationTimeout;
+        }
 
 		public boolean cancel(boolean ign) {
 			assert op != null : "No operation";
@@ -1225,7 +1252,7 @@ public final class MemcachedClient extends SpyThread {
 		}
 
 		public T get() throws InterruptedException, ExecutionException {
-			latch.await();
+			latch.await(globalOperationTimeout, TimeUnit.MILLISECONDS);
 			assert isDone() : "Latch released, but operation wasn't done.";
 			if(op != null && op.hasErrored()) {
 				throw new ExecutionException(op.getException());
