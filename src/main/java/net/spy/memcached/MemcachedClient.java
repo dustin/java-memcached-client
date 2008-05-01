@@ -100,7 +100,7 @@ public final class MemcachedClient extends SpyThread {
 	private volatile boolean running=true;
 	private volatile boolean shuttingDown=false;
 
-    private final long globalOperationTimeout = DEFAULT_OPERATION_TIMEOUT;
+    private long globalOperationTimeout = DEFAULT_OPERATION_TIMEOUT;
 
     private final MemcachedConnection conn;
 	final OperationFactory opFact;
@@ -174,7 +174,23 @@ public final class MemcachedClient extends SpyThread {
 		return transcoder;
 	}
 
-	private void validateKey(String key) {
+    /**
+     * Gets the global operation timeout
+     * @return long Timeout in milliseconds
+     */
+    public long getGlobalOperationTimeout() {
+        return globalOperationTimeout;
+    }
+
+    /**
+     * Sets the global operation timeout
+     * @param globalOperationTimeout long Timeout in milliseconds
+     */
+    public void setGlobalOperationTimeout(long globalOperationTimeout) {
+        this.globalOperationTimeout = globalOperationTimeout;
+    }
+
+    private void validateKey(String key) {
 		byte[] keyBytes=KeyUtil.getKeyBytes(key);
 		if(keyBytes.length > MAX_KEY_LENGTH) {
 			throw new IllegalArgumentException("Key is too long (maxlen = "
