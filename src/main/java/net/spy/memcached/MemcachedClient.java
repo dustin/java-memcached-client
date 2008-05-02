@@ -933,8 +933,9 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key
 	 * @param by the amount to increment
 	 * @return the new value (-1 if the key doesn't exist)
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public long incr(String key, int by) {
+	public long incr(String key, int by) throws OperationTimeoutException {
 		return mutate(Mutator.incr, key, by, 0, -1);
 	}
 
@@ -944,8 +945,9 @@ public final class MemcachedClient extends SpyThread {
 	 * @param key the key
 	 * @param by the value
 	 * @return the new value (-1 if the key doesn't exist)
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public long decr(String key, int by) {
+	public long decr(String key, int by) throws OperationTimeoutException {
 		return mutate(Mutator.decr, key, by, 0, -1);
 	}
 
