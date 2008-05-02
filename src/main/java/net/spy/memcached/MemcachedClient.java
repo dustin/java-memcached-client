@@ -903,7 +903,7 @@ public final class MemcachedClient extends SpyThread {
 		return rv;
 	}
 
-	private long mutate(Mutator m, String key, int by, long def, int exp) {
+	private long mutate(Mutator m, String key, int by, long def, int exp) throws OperationTimeoutException {
 		final AtomicLong rv=new AtomicLong();
 		final CountDownLatch latch=new CountDownLatch(1);
 		addOp(key, opFact.mutate(m, key, by, def, exp, new OperationCallback() {
@@ -918,7 +918,7 @@ public final class MemcachedClient extends SpyThread {
 					}}));
 		try {
 			if (!latch.await(globalOperationTimeout, TimeUnit.MILLISECONDS)) {
-                rv.set(-1);
+                throw new OperationTimeoutException("Mutate operation timed out, unable to modify counter [" + key + "]");
             }
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted", e);
