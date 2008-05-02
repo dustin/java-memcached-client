@@ -338,8 +338,9 @@ public final class MemcachedClient extends SpyThread {
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param value the new value
 	 * @return a CASResponse
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public CASResponse cas(String key, long casId, Object value) {
+	public CASResponse cas(String key, long casId, Object value) throws OperationTimeoutException {
 		return cas(key, casId, value, transcoder);
 	}
 
@@ -636,8 +637,9 @@ public final class MemcachedClient extends SpyThread {
 	 *
 	 * @param key the key to get
 	 * @return the result from the cache and CAS id (null if there is none)
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public CASValue<Object> gets(String key) {
+	public CASValue<Object> gets(String key) throws OperationTimeoutException {
 		return gets(key, transcoder);
 	}
 
@@ -666,8 +668,9 @@ public final class MemcachedClient extends SpyThread {
 	 *
 	 * @param key the key to get
 	 * @return the result from the cache (null if there is none)
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public Object get(String key) {
+	public Object get(String key) throws OperationTimeoutException {
 		return get(key, transcoder);
 	}
 
@@ -808,8 +811,9 @@ public final class MemcachedClient extends SpyThread {
 	 *
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public Map<String, Object> getBulk(Collection<String> keys) {
+	public Map<String, Object> getBulk(Collection<String> keys) throws OperationTimeoutException {
 		return getBulk(keys, transcoder);
 	}
 
@@ -819,8 +823,9 @@ public final class MemcachedClient extends SpyThread {
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public <T> Map<String, T> getBulk(Transcoder<T> tc, String... keys) {
+	public <T> Map<String, T> getBulk(Transcoder<T> tc, String... keys) throws OperationTimeoutException {
 		return getBulk(Arrays.asList(keys), tc);
 	}
 
@@ -829,8 +834,9 @@ public final class MemcachedClient extends SpyThread {
 	 *
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
+     * @throws OperationTimeoutException if the global operation timeout is exceeded
 	 */
-	public Map<String, Object> getBulk(String... keys) {
+	public Map<String, Object> getBulk(String... keys) throws OperationTimeoutException {
 		return getBulk(Arrays.asList(keys), transcoder);
 	}
 
