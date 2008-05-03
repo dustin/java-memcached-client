@@ -81,6 +81,34 @@ public class MemcachedClientConstructorTest extends TestCase {
 		}
 	}
 
+	public void testNegativeTimeout() throws Exception {
+		try {
+			client = new MemcachedClient(new DefaultConnectionFactory() {
+				@Override
+				public long getOperationTimeout() {
+					return -1;
+				}},
+				AddrUtil.getAddresses("127.0.0.1:11211"));
+			fail("Expected null pointer exception, got " + client);
+		} catch(IllegalArgumentException e) {
+			assertEquals("Operation timeout must be positive.", e.getMessage());
+		}
+	}
+
+	public void testZeroTimeout() throws Exception {
+		try {
+			client = new MemcachedClient(new DefaultConnectionFactory() {
+				@Override
+				public long getOperationTimeout() {
+					return 0;
+				}},
+				AddrUtil.getAddresses("127.0.0.1:11211"));
+			fail("Expected null pointer exception, got " + client);
+		} catch(IllegalArgumentException e) {
+			assertEquals("Operation timeout must be positive.", e.getMessage());
+		}
+	}
+
 	public void testConnFactoryWithoutOpFactory() throws Exception {
 		try {
 			client = new MemcachedClient(new DefaultConnectionFactory(){

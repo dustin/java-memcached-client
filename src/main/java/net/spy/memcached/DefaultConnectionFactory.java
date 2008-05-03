@@ -35,6 +35,11 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public static final int DEFAULT_READ_BUFFER_SIZE=16384;
 
+    /**
+     * Default operation timeout in milliseconds.
+     */
+    public static final long DEFAULT_OPERATION_TIMEOUT = 1000;
+
 	private final int opQueueLen;
 	private final int readBufSize;
 	private final HashAlgorithm hashAlg;
@@ -119,8 +124,18 @@ public class DefaultConnectionFactory extends SpyObject
 		return hashAlg;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#getOperationFactory()
+	 */
 	public OperationFactory getOperationFactory() {
 		return new AsciiOperationFactory();
+	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#getOperationTimeout()
+	 */
+	public long getOperationTimeout() {
+		return DEFAULT_OPERATION_TIMEOUT;
 	}
 
 }

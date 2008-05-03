@@ -18,14 +18,6 @@ import net.spy.test.SyncThread;
  */
 public class LongClientTest extends ClientBaseCase {
 
-	@Override
-	protected void initClient(ConnectionFactory cf) throws Exception {
-		// TODO Auto-generated method stub
-		super.initClient(cf);
-		// This test gets pretty slow in cobertura
-		client.setGlobalOperationTimeout(15000);
-	}
-
 	public void testParallelGet() throws Throwable {
 		// Get a connection with the get optimization disabled.
 		client.shutdown();
@@ -36,7 +28,12 @@ public class LongClientTest extends ClientBaseCase {
 				MemcachedConnection rv = super.createConnection(addrs);
 				rv.setGetOptimization(false);
 				return rv;
-			}});
+			}
+			@Override
+			public long getOperationTimeout() {
+				return 15000;
+			}
+			});
 
 		// Throw in some seed data.
 		byte data[]=new byte[32768];

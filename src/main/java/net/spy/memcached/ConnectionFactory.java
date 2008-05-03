@@ -47,4 +47,9 @@ public interface ConnectionFactory {
 	 */
 	OperationFactory getOperationFactory();
 
+	/**
+	 * Get the operation timeout used by this connection.
+	 */
+	long getOperationTimeout();
+
 }
