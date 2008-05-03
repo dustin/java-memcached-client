@@ -1,6 +1,6 @@
 package net.spy.memcached;
 
-public class TimeoutTests extends ClientBaseCase {
+public class TimeoutTest extends ClientBaseCase {
 
 	@Override
 	protected void tearDown() throws Exception {
