@@ -31,6 +31,18 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 	}
 
+	public void testDelayedFlush() throws Exception {
+		assertNull(client.get("test1"));
+		client.set("test1", 5, "test1value");
+		client.set("test2", 5, "test2value");
+		assertEquals("test1value", client.get("test1"));
+		assertEquals("test2value", client.get("test2"));
+		client.flush(2);
+		Thread.sleep(2100);
+		assertNull(client.get("test1"));
+		assertNull(client.get("test2"));
+	}
+
 	public void testNoop() {
 		// This runs through the startup/flush cycle
 	}
