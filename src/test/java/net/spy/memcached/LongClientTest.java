@@ -18,6 +18,14 @@ import net.spy.test.SyncThread;
  */
 public class LongClientTest extends ClientBaseCase {
 
+	@Override
+	protected void initClient(ConnectionFactory cf) throws Exception {
+		// TODO Auto-generated method stub
+		super.initClient(cf);
+		// This test gets pretty slow in cobertura
+		client.setGlobalOperationTimeout(15000);
+	}
+
 	public void testParallelGet() throws Throwable {
 		// Get a connection with the get optimization disabled.
 		client.shutdown();
