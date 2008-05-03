@@ -159,6 +159,44 @@ public final class MemcachedClient extends SpyThread {
 	}
 
 	/**
+	 * Get the addresses of available servers.
+	 *
+	 * <p>
+	 * This is based on a snapshot in time so shouldn't be considered
+	 * completely accurate, but is a useful for getting a feel for what's
+	 * working and what's not working.
+	 * </p>
+	 */
+	public Collection<SocketAddress> getAvailableServers() {
+		Collection<SocketAddress> rv=new ArrayList<SocketAddress>();
+		for(MemcachedNode node : conn.getLocator().getAll()) {
+			if(node.isActive()) {
+				rv.add(node.getSocketAddress());
+			}
+		}
+		return rv;
+	}
+
+	/**
+	 * Get the addresses of unavailable servers.
+	 *
+	 * <p>
+	 * This is based on a snapshot in time so shouldn't be considered
+	 * completely accurate, but is a useful for getting a feel for what's
+	 * working and what's not working.
+	 * </p>
+	 */
+	public Collection<SocketAddress> getUnavailableServers() {
+		Collection<SocketAddress> rv=new ArrayList<SocketAddress>();
+		for(MemcachedNode node : conn.getLocator().getAll()) {
+			if(!node.isActive()) {
+				rv.add(node.getSocketAddress());
+			}
+		}
+		return rv;
+	}
+
+	/**
 	 * Set the default transcoder for managing the cache representations
 	 * of objects going in and out of the cache.
 	 */

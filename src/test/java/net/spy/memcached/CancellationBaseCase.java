@@ -1,6 +1,8 @@
 package net.spy.memcached;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +36,18 @@ public abstract class CancellationBaseCase extends ClientBaseCase {
 			assertTrue(e.getCause() instanceof RuntimeException);
 			assertEquals("Cancelled", e.getCause().getMessage());
 		}
+	}
+
+	public void testAvailableServers() {
+		client.asyncGet("x");
+		assertEquals(Collections.emptyList(), client.getAvailableServers());
+	}
+
+	public void testUnavailableServers() {
+		client.asyncGet("x");
+		assertEquals(new ArrayList<String>(
+				Collections.singleton("/127.0.0.1:11213")),
+			stringify(client.getUnavailableServers()));
 	}
 
 	private void tryTimeout(Future<?> f) throws Exception {

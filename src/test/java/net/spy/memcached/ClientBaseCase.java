@@ -1,5 +1,8 @@
 package net.spy.memcached;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import junit.framework.TestCase;
 
 public abstract class ClientBaseCase extends TestCase {
@@ -13,6 +16,14 @@ public abstract class ClientBaseCase extends TestCase {
 	protected void initClient(ConnectionFactory cf) throws Exception {
 		client=new MemcachedClient(cf,
 			AddrUtil.getAddresses("127.0.0.1:11211"));
+	}
+
+	protected Collection<String> stringify(Collection<?> c) {
+		Collection<String> rv=new ArrayList<String>();
+		for(Object o : c) {
+			rv.add(String.valueOf(o));
+		}
+		return rv;
 	}
 
 	@Override

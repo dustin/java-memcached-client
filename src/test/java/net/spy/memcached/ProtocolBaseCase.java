@@ -4,6 +4,7 @@ import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -328,6 +329,18 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals(2, vals.size());
 		assertEquals("val1", vals.get("test1"));
 		assertEquals("val2", vals.get("test2"));
+	}
+
+	public void testAvailableServers() {
+		client.getVersions();
+		assertEquals(new ArrayList<String>(
+				Collections.singleton(getExpectedVersionSource())),
+			stringify(client.getAvailableServers()));
+	}
+
+	public void testUnavailableServers() {
+		client.getVersions();
+		assertEquals(Collections.emptyList(), client.getUnavailableServers());
 	}
 
 	protected abstract String getExpectedVersionSource();
