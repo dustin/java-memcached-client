@@ -16,7 +16,4 @@ public class OperationTimeoutException extends RuntimeException {
         super(message, cause);
     }
 
-    public OperationTimeoutException(Throwable cause) {
-        super(cause);
-    }
 }
