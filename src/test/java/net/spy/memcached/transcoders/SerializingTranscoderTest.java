@@ -2,7 +2,6 @@
 
 package net.spy.memcached.transcoders;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -65,18 +64,6 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		assertEquals(0, cd.getFlags());
 		assertTrue(Arrays.equals(s1.getBytes("UTF-8"), cd.getData()));
 		assertEquals(s1, tc.decode(cd));
-	}
-
-	public void testValidCharacterSet() {
-		tc.setCharset("KOI8");
-	}
-
-	public void testInvalidCharacterSet() {
-		try {
-			tc.setCharset("Dustin's Kick Ass Character Set");
-		} catch(RuntimeException e) {
-			assertTrue(e.getCause() instanceof UnsupportedEncodingException);
-		}
 	}
 
 	public void testCompressedStringNotSmaller() throws Exception {

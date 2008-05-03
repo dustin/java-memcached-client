@@ -57,7 +57,9 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
 	 * Get the bytes representing the given serialized object.
 	 */
 	protected byte[] serialize(Object o) {
-		assert o != null;
+		if(o == null) {
+			throw new NullPointerException("Can't serialize null");
+		}
 		byte[] rv=null;
 		try {
 			ByteArrayOutputStream bos=new ByteArrayOutputStream();
@@ -77,13 +79,14 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
 	 */
 	protected Object deserialize(byte[] in) {
 		Object rv=null;
-		assert in != null;
 		try {
-			ByteArrayInputStream bis=new ByteArrayInputStream(in);
-			ObjectInputStream is=new ObjectInputStream(bis);
-			rv=is.readObject();
-			is.close();
-			bis.close();
+			if(in != null) {
+				ByteArrayInputStream bis=new ByteArrayInputStream(in);
+				ObjectInputStream is=new ObjectInputStream(bis);
+				rv=is.readObject();
+				is.close();
+				bis.close();
+			}
 		} catch(IOException e) {
 			getLogger().warn("Caught IOException decoding %d bytes of data",
 					in.length, e);
@@ -98,7 +101,9 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
 	 * Compress the given array of bytes.
 	 */
 	protected byte[] compress(byte[] in) {
-		assert in != null;
+		if(in == null) {
+			throw new NullPointerException("Can't compress null");
+		}
 		ByteArrayOutputStream bos=new ByteArrayOutputStream();
 		GZIPOutputStream gz=null;
 		try {
@@ -121,21 +126,23 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
 	 * @return null if the bytes cannot be decompressed
 	 */
 	protected byte[] decompress(byte[] in) {
-		assert in != null;
-		ByteArrayInputStream bis=new ByteArrayInputStream(in);
-		ByteArrayOutputStream bos=new ByteArrayOutputStream();
-		GZIPInputStream gis;
-		try {
-			gis = new GZIPInputStream(bis);
+		ByteArrayOutputStream bos=null;
+		if(in != null) {
+			ByteArrayInputStream bis=new ByteArrayInputStream(in);
+			bos=new ByteArrayOutputStream();
+			GZIPInputStream gis;
+			try {
+				gis = new GZIPInputStream(bis);
 
-			byte[] buf=new byte[8192];
-			int r=-1;
-			while((r=gis.read(buf)) > 0) {
-				bos.write(buf, 0, r);
+				byte[] buf=new byte[8192];
+				int r=-1;
+				while((r=gis.read(buf)) > 0) {
+					bos.write(buf, 0, r);
+				}
+			} catch (IOException e) {
+				getLogger().warn("Failed to decompress data", e);
+				bos = null;
 			}
-		} catch (IOException e) {
-			getLogger().warn("Failed to decompress data", e);
-			bos = null;
 		}
 		return bos == null ? null : bos.toByteArray();
 	}
