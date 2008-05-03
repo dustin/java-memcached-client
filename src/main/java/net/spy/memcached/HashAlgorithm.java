@@ -68,7 +68,7 @@ public enum HashAlgorithm {
 			case CRC32_HASH:
 				// return (crc32(shift) >> 16) & 0x7fff;
 				CRC32 crc32 = new CRC32();
-				crc32.update(k.getBytes());
+				crc32.update(KeyUtil.getKeyBytes(k));
 				rv = (crc32.getValue() >> 16) & 0x7fff;
 				break;
 			case FNV1_64_HASH: {
@@ -132,7 +132,7 @@ public enum HashAlgorithm {
 			throw new RuntimeException("MD5 not supported", e);
 		}
 		md5.reset();
-		md5.update(k.getBytes());
+		md5.update(KeyUtil.getKeyBytes(k));
 		return md5.digest();
 	}
 }
