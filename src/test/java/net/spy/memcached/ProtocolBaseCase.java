@@ -608,6 +608,18 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("estest", client.get(key));
 	}
 
+	public void testAppendNoSuchKey() throws Exception {
+		final String key="append.missing";
+		assertFalse(client.append(0, key, "es").get());
+		assertNull(client.get(key));
+	}
+
+	public void testPrependNoSuchKey() throws Exception {
+		final String key="prepend.missing";
+		assertFalse(client.prepend(0, key, "es").get());
+		assertNull(client.get(key));
+	}
+
 	private static class TestTranscoder implements Transcoder<String> {
 		private final int flags=238885206;
 

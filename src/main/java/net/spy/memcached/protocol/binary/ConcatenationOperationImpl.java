@@ -49,6 +49,9 @@ class ConcatenationOperationImpl extends OperationImpl
 			case ERR_NOT_FOUND:
 				rv=NOT_FOUND_STATUS;
 				break;
+			case ERR_NOT_STORED:
+				rv=NOT_FOUND_STATUS;
+				break;
 		}
 		return rv;
 	}
