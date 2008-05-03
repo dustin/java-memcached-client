@@ -24,6 +24,11 @@ public class CASMutatorTest extends ClientBaseCase {
 		mutator=new CASMutator<Long>(client, new LongTranscoder(), 50);
 	}
 
+	public void testDefaultConstructor() {
+		// Just validate that this doesn't throw an exception.
+		new CASMutator<Long>(client, new LongTranscoder());
+	}
+
 	public void testConcurrentCAS() throws Throwable {
 		int num=SyncThread.getDistinctResultCount(20, new Callable<Long>(){
 			public Long call() throws Exception {
