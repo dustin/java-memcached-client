@@ -4,6 +4,8 @@ import java.util.Collection;
 
 import net.spy.memcached.OperationFactory;
 import net.spy.memcached.ops.CASOperation;
+import net.spy.memcached.ops.ConcatenationOperation;
+import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
@@ -56,7 +58,7 @@ public class BinaryOperationFactory implements OperationFactory {
 
 	public StoreOperation store(StoreType storeType, String key, int flags,
 			int exp, byte[] data, OperationCallback cb) {
-		return new StoreOperationImpl(storeType, key, flags, exp, data, cb);
+		return new StoreOperationImpl(storeType, key, flags, exp, data, 0, cb);
 	}
 
 	public VersionOperation version(OperationCallback cb) {
@@ -71,6 +73,11 @@ public class BinaryOperationFactory implements OperationFactory {
 			byte[] data, OperationCallback cb) {
 		return new StoreOperationImpl(StoreType.set, key, flags, 0, data,
 				casId, cb);
+	}
+
+	public ConcatenationOperation cat(ConcatenationType catType, long casId,
+			String key, byte[] data, OperationCallback cb) {
+		return new ConcatenationOperationImpl(catType, key, data, casId, cb);
 	}
 
 }

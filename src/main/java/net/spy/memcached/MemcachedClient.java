@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.spy.SpyThread;
 import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.CancelledOperationStatus;
+import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
@@ -245,6 +246,78 @@ public final class MemcachedClient extends SpyThread {
 	private Future<Boolean> asyncStore(StoreType storeType,
 			String key, int exp, Object value) {
 		return asyncStore(storeType, key, exp, value, transcoder);
+	}
+
+	private <T> Future<Boolean> asyncCat(
+			ConcatenationType catType, long cas, String key,
+			T value, Transcoder<T> tc) {
+		CachedData co=tc.encode(value);
+		final CountDownLatch latch=new CountDownLatch(1);
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch,
+				operationTimeout);
+		Operation op=opFact.cat(catType, cas, key, co.getData(),
+				new OperationCallback() {
+			public void receivedStatus(OperationStatus val) {
+				rv.set(val.isSuccess());
+			}
+			public void complete() {
+				latch.countDown();
+			}});
+		rv.setOperation(op);
+		addOp(key, op);
+		return rv;
+	}
+
+	/**
+	 * Append to an existing value in the cache.
+	 *
+	 * @param cas cas identifier (ignored in the ascii protocol)
+	 * @param key the key to whose value will be appended
+	 * @param val the value to append
+	 * @return a future indicating success
+	 */
+	public Future<Boolean> append(long cas, String key, Object val) {
+		return append(cas, key, val, transcoder);
+	}
+
+	/**
+	 * Append to an existing value in the cache.
+	 *
+	 * @param cas cas identifier (ignored in the ascii protocol)
+	 * @param key the key to whose value will be appended
+	 * @param val the value to append
+	 * @param tc the transcoder to serialize and unserialize the value
+	 * @return a future indicating success
+	 */
+	public <T> Future<Boolean> append(long cas, String key, T val,
+			Transcoder<T> tc) {
+		return asyncCat(ConcatenationType.append, cas, key, val, tc);
+	}
+
+	/**
+	 * Prepend to an existing value in the cache.
+	 *
+	 * @param cas cas identifier (ignored in the ascii protocol)
+	 * @param key the key to whose value will be prepended
+	 * @param val the value to append
+	 * @return a future indicating success
+	 */
+	public Future<Boolean> prepend(long cas, String key, Object val) {
+		return prepend(cas, key, val, transcoder);
+	}
+
+	/**
+	 * Prepend to an existing value in the cache.
+	 *
+	 * @param cas cas identifier (ignored in the ascii protocol)
+	 * @param key the key to whose value will be prepended
+	 * @param val the value to append
+	 * @param tc the transcoder to serialize and unserialize the value
+	 * @return a future indicating success
+	 */
+	public <T> Future<Boolean> prepend(long cas, String key, T val,
+			Transcoder<T> tc) {
+		return asyncCat(ConcatenationType.prepend, cas, key, val, tc);
 	}
 
 	/**

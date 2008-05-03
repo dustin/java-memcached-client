@@ -568,6 +568,19 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("output is not equal", value, output);
 	}
 
+	public void testAppend() throws Exception {
+		final String key="append.key";
+		assertTrue(client.set(key, 5, "test").get());
+		assertTrue(client.append(0, key, "es").get());
+		assertEquals("testes", client.get(key));
+	}
+
+	public void testPrepend() throws Exception {
+		final String key="prepend.key";
+		assertTrue(client.set(key, 5, "test").get());
+		assertTrue(client.prepend(0, key, "es").get());
+		assertEquals("estest", client.get(key));
+	}
 
 	private static class TestTranscoder implements Transcoder<String> {
 		private final int flags=238885206;

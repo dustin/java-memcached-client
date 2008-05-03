@@ -4,6 +4,8 @@ import java.util.Collection;
 
 import net.spy.memcached.OperationFactory;
 import net.spy.memcached.ops.CASOperation;
+import net.spy.memcached.ops.ConcatenationOperation;
+import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
@@ -68,6 +70,12 @@ public final class AsciiOperationFactory implements OperationFactory {
 	public CASOperation cas(String key, long casId, int flags,
 			byte[] data, OperationCallback cb) {
 		return new CASOperationImpl(key, casId, flags, data, cb);
+	}
+
+	public ConcatenationOperation cat(ConcatenationType catType,
+			long casId,
+			String key, byte[] data, OperationCallback cb) {
+		return new ConcatenationOperationImpl(catType, key, data, cb);
 	}
 
 }

@@ -1,50 +1,42 @@
 package net.spy.memcached.protocol.binary;
 
-import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
+import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
-import net.spy.memcached.ops.StoreOperation;
-import net.spy.memcached.ops.StoreType;
 
-class StoreOperationImpl extends OperationImpl
-	implements StoreOperation, CASOperation, ConcatenationOperation {
+class ConcatenationOperationImpl extends OperationImpl
+	implements ConcatenationOperation {
 
-	private static final int SET=1;
-	private static final int ADD=2;
-	private static final int REPLACE=3;
+	private static final int APPEND=0x0e;
+	private static final int PREPEND=0x0f;
 
 	private final String key;
-	private final int flags;
-	private final int exp;
 	private final long cas;
 	private final byte[] data;
 
-	private static int cmdMap(StoreType t) {
+	private static int cmdMap(ConcatenationType t) {
 		int rv=-1;
 		switch(t) {
-			case set: rv=SET; break;
-			case add: rv=ADD; break;
-			case replace: rv=REPLACE; break;
+			case append: rv=APPEND; break;
+			case prepend: rv=PREPEND; break;
 		}
 		// Check fall-through.
 		assert rv != -1 : "Unhandled store type:  " + t;
 		return rv;
 	}
 
-	public StoreOperationImpl(StoreType t, String k, int f, int e,
+	public ConcatenationOperationImpl(ConcatenationType t, String k,
 			byte[] d, long c, OperationCallback cb) {
 		super(cmdMap(t), generateOpaque(), cb);
 		key=k;
-		flags=f;
-		exp=e;
 		data=d;
 		cas=c;
 	}
 
 	@Override
 	public void initialize() {
-		prepareBuffer(key, cas, data, flags, exp);
+		prepareBuffer(key, cas, data);
 	}
 
 	@Override

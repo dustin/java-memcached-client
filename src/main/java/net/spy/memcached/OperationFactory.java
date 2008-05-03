@@ -3,6 +3,8 @@ package net.spy.memcached;
 import java.util.Collection;
 
 import net.spy.memcached.ops.CASOperation;
+import net.spy.memcached.ops.ConcatenationOperation;
+import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
@@ -113,6 +115,19 @@ public interface OperationFactory {
 	 */
 	StoreOperation store(StoreType storeType, String key, int flags, int exp,
 			byte[] data, OperationCallback cb);
+
+	/**
+	 * Get a concatenation operation.
+	 *
+	 * @param catType the type of concatenation to perform.
+	 * @param key the key
+	 * @param casId the CAS value for an atomic compare-and-cat
+	 * @param data the data to store
+	 * @param cb a callback for reporting the status
+	 * @return thew new ConcatenationOperation
+	 */
+	ConcatenationOperation cat(ConcatenationType catType, long casId,
+			String key, byte[] data, OperationCallback cb);
 
 	/**
 	 * Create a CAS operation.
