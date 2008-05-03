@@ -433,7 +433,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 			client.set("t" + i, 10, i);
 		}
 		assertFalse("Weird, shut down too fast",
-			client.shutdown(3, TimeUnit.MILLISECONDS));
+			client.shutdown(1, TimeUnit.MILLISECONDS));
 
 		try {
 			Map<SocketAddress, String> m = client.getVersions();
