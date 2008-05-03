@@ -52,4 +52,8 @@ public interface ConnectionFactory {
 	 */
 	long getOperationTimeout();
 
+	/**
+	 * If true, the IO thread should be a daemon thread.
+	 */
+	boolean isDaemon();
 }

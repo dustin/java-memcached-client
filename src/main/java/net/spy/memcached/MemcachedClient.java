@@ -154,6 +154,7 @@ public final class MemcachedClient extends SpyThread {
 		assert conn != null : "Connection factory failed to make a connection";
 		operationTimeout = cf.getOperationTimeout();
 		setName("Memcached IO over " + conn);
+		setDaemon(cf.isDaemon());
 		start();
 	}
 

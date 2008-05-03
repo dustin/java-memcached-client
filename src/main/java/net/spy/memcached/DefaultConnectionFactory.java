@@ -138,4 +138,11 @@ public class DefaultConnectionFactory extends SpyObject
 		return DEFAULT_OPERATION_TIMEOUT;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#isDaemon()
+	 */
+	public boolean isDaemon() {
+		return false;
+	}
+
 }
