@@ -1,5 +1,3 @@
-// Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
-
 package net.spy.memcached.transcoders;
 
 import java.util.Date;
@@ -7,25 +5,26 @@ import java.util.Date;
 import net.spy.memcached.CachedData;
 
 /**
- * Transcoder that serializes and compresses objects.
+ * Transcoder that provides compatibility with Greg Whalin's memcached client.
  */
-public class SerializingTranscoder extends BaseSerializingTranscoder
+public class WhalinTranscoder extends BaseSerializingTranscoder
 	implements Transcoder<Object> {
 
-	// General flags
-	static final int SERIALIZED=1;
-	static final int COMPRESSED=2;
-
-	// Special flags for specially handled types.
-	private static final int SPECIAL_MASK=0xff00;
-	static final int SPECIAL_BOOLEAN=(1<<8);
-	static final int SPECIAL_INT=(2<<8);
-	static final int SPECIAL_LONG=(3<<8);
-	static final int SPECIAL_DATE=(4<<8);
-	static final int SPECIAL_BYTE=(5<<8);
-	static final int SPECIAL_FLOAT=(6<<8);
-	static final int SPECIAL_DOUBLE=(7<<8);
-	static final int SPECIAL_BYTEARRAY=(8<<8);
+	static final int SPECIAL_BYTE = 1;
+	static final int SPECIAL_BOOLEAN = 8192;
+	static final int SPECIAL_INT = 4;
+	static final int SPECIAL_LONG = 16384;
+	static final int SPECIAL_CHARACTER = 16;
+	static final int SPECIAL_STRING = 32;
+	static final int SPECIAL_STRINGBUFFER = 64;
+	static final int SPECIAL_FLOAT = 128;
+	static final int SPECIAL_SHORT = 256;
+	static final int SPECIAL_DOUBLE = 512;
+	static final int SPECIAL_DATE = 1024;
+	static final int SPECIAL_STRINGBUILDER = 2048;
+	static final int SPECIAL_BYTEARRAY = 4096;
+	static final int COMPRESSED = 2;
+	static final int SERIALIZED = 8;
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.Transcoder#decode(net.spy.memcached.CachedData)
@@ -36,16 +35,19 @@ public class SerializingTranscoder extends BaseSerializingTranscoder
 		if((d.getFlags() & COMPRESSED) != 0) {
 			data=decompress(d.getData());
 		}
-		int flags=d.getFlags() & SPECIAL_MASK;
-		if((d.getFlags() & SERIALIZED) != 0 && data != null) {
+		if((d.getFlags() & SERIALIZED) != 0) {
 			rv=deserialize(data);
-		} else if(flags != 0 && data != null) {
-			switch(flags) {
+		} else {
+			int f=d.getFlags() & ~COMPRESSED;
+			switch(f) {
 				case SPECIAL_BOOLEAN:
 					rv=Boolean.valueOf(TranscoderUtils.decodeBoolean(data));
 					break;
 				case SPECIAL_INT:
 					rv=new Integer(TranscoderUtils.decodeInt(data));
+					break;
+				case SPECIAL_SHORT:
+					rv=new Short((short)TranscoderUtils.decodeInt(data));
 					break;
 				case SPECIAL_LONG:
 					rv=new Long(TranscoderUtils.decodeLong(data));
@@ -58,38 +60,52 @@ public class SerializingTranscoder extends BaseSerializingTranscoder
 					break;
 				case SPECIAL_FLOAT:
 					rv=new Float(Float.intBitsToFloat(
-							TranscoderUtils.decodeInt(data)));
+						TranscoderUtils.decodeInt(data)));
 					break;
 				case SPECIAL_DOUBLE:
 					rv=new Double(Double.longBitsToDouble(
-							TranscoderUtils.decodeLong(data)));
+						TranscoderUtils.decodeLong(data)));
 					break;
 				case SPECIAL_BYTEARRAY:
 					rv=data;
 					break;
+				case SPECIAL_STRING:
+					rv = decodeString(data);
+					break;
+				case SPECIAL_STRINGBUFFER:
+					rv=new StringBuffer(decodeString(data));
+					break;
+				case SPECIAL_STRINGBUILDER:
+					rv=new StringBuilder(decodeString(data));
+					break;
 				default:
-					getLogger().warn("Undecodeable with flags %x", flags);
+					getLogger().warn("Cannot handle data with flags %x", f);
 			}
-		} else {
-			rv=decodeString(data);
 		}
 		return rv;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.Transcoder#encode(java.lang.Object)
-	 */
 	public CachedData encode(Object o) {
 		byte[] b=null;
 		int flags=0;
 		if(o instanceof String) {
 			b=encodeString((String)o);
+			flags |= SPECIAL_STRING;
+		} else if(o instanceof StringBuffer) {
+			flags |= SPECIAL_STRINGBUFFER;
+			b=encodeString(String.valueOf(o));
+		} else if(o instanceof StringBuilder) {
+			flags |= SPECIAL_STRINGBUILDER;
+			b=encodeString(String.valueOf(o));
 		} else if(o instanceof Long) {
 			b=TranscoderUtils.encodeLong((Long)o);
 			flags |= SPECIAL_LONG;
 		} else if(o instanceof Integer) {
 			b=TranscoderUtils.encodeInt((Integer)o);
 			flags |= SPECIAL_INT;
+		} else if(o instanceof Short) {
+			b=TranscoderUtils.encodeInt((Short)o);
+			flags |= SPECIAL_SHORT;
 		} else if(o instanceof Boolean) {
 			b=TranscoderUtils.encodeBoolean((Boolean)o);
 			flags |= SPECIAL_BOOLEAN;
@@ -100,10 +116,10 @@ public class SerializingTranscoder extends BaseSerializingTranscoder
 			b=TranscoderUtils.encodeByte((Byte)o);
 			flags |= SPECIAL_BYTE;
 		} else if(o instanceof Float) {
-			b=TranscoderUtils.encodeInt(Float.floatToRawIntBits((Float)o));
+			b=TranscoderUtils.encodeInt(Float.floatToIntBits((Float)o));
 			flags |= SPECIAL_FLOAT;
 		} else if(o instanceof Double) {
-			b=TranscoderUtils.encodeLong(Double.doubleToRawLongBits((Double)o));
+			b=TranscoderUtils.encodeLong(Double.doubleToLongBits((Double)o));
 			flags |= SPECIAL_DOUBLE;
 		} else if(o instanceof byte[]) {
 			b=(byte[])o;
@@ -117,7 +133,7 @@ public class SerializingTranscoder extends BaseSerializingTranscoder
 			byte[] compressed=compress(b);
 			if(compressed.length < b.length) {
 				getLogger().info("Compressed %s from %d to %d",
-					o.getClass().getName(), b.length, compressed.length);
+						o.getClass().getName(), b.length, compressed.length);
 				b=compressed;
 				flags |= COMPRESSED;
 			} else {
@@ -128,5 +144,6 @@ public class SerializingTranscoder extends BaseSerializingTranscoder
 		}
 		return new CachedData(flags, b);
 	}
+
 
 }

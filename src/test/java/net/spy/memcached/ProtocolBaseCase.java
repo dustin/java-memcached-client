@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationException;
+import net.spy.memcached.transcoders.BaseSerializingTranscoder;
 import net.spy.memcached.transcoders.SerializingTranscoder;
 import net.spy.memcached.transcoders.Transcoder;
 import net.spy.test.SyncThread;
@@ -174,7 +175,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
 	public void testSetTranscoder() {
 		Transcoder<Object> tc=client.getTranscoder();
-		assertTrue(tc instanceof SerializingTranscoder);
+		assertTrue(tc instanceof BaseSerializingTranscoder);
 		Transcoder<Object> tmptc=new Transcoder<Object>(){
 			public Object decode(CachedData d) {
 				throw new RuntimeException("Not implemented.");

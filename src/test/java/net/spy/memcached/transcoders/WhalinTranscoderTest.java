@@ -15,14 +15,14 @@ import net.spy.test.BaseMockCase;
 /**
  * Test the serializing transcoder.
  */
-public class SerializingTranscoderTest extends BaseMockCase {
+public class WhalinTranscoderTest extends BaseMockCase {
 
-	private SerializingTranscoder tc=null;
+	private WhalinTranscoder tc=null;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		tc=new SerializingTranscoder();
+		tc=new WhalinTranscoder();
 	}
 
 	public void testNonserializable() throws Exception {
@@ -38,11 +38,11 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		String s1="This is a simple test string.";
 		CachedData cd=tc.encode(s1);
 		// Test the stringification while we're here.
-		String exp="{CachedData flags=0 data=[84, 104, 105, 115, 32, 105, "
+		String exp="{CachedData flags=32 data=[84, 104, 105, 115, 32, 105, "
 			+ "115, 32, 97, 32, 115, 105, 109, 112, 108, 101, 32, 116, 101, "
 			+ "115, 116, 32, 115, 116, 114, 105, 110, 103, 46]}";
 		assertEquals(exp, String.valueOf(cd));
-		assertEquals(0, cd.getFlags());
+		assertEquals(WhalinTranscoder.SPECIAL_STRING, cd.getFlags());
 		assertTrue(Arrays.equals(s1.getBytes(), cd.getData()));
 		assertEquals(s1, tc.decode(cd));
 	}
@@ -53,7 +53,7 @@ public class SerializingTranscoderTest extends BaseMockCase {
 			+ "\u03c0, \u2013\u00ba\u2013\u220f\u2014\u00c4.";
 		CachedData cd=tc.encode(s1);
 		// Test the stringification while we're here.
-		String exp="{CachedData flags=0 data=[-30, -128, -109, -61, -77, -30, "
+		String exp="{CachedData flags=32 data=[-30, -128, -109, -61, -77, -30, "
 			+ "-128, -109, -62, -91, -30, -128, -108, -61, -124, -30, "
 			+ "-128, -109, -30, -120, -98, -30, -128, -109, -30, -119, "
 			+ "-92, -30, -128, -108, -61, -123, -30, -128, -108, -61, -121, "
@@ -62,7 +62,7 @@ public class SerializingTranscoderTest extends BaseMockCase {
 			+ "-30, -128, -109, -30, -120, -113, -30, -128, -108, -61, -124, "
 			+ "46]}";
 		assertEquals(exp, String.valueOf(cd));
-		assertEquals(0, cd.getFlags());
+		assertEquals(WhalinTranscoder.SPECIAL_STRING, cd.getFlags());
 		assertTrue(Arrays.equals(s1.getBytes("UTF-8"), cd.getData()));
 		assertEquals(s1, tc.decode(cd));
 	}
@@ -85,7 +85,7 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		tc.setCompressionThreshold(8);
 		CachedData cd=tc.encode(s1);
 		// This should *not* be compressed because it is too small
-		assertEquals(0, cd.getFlags());
+		assertEquals(WhalinTranscoder.SPECIAL_STRING, cd.getFlags());
 		assertTrue(Arrays.equals(s1.getBytes(), cd.getData()));
 		assertEquals(s1, tc.decode(cd));
 	}
@@ -95,7 +95,9 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		String s1="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 		tc.setCompressionThreshold(8);
 		CachedData cd=tc.encode(s1);
-		assertEquals(SerializingTranscoder.COMPRESSED, cd.getFlags());
+		assertEquals(
+			WhalinTranscoder.COMPRESSED | WhalinTranscoder.SPECIAL_STRING,
+			cd.getFlags());
 		assertFalse(Arrays.equals(s1.getBytes(), cd.getData()));
 		assertEquals(s1, tc.decode(cd));
 	}
@@ -103,7 +105,7 @@ public class SerializingTranscoderTest extends BaseMockCase {
 	public void testObject() throws Exception {
 		Calendar c=Calendar.getInstance();
 		CachedData cd=tc.encode(c);
-		assertEquals(SerializingTranscoder.SERIALIZED, cd.getFlags());
+		assertEquals(WhalinTranscoder.SERIALIZED, cd.getFlags());
 		assertEquals(c, tc.decode(cd));
 	}
 
@@ -111,8 +113,8 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		tc.setCompressionThreshold(8);
 		Calendar c=Calendar.getInstance();
 		CachedData cd=tc.encode(c);
-		assertEquals(SerializingTranscoder.SERIALIZED
-				|SerializingTranscoder.COMPRESSED, cd.getFlags());
+		assertEquals(WhalinTranscoder.SERIALIZED
+				|WhalinTranscoder.COMPRESSED, cd.getFlags());
 		assertEquals(c, tc.decode(cd));
 	}
 
@@ -139,6 +141,10 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		assertEquals(923, tc.decode(tc.encode(923)));
 	}
 
+	public void testShort() throws Exception {
+		assertEquals((short)923, tc.decode(tc.encode((short)923)));
+	}
+
 	public void testBoolean() throws Exception {
 		assertSame(Boolean.TRUE, tc.decode(tc.encode(true)));
 		assertSame(Boolean.FALSE, tc.decode(tc.encode(false)));
@@ -146,6 +152,51 @@ public class SerializingTranscoderTest extends BaseMockCase {
 
 	public void testByte() throws Exception {
 		assertEquals((byte)-127, tc.decode(tc.encode((byte)-127)));
+	}
+
+	public void testUnencodeable() throws Exception {
+		try {
+			CachedData cd=tc.encode(new Object());
+			fail("Should fail to serialize, got" + cd);
+		} catch(IllegalArgumentException e) {
+			// pass
+		}
+	}
+
+	public void testUndecodeable() throws Exception {
+		CachedData cd=new CachedData(
+				Integer.MAX_VALUE &
+				~(WhalinTranscoder.COMPRESSED | WhalinTranscoder.SERIALIZED),
+				TranscoderUtils.encodeInt(Integer.MAX_VALUE));
+		assertNull(tc.decode(cd));
+	}
+
+	public void testUndecodeableSerialized() throws Exception {
+		CachedData cd=new CachedData(WhalinTranscoder.SERIALIZED,
+				TranscoderUtils.encodeInt(Integer.MAX_VALUE));
+		assertNull(tc.decode(cd));
+	}
+
+	public void testUndecodeableCompressed() throws Exception {
+		CachedData cd=new CachedData(WhalinTranscoder.COMPRESSED,
+				TranscoderUtils.encodeInt(Integer.MAX_VALUE));
+		assertNull(tc.decode(cd));
+	}
+
+	public void testCharacter() throws Exception {
+		assertEquals('c', tc.decode(tc.encode('c')));
+	}
+
+	public void testStringBuilder() throws Exception {
+		StringBuilder sb=new StringBuilder("test");
+		StringBuilder sb2=(StringBuilder)tc.decode(tc.encode(sb));
+		assertEquals(sb.toString(), sb2.toString());
+	}
+
+	public void testStringBuffer() throws Exception {
+		StringBuffer sb=new StringBuffer("test");
+		StringBuffer sb2=(StringBuffer)tc.decode(tc.encode(sb));
+		assertEquals(sb.toString(), sb2.toString());
 	}
 
 	private void assertFloat(float f) {
@@ -229,37 +280,5 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		CachedData cd=tc.encode(a);
 		assertTrue(Arrays.equals(a, cd.getData()));
 		assertTrue(Arrays.equals(a, (byte[])tc.decode(cd)));
-	}
-
-	public void testUnencodeable() throws Exception {
-		try {
-			CachedData cd=tc.encode(new Object());
-			fail("Should fail to serialize, got" + cd);
-		} catch(IllegalArgumentException e) {
-			// pass
-		}
-	}
-
-	public void testUndecodeable() throws Exception {
-		CachedData cd=new CachedData(
-				Integer.MAX_VALUE &
-				~(SerializingTranscoder.COMPRESSED
-						| SerializingTranscoder.SERIALIZED),
-				TranscoderUtils.encodeInt(Integer.MAX_VALUE));
-		assertNull(tc.decode(cd));
-	}
-
-	public void testUndecodeableSerialized() throws Exception {
-		CachedData cd=new CachedData(SerializingTranscoder.SERIALIZED,
-				TranscoderUtils.encodeInt(Integer.MAX_VALUE));
-		assertNull(tc.decode(cd));
-	}
-
-	public void testUndecodeableCompressed() throws Exception {
-		CachedData cd=new CachedData(
-			SerializingTranscoder.COMPRESSED,
-			TranscoderUtils.encodeInt(Integer.MAX_VALUE));
-		System.out.println("got " + tc.decode(cd));
-		assertNull(tc.decode(cd));
 	}
 }
