@@ -344,6 +344,18 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("val2", vals.get("test2"));
 	}
 
+	public void testAsyncGetBulkVarargWithTranscoder() throws Exception {
+		Transcoder<String> t=new TestTranscoder();
+		assertEquals(0, client.getBulk(t, "test1", "test2", "test3").size());
+		client.set("test1", 5, "val1", t);
+		client.set("test2", 5, "val2", t);
+		Future<Map<String, String>> vals=client.asyncGetBulk(t,
+				"test1", "test2", "test3");
+		assertEquals(2, vals.get().size());
+		assertEquals("val1", vals.get().get("test1"));
+		assertEquals("val2", vals.get().get("test2"));
+	}
+
 	public void testAvailableServers() {
 		client.getVersions();
 		assertEquals(new ArrayList<String>(
