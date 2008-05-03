@@ -16,12 +16,14 @@ import net.spy.test.BaseMockCase;
  */
 public class SerializingTranscoderTest extends BaseMockCase {
 
-	private SerializingTranscoder tc=null;
+	private SerializingTranscoder tc;
+	private TranscoderUtils tu;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		tc=new SerializingTranscoder();
+		tu=new TranscoderUtils(true);
 	}
 
 	public void testNonserializable() throws Exception {
@@ -165,8 +167,8 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		assertDouble(Double.NEGATIVE_INFINITY);
 	}
 	private void assertLong(long l) {
-		byte[] encoded=TranscoderUtils.encodeLong(l);
-		long decoded=TranscoderUtils.decodeLong(encoded);
+		byte[] encoded=tu.encodeLong(l);
+		long decoded=tu.decodeLong(encoded);
 		assertEquals(l, decoded);
 	}
 
@@ -191,8 +193,8 @@ public class SerializingTranscoderTest extends BaseMockCase {
 	}
 
 	private void assertInt(int i) {
-		byte[] encoded=TranscoderUtils.encodeInt(i);
-		int decoded=TranscoderUtils.decodeInt(encoded);
+		byte[] encoded=tu.encodeInt(i);
+		int decoded=tu.decodeInt(encoded);
 		assertEquals(i, decoded);
 	}
 
@@ -207,8 +209,8 @@ public class SerializingTranscoderTest extends BaseMockCase {
 	}
 
 	public void testBooleanEncoding() throws Exception {
-		assertTrue(TranscoderUtils.decodeBoolean(TranscoderUtils.encodeBoolean(true)));
-		assertFalse(TranscoderUtils.decodeBoolean(TranscoderUtils.encodeBoolean(false)));
+		assertTrue(tu.decodeBoolean(tu.encodeBoolean(true)));
+		assertFalse(tu.decodeBoolean(tu.encodeBoolean(false)));
 	}
 
 	public void testByteArray() throws Exception {
@@ -232,20 +234,20 @@ public class SerializingTranscoderTest extends BaseMockCase {
 				Integer.MAX_VALUE &
 				~(SerializingTranscoder.COMPRESSED
 						| SerializingTranscoder.SERIALIZED),
-				TranscoderUtils.encodeInt(Integer.MAX_VALUE));
+				tu.encodeInt(Integer.MAX_VALUE));
 		assertNull(tc.decode(cd));
 	}
 
 	public void testUndecodeableSerialized() throws Exception {
 		CachedData cd=new CachedData(SerializingTranscoder.SERIALIZED,
-				TranscoderUtils.encodeInt(Integer.MAX_VALUE));
+				tu.encodeInt(Integer.MAX_VALUE));
 		assertNull(tc.decode(cd));
 	}
 
 	public void testUndecodeableCompressed() throws Exception {
 		CachedData cd=new CachedData(
 			SerializingTranscoder.COMPRESSED,
-			TranscoderUtils.encodeInt(Integer.MAX_VALUE));
+			tu.encodeInt(Integer.MAX_VALUE));
 		System.out.println("got " + tc.decode(cd));
 		assertNull(tc.decode(cd));
 	}

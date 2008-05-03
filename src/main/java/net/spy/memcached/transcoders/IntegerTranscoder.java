@@ -13,13 +13,15 @@ public final class IntegerTranscoder extends SpyObject
 
 	private static final int flags = SerializingTranscoder.SPECIAL_INT;
 
+	private final TranscoderUtils tu=new TranscoderUtils(true);
+
 	public CachedData encode(java.lang.Integer l) {
-		return new CachedData(flags, TranscoderUtils.encodeInt(l));
+		return new CachedData(flags, tu.encodeInt(l));
 	}
 
 	public Integer decode(CachedData d) {
 		if (flags == d.getFlags()) {
-			return TranscoderUtils.decodeInt(d.getData());
+			return tu.decodeInt(d.getData());
 		} else {
 			return null;
 		}

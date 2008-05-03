@@ -1,5 +1,7 @@
 package net.spy.memcached.transcoders;
 
+import java.util.Arrays;
+
 import junit.framework.TestCase;
 
 /**
@@ -7,11 +9,18 @@ import junit.framework.TestCase;
  */
 public class TranscoderUtilsTest extends TestCase {
 
+	private TranscoderUtils tu;
 	byte[] oversizeBytes=new byte[16];
+
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		tu=new TranscoderUtils(true);
+	}
 
 	public void testBooleanOverflow() {
 		try {
-			boolean b=TranscoderUtils.decodeBoolean(oversizeBytes);
+			boolean b=tu.decodeBoolean(oversizeBytes);
 			fail("Got " + b + " expected assertion.");
 		} catch(AssertionError e) {
 			// pass
@@ -20,7 +29,7 @@ public class TranscoderUtilsTest extends TestCase {
 
 	public void testByteOverflow() {
 		try {
-			byte b=TranscoderUtils.decodeByte(oversizeBytes);
+			byte b=tu.decodeByte(oversizeBytes);
 			fail("Got " + b + " expected assertion.");
 		} catch(AssertionError e) {
 			// pass
@@ -29,7 +38,7 @@ public class TranscoderUtilsTest extends TestCase {
 
 	public void testIntOverflow() {
 		try {
-			int b=TranscoderUtils.decodeInt(oversizeBytes);
+			int b=tu.decodeInt(oversizeBytes);
 			fail("Got " + b + " expected assertion.");
 		} catch(AssertionError e) {
 			// pass
@@ -38,11 +47,19 @@ public class TranscoderUtilsTest extends TestCase {
 
 	public void testLongOverflow() {
 		try {
-			long b=TranscoderUtils.decodeLong(oversizeBytes);
+			long b=tu.decodeLong(oversizeBytes);
 			fail("Got " + b + " expected assertion.");
 		} catch(AssertionError e) {
 			// pass
 		}
 	}
 
+	public void testPackedLong() {
+		assertEquals("[1]", Arrays.toString(tu.encodeLong(1)));
+	}
+
+	public void testUnpackedLong() {
+		assertEquals("[0, 0, 0, 0, 0, 0, 0, 1]",
+			Arrays.toString(new TranscoderUtils(false).encodeLong(1)));
+	}
 }

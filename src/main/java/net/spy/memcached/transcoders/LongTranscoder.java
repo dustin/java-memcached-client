@@ -13,13 +13,15 @@ public final class LongTranscoder extends SpyObject
 
 	private static final int flags = SerializingTranscoder.SPECIAL_LONG;
 
+	private final TranscoderUtils tu=new TranscoderUtils(true);
+
 	public CachedData encode(java.lang.Long l) {
-		return new CachedData(flags, TranscoderUtils.encodeLong(l));
+		return new CachedData(flags, tu.encodeLong(l));
 	}
 
 	public Long decode(CachedData d) {
 		if (flags == d.getFlags()) {
-			return TranscoderUtils.decodeLong(d.getData());
+			return tu.decodeLong(d.getData());
 		} else {
 			getLogger().error("Unexpected flags for long:  "
 				+ d.getFlags() + " wanted " + flags);

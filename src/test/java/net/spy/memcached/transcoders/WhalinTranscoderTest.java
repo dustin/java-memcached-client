@@ -16,12 +16,14 @@ import net.spy.test.BaseMockCase;
  */
 public class WhalinTranscoderTest extends BaseMockCase {
 
-	private WhalinTranscoder tc=null;
+	private WhalinTranscoder tc;
+	private TranscoderUtils tu;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		tc=new WhalinTranscoder();
+		tu=new TranscoderUtils(false);
 	}
 
 	public void testNonserializable() throws Exception {
@@ -154,19 +156,19 @@ public class WhalinTranscoderTest extends BaseMockCase {
 		CachedData cd=new CachedData(
 				Integer.MAX_VALUE &
 				~(WhalinTranscoder.COMPRESSED | WhalinTranscoder.SERIALIZED),
-				TranscoderUtils.encodeInt(Integer.MAX_VALUE));
+				tu.encodeInt(Integer.MAX_VALUE));
 		assertNull(tc.decode(cd));
 	}
 
 	public void testUndecodeableSerialized() throws Exception {
 		CachedData cd=new CachedData(WhalinTranscoder.SERIALIZED,
-				TranscoderUtils.encodeInt(Integer.MAX_VALUE));
+				tu.encodeInt(Integer.MAX_VALUE));
 		assertNull(tc.decode(cd));
 	}
 
 	public void testUndecodeableCompressed() throws Exception {
 		CachedData cd=new CachedData(WhalinTranscoder.COMPRESSED,
-				TranscoderUtils.encodeInt(Integer.MAX_VALUE));
+				tu.encodeInt(Integer.MAX_VALUE));
 		assertNull(tc.decode(cd));
 	}
 
@@ -216,8 +218,8 @@ public class WhalinTranscoderTest extends BaseMockCase {
 		assertDouble(Double.NEGATIVE_INFINITY);
 	}
 	private void assertLong(long l) {
-		byte[] encoded=TranscoderUtils.encodeLong(l);
-		long decoded=TranscoderUtils.decodeLong(encoded);
+		byte[] encoded=tu.encodeLong(l);
+		long decoded=tu.decodeLong(encoded);
 		assertEquals(l, decoded);
 	}
 
@@ -242,8 +244,8 @@ public class WhalinTranscoderTest extends BaseMockCase {
 	}
 
 	private void assertInt(int i) {
-		byte[] encoded=TranscoderUtils.encodeInt(i);
-		int decoded=TranscoderUtils.decodeInt(encoded);
+		byte[] encoded=tu.encodeInt(i);
+		int decoded=tu.decodeInt(encoded);
 		assertEquals(i, decoded);
 	}
 
@@ -258,8 +260,8 @@ public class WhalinTranscoderTest extends BaseMockCase {
 	}
 
 	public void testBooleanEncoding() throws Exception {
-		assertTrue(TranscoderUtils.decodeBoolean(TranscoderUtils.encodeBoolean(true)));
-		assertFalse(TranscoderUtils.decodeBoolean(TranscoderUtils.encodeBoolean(false)));
+		assertTrue(tu.decodeBoolean(tu.encodeBoolean(true)));
+		assertFalse(tu.decodeBoolean(tu.encodeBoolean(false)));
 	}
 
 	public void testByteArray() throws Exception {

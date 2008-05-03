@@ -26,6 +26,8 @@ public class WhalinTranscoder extends BaseSerializingTranscoder
 	static final int COMPRESSED = 2;
 	static final int SERIALIZED = 8;
 
+	private final TranscoderUtils tu=new TranscoderUtils(false);
+
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.Transcoder#decode(net.spy.memcached.CachedData)
 	 */
@@ -41,30 +43,28 @@ public class WhalinTranscoder extends BaseSerializingTranscoder
 			int f=d.getFlags() & ~COMPRESSED;
 			switch(f) {
 				case SPECIAL_BOOLEAN:
-					rv=Boolean.valueOf(TranscoderUtils.decodeBoolean(data));
+					rv=Boolean.valueOf(tu.decodeBoolean(data));
 					break;
 				case SPECIAL_INT:
-					rv=new Integer(TranscoderUtils.decodeInt(data));
+					rv=new Integer(tu.decodeInt(data));
 					break;
 				case SPECIAL_SHORT:
-					rv=new Short((short)TranscoderUtils.decodeInt(data));
+					rv=new Short((short)tu.decodeInt(data));
 					break;
 				case SPECIAL_LONG:
-					rv=new Long(TranscoderUtils.decodeLong(data));
+					rv=new Long(tu.decodeLong(data));
 					break;
 				case SPECIAL_DATE:
-					rv=new Date(TranscoderUtils.decodeLong(data));
+					rv=new Date(tu.decodeLong(data));
 					break;
 				case SPECIAL_BYTE:
-					rv=new Byte(TranscoderUtils.decodeByte(data));
+					rv=new Byte(tu.decodeByte(data));
 					break;
 				case SPECIAL_FLOAT:
-					rv=new Float(Float.intBitsToFloat(
-						TranscoderUtils.decodeInt(data)));
+					rv=new Float(Float.intBitsToFloat(tu.decodeInt(data)));
 					break;
 				case SPECIAL_DOUBLE:
-					rv=new Double(Double.longBitsToDouble(
-						TranscoderUtils.decodeLong(data)));
+					rv=new Double(Double.longBitsToDouble(tu.decodeLong(data)));
 					break;
 				case SPECIAL_BYTEARRAY:
 					rv=data;
@@ -98,28 +98,28 @@ public class WhalinTranscoder extends BaseSerializingTranscoder
 			flags |= SPECIAL_STRINGBUILDER;
 			b=encodeString(String.valueOf(o));
 		} else if(o instanceof Long) {
-			b=TranscoderUtils.encodeLong((Long)o);
+			b=tu.encodeLong((Long)o);
 			flags |= SPECIAL_LONG;
 		} else if(o instanceof Integer) {
-			b=TranscoderUtils.encodeInt((Integer)o);
+			b=tu.encodeInt((Integer)o);
 			flags |= SPECIAL_INT;
 		} else if(o instanceof Short) {
-			b=TranscoderUtils.encodeInt((Short)o);
+			b=tu.encodeInt((Short)o);
 			flags |= SPECIAL_SHORT;
 		} else if(o instanceof Boolean) {
-			b=TranscoderUtils.encodeBoolean((Boolean)o);
+			b=tu.encodeBoolean((Boolean)o);
 			flags |= SPECIAL_BOOLEAN;
 		} else if(o instanceof Date) {
-			b=TranscoderUtils.encodeLong(((Date)o).getTime());
+			b=tu.encodeLong(((Date)o).getTime());
 			flags |= SPECIAL_DATE;
 		} else if(o instanceof Byte) {
-			b=TranscoderUtils.encodeByte((Byte)o);
+			b=tu.encodeByte((Byte)o);
 			flags |= SPECIAL_BYTE;
 		} else if(o instanceof Float) {
-			b=TranscoderUtils.encodeInt(Float.floatToIntBits((Float)o));
+			b=tu.encodeInt(Float.floatToIntBits((Float)o));
 			flags |= SPECIAL_FLOAT;
 		} else if(o instanceof Double) {
-			b=TranscoderUtils.encodeLong(Double.doubleToLongBits((Double)o));
+			b=tu.encodeLong(Double.doubleToLongBits((Double)o));
 			flags |= SPECIAL_DOUBLE;
 		} else if(o instanceof byte[]) {
 			b=(byte[])o;
