@@ -5,12 +5,14 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import net.spy.memcached.util.KeyUtil;
+
 /**
  * Test the hash algorithms.
  */
 public class HashAlgorithmTest extends TestCase {
 
-	private void assertHash(HashAlgorithm ha, String key, long exp) {
+	private void assertHash(HashAlgorithm ha, byte[] key, long exp) {
 		assertTrue(exp >= 0L);
 		// System.out.println(ha + "(" + key + ") = " + exp);
 		assertEquals("Invalid " + ha + " for key ``" + key + "''",
@@ -20,8 +22,8 @@ public class HashAlgorithmTest extends TestCase {
 	// I don't hardcode any values here because they're subject to change
 	private void assertNativeHash(String key) {
 		// System.out.println(ha + "(" + key + ") = " + exp);
-		assertHash(HashAlgorithm.NATIVE_HASH, key, Math.abs(key.hashCode()));
-	}
+		assertHash(HashAlgorithm.NATIVE_HASH,
+			KeyUtil.getKeyBytes(key), Math.abs(key.hashCode()));	}
 
 	public void testNativeHash() {
 		for (String k : new String[] { "Test1", "Test2", "Test3", "Test4" }) {
@@ -38,7 +40,8 @@ public class HashAlgorithmTest extends TestCase {
 		exp.put("UDATA:edevil@sapo.pt", 558L);
 
 		for (Map.Entry<String, Long> me : exp.entrySet()) {
-			assertHash(HashAlgorithm.CRC32_HASH, me.getKey(), me.getValue());
+			assertHash(HashAlgorithm.CRC32_HASH,
+				KeyUtil.getKeyBytes(me.getKey()), me.getValue());
 		}
 	}
 
@@ -53,7 +56,8 @@ public class HashAlgorithmTest extends TestCase {
 		exp.put("wd:com.google ", 0x12f03d48L);
 
 		for (Map.Entry<String, Long> me : exp.entrySet()) {
-			assertHash(HashAlgorithm.FNV1_64_HASH, me.getKey(),
+			assertHash(HashAlgorithm.FNV1_64_HASH,
+				KeyUtil.getKeyBytes(me.getKey()),
 				Math.abs(me.getValue()));
 		}
 	}
@@ -70,7 +74,8 @@ public class HashAlgorithmTest extends TestCase {
 		exp.put("wd:com.google ", 0x1c6c1732L);
 
 		for (Map.Entry<String, Long> me : exp.entrySet()) {
-			assertHash(HashAlgorithm.FNV1A_64_HASH, me.getKey(),
+			assertHash(HashAlgorithm.FNV1A_64_HASH,
+				KeyUtil.getKeyBytes(me.getKey()),
 				Math.abs(me.getValue()));
 		}
 	}
@@ -86,7 +91,8 @@ public class HashAlgorithmTest extends TestCase {
 		exp.put("wd:com.google ", 0x2b0ffd48L);
 
 		for (Map.Entry<String, Long> me : exp.entrySet()) {
-			assertHash(HashAlgorithm.FNV1_32_HASH, me.getKey(),
+			assertHash(HashAlgorithm.FNV1_32_HASH,
+				KeyUtil.getKeyBytes(me.getKey()),
 				Math.abs(me.getValue()));
 		}
 	}
@@ -102,7 +108,8 @@ public class HashAlgorithmTest extends TestCase {
 		exp.put("wd:com.google ", 0x683e1e12L);
 
 		for (Map.Entry<String, Long> me : exp.entrySet()) {
-			assertHash(HashAlgorithm.FNV1A_32_HASH, me.getKey(),
+			assertHash(HashAlgorithm.FNV1A_32_HASH,
+				KeyUtil.getKeyBytes(me.getKey()),
 				Math.abs(me.getValue()));
 		}
 	}
@@ -119,7 +126,8 @@ public class HashAlgorithmTest extends TestCase {
 		exp.put("355107", 3611074310L);
 
 		for (Map.Entry<String, Long> me : exp.entrySet()) {
-			assertHash(HashAlgorithm.KETAMA_HASH, me.getKey(),
+			assertHash(HashAlgorithm.KETAMA_HASH,
+				KeyUtil.getKeyBytes(me.getKey()),
 				Math.abs(me.getValue()));
 		}
 	}

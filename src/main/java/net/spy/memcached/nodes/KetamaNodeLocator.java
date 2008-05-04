@@ -9,6 +9,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import net.spy.SpyObject;
+import net.spy.memcached.util.KeyUtil;
 
 /**
  * This is an implementation of the Ketama consistent hash strategy from
@@ -40,7 +41,8 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 			// Ketama does some special work with md5 where it reuses chunks.
 			if(alg == HashAlgorithm.KETAMA_HASH) {
 				for(int i=0; i<NUM_REPS / 4; i++) {
-					byte[] digest=HashAlgorithm.computeMd5(sockStr + "-" + i);
+					byte[] digest=HashAlgorithm.computeMd5(
+						KeyUtil.getKeyBytes(sockStr + "-" + i));
 					for(int h=0;h<4;h++) {
 						Long k = ((long)(digest[3+h*4]&0xFF) << 24)
 							| ((long)(digest[2+h*4]&0xFF) << 16)
@@ -52,7 +54,8 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 				}
 			} else {
 				for(int i=0; i<NUM_REPS; i++) {
-					ketamaNodes.put(hashAlg.hash(sockStr + "-" + i), node);
+					ketamaNodes.put(hashAlg.hash(
+						KeyUtil.getKeyBytes(sockStr + "-" + i)), node);
 				}
 			}
 		}
@@ -72,7 +75,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 	}
 
 	public MemcachedNode getPrimary(final String k) {
-		MemcachedNode rv=getNodeForKey(hashAlg.hash(k));
+		MemcachedNode rv=getNodeForKey(hashAlg.hash(KeyUtil.getKeyBytes(k)));
 		assert rv != null : "Found no node for key " + k;
 		return rv;
 	}
@@ -128,14 +131,14 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
 		public KetamaIterator(final String k, final int t) {
 			super();
-			hashVal=hashAlg.hash(k);
+			hashVal=hashAlg.hash(KeyUtil.getKeyBytes(k));
 			remainingTries=t;
 			key=k;
 		}
 
 		private void nextHash() {
 			// this.calculateHash(Integer.toString(tries)+key).hashCode();
-			long tmpKey=hashAlg.hash((numTries++) + key);
+			long tmpKey=hashAlg.hash(KeyUtil.getKeyBytes((numTries++) + key));
 			// This echos the implementation of Long.hashCode()
 			hashVal += (int)(tmpKey ^ (tmpKey >>> 32));
 			hashVal &= 0xffffffffL; /* truncate to 32-bits */
