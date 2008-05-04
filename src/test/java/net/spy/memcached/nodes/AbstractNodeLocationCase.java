@@ -5,8 +5,6 @@ import java.util.Iterator;
 import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
 
-import net.spy.memcached.MemcachedNodeROImpl;
-
 public abstract class AbstractNodeLocationCase extends MockObjectTestCase {
 
 	protected MemcachedNode[] nodes;

@@ -9,6 +9,7 @@ import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
 
 import net.spy.memcached.nodes.MemcachedNode;
+import net.spy.memcached.nodes.MemcachedNodeROImpl;
 
 /**
  * Test readonliness of the MemcachedNodeROImpl

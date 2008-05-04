@@ -24,8 +24,6 @@ public interface MemcachedClient {
 
 	Collection<SocketAddress> getUnavailableServers();
 
-	void setTranscoder(Transcoder<Object> tc);
-
 	Transcoder<Object> getTranscoder();
 
 	NodeLocator getNodeLocator();

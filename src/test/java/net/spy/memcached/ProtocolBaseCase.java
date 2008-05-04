@@ -17,7 +17,6 @@ import net.spy.memcached.cas.CASResponse;
 import net.spy.memcached.cas.CASValue;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationException;
-import net.spy.memcached.transcoders.BaseSerializingTranscoder;
 import net.spy.memcached.transcoders.SerializingTranscoder;
 import net.spy.memcached.transcoders.Transcoder;
 import net.spy.test.SyncThread;
@@ -184,29 +183,6 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		} catch(IllegalArgumentException e) {
 			// pass
 		}
-	}
-
-	public void testInvalidTranscoder() {
-		try {
-			client.setTranscoder(null);
-			fail("Allowed null transcoder.");
-		} catch(NullPointerException e) {
-			assertEquals("Can't use a null transcoder", e.getMessage());
-		}
-	}
-
-	public void testSetTranscoder() {
-		Transcoder<Object> tc=client.getTranscoder();
-		assertTrue(tc instanceof BaseSerializingTranscoder);
-		Transcoder<Object> tmptc=new Transcoder<Object>(){
-			public Object decode(CachedData d) {
-				throw new RuntimeException("Not implemented.");
-			}
-			public CachedData encode(Object o) {
-				throw new RuntimeException("Not implemented.");
-			}};
-		client.setTranscoder(tmptc);
-		assertSame(tmptc, client.getTranscoder());
 	}
 
 	public void testParallelSetGet() throws Throwable {
@@ -547,13 +523,12 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		SerializingTranscoder st=new SerializingTranscoder(Integer.MAX_VALUE);
 
 		st.setCompressionThreshold(Integer.MAX_VALUE);
-		client.setTranscoder(st);
 
 		byte data[]=new byte[10*1024*1024];
 		r.nextBytes(data);
 
 		try {
-			client.set("bigassthing", 60, data).get();
+			client.set("bigassthing", 60, data, st).get();
 			fail("Didn't fail setting bigass thing.");
 		} catch(ExecutionException e) {
 			e.printStackTrace();
@@ -568,9 +543,6 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
 	public void testStupidlyLargeSet() throws Exception {
 		Random r=new Random();
-		SerializingTranscoder st=new SerializingTranscoder();
-		st.setCompressionThreshold(Integer.MAX_VALUE);
-		client.setTranscoder(st);
 
 		byte data[]=new byte[10*1024*1024];
 		r.nextBytes(data);

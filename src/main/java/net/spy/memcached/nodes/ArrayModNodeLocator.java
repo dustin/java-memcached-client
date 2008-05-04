@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import net.spy.memcached.MemcachedNodeROImpl;
-
 /**
  * NodeLocator implementation for dealing with simple array lookups using a
  * modulus of the hash code and node list length.

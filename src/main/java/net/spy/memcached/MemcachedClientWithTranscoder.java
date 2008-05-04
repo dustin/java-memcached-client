@@ -15,12 +15,6 @@ import net.spy.memcached.transcoders.Transcoder;
 public interface MemcachedClientWithTranscoder extends MemcachedClient {
 
 	/**
-	 * Set the default transcoder for managing the cache representations
-	 * of objects going in and out of the cache.
-	 */
-	void setTranscoder(Transcoder<Object> tc);
-
-	/**
 	 * Get the default transcoder that's in use.
 	 */
 	Transcoder<Object> getTranscoder();
