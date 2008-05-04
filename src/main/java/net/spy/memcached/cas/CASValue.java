@@ -1,4 +1,4 @@
-package net.spy.memcached;
+package net.spy.memcached.cas;
 
 /**
  * A value with a CAS identifier.

@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import net.spy.memcached.cas.CASResponse;
+import net.spy.memcached.cas.CASValue;
 import net.spy.memcached.transcoders.Transcoder;
 
 /**

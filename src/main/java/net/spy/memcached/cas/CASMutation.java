@@ -1,4 +1,4 @@
-package net.spy.memcached;
+package net.spy.memcached.cas;
 
 /**
  * Defines a mutation mechanism for a high-level CAS client interface.

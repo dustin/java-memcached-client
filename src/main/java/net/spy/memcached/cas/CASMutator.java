@@ -1,6 +1,7 @@
-package net.spy.memcached;
+package net.spy.memcached.cas;
 
 import net.spy.SpyObject;
+import net.spy.memcached.MemcachedClientWithTranscoder;
 import net.spy.memcached.transcoders.Transcoder;
 
 /**

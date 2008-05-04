@@ -1,4 +1,4 @@
-package net.spy.memcached;
+package net.spy.memcached.cas;
 
 /**
  * Response codes for a CAS operation.

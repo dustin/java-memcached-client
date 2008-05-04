@@ -2,8 +2,8 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
-import net.spy.memcached.CASResponse;
 import net.spy.memcached.KeyUtil;
+import net.spy.memcached.cas.CASResponse;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.OperationCallback;

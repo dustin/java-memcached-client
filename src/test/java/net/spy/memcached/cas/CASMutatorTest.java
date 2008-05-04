@@ -1,7 +1,11 @@
-package net.spy.memcached;
+package net.spy.memcached.cas;
 
 import java.util.concurrent.Callable;
 
+import net.spy.memcached.ClientBaseCase;
+import net.spy.memcached.cas.CASMutation;
+import net.spy.memcached.cas.CASMutator;
+import net.spy.memcached.cas.CASValue;
 import net.spy.memcached.transcoders.LongTranscoder;
 import net.spy.test.SyncThread;
 

@@ -1,5 +1,7 @@
 package net.spy.memcached;
 
+import net.spy.memcached.cas.CASValue;
+
 
 /**
  * This test assumes a binary server is running on localhost:11211.
