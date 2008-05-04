@@ -3,8 +3,6 @@ package net.spy.memcached.nodes;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.spy.memcached.nodes.HashAlgorithm;
-
 import junit.framework.TestCase;
 
 /**
@@ -21,6 +19,7 @@ public class HashAlgorithmTest extends TestCase {
 
 	// I don't hardcode any values here because they're subject to change
 	private void assertNativeHash(String key) {
+		// System.out.println(ha + "(" + key + ") = " + exp);
 		assertHash(HashAlgorithm.NATIVE_HASH, key, Math.abs(key.hashCode()));
 	}
 

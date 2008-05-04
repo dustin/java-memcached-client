@@ -57,55 +57,67 @@ public enum HashAlgorithm {
 	private static final long FNV_32_PRIME = 16777619;
 
 	/**
+	 * Compute a hash for a given string.
+	 *
+	 * @param s the key as a string
+	 * @return a positive integer cache
+	 * @deprecated string hashing is going away
+	 */
+	@Deprecated
+	public long hash(String s) {
+		return hash(KeyUtil.getKeyBytes(s));
+	}
+
+	/**
 	 * Compute the hash for the given key.
 	 *
 	 * @return a positive integer hash
 	 */
-	public long hash(final String k) {
+	public long hash(final byte[] k) {
 		long rv = 0;
 		switch (this) {
 			case NATIVE_HASH:
-				rv = k.hashCode();
+				rv = KeyUtil.getKeyString(k).hashCode();
 				break;
 			case CRC32_HASH:
 				// return (crc32(shift) >> 16) & 0x7fff;
 				CRC32 crc32 = new CRC32();
-				crc32.update(KeyUtil.getKeyBytes(k));
+				crc32.update(k);
 				rv = (crc32.getValue() >> 16) & 0x7fff;
 				break;
 			case FNV1_64_HASH: {
 					// Thanks to pierre@demartines.com for the pointer
 					rv = FNV_64_INIT;
-					int len = k.length();
+					int len = k.length;
 					for (int i = 0; i < len; i++) {
 						rv *= FNV_64_PRIME;
-						rv ^= k.charAt(i);
+						rv ^= k[i];
 					}
 				}
 				break;
 			case FNV1A_64_HASH: {
 					rv = FNV_64_INIT;
-					int len = k.length();
+					int len = k.length;
 					for (int i = 0; i < len; i++) {
-						rv ^= k.charAt(i);
+						rv ^= k[i];
 						rv *= FNV_64_PRIME;
 					}
 				}
 				break;
 			case FNV1_32_HASH: {
 					rv = FNV_32_INIT;
-					int len = k.length();
+					int len = k.length;
 					for (int i = 0; i < len; i++) {
 						rv *= FNV_32_PRIME;
-						rv ^= k.charAt(i);
+						rv ^= k[i];
 					}
 				}
 				break;
 			case FNV1A_32_HASH: {
 					rv = FNV_32_INIT;
-					int len = k.length();
+					int len = k.length;
 					for (int i = 0; i < len; i++) {
-						rv ^= k.charAt(i);
+						rv ^= k[i];
 						rv *= FNV_32_PRIME;
 					}
 				}
@@ -124,9 +136,18 @@ public enum HashAlgorithm {
 	}
 
 	/**
+	 * Get the md5 of the given string key.
+	 * @deprecated string ops are going away
+	 */
+	@Deprecated
+	public static byte[] computeMd5(String k) {
+		return computeMd5(KeyUtil.getKeyBytes(k));
+	}
+
+	/**
 	 * Get the md5 of the given key.
 	 */
-	public static byte[] computeMd5(String k) {
+	public static byte[] computeMd5(byte[] k) {
 		MessageDigest md5;
 		try {
 			md5 = MessageDigest.getInstance("MD5");
@@ -134,7 +155,7 @@ public enum HashAlgorithm {
 			throw new RuntimeException("MD5 not supported", e);
 		}
 		md5.reset();
-		md5.update(KeyUtil.getKeyBytes(k));
+		md5.update(k);
 		return md5.digest();
 	}
 }
