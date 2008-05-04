@@ -1,8 +1,8 @@
-package net.spy.memcached;
+package net.spy.memcached.ops;
 
 import java.util.concurrent.CountDownLatch;
 
-import net.spy.memcached.ops.Operation;
+import net.spy.memcached.MemcachedNode;
 
 /**
  * Factory for creating Operations to be broadcast.

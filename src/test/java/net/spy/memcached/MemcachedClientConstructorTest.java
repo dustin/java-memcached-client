@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import net.spy.memcached.ops.OperationFactory;
+
 import junit.framework.TestCase;
 
 /**

@@ -2,7 +2,6 @@ package net.spy.memcached.protocol.binary;
 
 import java.util.Collection;
 
-import net.spy.memcached.OperationFactory;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.ConcatenationType;
@@ -14,6 +13,7 @@ import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationFactory;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;

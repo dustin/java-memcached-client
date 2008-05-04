@@ -1,22 +1,7 @@
-package net.spy.memcached;
+package net.spy.memcached.ops;
 
 import java.util.Collection;
 
-import net.spy.memcached.ops.CASOperation;
-import net.spy.memcached.ops.ConcatenationOperation;
-import net.spy.memcached.ops.ConcatenationType;
-import net.spy.memcached.ops.DeleteOperation;
-import net.spy.memcached.ops.FlushOperation;
-import net.spy.memcached.ops.GetOperation;
-import net.spy.memcached.ops.GetsOperation;
-import net.spy.memcached.ops.MutatatorOperation;
-import net.spy.memcached.ops.Mutator;
-import net.spy.memcached.ops.NoopOperation;
-import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.StatsOperation;
-import net.spy.memcached.ops.StoreOperation;
-import net.spy.memcached.ops.StoreType;
-import net.spy.memcached.ops.VersionOperation;
 
 /**
  * Factory that builds operations for protocol handlers.

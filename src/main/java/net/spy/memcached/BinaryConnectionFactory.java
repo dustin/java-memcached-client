@@ -3,6 +3,7 @@ package net.spy.memcached;
 import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
 
+import net.spy.memcached.ops.OperationFactory;
 import net.spy.memcached.protocol.binary.BinaryMemcachedNodeImpl;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 

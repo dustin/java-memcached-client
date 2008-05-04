@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationFactory;
 
 /**
  * Factory for creating instances of MemcachedConnection.

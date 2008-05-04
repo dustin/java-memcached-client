@@ -10,6 +10,7 @@ import java.util.concurrent.BlockingQueue;
 
 import net.spy.SpyObject;
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationFactory;
 import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
 

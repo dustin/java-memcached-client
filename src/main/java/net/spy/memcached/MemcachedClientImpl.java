@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.SpyThread;
+import net.spy.memcached.ops.BroadcastOpFactory;
 import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.CancelledOperationStatus;
 import net.spy.memcached.ops.ConcatenationType;
@@ -34,6 +35,7 @@ import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationFactory;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StatsOperation;
