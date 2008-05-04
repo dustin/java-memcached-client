@@ -1,4 +1,4 @@
-package net.spy.memcached;
+package net.spy.memcached.nodes;
 
 import java.util.Collection;
 import java.util.Iterator;

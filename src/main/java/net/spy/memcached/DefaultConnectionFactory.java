@@ -9,6 +9,10 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.SpyObject;
+import net.spy.memcached.nodes.ArrayModNodeLocator;
+import net.spy.memcached.nodes.HashAlgorithm;
+import net.spy.memcached.nodes.MemcachedNode;
+import net.spy.memcached.nodes.NodeLocator;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationFactory;
 import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;

@@ -1,7 +1,11 @@
-package net.spy.memcached;
+package net.spy.memcached.nodes;
 
 import java.util.Arrays;
 import java.util.Collection;
+
+import net.spy.memcached.nodes.ArrayModNodeLocator;
+import net.spy.memcached.nodes.HashAlgorithm;
+import net.spy.memcached.nodes.MemcachedNode;
 
 /**
  * Test the ArrayModNodeLocator.

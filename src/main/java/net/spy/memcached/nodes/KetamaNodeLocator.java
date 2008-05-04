@@ -1,4 +1,4 @@
-package net.spy.memcached;
+package net.spy.memcached.nodes;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,6 +9,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import net.spy.SpyObject;
+import net.spy.memcached.MemcachedNodeROImpl;
 
 /**
  * This is an implementation of the Ketama consistent hash strategy from
@@ -23,7 +24,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
 	static final int NUM_REPS = 160;
 
-	final SortedMap<Long, MemcachedNode> ketamaNodes;
+	public final SortedMap<Long, MemcachedNode> ketamaNodes;
 	final Collection<MemcachedNode> allNodes;
 
 	final HashAlgorithm hashAlg;
@@ -81,7 +82,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 		return ketamaNodes.lastKey();
 	}
 
-	MemcachedNode getNodeForKey(long hash) {
+	public MemcachedNode getNodeForKey(long hash) {
 		final MemcachedNode rv;
 		if(!ketamaNodes.containsKey(hash)) {
 			// Java 1.6 adds a ceilingKey method, but I'm still stuck in 1.5

@@ -8,6 +8,8 @@ import java.net.SocketAddress;
 import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
 
+import net.spy.memcached.nodes.MemcachedNode;
+
 /**
  * Test readonliness of the MemcachedNodeROImpl
  */

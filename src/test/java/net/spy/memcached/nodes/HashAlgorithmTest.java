@@ -1,7 +1,9 @@
-package net.spy.memcached;
+package net.spy.memcached.nodes;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import net.spy.memcached.nodes.HashAlgorithm;
 
 import junit.framework.TestCase;
 

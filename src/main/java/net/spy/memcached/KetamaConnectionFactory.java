@@ -2,6 +2,11 @@ package net.spy.memcached;
 
 import java.util.List;
 
+import net.spy.memcached.nodes.HashAlgorithm;
+import net.spy.memcached.nodes.KetamaNodeLocator;
+import net.spy.memcached.nodes.MemcachedNode;
+import net.spy.memcached.nodes.NodeLocator;
+
 /**
  * ConnectionFactory instance that sets up a ketama compatible connection.
  *

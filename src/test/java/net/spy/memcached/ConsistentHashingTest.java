@@ -14,6 +14,9 @@ import java.util.SortedMap;
 
 import junit.framework.TestCase;
 
+import net.spy.memcached.nodes.HashAlgorithm;
+import net.spy.memcached.nodes.KetamaNodeLocator;
+import net.spy.memcached.nodes.MemcachedNode;
 import net.spy.memcached.ops.Operation;
 
 /**

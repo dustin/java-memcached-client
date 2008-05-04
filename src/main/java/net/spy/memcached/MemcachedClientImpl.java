@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.spy.SpyThread;
 import net.spy.memcached.cas.CASResponse;
 import net.spy.memcached.cas.CASValue;
+import net.spy.memcached.nodes.MemcachedNode;
+import net.spy.memcached.nodes.NodeLocator;
 import net.spy.memcached.ops.BroadcastOpFactory;
 import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.CancelledOperationStatus;

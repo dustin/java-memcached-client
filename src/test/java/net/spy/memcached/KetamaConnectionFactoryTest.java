@@ -4,6 +4,11 @@ import java.util.ArrayList;
 
 import junit.framework.TestCase;
 
+import net.spy.memcached.nodes.HashAlgorithm;
+import net.spy.memcached.nodes.KetamaNodeLocator;
+import net.spy.memcached.nodes.MemcachedNode;
+import net.spy.memcached.nodes.NodeLocator;
+
 /**
  * A very basic test that the KetamaConnectionFactory returns both the correct
  * hash algorithm and the correct node locator.

@@ -1,8 +1,10 @@
-package net.spy.memcached;
+package net.spy.memcached.nodes;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.zip.CRC32;
+
+import net.spy.memcached.KeyUtil;
 
 /**
  * Known hashing algorithms for locating a server for a key.

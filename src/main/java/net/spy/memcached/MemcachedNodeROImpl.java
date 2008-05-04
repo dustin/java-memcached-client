@@ -9,9 +9,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
+import net.spy.memcached.nodes.MemcachedNode;
 import net.spy.memcached.ops.Operation;
 
-class MemcachedNodeROImpl implements MemcachedNode {
+public class MemcachedNodeROImpl implements MemcachedNode {
 
 	private final MemcachedNode root;
 

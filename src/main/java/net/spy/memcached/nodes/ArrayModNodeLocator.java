@@ -1,9 +1,11 @@
-package net.spy.memcached;
+package net.spy.memcached.nodes;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
+import net.spy.memcached.MemcachedNodeROImpl;
 
 /**
  * NodeLocator implementation for dealing with simple array lookups using a

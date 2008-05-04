@@ -1,5 +1,7 @@
 package net.spy.memcached;
 
+import net.spy.memcached.nodes.HashAlgorithm;
+
 import junit.framework.TestCase;
 
 /**

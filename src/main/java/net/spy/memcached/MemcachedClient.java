@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.cas.CASResponse;
 import net.spy.memcached.cas.CASValue;
+import net.spy.memcached.nodes.NodeLocator;
 import net.spy.memcached.transcoders.Transcoder;
 
 /**

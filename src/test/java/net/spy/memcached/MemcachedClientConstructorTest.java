@@ -8,9 +8,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import net.spy.memcached.ops.OperationFactory;
-
 import junit.framework.TestCase;
+
+import net.spy.memcached.nodes.ArrayModNodeLocator;
+import net.spy.memcached.nodes.KetamaNodeLocator;
+import net.spy.memcached.ops.OperationFactory;
 
 /**
  * Test the various memcached client constructors.

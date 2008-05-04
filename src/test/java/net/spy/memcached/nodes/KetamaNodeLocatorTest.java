@@ -1,8 +1,12 @@
-package net.spy.memcached;
+package net.spy.memcached.nodes;
 
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collection;
+
+import net.spy.memcached.nodes.HashAlgorithm;
+import net.spy.memcached.nodes.KetamaNodeLocator;
+import net.spy.memcached.nodes.MemcachedNode;
 
 /**
  * Test ketama node location.

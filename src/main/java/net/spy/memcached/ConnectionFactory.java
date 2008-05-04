@@ -7,6 +7,8 @@ import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
+import net.spy.memcached.nodes.MemcachedNode;
+import net.spy.memcached.nodes.NodeLocator;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationFactory;
 
