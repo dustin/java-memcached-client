@@ -1,4 +1,4 @@
-package net.spy.memcached;
+package net.spy.memcached.util;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;

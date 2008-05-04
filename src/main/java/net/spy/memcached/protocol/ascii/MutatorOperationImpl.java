@@ -4,12 +4,12 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
-import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.util.KeyUtil;
 
 /**
  * Operation for mutating integers inside of memcached.

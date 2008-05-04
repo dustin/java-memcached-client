@@ -2,10 +2,10 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
-import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.util.KeyUtil;
 
 /**
  * Base class for ascii store operations (add, set, replace, append, prepend).

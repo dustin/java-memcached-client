@@ -1,5 +1,7 @@
 package net.spy.memcached;
 
+import net.spy.memcached.util.AddrUtil;
+
 /**
  * Test the test protocol over IPv6.
  */

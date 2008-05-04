@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.zip.CRC32;
 
-import net.spy.memcached.KeyUtil;
+import net.spy.memcached.util.KeyUtil;
 
 /**
  * Known hashing algorithms for locating a server for a key.

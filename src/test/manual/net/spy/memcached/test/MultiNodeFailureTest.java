@@ -1,8 +1,8 @@
 package net.spy.memcached.test;
 
-import net.spy.memcached.AddrUtil;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.MemcachedClientImpl;
+import net.spy.memcached.util.AddrUtil;
 
 /**
  * This is an attempt to reproduce a problem where a server fails during a

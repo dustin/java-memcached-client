@@ -2,13 +2,13 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
-import net.spy.memcached.KeyUtil;
 import net.spy.memcached.cas.CASResponse;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.util.KeyUtil;
 
 class CASOperationImpl extends OperationImpl implements CASOperation {
 

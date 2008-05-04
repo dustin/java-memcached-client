@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.spy.memcached.KeyUtil;
 import net.spy.memcached.cas.CASResponse;
 import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.OperationCallback;
@@ -13,6 +12,7 @@ import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.BaseOperationImpl;
+import net.spy.memcached.util.KeyUtil;
 
 /**
  * Base class for binary operations.

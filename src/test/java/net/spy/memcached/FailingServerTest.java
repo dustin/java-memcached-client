@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import net.spy.memcached.util.AddrUtil;
+
 
 public class FailingServerTest extends ClientBaseCase {
 

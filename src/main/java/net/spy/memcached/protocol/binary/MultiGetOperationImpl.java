@@ -9,10 +9,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.util.KeyUtil;
 
 class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 

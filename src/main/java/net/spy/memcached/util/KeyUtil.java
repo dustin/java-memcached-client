@@ -1,4 +1,4 @@
-package net.spy.memcached;
+package net.spy.memcached.util;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;

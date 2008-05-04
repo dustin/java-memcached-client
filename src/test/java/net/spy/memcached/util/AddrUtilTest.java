@@ -1,7 +1,9 @@
-package net.spy.memcached;
+package net.spy.memcached.util;
 
 import java.net.InetSocketAddress;
 import java.util.List;
+
+import net.spy.memcached.util.AddrUtil;
 
 import junit.framework.TestCase;
 

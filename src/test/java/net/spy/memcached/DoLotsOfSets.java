@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import net.spy.memcached.util.AddrUtil;
+
 /**
  * Small test program that does a bunch of sets in a tight loop.
  */

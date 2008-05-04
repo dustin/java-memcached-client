@@ -13,6 +13,7 @@ import junit.framework.TestCase;
 import net.spy.memcached.nodes.ArrayModNodeLocator;
 import net.spy.memcached.nodes.KetamaNodeLocator;
 import net.spy.memcached.ops.OperationFactory;
+import net.spy.memcached.util.AddrUtil;
 
 /**
  * Test the various memcached client constructors.

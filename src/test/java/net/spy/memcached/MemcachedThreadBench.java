@@ -3,6 +3,8 @@ package net.spy.memcached;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.spy.memcached.util.AddrUtil;
+
 import junit.framework.TestCase;
 
 /**

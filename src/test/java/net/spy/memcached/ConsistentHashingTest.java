@@ -18,6 +18,7 @@ import net.spy.memcached.nodes.HashAlgorithm;
 import net.spy.memcached.nodes.KetamaNodeLocator;
 import net.spy.memcached.nodes.MemcachedNode;
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.util.AddrUtil;
 
 /**
  */

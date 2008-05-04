@@ -3,6 +3,8 @@ package net.spy.memcached;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import net.spy.memcached.util.AddrUtil;
+
 import junit.framework.TestCase;
 
 public abstract class ClientBaseCase extends TestCase {

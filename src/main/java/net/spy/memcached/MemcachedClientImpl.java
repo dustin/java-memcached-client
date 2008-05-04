@@ -46,6 +46,7 @@ import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.transcoders.SerializingTranscoder;
 import net.spy.memcached.transcoders.Transcoder;
+import net.spy.memcached.util.KeyUtil;
 
 /**
  * Client to a memcached server.
