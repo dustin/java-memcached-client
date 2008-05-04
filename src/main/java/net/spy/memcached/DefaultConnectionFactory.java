@@ -70,7 +70,7 @@ public class DefaultConnectionFactory extends SpyObject
 	 * queue length, and the given read buffer size.
 	 */
 	public DefaultConnectionFactory(int qLen, int bufSize) {
-		this(qLen, bufSize, HashAlgorithm.NATIVE_HASH);
+		this(qLen, bufSize, HashAlgorithm.CRC32_HASH);
 	}
 
 	/**
