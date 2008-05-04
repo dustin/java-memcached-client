@@ -143,7 +143,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 		try {
 			client = new MemcachedClientImpl(new DefaultConnectionFactory(){
 				@Override
-				public MemcachedConnection createConnection(
+				public MemcachedLowLevelIO createConnection(
 						List<InetSocketAddress> addrs) throws IOException {
 					return null;
 				}

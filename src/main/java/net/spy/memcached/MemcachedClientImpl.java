@@ -101,7 +101,7 @@ public final class MemcachedClientImpl extends SpyThread
 
 	private final long operationTimeout;
 
-	private final MemcachedConnection conn;
+    private final MemcachedLowLevelIO conn;
 	final OperationFactory opFact;
 
 	final Transcoder<Object> transcoder;

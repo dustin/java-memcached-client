@@ -33,9 +33,10 @@ import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
 
 /**
- * Connection to a cluster of memcached servers.
+ * This class handles all low-level IO to and from all memcached nodes for
+ * all connections.  You know, state machines and such.
  */
-public final class MemcachedConnection extends SpyObject {
+final class MemcachedLowLevelIO extends SpyObject {
 
 	// The number of empty selects we'll allow before assuming we may have
 	// missed one and should check the current selectors.  This generally
@@ -70,7 +71,7 @@ public final class MemcachedConnection extends SpyObject {
 	 *
 	 * @throws IOException if a connection attempt fails early
 	 */
-	public MemcachedConnection(int bufSize, ConnectionFactory f,
+	public MemcachedLowLevelIO(int bufSize, ConnectionFactory f,
 			List<InetSocketAddress> a)
 		throws IOException {
 		reconnectQueue=new TreeMap<Long, MemcachedNode>();
