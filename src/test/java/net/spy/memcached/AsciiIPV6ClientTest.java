@@ -7,7 +7,7 @@ public class AsciiIPV6ClientTest extends AsciiClientTest {
 
 	@Override
 	protected void initClient(ConnectionFactory cf) throws Exception {
-		client=new MemcachedClient(cf,
+		client=new MemcachedClientImpl(cf,
 			AddrUtil.getAddresses("::1:11211"));
 	}
 

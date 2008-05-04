@@ -47,14 +47,14 @@ public class MemcachedClientConstructorTest extends TestCase {
 	}
 
 	public void testVarargConstructor() throws Exception {
-		client = new MemcachedClient(
+		client = new MemcachedClientImpl(
 			new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 11211));
 		assertWorking();
 	}
 
 	public void testEmptyVarargConstructor() throws Exception {
 		try {
-			client = new MemcachedClient();
+			client = new MemcachedClientImpl();
 			fail("Expected illegal arg exception, got " + client);
 		} catch(IllegalArgumentException e) {
 			assertArgRequired(e);
@@ -64,7 +64,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 	public void testNulListConstructor() throws Exception {
 		try {
 			List<InetSocketAddress> l=null;
-			client = new MemcachedClient(l);
+			client = new MemcachedClientImpl(l);
 			fail("Expected null pointer exception, got " + client);
 		} catch(NullPointerException e) {
 			assertEquals("Server list required", e.getMessage());
@@ -73,7 +73,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 
 	public void testEmptyListConstructor() throws Exception {
 		try {
-			client = new MemcachedClient(
+			client = new MemcachedClientImpl(
 				Collections.<InetSocketAddress>emptyList());
 			fail("Expected illegal arg exception, got " + client);
 		} catch(IllegalArgumentException e) {
@@ -83,7 +83,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 
 	public void testNullFactoryConstructor() throws Exception {
 		try {
-			client = new MemcachedClient(null,
+			client = new MemcachedClientImpl(null,
 				AddrUtil.getAddresses("127.0.0.1:11211"));
 			fail("Expected null pointer exception, got " + client);
 		} catch(NullPointerException e) {
@@ -93,7 +93,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 
 	public void testNegativeTimeout() throws Exception {
 		try {
-			client = new MemcachedClient(new DefaultConnectionFactory() {
+			client = new MemcachedClientImpl(new DefaultConnectionFactory() {
 				@Override
 				public long getOperationTimeout() {
 					return -1;
@@ -107,7 +107,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 
 	public void testZeroTimeout() throws Exception {
 		try {
-			client = new MemcachedClient(new DefaultConnectionFactory() {
+			client = new MemcachedClientImpl(new DefaultConnectionFactory() {
 				@Override
 				public long getOperationTimeout() {
 					return 0;
@@ -121,7 +121,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 
 	public void testConnFactoryWithoutOpFactory() throws Exception {
 		try {
-			client = new MemcachedClient(new DefaultConnectionFactory(){
+			client = new MemcachedClientImpl(new DefaultConnectionFactory(){
 				@Override
 				public OperationFactory getOperationFactory() {
 					return null;
@@ -135,7 +135,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 
 	public void testConnFactoryWithoutConns() throws Exception {
 		try {
-			client = new MemcachedClient(new DefaultConnectionFactory(){
+			client = new MemcachedClientImpl(new DefaultConnectionFactory(){
 				@Override
 				public MemcachedConnection createConnection(
 						List<InetSocketAddress> addrs) throws IOException {
@@ -150,14 +150,14 @@ public class MemcachedClientConstructorTest extends TestCase {
 	}
 
 	public void testArraymodNodeLocatorAccessor() throws Exception {
-		client = new MemcachedClient(AddrUtil.getAddresses("127.0.0.1:11211"));
+		client = new MemcachedClientImpl(AddrUtil.getAddresses("127.0.0.1:11211"));
 		assertTrue(client.getNodeLocator() instanceof ArrayModNodeLocator);
 		assertTrue(client.getNodeLocator().getPrimary("x")
 			instanceof MemcachedNodeROImpl);
 	}
 
 	public void testKetamaNodeLocatorAccessor() throws Exception {
-		client = new MemcachedClient(new KetamaConnectionFactory(),
+		client = new MemcachedClientImpl(new KetamaConnectionFactory(),
 			AddrUtil.getAddresses("127.0.0.1:11211"));
 		assertTrue(client.getNodeLocator() instanceof KetamaNodeLocator);
 		assertTrue(client.getNodeLocator().getPrimary("x")

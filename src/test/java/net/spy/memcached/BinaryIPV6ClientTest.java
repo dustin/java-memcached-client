@@ -7,7 +7,7 @@ public class BinaryIPV6ClientTest extends BinaryClientTest {
 
 	@Override
 	protected void initClient(ConnectionFactory cf) throws Exception {
-		client=new MemcachedClient(cf,
+		client=new MemcachedClientImpl(cf,
 			AddrUtil.getAddresses("::1:11211"));
 	}
 

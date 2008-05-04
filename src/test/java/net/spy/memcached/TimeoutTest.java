@@ -10,7 +10,7 @@ public class TimeoutTest extends ClientBaseCase {
 
 	@Override
 	protected void initClient() throws Exception {
-		client=new MemcachedClient(new DefaultConnectionFactory() {
+		client=new MemcachedClientImpl(new DefaultConnectionFactory() {
 			@Override
 			public long getOperationTimeout() {
 				return 1;

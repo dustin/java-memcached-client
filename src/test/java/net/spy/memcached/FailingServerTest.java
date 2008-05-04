@@ -26,7 +26,7 @@ public class FailingServerTest extends ClientBaseCase {
 
 	@Override
 	protected void initClient(ConnectionFactory cf) throws Exception {
-		client=new MemcachedClient(cf, AddrUtil.getAddresses(serverList));
+		client=new MemcachedClientImpl(cf, AddrUtil.getAddresses(serverList));
 	}
 
 	@Override

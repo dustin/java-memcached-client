@@ -1,10 +1,10 @@
 package net.spy.memcached;
 
 /**
- * Thrown by {@link MemcachedClient} when any internal operations timeout.
+ * Thrown by {@link MemcachedClientImpl} when any internal operations timeout.
  *
  * @author Ray Krueger
- * @see net.spy.memcached.MemcachedClient#setGlobalOperationTimeout(long)
+ * @see net.spy.memcached.MemcachedClientImpl#setGlobalOperationTimeout(long)
  */
 public class OperationTimeoutException extends RuntimeException {
 

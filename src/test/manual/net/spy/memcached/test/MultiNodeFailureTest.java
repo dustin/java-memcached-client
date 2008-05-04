@@ -2,6 +2,7 @@ package net.spy.memcached.test;
 
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.MemcachedClientImpl;
 
 /**
  * This is an attempt to reproduce a problem where a server fails during a
@@ -10,7 +11,7 @@ import net.spy.memcached.MemcachedClient;
 public class MultiNodeFailureTest {
 
 	public static void main(String args[]) throws Exception {
-		MemcachedClient c=new MemcachedClient(
+		MemcachedClient c=new MemcachedClientImpl(
 			AddrUtil.getAddresses("localhost:11200 localhost:11201"));
 		while(true) {
 			for(int i=0; i<1000; i++) {

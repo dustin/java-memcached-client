@@ -39,7 +39,7 @@ public class MemcachedThreadBench extends TestCase {
 		String serverlist =  "127.0.0.1:" + args[2];
 		int threads = Integer.parseInt(args[3]);
 
-		MemcachedClient client=new MemcachedClient(
+		MemcachedClient client=new MemcachedClientImpl(
 			new DefaultConnectionFactory(100000, 32768),
 			AddrUtil.getAddresses(serverlist));
 

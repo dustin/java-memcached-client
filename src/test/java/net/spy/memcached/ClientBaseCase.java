@@ -7,7 +7,7 @@ import junit.framework.TestCase;
 
 public abstract class ClientBaseCase extends TestCase {
 
-	protected MemcachedClient client = null;
+	protected MemcachedClientWithTranscoder client = null;
 
 	protected void initClient() throws Exception {
 		initClient(new DefaultConnectionFactory() {
@@ -19,7 +19,7 @@ public abstract class ClientBaseCase extends TestCase {
 	}
 
 	protected void initClient(ConnectionFactory cf) throws Exception {
-		client=new MemcachedClient(cf,
+		client=new MemcachedClientImpl(cf,
 			AddrUtil.getAddresses("127.0.0.1:11211"));
 	}
 

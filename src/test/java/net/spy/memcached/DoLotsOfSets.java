@@ -12,7 +12,7 @@ public class DoLotsOfSets {
 	public static void main(String[] args) throws Exception {
 		// Create a client with a queue big enough to hold the 300,000 items
 		// we're going to add.
-		MemcachedClient client=new MemcachedClient(
+		MemcachedClient client=new MemcachedClientImpl(
 			new DefaultConnectionFactory(350000, 32768),
 			AddrUtil.getAddresses("localhost:11211"));
 		long start=System.currentTimeMillis();
