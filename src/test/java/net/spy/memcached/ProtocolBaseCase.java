@@ -466,7 +466,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 	}
 
-	public void testGracefulShutdownTooSlow() throws Exception {
+	public void xtestGracefulShutdownTooSlow() throws Exception {
 		for(int i=0; i<10000; i++) {
 			client.set("t" + i, 10, i);
 		}
