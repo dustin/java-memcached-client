@@ -1,13 +1,13 @@
-package net.spy.memcached;
+package net.spy.memcached.io;
 
 import java.nio.ByteBuffer;
 
 import junit.framework.TestCase;
 
 /**
- * Test stuff that can be tested within a MemcachedConnection separately.
+ * Test stuff that can be tested within a MemcachedLowLevelIO separately.
  */
-public class MemcachedConnectionTest extends TestCase {
+public class MemcachedLowLevelIOTest extends TestCase {
 
 	public void testDebugBuffer() throws Exception {
 		String input="this is a test _";

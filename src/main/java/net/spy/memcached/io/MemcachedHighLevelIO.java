@@ -1,4 +1,4 @@
-package net.spy.memcached;
+package net.spy.memcached.io;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -22,6 +22,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.SpyThread;
+import net.spy.memcached.CachedData;
+import net.spy.memcached.ConnectionFactory;
+import net.spy.memcached.OperationTimeoutException;
 import net.spy.memcached.cas.CASResponse;
 import net.spy.memcached.cas.CASValue;
 import net.spy.memcached.nodes.MemcachedNode;

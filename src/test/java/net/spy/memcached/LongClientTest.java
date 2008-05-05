@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import net.spy.memcached.io.MemcachedLowLevelIO;
 import net.spy.test.SyncThread;
 
 /**

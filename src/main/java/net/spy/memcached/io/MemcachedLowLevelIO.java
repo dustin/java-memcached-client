@@ -1,6 +1,6 @@
 // Copyright (c) 2006  Dustin Sallings <dustin@spy.net>
 
-package net.spy.memcached;
+package net.spy.memcached.io;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 
 import net.spy.SpyObject;
+import net.spy.memcached.ConnectionFactory;
 import net.spy.memcached.nodes.MemcachedNode;
 import net.spy.memcached.nodes.NodeLocator;
 import net.spy.memcached.ops.BroadcastOpFactory;
@@ -36,7 +37,7 @@ import net.spy.memcached.ops.OperationState;
  * This class handles all low-level IO to and from all memcached nodes for
  * all connections.  You know, state machines and such.
  */
-final class MemcachedLowLevelIO extends SpyObject {
+public final class MemcachedLowLevelIO extends SpyObject {
 
 	// The number of empty selects we'll allow before assuming we may have
 	// missed one and should check the current selectors.  This generally

@@ -12,6 +12,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import net.spy.memcached.io.MemcachedLowLevelIO;
+
 /**
  * Test queue overflow.
  */

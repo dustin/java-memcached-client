@@ -10,6 +10,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import net.spy.memcached.io.MemcachedLowLevelIO;
 import net.spy.memcached.nodes.ArrayModNodeLocator;
 import net.spy.memcached.nodes.KetamaNodeLocator;
 import net.spy.memcached.nodes.MemcachedNodeROImpl;
