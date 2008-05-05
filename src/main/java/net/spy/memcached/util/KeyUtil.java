@@ -24,6 +24,21 @@ public class KeyUtil {
 	}
 
 	/**
+	 * Get the string representation of the given byte[] (intended for use as
+	 * a key).
+	 *
+	 * @param b the byte
+	 * @return the key
+	 */
+	public static String getKeyString(byte[] b) {
+		try {
+			return new String(b, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
 	 * Get the keys in byte form for all of the string keys.
 	 *
 	 * @param keys a collection of keys
