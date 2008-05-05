@@ -12,7 +12,6 @@ import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.BaseOperationImpl;
-import net.spy.memcached.util.KeyUtil;
 
 /**
  * Base class for binary operations.
@@ -225,7 +224,7 @@ abstract class OperationImpl extends BaseOperationImpl {
 	 * @param val the data payload
 	 * @param extraHeaders any additional headers that need to be sent
 	 */
-	protected void prepareBuffer(String key, long cas, byte[] val,
+	protected void prepareBuffer(byte[] keyBytes, long cas, byte[] val,
 			Object... extraHeaders) {
 		int extraLen=0;
 		for(Object o : extraHeaders) {
@@ -239,7 +238,6 @@ abstract class OperationImpl extends BaseOperationImpl {
 				assert false : "Unhandled extra header type:  " + o.getClass();
 			}
 		}
-		final byte[] keyBytes=KeyUtil.getKeyBytes(key);
 		int bufSize=MIN_RECV_PACKET + keyBytes.length + val.length;
 
 		//	# magic, opcode, keylen, extralen, datatype, [reserved],

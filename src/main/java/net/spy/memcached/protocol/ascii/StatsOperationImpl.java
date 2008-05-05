@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StatsOperation;
+import net.spy.memcached.util.KeyUtil;
 
 /**
  * Operation to retrieve statistics from a memcached server.
@@ -21,13 +22,13 @@ final class StatsOperationImpl extends OperationImpl
 	private final byte[] msg;
 	private final StatsOperation.Callback cb;
 
-	public StatsOperationImpl(String arg, StatsOperation.Callback c) {
+	public StatsOperationImpl(byte[] arg, StatsOperation.Callback c) {
 		super(c);
 		cb=c;
 		if(arg == null) {
 			msg=MSG;
 		} else {
-			msg=("stats " + arg + "\r\n").getBytes();
+			msg=("stats " + KeyUtil.getKeyString(arg) + "\r\n").getBytes();
 		}
 	}
 

@@ -19,7 +19,7 @@ class FlushOperationImpl extends OperationImpl implements FlushOperation {
 
 	@Override
 	public void initialize() {
-		prepareBuffer("", 0, EMPTY_BYTES, delay);
+		prepareBuffer(EMPTY_BYTES, 0, EMPTY_BYTES, delay);
 	}
 
 }

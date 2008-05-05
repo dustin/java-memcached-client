@@ -23,7 +23,7 @@ public interface OperationFactory {
 	 * @param operationCallback the status callback
 	 * @return the new DeleteOperation
 	 */
-	DeleteOperation delete(String key, OperationCallback operationCallback);
+	DeleteOperation delete(byte[] key, OperationCallback operationCallback);
 
 	/**
 	 * Create a flush operation.
@@ -41,7 +41,7 @@ public interface OperationFactory {
 	 * @param callback the callback that will contain the results
 	 * @return a new GetOperation
 	 */
-	GetOperation get(String key, GetOperation.Callback callback);
+	GetOperation get(byte[] key, GetOperation.Callback callback);
 
 	/**
 	 * Create a gets operation.
@@ -50,7 +50,7 @@ public interface OperationFactory {
 	 * @param callback the callback that will contain the results
 	 * @return a new GetsOperation
 	 */
-	GetsOperation gets(String key, GetsOperation.Callback callback);
+	GetsOperation gets(byte[] key, GetsOperation.Callback callback);
 
 
 	/**
@@ -60,7 +60,7 @@ public interface OperationFactory {
 	 * @param callback the callback that will contain the results
 	 * @return a new GetOperation
 	 */
-	GetOperation get(Collection<String> value, GetOperation.Callback cb);
+	GetOperation get(Collection<byte[]> value, GetOperation.Callback cb);
 
 	/**
 	 * Create a mutator operation.
@@ -73,7 +73,7 @@ public interface OperationFactory {
 	 * @param cb the status callback
 	 * @return the new mutator operation
 	 */
-	MutatatorOperation mutate(Mutator m, String key, int by,
+	MutatatorOperation mutate(Mutator m, byte[] key, int by,
 			long def, int exp, OperationCallback cb);
 
 	/**
@@ -83,7 +83,7 @@ public interface OperationFactory {
 	 * @param cb the stats callback
 	 * @return the new StatsOperation
 	 */
-	StatsOperation stats(String arg, StatsOperation.Callback cb);
+	StatsOperation stats(byte[] arg, StatsOperation.Callback cb);
 
 	/**
 	 * Create a store operation.
@@ -96,7 +96,7 @@ public interface OperationFactory {
 	 * @param cb the status callback
 	 * @return the new store operation
 	 */
-	StoreOperation store(StoreType storeType, String key, int flags, int exp,
+	StoreOperation store(StoreType storeType, byte[] key, int flags, int exp,
 			byte[] data, OperationCallback cb);
 
 	/**
@@ -110,7 +110,7 @@ public interface OperationFactory {
 	 * @return thew new ConcatenationOperation
 	 */
 	ConcatenationOperation cat(ConcatenationType catType, long casId,
-			String key, byte[] data, OperationCallback cb);
+			byte[] key, byte[] data, OperationCallback cb);
 
 	/**
 	 * Create a CAS operation.
@@ -123,7 +123,7 @@ public interface OperationFactory {
 	 * @param cb the status callback
 	 * @return the new store operation
 	 */
-	CASOperation cas(String key, long casId, int flags, int exp, byte[] data,
+	CASOperation cas(byte[] key, long casId, int flags, int exp, byte[] data,
 			OperationCallback cb);
 
 	/**

@@ -6,6 +6,7 @@ import java.util.Collections;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.util.KeyUtil;
 
 class GetOperationImpl extends OperationImpl
 	implements GetOperation, GetsOperation {
@@ -17,14 +18,14 @@ class GetOperationImpl extends OperationImpl
 	 */
 	static final int EXTRA_HDR_LEN=4;
 
-	private final String key;
+	private final byte[] key;
 
-	public GetOperationImpl(String k, GetOperation.Callback cb) {
+	public GetOperationImpl(byte[] k, GetOperation.Callback cb) {
 		super(CMD, generateOpaque(), cb);
 		key=k;
 	}
 
-	public GetOperationImpl(String k, GetsOperation.Callback cb) {
+	public GetOperationImpl(byte[] k, GetsOperation.Callback cb) {
 		super(CMD, generateOpaque(), cb);
 		key=k;
 	}
@@ -42,10 +43,10 @@ class GetOperationImpl extends OperationImpl
 		// Assume we're processing a get unless the cast fails.
 		try {
 			GetOperation.Callback cb=(GetOperation.Callback)getCallback();
-			cb.gotData(key, flags, data);
+			cb.gotData(KeyUtil.getKeyString(key), flags, data);
 		} catch(ClassCastException e) {
 			GetsOperation.Callback cb=(GetsOperation.Callback)getCallback();
-			cb.gotData(key, flags, responseCas, data);
+			cb.gotData(KeyUtil.getKeyString(key), flags, responseCas, data);
 		}
 		getCallback().receivedStatus(STATUS_OK);
 	}
@@ -56,7 +57,7 @@ class GetOperationImpl extends OperationImpl
 	}
 
 	public Collection<String> getKeys() {
-		return Collections.singleton(key);
+		return Collections.singleton(KeyUtil.getKeyString(key));
 	}
 
 }

@@ -31,7 +31,6 @@ import net.spy.memcached.nodes.NodeLocator;
 import net.spy.memcached.ops.BroadcastOpFactory;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
-import net.spy.memcached.util.KeyUtil;
 
 /**
  * This class handles all low-level IO to and from all memcached nodes for
@@ -430,15 +429,14 @@ final class MemcachedLowLevelIO extends SpyObject {
 	 * @param which the connection offset
 	 * @param o the operation
 	 */
-	public void addOperation(final String key, final Operation o) {
+	public void addOperation(final byte[] key, final Operation o) {
 		MemcachedNode placeIn=null;
-		MemcachedNode primary = locator.getPrimary(KeyUtil.getKeyBytes(key));
+		MemcachedNode primary = locator.getPrimary(key);
 		if(primary.isActive()) {
 			placeIn=primary;
 		} else {
 			// Look for another node in sequence that is ready.
-			for(Iterator<MemcachedNode> i=locator.getSequence(
-					KeyUtil.getKeyBytes(key));
+			for(Iterator<MemcachedNode> i=locator.getSequence(key);
 				placeIn == null && i.hasNext(); ) {
 				MemcachedNode n=i.next();
 				if(n.isActive()) {
@@ -516,6 +514,7 @@ final class MemcachedLowLevelIO extends SpyObject {
 		selector.close();
 		getLogger().debug("Shut down selector %s", selector);
 	}
+
 
 	@Override
 	public String toString() {

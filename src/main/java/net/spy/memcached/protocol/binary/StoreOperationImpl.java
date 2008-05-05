@@ -14,7 +14,7 @@ class StoreOperationImpl extends OperationImpl
 	private static final int ADD=2;
 	private static final int REPLACE=3;
 
-	private final String key;
+	private final byte[] key;
 	private final int flags;
 	private final int exp;
 	private final long cas;
@@ -32,7 +32,7 @@ class StoreOperationImpl extends OperationImpl
 		return rv;
 	}
 
-	public StoreOperationImpl(StoreType t, String k, int f, int e,
+	public StoreOperationImpl(StoreType t, byte[] k, int f, int e,
 			byte[] d, long c, OperationCallback cb) {
 		super(cmdMap(t), generateOpaque(), cb);
 		key=k;

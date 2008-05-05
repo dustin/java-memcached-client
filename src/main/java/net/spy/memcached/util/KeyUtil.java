@@ -51,4 +51,15 @@ public class KeyUtil {
 		}
 		return rv;
 	}
+
+	/**
+	 * Convert a collection of byte arrays to a collection of strings.
+	 */
+	public static Collection<String> getKeyStrings(Collection<byte[]> keys) {
+		Collection<String> rv=new ArrayList<String>(keys.size());
+		for(byte[] b : keys) {
+			rv.add(getKeyString(b));
+		}
+		return rv;
+	}
 }

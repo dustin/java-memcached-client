@@ -9,11 +9,11 @@ public class StatsOperationImpl extends OperationImpl
 	implements StatsOperation {
 
 	private static final int CMD = 0x10;
-	private final String key;
+	private final byte[] key;
 
-	public StatsOperationImpl(String arg, StatsOperation.Callback c) {
+	public StatsOperationImpl(byte[] arg, StatsOperation.Callback c) {
 		super(CMD, generateOpaque(), c);
-		key=(arg == null) ? "" : arg;
+		key=(arg == null) ? EMPTY_BYTES : arg;
 	}
 
 	@Override

@@ -11,7 +11,7 @@ class ConcatenationOperationImpl extends OperationImpl
 	private static final int APPEND=0x0e;
 	private static final int PREPEND=0x0f;
 
-	private final String key;
+	private final byte[] key;
 	private final long cas;
 	private final byte[] data;
 
@@ -26,7 +26,7 @@ class ConcatenationOperationImpl extends OperationImpl
 		return rv;
 	}
 
-	public ConcatenationOperationImpl(ConcatenationType t, String k,
+	public ConcatenationOperationImpl(ConcatenationType t, byte[] k,
 			byte[] d, long c, OperationCallback cb) {
 		super(cmdMap(t), generateOpaque(), cb);
 		key=k;

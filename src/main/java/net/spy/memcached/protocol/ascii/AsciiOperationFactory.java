@@ -18,44 +18,46 @@ import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.ops.VersionOperation;
+import net.spy.memcached.util.KeyUtil;
 
 /**
  * Operation factory for the ascii protocol.
  */
 public final class AsciiOperationFactory implements OperationFactory {
 
-	public DeleteOperation delete(String key, OperationCallback cb) {
-		return new DeleteOperationImpl(key, cb);
+	public DeleteOperation delete(byte[] key, OperationCallback cb) {
+		return new DeleteOperationImpl(KeyUtil.getKeyString(key), cb);
 	}
 
 	public FlushOperation flush(int delay, OperationCallback cb) {
 		return new FlushOperationImpl(delay, cb);
 	}
 
-	public GetOperation get(String key, GetOperation.Callback cb) {
-		return new GetOperationImpl(key, cb);
+	public GetOperation get(byte[] key, GetOperation.Callback cb) {
+		return new GetOperationImpl(KeyUtil.getKeyString(key), cb);
 	}
 
-	public GetOperation get(Collection<String> keys, GetOperation.Callback cb) {
-		return new GetOperationImpl(keys, cb);
+	public GetOperation get(Collection<byte[]> keys, GetOperation.Callback cb) {
+		return new GetOperationImpl(KeyUtil.getKeyStrings(keys), cb);
 	}
 
-	public GetsOperation gets(String key, GetsOperation.Callback cb) {
-		 return new GetsOperationImpl(key, cb);
+	public GetsOperation gets(byte[] key, GetsOperation.Callback cb) {
+		 return new GetsOperationImpl(KeyUtil.getKeyString(key), cb);
 	}
 
-	public MutatatorOperation mutate(Mutator m, String key, int by,
+	public MutatatorOperation mutate(Mutator m, byte[] key, int by,
 			long exp, int def, OperationCallback cb) {
-		return new MutatorOperationImpl(m, key, by, cb);
+		return new MutatorOperationImpl(m, KeyUtil.getKeyString(key), by, cb);
 	}
 
-	public StatsOperation stats(String arg, StatsOperation.Callback cb) {
+	public StatsOperation stats(byte[] arg, StatsOperation.Callback cb) {
 		return new StatsOperationImpl(arg, cb);
 	}
 
-	public StoreOperation store(StoreType storeType, String key, int flags,
+	public StoreOperation store(StoreType storeType, byte[] key, int flags,
 			int exp, byte[] data, OperationCallback cb) {
-		return new StoreOperationImpl(storeType, key, flags, exp, data, cb);
+		return new StoreOperationImpl(storeType, KeyUtil.getKeyString(key),
+				flags, exp, data, cb);
 	}
 
 	public VersionOperation version(OperationCallback cb) {
@@ -66,15 +68,17 @@ public final class AsciiOperationFactory implements OperationFactory {
 		return new VersionOperationImpl(cb);
 	}
 
-	public CASOperation cas(String key, long casId, int flags, int exp,
+	public CASOperation cas(byte[] key, long casId, int flags, int exp,
 			byte[] data, OperationCallback cb) {
-		return new CASOperationImpl(key, casId, flags, exp, data, cb);
+		return new CASOperationImpl(KeyUtil.getKeyString(key), casId,
+				flags, exp, data, cb);
 	}
 
 	public ConcatenationOperation cat(ConcatenationType catType,
 			long casId,
-			String key, byte[] data, OperationCallback cb) {
-		return new ConcatenationOperationImpl(catType, key, data, cb);
+			byte[] key, byte[] data, OperationCallback cb) {
+		return new ConcatenationOperationImpl(catType,
+			KeyUtil.getKeyString(key), data, cb);
 	}
 
 }

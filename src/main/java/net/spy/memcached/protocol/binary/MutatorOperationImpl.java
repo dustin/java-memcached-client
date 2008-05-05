@@ -11,12 +11,12 @@ class MutatorOperationImpl extends OperationImpl implements
 	private static final int CMD_INCR=5;
 	private static final int CMD_DECR=6;
 
-	private final String key;
+	private final byte[] key;
 	private final long by;
 	private final int exp;
 	private final long def;
 
-	public MutatorOperationImpl(Mutator m, String k, long b,
+	public MutatorOperationImpl(Mutator m, byte[] k, long b,
 			long d, int e, OperationCallback cb) {
 		super(m == Mutator.incr ? CMD_INCR : CMD_DECR, generateOpaque(), cb);
 		assert d >= 0 : "Default value is below zero";

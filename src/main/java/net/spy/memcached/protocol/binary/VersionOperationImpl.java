@@ -14,7 +14,7 @@ class VersionOperationImpl extends OperationImpl implements VersionOperation {
 
 	@Override
 	public void initialize() {
-		prepareBuffer("", 0, EMPTY_BYTES);
+		prepareBuffer(EMPTY_BYTES, 0, EMPTY_BYTES);
 	}
 
 	@Override
