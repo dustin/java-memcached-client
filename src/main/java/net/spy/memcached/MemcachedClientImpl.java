@@ -71,8 +71,8 @@ import net.spy.memcached.util.KeyUtil;
  *	}
  * </pre>
  */
-public final class MemcachedClientImpl extends SpyObject
-	implements MemcachedClient, MemcachedClientWithTranscoder {
+public class MemcachedClientImpl extends SpyObject
+	implements MemcachedClientWithTranscoder {
 
 	private final MemcachedHighLevelIO conn;
     private final long operationTimeout;
@@ -133,13 +133,6 @@ public final class MemcachedClientImpl extends SpyObject
 	 */
 	public NodeLocator getNodeLocator() {
 		return conn.getLocator();
-	}
-
-	/**
-	 * Get the default transcoder that's in use.
-	 */
-	public Transcoder<Object> getTranscoder() {
-		return transcoder;
 	}
 
 	/**

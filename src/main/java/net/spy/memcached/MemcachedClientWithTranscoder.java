@@ -15,11 +15,6 @@ import net.spy.memcached.transcoders.Transcoder;
 public interface MemcachedClientWithTranscoder extends MemcachedClient {
 
 	/**
-	 * Get the default transcoder that's in use.
-	 */
-	Transcoder<Object> getTranscoder();
-
-	/**
 	 * Append to an existing value in the cache.
 	 *
 	 * @param cas cas identifier (ignored in the ascii protocol)
