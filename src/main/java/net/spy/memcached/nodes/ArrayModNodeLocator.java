@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import net.spy.memcached.util.KeyUtil;
-
 /**
  * NodeLocator implementation for dealing with simple array lookups using a
  * modulus of the hash code and node list length.
@@ -40,11 +38,11 @@ public final class ArrayModNodeLocator implements NodeLocator {
 		return Arrays.asList(nodes);
 	}
 
-	public MemcachedNode getPrimary(String k) {
+	public MemcachedNode getPrimary(byte[] k) {
 		return nodes[getServerForKey(k)];
 	}
 
-	public Iterator<MemcachedNode> getSequence(String k) {
+	public Iterator<MemcachedNode> getSequence(byte[] k) {
 		return new NodeIterator(getServerForKey(k));
 	}
 
@@ -56,8 +54,8 @@ public final class ArrayModNodeLocator implements NodeLocator {
 		return new ArrayModNodeLocator(n, hashAlg);
 	}
 
-	private int getServerForKey(String key) {
-		int rv=(int)(hashAlg.hash(KeyUtil.getKeyBytes(key)) % nodes.length);
+	private int getServerForKey(byte[] key) {
+		int rv=(int)(hashAlg.hash(key) % nodes.length);
 		assert rv >= 0 : "Returned negative key for key " + key;
 		assert rv < nodes.length
 			: "Invalid server number " + rv + " for key " + key;

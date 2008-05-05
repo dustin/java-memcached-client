@@ -17,19 +17,19 @@ public class ArrayModNodeLocatorTest extends AbstractNodeLocationCase {
 
 	public void testPrimary() throws Exception {
 		setupNodes(4);
-		assertSame(nodes[2], locator.getPrimary("dustin"));
-		assertSame(nodes[3], locator.getPrimary("x"));
-		assertSame(nodes[0], locator.getPrimary("y"));
+		assertSame(nodes[2], locator.getPrimary(s("dustin")));
+		assertSame(nodes[3], locator.getPrimary(s("x")));
+		assertSame(nodes[0], locator.getPrimary(s("y")));
 	}
 
 	public void testPrimaryClone() throws Exception {
 		setupNodes(4);
 		assertEquals(nodes[2].toString(),
-			locator.getReadonlyCopy().getPrimary("dustin").toString());
+			locator.getReadonlyCopy().getPrimary(s("dustin")).toString());
 		assertEquals(nodes[3].toString(),
-			locator.getReadonlyCopy().getPrimary("x").toString());
+			locator.getReadonlyCopy().getPrimary(s("x")).toString());
 		assertEquals(nodes[0].toString(),
-			locator.getReadonlyCopy().getPrimary("y").toString());
+			locator.getReadonlyCopy().getPrimary(s("y")).toString());
 	}
 
 	public void testAll() throws Exception {

@@ -5,6 +5,8 @@ import java.util.Iterator;
 import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
 
+import net.spy.memcached.util.KeyUtil;
+
 public abstract class AbstractNodeLocationCase extends MockObjectTestCase {
 
 	protected MemcachedNode[] nodes;
@@ -13,7 +15,7 @@ public abstract class AbstractNodeLocationCase extends MockObjectTestCase {
 
 	private void runSequenceAssertion(NodeLocator l, String k, int... seq) {
 		int pos=0;
-		for(Iterator<MemcachedNode> i=l.getSequence(k); i.hasNext(); ) {
+		for(Iterator<MemcachedNode> i=l.getSequence(s(k)); i.hasNext(); ) {
 			assertEquals("At position " + pos, nodes[seq[pos]].toString(),
 				i.next().toString());
 			try {
@@ -29,7 +31,7 @@ public abstract class AbstractNodeLocationCase extends MockObjectTestCase {
 
 	public final void testCloningGetPrimary() {
 		setupNodes(5);
-		assertTrue(locator.getReadonlyCopy().getPrimary("hi")
+		assertTrue(locator.getReadonlyCopy().getPrimary(s("hi"))
 			instanceof MemcachedNodeROImpl);
 	}
 
@@ -41,13 +43,17 @@ public abstract class AbstractNodeLocationCase extends MockObjectTestCase {
 
 	public final void testCloningGetSequence() {
 		setupNodes(5);
-		assertTrue(locator.getReadonlyCopy().getSequence("hi").next()
+		assertTrue(locator.getReadonlyCopy().getSequence(s("hi")).next()
 			instanceof MemcachedNodeROImpl);
 	}
 
 	protected final void assertSequence(String k, int... seq) {
 		runSequenceAssertion(locator, k, seq);
 		runSequenceAssertion(locator.getReadonlyCopy(), k, seq);
+	}
+
+	protected byte[] s(String s) {
+		return KeyUtil.getKeyBytes(s);
 	}
 
 	protected void setupNodes(int n) {

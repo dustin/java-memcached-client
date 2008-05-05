@@ -15,6 +15,7 @@ import net.spy.memcached.nodes.KetamaNodeLocator;
 import net.spy.memcached.nodes.MemcachedNodeROImpl;
 import net.spy.memcached.ops.OperationFactory;
 import net.spy.memcached.util.AddrUtil;
+import net.spy.memcached.util.KeyUtil;
 
 /**
  * Test the various memcached client constructors.
@@ -158,7 +159,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 	public void testArraymodNodeLocatorAccessor() throws Exception {
 		client = new MemcachedClientImpl(AddrUtil.getAddresses("127.0.0.1:11211"));
 		assertTrue(client.getNodeLocator() instanceof ArrayModNodeLocator);
-		assertTrue(client.getNodeLocator().getPrimary("x")
+		assertTrue(client.getNodeLocator().getPrimary(KeyUtil.getKeyBytes("x"))
 			instanceof MemcachedNodeROImpl);
 	}
 
@@ -166,7 +167,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 		client = new MemcachedClientImpl(new KetamaConnectionFactory(),
 			AddrUtil.getAddresses("127.0.0.1:11211"));
 		assertTrue(client.getNodeLocator() instanceof KetamaNodeLocator);
-		assertTrue(client.getNodeLocator().getPrimary("x")
+		assertTrue(client.getNodeLocator().getPrimary(KeyUtil.getKeyBytes("x"))
 			instanceof MemcachedNodeROImpl);
 	}
 

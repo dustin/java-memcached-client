@@ -878,13 +878,15 @@ public final class MemcachedClientImpl extends SpyThread
 		final NodeLocator locator=conn.getLocator();
 		for(String key : keys) {
 			validateKey(key);
-			final MemcachedNode primaryNode=locator.getPrimary(key);
+			final MemcachedNode primaryNode=locator.getPrimary(
+				KeyUtil.getKeyBytes(key));
 			MemcachedNode node=null;
 			if(primaryNode.isActive()) {
 				node=primaryNode;
 			} else {
-				for(Iterator<MemcachedNode> i=locator.getSequence(key);
-					node == null && i.hasNext();) {
+				for(Iterator<MemcachedNode> i=locator.getSequence(
+						KeyUtil.getKeyBytes(key));
+						node == null && i.hasNext();) {
 					MemcachedNode n=i.next();
 					if(n.isActive()) {
 						node=n;

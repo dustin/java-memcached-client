@@ -74,8 +74,8 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 		return allNodes;
 	}
 
-	public MemcachedNode getPrimary(final String k) {
-		MemcachedNode rv=getNodeForKey(hashAlg.hash(KeyUtil.getKeyBytes(k)));
+	public MemcachedNode getPrimary(final byte[] k) {
+		MemcachedNode rv=getNodeForKey(hashAlg.hash(k));
 		assert rv != null : "Found no node for key " + k;
 		return rv;
 	}
@@ -100,7 +100,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 		return rv;
 	}
 
-	public Iterator<MemcachedNode> getSequence(String k) {
+	public Iterator<MemcachedNode> getSequence(byte[] k) {
 		return new KetamaIterator(k, allNodes.size());
 	}
 
@@ -124,21 +124,23 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
 	class KetamaIterator implements Iterator<MemcachedNode> {
 
-		final String key;
+		final byte[] key;
 		long hashVal;
 		int remainingTries;
 		int numTries=0;
 
-		public KetamaIterator(final String k, final int t) {
+		public KetamaIterator(final byte[] k, final int t) {
 			super();
-			hashVal=hashAlg.hash(KeyUtil.getKeyBytes(k));
+			hashVal=hashAlg.hash(k);
 			remainingTries=t;
 			key=k;
 		}
 
 		private void nextHash() {
 			// this.calculateHash(Integer.toString(tries)+key).hashCode();
-			long tmpKey=hashAlg.hash(KeyUtil.getKeyBytes((numTries++) + key));
+			long tmpKey=hashAlg.hash(
+				KeyUtil.getKeyBytes(
+						(numTries++) + KeyUtil.getKeyString(key)));
 			// This echos the implementation of Long.hashCode()
 			hashVal += (int)(tmpKey ^ (tmpKey >>> 32));
 			hashVal &= 0xffffffffL; /* truncate to 32-bits */

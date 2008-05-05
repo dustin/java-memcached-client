@@ -14,7 +14,7 @@ public interface NodeLocator {
 	 * @param k the object key
 	 * @return the QueueAttachment containing the primary storage for a key
 	 */
-	MemcachedNode getPrimary(String k);
+	MemcachedNode getPrimary(byte[] k);
 
 	/**
 	 * Get an iterator over the sequence of nodes that make up the backup
@@ -23,7 +23,7 @@ public interface NodeLocator {
 	 * @param k the object key
 	 * @return the sequence of backup nodes.
 	 */
-	Iterator<MemcachedNode> getSequence(String k);
+	Iterator<MemcachedNode> getSequence(byte[] k);
 
 	/**
 	 * Get all memcached nodes.  This is useful for broadcasting messages.
