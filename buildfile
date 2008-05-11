@@ -35,8 +35,7 @@ end
 desc "Java memcached client"
 define "memcached" do
 
-  test.options[:java_args] = "-ea"
-  test.include "*Test"
+  options.java_args = "-ea"
   TREE_VER=tree_version
   puts "Tree version is #{TREE_VER}"
 
