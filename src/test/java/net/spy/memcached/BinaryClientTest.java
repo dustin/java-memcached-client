@@ -8,7 +8,12 @@ public class BinaryClientTest extends ProtocolBaseCase {
 
 	@Override
 	protected void initClient() throws Exception {
-		initClient(new BinaryConnectionFactory());
+		initClient(new BinaryConnectionFactory() {
+			@Override
+			public long getOperationTimeout() {
+				return 15000;
+			}
+		});
 	}
 
 	@Override
