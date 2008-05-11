@@ -24,12 +24,13 @@ import net.spy.test.SyncThread;
 public abstract class ProtocolBaseCase extends ClientBaseCase {
 
 	public void testAssertions() {
+		boolean caught=false;
 		try {
 			assert false;
-			fail("Assertions are not enabled.");
 		} catch(AssertionError e) {
-			// ok
+			caught=true;
 		}
+		assertTrue("Assertions are not enabled!", caught);
 	}
 
 	public void testDelayedFlush() throws Exception {
