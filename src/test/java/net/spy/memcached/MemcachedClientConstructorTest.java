@@ -20,7 +20,17 @@ public class MemcachedClientConstructorTest extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		if(client != null) {
-			client.shutdown();
+			try {
+				client.shutdown();
+			} catch(NullPointerException e) {
+				// This is a workaround for a disagreement betweewn how things
+				// should work in eclipse and buildr.  My plan is to upgrade to
+				// junit4 all around and write some tests that are a bit easier
+				// to follow.
+
+				// The actual problem here is a client that isn't properly
+				// initialized is attempting to be shut down.
+			}
 		}
 		super.tearDown();
 	}
