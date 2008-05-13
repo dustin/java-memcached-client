@@ -61,7 +61,10 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 */
 	public final void copyInputQueue() {
 		Collection<Operation> tmp=new ArrayList<Operation>();
-		inputQueue.drainTo(tmp);
+
+		// don't drain more than we have space to place
+		inputQueue.drainTo(tmp, writeQ.remainingCapacity());
+
 		writeQ.addAll(tmp);
 	}
 
@@ -108,7 +111,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 * @see net.spy.memcached.MemcachedNode#fillWriteBuffer(boolean)
 	 */
 	public final void fillWriteBuffer(boolean optimizeGets) {
-		if(toWrite == 0) {
+		if(toWrite == 0 && readQ.remainingCapacity() > 0) {
 			getWbuf().clear();
 			Operation o=getCurrentWriteOp();
 			while(o != null && toWrite < getWbuf().capacity()) {
