@@ -1253,6 +1253,8 @@ public final class MemcachedClient extends SpyThread {
 				logRunException(e);
 			} catch(ClosedSelectorException e) {
 				logRunException(e);
+			} catch(IllegalStateException e) {
+				logRunException(e);
 			}
 		}
 		getLogger().info("Shut down memcached client");

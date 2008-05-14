@@ -258,11 +258,11 @@ public final class MemcachedConnection extends SpyObject {
 					assert !channel.isConnected() : "connected";
 				}
 			} else {
-				if(sk.isWritable()) {
-					handleWrites(sk, qa);
-				}
 				if(sk.isReadable()) {
 					handleReads(sk, qa);
+				}
+				if(sk.isWritable()) {
+					handleWrites(sk, qa);
 				}
 			}
 		} catch(Exception e) {
