@@ -20,4 +20,11 @@ public class ConnectionFactoryTest extends TestCase {
 	public void testBinaryAnIntAnotherIntAndAHashAlgorithmCons() {
 		new BinaryConnectionFactory(5, 5, HashAlgorithm.FNV1_64_HASH);
 	}
+
+	public void testQueueSizes() {
+		ConnectionFactory cf=new DefaultConnectionFactory(100, 1024);
+		assertEquals(100, cf.createOperationQueue().remainingCapacity());
+		assertEquals(100, cf.createWriteOperationQueue().remainingCapacity());
+		assertEquals(110, cf.createReadOperationQueue().remainingCapacity());
+	}
 }

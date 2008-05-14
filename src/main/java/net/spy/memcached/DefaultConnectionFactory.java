@@ -18,7 +18,9 @@ import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
  *
  * <p>
  * This implementation creates connections where each server worker queue is
- * implemented using an ArrayBlockingQueue.
+ * implemented using an ArrayBlockingQueue.  The read queue is automatically
+ * configured to be 10% larger than the specified op queue.  The write queue
+ * is and input queues are the same size.
  * </p>
  */
 public class DefaultConnectionFactory extends SpyObject
@@ -76,8 +78,8 @@ public class DefaultConnectionFactory extends SpyObject
 	public MemcachedNode createMemcachedNode(SocketAddress sa,
 			SocketChannel c, int bufSize) {
 		return new AsciiMemcachedNodeImpl(sa, c, bufSize,
-				createOperationQueue(),
-				createOperationQueue(),
+				createReadOperationQueue(),
+				createWriteOperationQueue(),
 				createOperationQueue());
 	}
 
@@ -94,6 +96,21 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public BlockingQueue<Operation> createOperationQueue() {
 		return new ArrayBlockingQueue<Operation>(getOpQueueLen());
+	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#createReadOperationQueue()
+	 */
+	public BlockingQueue<Operation> createReadOperationQueue() {
+		return new ArrayBlockingQueue<Operation>(
+			(int) (getOpQueueLen() * 1.1));
+	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#createWriteOperationQueue()
+	 */
+	public BlockingQueue<Operation> createWriteOperationQueue() {
+		return createOperationQueue();
 	}
 
 	/* (non-Javadoc)

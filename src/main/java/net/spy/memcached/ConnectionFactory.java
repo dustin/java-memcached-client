@@ -37,6 +37,19 @@ public interface ConnectionFactory {
 	BlockingQueue<Operation> createOperationQueue();
 
 	/**
+	 * Create a BlockingQueue for the operations currently expecting to read
+	 * responses from memcached.
+	 */
+	BlockingQueue<Operation> createReadOperationQueue();
+
+	/**
+	 * Create a BlockingQueue for the operations currently expecting to write
+	 * requests to memcached.
+	 */
+	BlockingQueue<Operation> createWriteOperationQueue();
+
+
+	/**
 	 * Create a NodeLocator instance for the given list of nodes.
 	 */
 	NodeLocator createLocator(List<MemcachedNode> nodes);

@@ -41,8 +41,8 @@ public class BinaryConnectionFactory extends DefaultConnectionFactory {
 	public MemcachedNode createMemcachedNode(SocketAddress sa,
 			SocketChannel c, int bufSize) {
 		return new BinaryMemcachedNodeImpl(sa, c, bufSize,
-			createOperationQueue(),
-			createOperationQueue(),
+			createReadOperationQueue(),
+			createWriteOperationQueue(),
 			createOperationQueue());
 	}
 
