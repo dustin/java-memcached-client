@@ -1413,22 +1413,26 @@ public final class MemcachedClient extends SpyThread {
 		}
 
 		public T get() throws InterruptedException, ExecutionException {
-			latch.await(globalOperationTimeout, TimeUnit.MILLISECONDS);
-			assert isDone() : "Latch released, but operation wasn't done.";
+			try {
+				return get(globalOperationTimeout, TimeUnit.MILLISECONDS);
+			} catch (TimeoutException e) {
+				throw new RuntimeException(
+					"Timed out waiting for operation", e);
+			}
+		}
+
+		public T get(long duration, TimeUnit units)
+			throws InterruptedException, TimeoutException, ExecutionException {
+			if(!latch.await(duration, units)) {
+				throw new TimeoutException("Timed out waiting for operation");
+			}
 			if(op != null && op.hasErrored()) {
 				throw new ExecutionException(op.getException());
 			}
 			if(isCancelled()) {
 				throw new ExecutionException(new RuntimeException("Cancelled"));
 			}
-			return objRef.get();
-		}
 
-		public T get(long duration, TimeUnit units)
-			throws InterruptedException, TimeoutException {
-			if(!latch.await(duration, units)) {
-				throw new TimeoutException("Timed out waiting for operation");
-			}
 			return objRef.get();
 		}
 
