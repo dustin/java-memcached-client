@@ -545,13 +545,14 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	}
 
 	public void testABunchOfCancelledOperations() throws Exception {
+		final String k="bunchOCancel";
 		Collection<Future<?>> futures=new ArrayList<Future<?>>();
 		for(int i=0; i<1000; i++) {
-			futures.add(client.set("x", 5, "xval"));
-			futures.add(client.asyncGet("x"));
+			futures.add(client.set(k, 5, "xval"));
+			futures.add(client.asyncGet(k));
 		}
-		Future<Boolean> sf=client.set("x", 5, "myxval");
-		Future<Object> gf=client.asyncGet("x");
+		Future<Boolean> sf=client.set(k, 5, "myxval");
+		Future<Object> gf=client.asyncGet(k);
 		for(Future<?> f : futures) {
 			f.cancel(true);
 		}
