@@ -293,6 +293,10 @@ public final class MemcachedConnection extends SpyObject {
 		ByteBuffer rbuf=qa.getRbuf();
 		final SocketChannel channel = qa.getChannel();
 		int read=channel.read(rbuf);
+		if (read < 0) {
+		    // GRUMBLE.
+		    throw new IOException("Disconnected");
+		}
 		while(read > 0) {
 			getLogger().debug("Read %d bytes", read);
 			rbuf.flip();
