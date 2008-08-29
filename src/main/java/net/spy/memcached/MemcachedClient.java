@@ -793,7 +793,7 @@ public final class MemcachedClient extends SpyThread {
 	 */
 	public <T> Future<Map<String, T>> asyncGetBulk(Collection<String> keys,
 		final Transcoder<T> tc) {
-		final Map<String, T> m=new ConcurrentHashMap<String, T>();
+		final Map<String, CachedData> m=new ConcurrentHashMap<String, CachedData>();
 		// Break the gets down into groups by key
 		final Map<MemcachedNode, Collection<String>> chunks
 			=new HashMap<MemcachedNode, Collection<String>>();
@@ -836,12 +836,7 @@ public final class MemcachedClient extends SpyThread {
 					}
 				}
 				public void gotData(String k, int flags, byte[] data) {
-					T val = tc.decode(new CachedData(flags, data));
-					// val may be null if the transcoder did not understand
-					// the value.
-					if(val != null) {
-						m.put(k, val);
-					}
+					m.put(k, new CachedData(flags, data));
 				}
 				public void complete() {
 					latch.countDown();
@@ -862,7 +857,7 @@ public final class MemcachedClient extends SpyThread {
 		assert mops.size() == chunks.size();
 		checkState();
 		conn.addOperations(mops);
-		return new BulkGetFuture<T>(m, ops, latch);
+		return new BulkGetFuture<T>(tc, m, ops, latch);
 	}
 
 	/**
@@ -1336,14 +1331,16 @@ public final class MemcachedClient extends SpyThread {
 	}
 
 	static class BulkGetFuture<T> implements Future<Map<String, T>> {
-		private final Map<String, T> rvMap;
+		private final Transcoder<T> tc;
+		private final Map<String, CachedData> rvMap;
 		private final Collection<Operation> ops;
 		private final CountDownLatch latch;
 		private boolean cancelled=false;
 
-		public BulkGetFuture(Map<String, T> m,
+		public BulkGetFuture(Transcoder<T> tc, Map<String, CachedData> m,
 				Collection<Operation> getOps, CountDownLatch l) {
 			super();
+			this.tc = tc;
 			rvMap = m;
 			ops = getOps;
 			latch=l;
@@ -1383,7 +1380,16 @@ public final class MemcachedClient extends SpyThread {
 					throw new ExecutionException(op.getException());
 				}
 			}
-			return rvMap;
+			Map<String, T> m = new HashMap<String, T>();
+			for (Map.Entry<String, CachedData> me : rvMap.entrySet()) {
+				T val = tc.decode(me.getValue());
+				// val may be null if the transcoder did not understand
+				// the value.
+				if(val != null) {
+					m.put(me.getKey(), val);
+				}
+			}
+			return m;
 		}
 
 		public boolean isCancelled() {
