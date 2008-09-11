@@ -86,14 +86,9 @@ import net.spy.memcached.transcoders.Transcoder;
  *  }
  * </pre>
  */
-public final class MemcachedClient extends SpyThread {
+public final class MemcachedClient extends SpyThread implements MemcachedClientIF {
 
-	/**
-	 * Maximum supported key length.
-	 */
-	public static final int MAX_KEY_LENGTH = 250;
-
-	private volatile boolean running=true;
+    private volatile boolean running=true;
 	private volatile boolean shuttingDown=false;
 
     private final long operationTimeout;
