@@ -1111,7 +1111,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws OperationTimeoutException if the global operation timeout is
 	 *         exceeded
 	 */
-	public long incr(String key, int by, int def)
+	public long incr(String key, int by, long def)
 		throws OperationTimeoutException {
 		return mutateWithDefault(Mutator.incr, key, by, def, 0);
 	}

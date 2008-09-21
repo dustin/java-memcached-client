@@ -108,7 +108,7 @@ public interface MemcachedClientIF {
 
     long decr(String key, int by) throws OperationTimeoutException;
 
-    long incr(String key, int by, int def)
+    long incr(String key, int by, long def)
 		throws OperationTimeoutException;
 
     long decr(String key, int by, long def)
