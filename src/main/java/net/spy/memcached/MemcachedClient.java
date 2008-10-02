@@ -633,18 +633,17 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	public <T> Future<T> asyncGet(final String key, final Transcoder<T> tc) {
 
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<T> rv=new OperationFuture<T>(latch,
-			operationTimeout);
+		final GetFuture<T> rv=new GetFuture<T>(tc, latch, operationTimeout);
 
 		Operation op=opFact.get(key,
 				new GetOperation.Callback() {
-			private T val=null;
+			private CachedData val=null;
 			public void receivedStatus(OperationStatus status) {
 				rv.set(val);
 			}
 			public void gotData(String k, int flags, byte[] data) {
 				assert key.equals(k) : "Wrong key returned";
-				val=tc.decode(new CachedData(flags, data));
+				val=new CachedData(flags, data);
 			}
 			public void complete() {
 				latch.countDown();
@@ -1464,6 +1463,50 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 			assert op != null : "No operation";
 			return latch.getCount() == 0 ||
 				op.isCancelled() || op.getState() == OperationState.COMPLETE;
+		}
+
+	}
+
+	static class GetFuture<T> implements Future<T> {
+		private final Transcoder<T> tc;
+		private final OperationFuture<CachedData> rv;
+
+		public GetFuture(Transcoder<T> tc, CountDownLatch l, long globalOperationTimeout) {
+			this.tc = tc;
+			this.rv = new OperationFuture<CachedData>(l, globalOperationTimeout);
+		}
+
+		public boolean cancel(boolean ign) {
+			return rv.cancel(ign);
+		}
+
+		public T get() throws InterruptedException, ExecutionException {
+			return decode(rv.get());
+		}
+
+		public T get(long duration, TimeUnit units)
+			throws InterruptedException, TimeoutException, ExecutionException {
+			return decode(rv.get(duration, units));
+		}
+
+		private T decode(CachedData d) {
+			return tc.decode(d);
+		}
+
+		void set(CachedData d) {
+			rv.set(d);
+		}
+
+		void setOperation(Operation to) {
+			rv.setOperation(to);
+		}
+
+		public boolean isCancelled() {
+			return rv.isCancelled();
+		}
+
+		public boolean isDone() {
+			return rv.isDone();
 		}
 
 	}
