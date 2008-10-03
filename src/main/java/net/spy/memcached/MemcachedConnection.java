@@ -3,6 +3,7 @@
 package net.spy.memcached;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -365,28 +366,38 @@ public final class MemcachedConnection extends SpyObject {
 		final long now=System.currentTimeMillis();
 		final Map<MemcachedNode, Boolean> seen=
 			new IdentityHashMap<MemcachedNode, Boolean>();
+		final List<MemcachedNode> rereQueue=new ArrayList<MemcachedNode>();
 		for(Iterator<MemcachedNode> i=
 				reconnectQueue.headMap(now).values().iterator(); i.hasNext();) {
 			final MemcachedNode qa=i.next();
 			i.remove();
-			if(!seen.containsKey(qa)) {
-				seen.put(qa, Boolean.TRUE);
-				getLogger().info("Reconnecting %s", qa);
-				final SocketChannel ch=SocketChannel.open();
-				ch.configureBlocking(false);
-				int ops=0;
-				if(ch.connect(qa.getSocketAddress())) {
-					getLogger().info("Immediately reconnected to %s", qa);
-					assert ch.isConnected();
+			try {
+				if(!seen.containsKey(qa)) {
+					seen.put(qa, Boolean.TRUE);
+					getLogger().info("Reconnecting %s", qa);
+					final SocketChannel ch=SocketChannel.open();
+					ch.configureBlocking(false);
+					int ops=0;
+					if(ch.connect(qa.getSocketAddress())) {
+						getLogger().info("Immediately reconnected to %s", qa);
+						assert ch.isConnected();
+					} else {
+						ops=SelectionKey.OP_CONNECT;
+					}
+					qa.registerChannel(ch, ch.register(selector, ops, qa));
+					assert qa.getChannel() == ch : "Channel was lost.";
 				} else {
-					ops=SelectionKey.OP_CONNECT;
+					getLogger().debug(
+						"Skipping duplicate reconnect request for %s", qa);
 				}
-				qa.registerChannel(ch, ch.register(selector, ops, qa));
-				assert qa.getChannel() == ch : "Channel was lost.";
-			} else {
-				getLogger().debug("Skipping duplicate reconnect request for %s",
-					qa);
+			} catch(ConnectException e) {
+				getLogger().warn("Error on reconnect", e);
+				rereQueue.add(qa);
 			}
+		}
+		// Requeue any fast-failed connects.
+		for(MemcachedNode n : rereQueue) {
+			queueReconnect(n);
 		}
 	}
 
