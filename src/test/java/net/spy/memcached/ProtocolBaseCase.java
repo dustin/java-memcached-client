@@ -485,9 +485,10 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		initClient();
 	}
 
-	public void testStupidlyLargeSet() throws Exception {
+	public void testStupidlyLargeSetAndSizeOverride() throws Exception {
 		Random r=new Random();
-		SerializingTranscoder st=new SerializingTranscoder();
+		SerializingTranscoder st=new SerializingTranscoder(Integer.MAX_VALUE);
+
 		st.setCompressionThreshold(Integer.MAX_VALUE);
 		client.setTranscoder(st);
 
@@ -501,6 +502,29 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 			e.printStackTrace();
 			OperationException oe=(OperationException)e.getCause();
 			assertSame(OperationErrorType.SERVER, oe.getType());
+		}
+
+		// But I should still be able to do something.
+		client.set("k", 5, "Blah");
+		assertEquals("Blah", client.get("k"));
+	}
+
+	public void testStupidlyLargeSet() throws Exception {
+		Random r=new Random();
+		SerializingTranscoder st=new SerializingTranscoder();
+		st.setCompressionThreshold(Integer.MAX_VALUE);
+		client.setTranscoder(st);
+
+		byte data[]=new byte[10*1024*1024];
+		r.nextBytes(data);
+
+		try {
+			client.set("bigassthing", 60, data).get();
+			fail("Didn't fail setting bigass thing.");
+		} catch(IllegalArgumentException e) {
+			assertEquals("Cannot cache data larger than 1MB "
+					+ "(you tried to cache a " + data.length + " byte object)",
+				e.getMessage());
 		}
 
 		// But I should still be able to do something.
