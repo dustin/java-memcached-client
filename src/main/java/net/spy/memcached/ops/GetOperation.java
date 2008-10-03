@@ -10,7 +10,7 @@ public interface GetOperation extends Operation {
 	/**
 	 * Operation callback for the get request.
 	 */
-	public interface Callback extends OperationCallback {
+	interface Callback extends OperationCallback {
 		/**
 		 * Callback for each result from a get.
 		 *

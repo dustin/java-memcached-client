@@ -9,7 +9,7 @@ public interface StatsOperation extends Operation {
 	/**
 	 * Callback for stats operation.
 	 */
-	public interface Callback extends OperationCallback {
+	interface Callback extends OperationCallback {
 		/**
 		 * Invoked once for every stat returned from the server.
 		 *
