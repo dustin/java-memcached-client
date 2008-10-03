@@ -1490,7 +1490,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		}
 
 		private T decode(CachedData d) {
-			return tc.decode(d);
+			return d == null ? null : tc.decode(d);
 		}
 
 		void set(CachedData d) {
