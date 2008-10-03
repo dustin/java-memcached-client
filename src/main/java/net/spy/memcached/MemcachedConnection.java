@@ -296,7 +296,9 @@ public final class MemcachedConnection extends SpyObject {
 			getLogger().debug("Read %d bytes", read);
 			rbuf.flip();
 			while(rbuf.remaining() > 0) {
-				assert currentOp != null : "No read operation";
+				if(currentOp == null) {
+					throw new IllegalStateException("No read operation.");
+				}
 				currentOp.readFromBuffer(rbuf);
 				if(currentOp.getState() == OperationState.COMPLETE) {
 					getLogger().debug(
