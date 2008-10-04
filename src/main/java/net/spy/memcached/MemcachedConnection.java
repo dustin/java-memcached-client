@@ -7,6 +7,7 @@ import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -266,6 +267,13 @@ public final class MemcachedConnection extends SpyObject {
 					handleWrites(sk, qa);
 				}
 			}
+		} catch(ClosedChannelException e) {
+			if(!shutDown) {
+				getLogger().info("Closed channel and not shutting down.  "
+					+ "Queueing reconnect on %s", qa, e);
+				queueReconnect(qa);
+			}
+
 		} catch(Exception e) {
 			// Various errors occur on Linux that wind up here.  However, any
 			// particular error processing an item should simply cause us to
