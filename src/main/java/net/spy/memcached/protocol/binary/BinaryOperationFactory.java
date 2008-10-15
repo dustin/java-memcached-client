@@ -53,7 +53,7 @@ public class BinaryOperationFactory implements OperationFactory {
 
 	public StatsOperation stats(String arg,
 			net.spy.memcached.ops.StatsOperation.Callback cb) {
-		throw new UnsupportedOperationException();
+		return new StatsOperationImpl(arg, cb);
 	}
 
 	public StoreOperation store(StoreType storeType, String key, int flags,

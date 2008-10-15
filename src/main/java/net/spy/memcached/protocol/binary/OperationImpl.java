@@ -53,6 +53,7 @@ abstract class OperationImpl extends BaseOperationImpl {
 	private byte[] payload=null;
 
 	// Response header fields
+	protected int keyLen;
 	protected int responseCmd;
 	protected int errorCode;
 	protected int responseOpaque;
@@ -104,6 +105,7 @@ abstract class OperationImpl extends BaseOperationImpl {
 				responseCmd=header[1];
 				assert cmd == -1 || responseCmd == cmd
 					: "Unexpected response command value";
+				keyLen=decodeShort(header, 2);
 				// TODO:  Examine extralen and datatype
 				errorCode=decodeShort(header, 6);
 				int bytesToRead=decodeInt(header, 8);

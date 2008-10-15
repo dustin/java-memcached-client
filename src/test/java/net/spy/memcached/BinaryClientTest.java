@@ -21,14 +21,6 @@ public class BinaryClientTest extends ProtocolBaseCase {
 		return "/127.0.0.1:11211";
 	}
 
-	public void testStats() {
-		try {
-			client.getStats();
-		} catch(UnsupportedOperationException e) {
-			// We don't have stats for the binary protocol yet.
-		}
-	}
-
 	public void testCASAppendFail() throws Exception {
 		final String key="append.key";
 		assertTrue(client.set(key, 5, "test").get());
