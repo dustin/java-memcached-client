@@ -25,9 +25,9 @@ import net.spy.memcached.ops.GetOperation.Callback;
  */
 public class BinaryOperationFactory implements OperationFactory {
 
-	public DeleteOperation delete(String key, int when,
-			OperationCallback operationCallback) {
-		return new DeleteOperationImpl(key, when, operationCallback);
+	public DeleteOperation delete(String key,
+		OperationCallback operationCallback) {
+		return new DeleteOperationImpl(key, operationCallback);
 	}
 
 	public FlushOperation flush(int delay, OperationCallback cb) {

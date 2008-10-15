@@ -35,12 +35,10 @@ public interface OperationFactory {
 	 * Create a deletion operation.
 	 *
 	 * @param key the key to delete
-	 * @param when the locking duration
 	 * @param operationCallback the status callback
 	 * @return the new DeleteOperation
 	 */
-	DeleteOperation delete(String key, int when,
-			OperationCallback operationCallback);
+	DeleteOperation delete(String key, OperationCallback operationCallback);
 
 	/**
 	 * Create a flush operation.

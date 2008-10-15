@@ -1,12 +1,12 @@
 package net.spy.memcached;
 
-import net.spy.memcached.transcoders.Transcoder;
-
 import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import net.spy.memcached.transcoders.Transcoder;
 
 /**
  * This interface is provided as a helper for testing clients of the MemcachedClient.
@@ -113,8 +113,6 @@ public interface MemcachedClientIF {
 
     long decr(String key, int by, long def)
             throws OperationTimeoutException;
-
-    Future<Boolean> delete(String key, int hold);
 
     Future<Boolean> delete(String key);
 

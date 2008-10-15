@@ -24,12 +24,10 @@ final class DeleteOperationImpl extends OperationImpl
 		new OperationStatus(false, "NOT_FOUND");
 
 	private final String key;
-	private final int when;
 
-	public DeleteOperationImpl(String k, int w, OperationCallback cb) {
+	public DeleteOperationImpl(String k, OperationCallback cb) {
 		super(cb);
 		key=k;
-		when=w;
 	}
 
 	@Override
@@ -43,7 +41,7 @@ final class DeleteOperationImpl extends OperationImpl
 	public void initialize() {
 		ByteBuffer b=ByteBuffer.allocate(
 			KeyUtil.getKeyBytes(key).length + OVERHEAD);
-		setArguments(b, "delete", key, when);
+		setArguments(b, "delete", key);
 		b.flip();
 		setBuffer(b);
 	}

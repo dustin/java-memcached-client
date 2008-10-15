@@ -24,9 +24,8 @@ import net.spy.memcached.ops.VersionOperation;
  */
 public final class AsciiOperationFactory implements OperationFactory {
 
-	public DeleteOperation delete(String key, int when,
-			OperationCallback cb) {
-		return new DeleteOperationImpl(key, when, cb);
+	public DeleteOperation delete(String key, OperationCallback cb) {
+		return new DeleteOperationImpl(key, cb);
 	}
 
 	public FlushOperation flush(int delay, OperationCallback cb) {

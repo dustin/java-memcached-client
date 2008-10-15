@@ -1145,12 +1145,24 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 *
 	 * @param key the key to delete
 	 * @param hold how long the key should be unavailable to add commands
+	 *
+	 * @deprecated Hold values are no longer honored.
 	 */
+	@Deprecated
 	public Future<Boolean> delete(String key, int hold) {
+		return delete(key);
+	}
+
+	/**
+	 * Delete the given key from the cache.
+	 *
+	 * @param key the key to delete
+	 */
+	public Future<Boolean> delete(String key) {
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch,
 			operationTimeout);
-		DeleteOperation op=opFact.delete(key, hold,
+		DeleteOperation op=opFact.delete(key,
 				new OperationCallback() {
 					public void receivedStatus(OperationStatus s) {
 						rv.set(s.isSuccess());
@@ -1161,13 +1173,6 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		rv.setOperation(op);
 		addOp(key, op);
 		return rv;
-	}
-
-	/**
-	 * Shortcut to delete that doesn't put a hold on the key.
-	 */
-	public Future<Boolean> delete(String key) {
-		return delete(key, 0);
 	}
 
 	/**
