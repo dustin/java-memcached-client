@@ -24,7 +24,9 @@ public class StatsOperationImpl extends OperationImpl
 
 	@Override
 	protected boolean opaqueIsValid() {
-		return responseOpaque == STAT_VALUE_OPAQUE || super.opaqueIsValid();
+		return responseOpaque == STAT_VALUE_OPAQUE
+			|| responseOpaque == 0 // XXX:  This is working around a server bug
+			|| super.opaqueIsValid();
 	}
 
 	@Override
