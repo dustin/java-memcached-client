@@ -128,6 +128,10 @@ public class SerializingTranscoderTest extends BaseMockCase {
 		assertEquals(923, tc.decode(tc.encode(923)));
 	}
 
+	public void testChar() throws Exception {
+		assertEquals('c', tc.decode(tc.encode('c')));
+	}
+
 	public void testBoolean() throws Exception {
 		assertSame(Boolean.TRUE, tc.decode(tc.encode(true)));
 		assertSame(Boolean.FALSE, tc.decode(tc.encode(false)));
