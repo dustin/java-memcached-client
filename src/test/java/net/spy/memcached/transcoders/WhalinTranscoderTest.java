@@ -2,19 +2,15 @@
 
 package net.spy.memcached.transcoders;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
 
 import net.spy.memcached.CachedData;
-import net.spy.test.BaseMockCase;
 
 /**
  * Test the serializing transcoder.
  */
-public class WhalinTranscoderTest extends BaseMockCase {
+public class WhalinTranscoderTest extends BaseTranscoderCase {
 
 	private WhalinTranscoder tc;
 	private TranscoderUtils tu;
@@ -23,6 +19,7 @@ public class WhalinTranscoderTest extends BaseMockCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		tc=new WhalinTranscoder();
+		setTranscoder(tc);
 		tu=new TranscoderUtils(false);
 	}
 
@@ -107,46 +104,6 @@ public class WhalinTranscoderTest extends BaseMockCase {
 		assertEquals(c, tc.decode(cd));
 	}
 
-	public void testSomethingBigger() throws Exception {
-		Collection<Date> dates=new ArrayList<Date>();
-		for(int i=0; i<1024; i++) {
-			dates.add(new Date());
-		}
-		CachedData d=tc.encode(dates);
-		assertEquals(dates, tc.decode(d));
-	}
-
-	public void testDate() throws Exception {
-		Date d=new Date();
-		CachedData cd=tc.encode(d);
-		assertEquals(d, tc.decode(cd));
-	}
-
-	public void testLong() throws Exception {
-		assertEquals(923l, tc.decode(tc.encode(923l)));
-	}
-
-	public void testInt() throws Exception {
-		assertEquals(923, tc.decode(tc.encode(923)));
-	}
-
-	public void testShort() throws Exception {
-		assertEquals((short)923, tc.decode(tc.encode((short)923)));
-	}
-
-	public void testChar() throws Exception {
-		assertEquals('c', tc.decode(tc.encode('c')));
-	}
-
-	public void testBoolean() throws Exception {
-		assertSame(Boolean.TRUE, tc.decode(tc.encode(true)));
-		assertSame(Boolean.FALSE, tc.decode(tc.encode(false)));
-	}
-
-	public void testByte() throws Exception {
-		assertEquals((byte)-127, tc.decode(tc.encode((byte)-127)));
-	}
-
 	public void testUnencodeable() throws Exception {
 		try {
 			CachedData cd=tc.encode(new Object());
@@ -176,102 +133,4 @@ public class WhalinTranscoderTest extends BaseMockCase {
 		assertNull(tc.decode(cd));
 	}
 
-	public void testCharacter() throws Exception {
-		assertEquals('c', tc.decode(tc.encode('c')));
-	}
-
-	public void testStringBuilder() throws Exception {
-		StringBuilder sb=new StringBuilder("test");
-		StringBuilder sb2=(StringBuilder)tc.decode(tc.encode(sb));
-		assertEquals(sb.toString(), sb2.toString());
-	}
-
-	public void testStringBuffer() throws Exception {
-		StringBuffer sb=new StringBuffer("test");
-		StringBuffer sb2=(StringBuffer)tc.decode(tc.encode(sb));
-		assertEquals(sb.toString(), sb2.toString());
-	}
-
-	private void assertFloat(float f) {
-		assertEquals(f, tc.decode(tc.encode(f)));
-	}
-
-	public void testFloat() throws Exception {
-		assertFloat(0f);
-		assertFloat(Float.MIN_VALUE);
-		assertFloat(Float.MAX_VALUE);
-		assertFloat(3.14f);
-		assertFloat(-3.14f);
-		assertFloat(Float.NaN);
-		assertFloat(Float.POSITIVE_INFINITY);
-		assertFloat(Float.NEGATIVE_INFINITY);
-	}
-
-	private void assertDouble(double d) {
-		assertEquals(d, tc.decode(tc.encode(d)));
-	}
-
-	public void testDouble() throws Exception {
-		assertDouble(0d);
-		assertDouble(Double.MIN_VALUE);
-		assertDouble(Double.MAX_VALUE);
-		assertDouble(3.14d);
-		assertDouble(-3.14d);
-		assertDouble(Double.NaN);
-		assertDouble(Double.POSITIVE_INFINITY);
-		assertDouble(Double.NEGATIVE_INFINITY);
-	}
-	private void assertLong(long l) {
-		byte[] encoded=tu.encodeLong(l);
-		long decoded=tu.decodeLong(encoded);
-		assertEquals(l, decoded);
-	}
-
-	/*
-	private void displayBytes(long l, byte[] encoded) {
-		System.out.print(l + " [");
-		for(byte b : encoded) {
-			System.out.print((b<0?256+b:b) + " ");
-		}
-		System.out.println("]");
-	}
-	*/
-
-	public void testLongEncoding() throws Exception {
-		assertLong(Long.MIN_VALUE);
-		assertLong(1);
-		assertLong(23852);
-		assertLong(0l);
-		assertLong(-1);
-		assertLong(-23835);
-		assertLong(Long.MAX_VALUE);
-	}
-
-	private void assertInt(int i) {
-		byte[] encoded=tu.encodeInt(i);
-		int decoded=tu.decodeInt(encoded);
-		assertEquals(i, decoded);
-	}
-
-	public void testIntEncoding() throws Exception {
-		assertInt(Integer.MIN_VALUE);
-		assertInt(83526);
-		assertInt(1);
-		assertInt(0);
-		assertInt(-1);
-		assertInt(-238526);
-		assertInt(Integer.MAX_VALUE);
-	}
-
-	public void testBooleanEncoding() throws Exception {
-		assertTrue(tu.decodeBoolean(tu.encodeBoolean(true)));
-		assertFalse(tu.decodeBoolean(tu.encodeBoolean(false)));
-	}
-
-	public void testByteArray() throws Exception {
-		byte[] a={'a', 'b', 'c'};
-		CachedData cd=tc.encode(a);
-		assertTrue(Arrays.equals(a, cd.getData()));
-		assertTrue(Arrays.equals(a, (byte[])tc.decode(cd)));
-	}
 }
