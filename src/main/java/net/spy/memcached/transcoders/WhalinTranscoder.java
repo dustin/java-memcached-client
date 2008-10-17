@@ -43,7 +43,7 @@ public class WhalinTranscoder extends BaseSerializingTranscoder
 			int f=d.getFlags() & ~COMPRESSED;
 			switch(f) {
 				case SPECIAL_BOOLEAN:
-					rv=Boolean.valueOf(tu.decodeBoolean(data));
+					rv=Boolean.valueOf(this.decodeBoolean(data));
 					break;
 				case SPECIAL_INT:
 					rv=new Integer(tu.decodeInt(data));
@@ -78,6 +78,9 @@ public class WhalinTranscoder extends BaseSerializingTranscoder
 				case SPECIAL_STRINGBUILDER:
 					rv=new StringBuilder(decodeString(data));
 					break;
+				case SPECIAL_CHARACTER:
+                                        rv = decodeCharacter(data);
+                                        break;
 				default:
 					getLogger().warn("Cannot handle data with flags %x", f);
 			}
@@ -107,7 +110,7 @@ public class WhalinTranscoder extends BaseSerializingTranscoder
 			b=tu.encodeInt((Short)o);
 			flags |= SPECIAL_SHORT;
 		} else if(o instanceof Boolean) {
-			b=tu.encodeBoolean((Boolean)o);
+			b=this.encodeBoolean((Boolean)o);
 			flags |= SPECIAL_BOOLEAN;
 		} else if(o instanceof Date) {
 			b=tu.encodeLong(((Date)o).getTime());
@@ -124,6 +127,9 @@ public class WhalinTranscoder extends BaseSerializingTranscoder
 		} else if(o instanceof byte[]) {
 			b=(byte[])o;
 			flags |= SPECIAL_BYTEARRAY;
+		} else if (o instanceof Character) {
+			b = tu.encodeInt((Character) o);
+			flags |= SPECIAL_CHARACTER;
 		} else {
 			b=serialize(o);
 			flags |= SERIALIZED;
@@ -143,6 +149,21 @@ public class WhalinTranscoder extends BaseSerializingTranscoder
 			}
 		}
 		return new CachedData(flags, b);
+	}
+
+	protected Character decodeCharacter(byte[] b){
+		return Character.valueOf((char)tu.decodeInt(b));
+	 }
+
+	public byte[] encodeBoolean(boolean b){
+		byte[] rv = new byte[1];
+		rv[0] = (byte) (b ? 1 : 0);
+		return rv;
+	}
+
+	public boolean decodeBoolean(byte[] in) {
+		assert in.length == 1 : "Wrong length for a boolean";
+		return in[0] == 1;
 	}
 
 
