@@ -22,10 +22,10 @@ public class DoLotsOfSets {
 			client.set("k" + i, 300, toStore);
 		}
 		long added=System.currentTimeMillis();
-		System.err.printf("Finished queuing in %sms\n", added-start);
+		System.err.printf("Finished queuing in %sms%n", added-start);
 		client.waitForQueues(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
 		long end=System.currentTimeMillis();
-		System.err.printf("Completed everything in %sms (%sms to flush)\n",
+		System.err.printf("Completed everything in %sms (%sms to flush)%n",
 				end-start, end-added);
 		Map<String, Object> m = client.getBulk("k1", "k2", "k3", "k4", "k5",
 				"k299999", "k299998", "k299997", "k299996");

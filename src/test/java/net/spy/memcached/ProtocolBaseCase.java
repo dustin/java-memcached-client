@@ -79,7 +79,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		// First, make sure it doesn't work for a non-existing value.
 		assertSame("Expected error CASing with no existing value.",
 			CASResponse.NOT_FOUND,
-			client.cas(key, 0x7fffffffffl, "bad value"));
+			client.cas(key, 0x7fffffffffL, "bad value"));
 
 		// OK, stick a value in here.
 		assertTrue(client.add(key, 5, "original value").get());
@@ -638,7 +638,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	}
 
 	private static class TestTranscoder implements Transcoder<String> {
-		private final int flags=238885206;
+		private static final int flags=238885206;
 
 		public String decode(CachedData d) {
 			assert d.getFlags() == flags

@@ -40,7 +40,7 @@ public abstract class BaseTranscoderCase extends BaseMockCase {
 	}
 
 	public void testLong() throws Exception {
-		assertEquals(923l, tc.decode(tc.encode(923l)));
+		assertEquals(923L, tc.decode(tc.encode(923L)));
 	}
 
 	public void testInt() throws Exception {
@@ -131,7 +131,7 @@ public abstract class BaseTranscoderCase extends BaseMockCase {
 		assertLong(Long.MIN_VALUE);
 		assertLong(1);
 		assertLong(23852);
-		assertLong(0l);
+		assertLong(0L);
 		assertLong(-1);
 		assertLong(-23835);
 		assertLong(Long.MAX_VALUE);
