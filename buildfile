@@ -5,7 +5,7 @@ VERSION_NUMBER = `git describe`.strip
 NEXT_VERSION = VERSION_NUMBER
 # Group identifier for your projects
 GROUP = "spy"
-COPYRIGHT = "2007  Dustin Sallings"
+COPYRIGHT = "2006-2008  Dustin Sallings"
 
 MAVEN_1_RELEASE = true
 RELEASE_REPO = 'http://bleu.west.spy.net/~dustin/repo'
