@@ -1100,6 +1100,44 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		return rv;
 	}
 
+	private Future<Long> asyncMutate(Mutator m, String key, int by, long def,
+			int exp) {
+		final CountDownLatch latch = new CountDownLatch(1);
+		final OperationFuture<Long> rv = new OperationFuture<Long>(
+				latch, operationTimeout);
+		Operation op = addOp(key, opFact.mutate(m, key, by, def, exp,
+				new OperationCallback() {
+			public void receivedStatus(OperationStatus s) {
+				rv.set(new Long(s.isSuccess() ? s.getMessage() : "-1"));
+			}
+			public void complete() {
+				latch.countDown();
+			}
+		}));
+		rv.setOperation(op);
+		return rv;
+	}
+
+	/**
+	 * Asychronous increment.
+	 *
+	 * @return a future with the incremented value, or -1 if the
+	 *         increment failed.
+	 */
+	public Future<Long> asyncIncr(String key, int by) {
+		return asyncMutate(Mutator.incr, key, by, 0, -1);
+	}
+
+	/**
+	 * Asynchronous decrement.
+	 *
+	 * @return a future with the decremented value, or -1 if the
+	 *         increment failed.
+	 */
+	public Future<Long> asyncDecr(String key, int by) {
+		return asyncMutate(Mutator.decr, key, by, 0, -1);
+	}
+
 	/**
 	 * Increment the given counter, returning the new value.
 	 *

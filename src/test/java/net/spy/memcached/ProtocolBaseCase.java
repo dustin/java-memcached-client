@@ -399,6 +399,32 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals(9, client.decr("mtest2", 1, 9));
 	}
 
+	public void testAsyncIncrement() throws Exception {
+		String k="async-incr";
+		client.set(k, 0, "5");
+		Future<Long> f = client.asyncIncr(k, 1);
+		assertEquals(6, (long)f.get());
+	}
+
+	public void testAsyncIncrementNonExistent() throws Exception {
+		String k="async-incr-non-existent";
+		Future<Long> f = client.asyncIncr(k, 1);
+		assertEquals(-1, (long)f.get());
+	}
+
+	public void testAsyncDecrement() throws Exception {
+		String k="async-decr";
+		client.set(k, 0, "5");
+		Future<Long> f = client.asyncDecr(k, 1);
+		assertEquals(4, (long)f.get());
+	}
+
+	public void testAsyncDecrementNonExistent() throws Exception {
+		String k="async-decr-non-existent";
+		Future<Long> f = client.asyncDecr(k, 1);
+		assertEquals(-1, (long)f.get());
+	}
+
 	public void testConcurrentMutation() throws Throwable {
 		int num=SyncThread.getDistinctResultCount(10, new Callable<Long>(){
 			public Long call() throws Exception {
