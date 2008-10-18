@@ -15,9 +15,13 @@ public abstract class BaseTranscoderCase extends BaseMockCase {
 
 	private Transcoder<Object> tc;
 
-	protected void setTranscoder(Transcoder<Object> t) throws Exception {
+	protected void setTranscoder(Transcoder<Object> t) {
 		assert t != null;
 		tc=t;
+	}
+
+	protected Transcoder<Object> getTranscoder() {
+		return tc;
 	}
 
 	public void testSomethingBigger() throws Exception {
