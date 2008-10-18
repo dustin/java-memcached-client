@@ -21,4 +21,10 @@ public class WhalinV1TranscoderTest extends BaseTranscoderCase {
 		}
 	}
 
+	@Override
+	protected int getStringFlags() {
+		// Flags are not used by this transcoder.
+		return 0;
+	}
+
 }
