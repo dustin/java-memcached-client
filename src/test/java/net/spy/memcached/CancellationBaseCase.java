@@ -84,10 +84,6 @@ public abstract class CancellationBaseCase extends ClientBaseCase {
 		tryTestSequence(client.delete("x"));
 	}
 
-	public void testDelayedDeleteCancellation() throws Exception {
-		tryTestSequence(client.delete("x", 5));
-	}
-
 	public void testflushCancellation() throws Exception {
 		tryTestSequence(client.flush());
 	}
