@@ -8,7 +8,6 @@ import net.spy.memcached.ops.StatsOperation;
 public class StatsOperationImpl extends OperationImpl
 	implements StatsOperation {
 
-	private static final int STAT_VALUE_OPAQUE = 0x746f7275;
 	private static final int CMD = 0x10;
 	private final String key;
 
@@ -20,13 +19,6 @@ public class StatsOperationImpl extends OperationImpl
 	@Override
 	public void initialize() {
 		prepareBuffer(key, 0, EMPTY_BYTES);
-	}
-
-	@Override
-	protected boolean opaqueIsValid() {
-		return responseOpaque == STAT_VALUE_OPAQUE
-			|| responseOpaque == 0 // XXX:  This is working around a server bug
-			|| super.opaqueIsValid();
 	}
 
 	@Override
