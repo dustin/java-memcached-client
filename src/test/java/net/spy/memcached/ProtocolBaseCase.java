@@ -41,6 +41,14 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertTrue(oneStat.containsKey("total_items"));
 	}
 
+	public void testGetStatsSlabs() throws Exception {
+		Map<SocketAddress, Map<String, String>> stats = client.getStats("slabs");
+		System.out.println("Stats:  " + stats);
+		assertEquals(1, stats.size());
+		Map<String, String> oneStat=stats.values().iterator().next();
+		assertTrue(oneStat.containsKey("1:chunk_size"));
+	}
+
 	public void testDelayedFlush() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
