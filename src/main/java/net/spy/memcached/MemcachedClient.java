@@ -987,7 +987,14 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		return getStats(null);
 	}
 
-	private Map<SocketAddress, Map<String, String>> getStats(final String arg) {
+	/**
+	 * Get a set of stats from all connections.
+	 *
+	 * @param arg which stats to get
+	 * @return a Map of the server SocketAddress to a map of String stat
+	 *         keys to String stat values.
+	 */
+	public Map<SocketAddress, Map<String, String>> getStats(final String arg) {
 		final Map<SocketAddress, Map<String, String>> rv
 			=new HashMap<SocketAddress, Map<String, String>>();
 

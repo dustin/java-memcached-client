@@ -104,6 +104,8 @@ public interface MemcachedClientIF {
 
     Map<SocketAddress, Map<String, String>> getStats();
 
+    Map<SocketAddress, Map<String, String>> getStats(String prefix);
+
     long incr(String key, int by) throws OperationTimeoutException;
 
     long decr(String key, int by) throws OperationTimeoutException;
