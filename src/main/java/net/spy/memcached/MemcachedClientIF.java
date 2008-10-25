@@ -126,6 +126,8 @@ public interface MemcachedClientIF {
 
     Future<Boolean> flush();
 
+    boolean slabReassign(int from, int to);
+
     void shutdown();
 
     boolean shutdown(long timeout, TimeUnit unit);

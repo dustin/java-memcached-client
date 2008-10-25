@@ -1278,6 +1278,23 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		return flush(-1);
 	}
 
+	/**
+	 * Move all of the items from one slab into another dynamically.
+	 *
+	 * <p><strong>Note:</strong> This is not an every day operation...
+	 *
+	 * <p>
+	 * Blows away all the items in a slab class and moves its slabs to
+	 * another class. This is only used by the "slabs reassign" command,
+	 * for manual tweaking of memory allocation. It's disabled by default
+	 * since it requires that all slabs be the same size (which can waste
+	 * space for chunk size mantissas of other than 2.0).
+	 * </p>
+	 */
+	public boolean slabReassign(int from, int to) {
+		throw new UnsupportedOperationException();
+	}
+
 	private void logRunException(Exception e) {
 		if(shuttingDown) {
 			// There are a couple types of errors that occur during the
