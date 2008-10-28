@@ -42,6 +42,9 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	}
 
 	public void testGetStatsSlabs() throws Exception {
+		// There needs to at least have been one value set or there may be
+		// no slabs to check.
+		client.set("slabinitializer", 0, "hi");
 		Map<SocketAddress, Map<String, String>> stats = client.getStats("slabs");
 		System.out.println("Stats:  " + stats);
 		assertEquals(1, stats.size());
