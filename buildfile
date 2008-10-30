@@ -10,7 +10,7 @@ COPYRIGHT = "2006-2008  Dustin Sallings"
 MAVEN_1_RELEASE = true
 RELEASE_REPO = 'http://bleu.west.spy.net/~dustin/repo'
 PROJECT_NAME = "memcached"
-RELEASED_VERSIONS=%W(#{VERSION_NUMBER} 1.4 1.3.1 1.2 1.1 1.0.44)
+RELEASED_VERSIONS=%W(#{VERSION_NUMBER} 2.1 1.4 1.3.1 1.2 1.1 1.0.44)
 
 # Specify Maven 2.0 remote repositories here, like this:
 repositories.remote << "http://www.ibiblio.org/maven2/"
