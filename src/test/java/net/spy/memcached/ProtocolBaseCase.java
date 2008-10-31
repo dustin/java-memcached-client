@@ -410,6 +410,15 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals(9, client.decr("mtest2", 1, 9));
 	}
 
+	public void testMutateWithDefaultAndExp() throws Exception {
+		assertEquals(3, client.incr("mtest", 1, 3, 1));
+		assertEquals(4, client.incr("mtest", 1, 3, 1));
+		assertEquals(3, client.decr("mtest", 1, 9, 1));
+		assertEquals(9, client.decr("mtest2", 1, 9, 1));
+		Thread.sleep(2000);
+		assertNull(client.get("mtest"));
+	}
+
 	public void testAsyncIncrement() throws Exception {
 		String k="async-incr";
 		client.set(k, 0, "5");
