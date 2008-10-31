@@ -1080,6 +1080,39 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		return mutate(Mutator.decr, key, by, 0, -1);
 	}
 
+	/**
+	 * Increment the given counter, returning the new value.
+	 *
+	 * @param key the key
+	 * @param by the amount to increment
+	 * @param def the default value (if the counter does not exist)
+	 * @param exp the expiration of this object
+	 * @return the new value, or -1 if we were unable to increment or add
+	 * @throws OperationTimeoutException if the global operation timeout is
+	 *         exceeded
+	 */
+	public long incr(String key, int by, long def, int exp)
+	    throws OperationTimeoutException {
+	    return mutateWithDefault(Mutator.incr, key, by, def, exp);
+	}
+
+	/**
+	 * Decrement the given counter, returning the new value.
+	 *
+	 * @param key the key
+	 * @param by the amount to decrement
+	 * @param def the default value (if the counter does not exist)
+	 * @param exp the expiration of this object
+	 * @return the new value, or -1 if we were unable to decrement or add
+	 * @throws OperationTimeoutException if the global operation timeout is
+	 *         exceeded
+	 */
+	public long decr(String key, int by, long def, int exp)
+	    throws OperationTimeoutException {
+	    return mutateWithDefault(Mutator.decr, key, by, def, exp);
+	}
+
+
 	private long mutateWithDefault(Mutator t, String key,
 			int by, long def, int exp) throws OperationTimeoutException {
 		long rv=mutate(t, key, by, def, exp);
