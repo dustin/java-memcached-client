@@ -47,53 +47,53 @@ import net.spy.memcached.transcoders.Transcoder;
  * <h2>Basic usage</h2>
  *
  * <pre>
- *  MemcachedClient c=new MemcachedClient(
- *      new InetSocketAddress("hostname", portNum));
+ *	MemcachedClient c=new MemcachedClient(
+ *		new InetSocketAddress("hostname", portNum));
  *
- *  // Store a value (async) for one hour
- *  c.set("someKey", 3600, someObject);
- *  // Retrieve a value.
- *  Object myObject=c.get("someKey");
- *  </pre>
+ *	// Store a value (async) for one hour
+ *	c.set("someKey", 3600, someObject);
+ *	// Retrieve a value.
+ *	Object myObject=c.get("someKey");
+ *	</pre>
  *
- *  <h2>Advanced Usage</h2>
+ *	<h2>Advanced Usage</h2>
  *
- *  <p>
- *   MemcachedClient may be processing a great deal of asynchronous messages or
- *   possibly dealing with an unreachable memcached, which may delay processing.
- *   If a memcached is disabled, for example, MemcachedConnection will continue
- *   to attempt to reconnect and replay pending operations until it comes back
- *   up.  To prevent this from causing your application to hang, you can use
- *   one of the asynchronous mechanisms to time out a request and cancel the
- *   operation to the server.
- *  </p>
+ *	<p>
+ *	 MemcachedClient may be processing a great deal of asynchronous messages or
+ *	 possibly dealing with an unreachable memcached, which may delay processing.
+ *	 If a memcached is disabled, for example, MemcachedConnection will continue
+ *	 to attempt to reconnect and replay pending operations until it comes back
+ *	 up.  To prevent this from causing your application to hang, you can use
+ *	 one of the asynchronous mechanisms to time out a request and cancel the
+ *	 operation to the server.
+ *	</p>
  *
- *  <pre>
- *  // Get a memcached client connected to several servers
- *  MemcachedClient c=new MemcachedClient(
- *      AddrUtil.getAddresses("server1:11211 server2:11211"));
+ *	<pre>
+ *	// Get a memcached client connected to several servers
+ *	MemcachedClient c=new MemcachedClient(
+ *		AddrUtil.getAddresses("server1:11211 server2:11211"));
  *
- *  // Try to get a value, for up to 5 seconds, and cancel if it doesn't return
- *  Object myObj=null;
- *  Future&lt;Object&gt; f=c.asyncGet("someKey");
- *  try {
- *      myObj=f.get(5, TimeUnit.SECONDS);
- *  } catch(TimeoutException e) {
- *      // Since we don't need this, go ahead and cancel the operation.  This
- *      // is not strictly necessary, but it'll save some work on the server.
- *      f.cancel();
- *      // Do other timeout related stuff
- *  }
+ *	// Try to get a value, for up to 5 seconds, and cancel if it doesn't return
+ *	Object myObj=null;
+ *	Future&lt;Object&gt; f=c.asyncGet("someKey");
+ *	try {
+ *		myObj=f.get(5, TimeUnit.SECONDS);
+ *	} catch(TimeoutException e) {
+ *		// Since we don't need this, go ahead and cancel the operation.  This
+ *		// is not strictly necessary, but it'll save some work on the server.
+ *		f.cancel();
+ *		// Do other timeout related stuff
+ *	}
  * </pre>
  */
 public final class MemcachedClient extends SpyThread implements MemcachedClientIF {
 
-    private volatile boolean running=true;
+	private volatile boolean running=true;
 	private volatile boolean shuttingDown=false;
 
-    private final long operationTimeout;
+	private final long operationTimeout;
 
-    private final MemcachedConnection conn;
+	private final MemcachedConnection conn;
 	final OperationFactory opFact;
 
 	Transcoder<Object> transcoder=null;
@@ -209,7 +209,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		return transcoder;
 	}
 
-    private void validateKey(String key) {
+	private void validateKey(String key) {
 		byte[] keyBytes=KeyUtil.getKeyBytes(key);
 		if(keyBytes.length > MAX_KEY_LENGTH) {
 			throw new IllegalArgumentException("Key is too long (maxlen = "
@@ -259,7 +259,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	}
 
 	private <T> Future<Boolean> asyncStore(StoreType storeType, String key,
-					       int exp, T value, Transcoder<T> tc) {
+						   int exp, T value, Transcoder<T> tc) {
 		CachedData co=tc.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch,
@@ -409,7 +409,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param value the new value
 	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a CASResponse
-     * @throws OperationTimeoutException if global operation timeout is exceeded
+	 * @throws OperationTimeoutException if global operation timeout is exceeded
 	 */
 	public <T> CASResponse cas(String key, long casId, T value,
 			Transcoder<T> tc) throws OperationTimeoutException {
@@ -433,7 +433,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param value the new value
 	 * @return a CASResponse
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public CASResponse cas(String key, long casId, Object value)
 		throws OperationTimeoutException {
@@ -715,7 +715,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param key the key to get
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return the result from the cache and CAS id (null if there is none)
-     * @throws OperationTimeoutException if global operation timeout is exceeded
+	 * @throws OperationTimeoutException if global operation timeout is exceeded
 	 */
 	public <T> CASValue<T> gets(String key, Transcoder<T> tc)
 		throws OperationTimeoutException {
@@ -737,7 +737,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param key the key to get
 	 * @return the result from the cache and CAS id (null if there is none)
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public CASValue<Object> gets(String key) throws OperationTimeoutException {
 		return gets(key, transcoder);
@@ -750,7 +750,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return the result from the cache (null if there is none)
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public <T> T get(String key, Transcoder<T> tc)
 		throws OperationTimeoutException {
@@ -772,7 +772,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param key the key to get
 	 * @return the result from the cache (null if there is none)
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public Object get(String key) throws OperationTimeoutException {
 		return get(key, transcoder);
@@ -894,7 +894,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a map of the values (for each value that exists)
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public <T> Map<String, T> getBulk(Collection<String> keys, Transcoder<T> tc)
 		throws OperationTimeoutException {
@@ -908,8 +908,8 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		} catch (TimeoutException e) {
 			throw new OperationTimeoutException(
 				"Timeout waiting for bulkvalues", e);
-        }
-    }
+		}
+	}
 
 	/**
 	 * Get the values for multiple keys from the cache.
@@ -917,7 +917,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public Map<String, Object> getBulk(Collection<String> keys)
 		throws OperationTimeoutException {
@@ -931,7 +931,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public <T> Map<String, T> getBulk(Transcoder<T> tc, String... keys)
 		throws OperationTimeoutException {
@@ -944,7 +944,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public Map<String, Object> getBulk(String... keys)
 		throws OperationTimeoutException {
@@ -992,7 +992,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 *
 	 * @param arg which stats to get
 	 * @return a Map of the server SocketAddress to a map of String stat
-	 *         keys to String stat values.
+	 *		   keys to String stat values.
 	 */
 	public Map<SocketAddress, Map<String, String>> getStats(final String arg) {
 		final Map<SocketAddress, Map<String, String>> rv
@@ -1011,7 +1011,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 					@SuppressWarnings("synthetic-access") // getLogger()
 					public void receivedStatus(OperationStatus status) {
 						if(!status.isSuccess()) {
-							getLogger().warn("Unsuccessful stat fetch:  %s",
+							getLogger().warn("Unsuccessful stat fetch:	%s",
 									status);
 						}
 					}
@@ -1061,7 +1061,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param by the amount to increment
 	 * @return the new value (-1 if the key doesn't exist)
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public long incr(String key, int by) throws OperationTimeoutException {
 		return mutate(Mutator.incr, key, by, 0, -1);
@@ -1074,7 +1074,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param by the value
 	 * @return the new value (-1 if the key doesn't exist)
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public long decr(String key, int by) throws OperationTimeoutException {
 		return mutate(Mutator.decr, key, by, 0, -1);
@@ -1089,11 +1089,11 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param exp the expiration of this object
 	 * @return the new value, or -1 if we were unable to increment or add
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public long incr(String key, int by, long def, int exp)
-	    throws OperationTimeoutException {
-	    return mutateWithDefault(Mutator.incr, key, by, def, exp);
+		throws OperationTimeoutException {
+		return mutateWithDefault(Mutator.incr, key, by, def, exp);
 	}
 
 	/**
@@ -1105,11 +1105,11 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param exp the expiration of this object
 	 * @return the new value, or -1 if we were unable to decrement or add
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public long decr(String key, int by, long def, int exp)
-	    throws OperationTimeoutException {
-	    return mutateWithDefault(Mutator.decr, key, by, def, exp);
+		throws OperationTimeoutException {
+		return mutateWithDefault(Mutator.decr, key, by, def, exp);
 	}
 
 
@@ -1162,7 +1162,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * Asychronous increment.
 	 *
 	 * @return a future with the incremented value, or -1 if the
-	 *         increment failed.
+	 *		   increment failed.
 	 */
 	public Future<Long> asyncIncr(String key, int by) {
 		return asyncMutate(Mutator.incr, key, by, 0, -1);
@@ -1172,7 +1172,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * Asynchronous decrement.
 	 *
 	 * @return a future with the decremented value, or -1 if the
-	 *         increment failed.
+	 *		   increment failed.
 	 */
 	public Future<Long> asyncDecr(String key, int by) {
 		return asyncMutate(Mutator.decr, key, by, 0, -1);
@@ -1186,7 +1186,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param def the default value (if the counter does not exist)
 	 * @return the new value, or -1 if we were unable to increment or add
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public long incr(String key, int by, long def)
 		throws OperationTimeoutException {
@@ -1201,7 +1201,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @param def the default value (if the counter does not exist)
 	 * @return the new value, or -1 if we were unable to decrement or add
 	 * @throws OperationTimeoutException if the global operation timeout is
-	 *         exceeded
+	 *		   exceeded
 	 */
 	public long decr(String key, int by, long def)
 		throws OperationTimeoutException {
