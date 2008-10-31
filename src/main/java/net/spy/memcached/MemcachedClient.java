@@ -1087,12 +1087,12 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		// manually here.
 		if(rv == -1) {
 			Future<Boolean> f=asyncStore(StoreType.add,
-					key, 0,	String.valueOf(def));
+					key, exp, String.valueOf(def));
 			try {
 				if(f.get(operationTimeout, TimeUnit.MILLISECONDS)) {
 					rv=def;
 				} else {
-					rv=mutate(t, key, by, 0, 0);
+					rv=mutate(t, key, by, 0, exp);
 					assert rv != -1 : "Failed to mutate or init value";
 				}
 			} catch (InterruptedException e) {
