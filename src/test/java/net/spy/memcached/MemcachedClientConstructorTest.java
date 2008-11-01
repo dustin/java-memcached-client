@@ -149,4 +149,19 @@ public class MemcachedClientConstructorTest extends TestCase {
 
 	}
 
+	public void testArraymodNodeLocatorAccessor() throws Exception {
+		client = new MemcachedClient(AddrUtil.getAddresses("127.0.0.1:11211"));
+		assertTrue(client.getNodeLocator() instanceof ArrayModNodeLocator);
+		assertTrue(client.getNodeLocator().getPrimary("x")
+			instanceof MemcachedNodeROImpl);
+	}
+
+	public void testKetamaNodeLocatorAccessor() throws Exception {
+		client = new MemcachedClient(new KetamaConnectionFactory(),
+			AddrUtil.getAddresses("127.0.0.1:11211"));
+		assertTrue(client.getNodeLocator() instanceof KetamaNodeLocator);
+		assertTrue(client.getNodeLocator().getPrimary("x")
+			instanceof MemcachedNodeROImpl);
+	}
+
 }

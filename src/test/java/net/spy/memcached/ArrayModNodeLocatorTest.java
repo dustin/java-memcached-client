@@ -22,6 +22,16 @@ public class ArrayModNodeLocatorTest extends AbstractNodeLocationCase {
 		assertSame(nodes[1], locator.getPrimary("y"));
 	}
 
+	public void testPrimaryClone() throws Exception {
+		setupNodes(4);
+		assertEquals(nodes[3].toString(),
+			locator.getReadonlyCopy().getPrimary("dustin").toString());
+		assertEquals(nodes[0].toString(),
+			locator.getReadonlyCopy().getPrimary("x").toString());
+		assertEquals(nodes[1].toString(),
+			locator.getReadonlyCopy().getPrimary("y").toString());
+	}
+
 	public void testAll() throws Exception {
 		setupNodes(4);
 		Collection<MemcachedNode> all = locator.getAll();
@@ -30,6 +40,12 @@ public class ArrayModNodeLocatorTest extends AbstractNodeLocationCase {
 		assertTrue(all.contains(nodes[1]));
 		assertTrue(all.contains(nodes[2]));
 		assertTrue(all.contains(nodes[3]));
+	}
+
+	public void testAllClone() throws Exception {
+		setupNodes(4);
+		Collection<MemcachedNode> all = locator.getReadonlyCopy().getAll();
+		assertEquals(4, all.size());
 	}
 
 	public void testSeq1() {

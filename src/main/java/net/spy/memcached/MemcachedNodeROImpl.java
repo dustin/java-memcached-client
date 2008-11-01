@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package net.spy.memcached;
 
@@ -18,6 +18,11 @@ class MemcachedNodeROImpl implements MemcachedNode {
 	public MemcachedNodeROImpl(MemcachedNode n) {
 		super();
 		root=n;
+	}
+
+	@Override
+	public String toString() {
+		return root.toString();
 	}
 
 	public void addOp(Operation op) {

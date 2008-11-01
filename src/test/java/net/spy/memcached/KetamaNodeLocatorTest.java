@@ -36,11 +36,28 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
 		}
 	}
 
+	public void testAllClone() throws Exception {
+		setupNodes(4);
+
+		Collection<MemcachedNode> all = locator.getReadonlyCopy().getAll();
+		assertEquals(4, all.size());
+	}
+
 	public void testLookups() {
 		setupNodes(4);
 		assertSame(nodes[0], locator.getPrimary("dustin"));
 		assertSame(nodes[2], locator.getPrimary("noelani"));
 		assertSame(nodes[0], locator.getPrimary("some other key"));
+	}
+
+	public void testLookupsClone() {
+		setupNodes(4);
+		assertSame(nodes[0].toString(),
+			locator.getReadonlyCopy().getPrimary("dustin").toString());
+		assertSame(nodes[2].toString(),
+			locator.getReadonlyCopy().getPrimary("noelani").toString());
+		assertSame(nodes[0].toString(),
+			locator.getReadonlyCopy().getPrimary("some other key").toString());
 	}
 
 	public void testContinuumWrapping() {
