@@ -28,6 +28,12 @@ public final class ArrayModNodeLocator implements NodeLocator {
 		hashAlg=alg;
 	}
 
+	private ArrayModNodeLocator(MemcachedNode[] n, HashAlgorithm alg) {
+		super();
+		nodes=n;
+		hashAlg=alg;
+	}
+
 	public Collection<MemcachedNode> getAll() {
 		return Arrays.asList(nodes);
 	}
@@ -40,6 +46,14 @@ public final class ArrayModNodeLocator implements NodeLocator {
 		return new NodeIterator(getServerForKey(k));
 	}
 
+	public NodeLocator getReadonlyCopy() {
+		MemcachedNode[] n=new MemcachedNode[nodes.length];
+		for(int i=0; i<nodes.length; i++) {
+			n[i] = new MemcachedNodeROImpl(nodes[i]);
+		}
+		return new ArrayModNodeLocator(n, hashAlg);
+	}
+
 	private int getServerForKey(String key) {
 		int rv=(int)(hashAlg.hash(key) % nodes.length);
 		assert rv >= 0 : "Returned negative key for key " + key;
@@ -47,7 +61,6 @@ public final class ArrayModNodeLocator implements NodeLocator {
 			: "Invalid server number " + rv + " for key " + key;
 		return rv;
 	}
-
 
 	class NodeIterator implements Iterator<MemcachedNode> {
 

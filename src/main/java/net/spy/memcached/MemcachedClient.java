@@ -192,6 +192,13 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	}
 
 	/**
+	 * Get a read-only wrapper around the node locator wrapping this instance.
+	 */
+	public NodeLocator getNodeLocator() {
+		return conn.getLocator().getReadonlyCopy();
+	}
+
+	/**
 	 * Set the default transcoder for managing the cache representations
 	 * of objects going in and out of the cache.
 	 */

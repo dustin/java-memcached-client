@@ -25,6 +25,8 @@ public interface MemcachedClientIF {
 
 	Transcoder<Object> getTranscoder();
 
+	NodeLocator getNodeLocator();
+
 	Future<Boolean> append(long cas, String key, Object val);
 
 	<T> Future<Boolean> append(long cas, String key, T val,

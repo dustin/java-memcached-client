@@ -29,4 +29,9 @@ public interface NodeLocator {
 	 * Get all memcached nodes.  This is useful for broadcasting messages.
 	 */
 	Collection<MemcachedNode> getAll();
+
+	/**
+	 * Create a read-only copy of this NodeLocator.
+	 */
+	NodeLocator getReadonlyCopy();
 }

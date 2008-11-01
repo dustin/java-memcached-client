@@ -1,8 +1,10 @@
 package net.spy.memcached;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -21,8 +23,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
 	static final int NUM_REPS = 160;
 
-	final SortedMap<Long, MemcachedNode> ketamaNodes=
-		new TreeMap<Long, MemcachedNode>();
+	final SortedMap<Long, MemcachedNode> ketamaNodes;
 	final Collection<MemcachedNode> allNodes;
 
 	final HashAlgorithm hashAlg;
@@ -31,6 +32,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 		super();
 		allNodes = nodes;
 		hashAlg = alg;
+		ketamaNodes=new TreeMap<Long, MemcachedNode>();
 
 		for(MemcachedNode node : nodes) {
 			// XXX:  Replace getSocketAddress() with something more precise
@@ -55,6 +57,14 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 			}
 		}
 		assert ketamaNodes.size() == NUM_REPS * nodes.size();
+	}
+
+	private KetamaNodeLocator(SortedMap<Long, MemcachedNode> smn,
+			Collection<MemcachedNode> an, HashAlgorithm alg) {
+		super();
+		ketamaNodes=smn;
+		allNodes=an;
+		hashAlg=alg;
 	}
 
 	public Collection<MemcachedNode> getAll() {
@@ -91,6 +101,23 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 		return new KetamaIterator(k, allNodes.size());
 	}
 
+	public NodeLocator getReadonlyCopy() {
+		SortedMap<Long, MemcachedNode> smn=new TreeMap<Long, MemcachedNode>(
+			ketamaNodes);
+		Collection<MemcachedNode> an=
+			new ArrayList<MemcachedNode>(allNodes.size());
+
+		// Rewrite the values a copy of the map.
+		for(Map.Entry<Long, MemcachedNode> me : smn.entrySet()) {
+			me.setValue(new MemcachedNodeROImpl(me.getValue()));
+		}
+		// Copy the allNodes collection.
+		for(MemcachedNode n : allNodes) {
+			an.add(new MemcachedNodeROImpl(n));
+		}
+
+		return new KetamaNodeLocator(smn, an, hashAlg);
+	}
 
 	class KetamaIterator implements Iterator<MemcachedNode> {
 
