@@ -434,7 +434,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 *         is too full to accept any more requests
 	 */
 	public <T> CASResponse cas(String key, long casId, T value,
-			Transcoder<T> tc) throws OperationTimeoutException {
+			Transcoder<T> tc) {
 		try {
 			return asyncCAS(key, casId, value, tc).get(operationTimeout,
 					TimeUnit.MILLISECONDS);
@@ -459,8 +459,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public CASResponse cas(String key, long casId, Object value)
-		throws OperationTimeoutException {
+	public CASResponse cas(String key, long casId, Object value) {
 		return cas(key, casId, value, transcoder);
 	}
 
@@ -763,8 +762,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public <T> CASValue<T> gets(String key, Transcoder<T> tc)
-		throws OperationTimeoutException {
+	public <T> CASValue<T> gets(String key, Transcoder<T> tc) {
 		try {
 			return asyncGets(key, tc).get(
 				operationTimeout, TimeUnit.MILLISECONDS);
@@ -787,7 +785,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public CASValue<Object> gets(String key) throws OperationTimeoutException {
+	public CASValue<Object> gets(String key) {
 		return gets(key, transcoder);
 	}
 
@@ -802,8 +800,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public <T> T get(String key, Transcoder<T> tc)
-		throws OperationTimeoutException {
+	public <T> T get(String key, Transcoder<T> tc) {
 		try {
 			return asyncGet(key, tc).get(
 				operationTimeout, TimeUnit.MILLISECONDS);
@@ -826,7 +823,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public Object get(String key) throws OperationTimeoutException {
+	public Object get(String key) {
 		return get(key, transcoder);
 	}
 
@@ -958,8 +955,8 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public <T> Map<String, T> getBulk(Collection<String> keys, Transcoder<T> tc)
-		throws OperationTimeoutException {
+	public <T> Map<String, T> getBulk(Collection<String> keys,
+			Transcoder<T> tc) {
 		try {
 			return asyncGetBulk(keys, tc).get(
 				operationTimeout, TimeUnit.MILLISECONDS);
@@ -983,8 +980,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public Map<String, Object> getBulk(Collection<String> keys)
-		throws OperationTimeoutException {
+	public Map<String, Object> getBulk(Collection<String> keys) {
 		return getBulk(keys, transcoder);
 	}
 
@@ -999,8 +995,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public <T> Map<String, T> getBulk(Transcoder<T> tc, String... keys)
-		throws OperationTimeoutException {
+	public <T> Map<String, T> getBulk(Transcoder<T> tc, String... keys) {
 		return getBulk(Arrays.asList(keys), tc);
 	}
 
@@ -1014,8 +1009,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public Map<String, Object> getBulk(String... keys)
-		throws OperationTimeoutException {
+	public Map<String, Object> getBulk(String... keys) {
 		return getBulk(Arrays.asList(keys), transcoder);
 	}
 
@@ -1101,8 +1095,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		return rv;
 	}
 
-	private long mutate(Mutator m, String key, int by, long def, int exp)
-		throws OperationTimeoutException {
+	private long mutate(Mutator m, String key, int by, long def, int exp) {
 		final AtomicLong rv=new AtomicLong();
 		final CountDownLatch latch=new CountDownLatch(1);
 		addOp(key, opFact.mutate(m, key, by, def, exp, new OperationCallback() {
@@ -1139,7 +1132,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public long incr(String key, int by) throws OperationTimeoutException {
+	public long incr(String key, int by) {
 		return mutate(Mutator.incr, key, by, 0, -1);
 	}
 
@@ -1154,7 +1147,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public long decr(String key, int by) throws OperationTimeoutException {
+	public long decr(String key, int by) {
 		return mutate(Mutator.decr, key, by, 0, -1);
 	}
 
@@ -1171,8 +1164,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public long incr(String key, int by, long def, int exp)
-		throws OperationTimeoutException {
+	public long incr(String key, int by, long def, int exp) {
 		return mutateWithDefault(Mutator.incr, key, by, def, exp);
 	}
 
@@ -1189,14 +1181,13 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public long decr(String key, int by, long def, int exp)
-		throws OperationTimeoutException {
+	public long decr(String key, int by, long def, int exp) {
 		return mutateWithDefault(Mutator.decr, key, by, def, exp);
 	}
 
 
 	private long mutateWithDefault(Mutator t, String key,
-			int by, long def, int exp) throws OperationTimeoutException {
+			int by, long def, int exp) {
 		long rv=mutate(t, key, by, def, exp);
 		// The ascii protocol doesn't support defaults, so I added them
 		// manually here.
@@ -1276,8 +1267,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public long incr(String key, int by, long def)
-		throws OperationTimeoutException {
+	public long incr(String key, int by, long def) {
 		return mutateWithDefault(Mutator.incr, key, by, def, 0);
 	}
 
@@ -1293,8 +1283,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public long decr(String key, int by, long def)
-		throws OperationTimeoutException {
+	public long decr(String key, int by, long def) {
 		return mutateWithDefault(Mutator.decr, key, by, def, 0);
 	}
 
