@@ -137,7 +137,6 @@ public final class MemcachedConnection extends SpyObject {
 	/**
 	 * MemcachedClient calls this method to handle IO over the connections.
 	 */
-	@SuppressWarnings("unchecked")
 	public void handleIO() throws IOException {
 		if(shutDown) {
 			throw new IOException("No IO while shut down");
