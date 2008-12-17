@@ -66,9 +66,9 @@ public final class AsciiOperationFactory implements OperationFactory {
 		return new VersionOperationImpl(cb);
 	}
 
-	public CASOperation cas(String key, long casId, int flags,
+	public CASOperation cas(String key, long casId, int flags, int exp,
 			byte[] data, OperationCallback cb) {
-		return new CASOperationImpl(key, casId, flags, data, cb);
+		return new CASOperationImpl(key, casId, flags, exp, data, cb);
 	}
 
 	public ConcatenationOperation cat(ConcatenationType catType,

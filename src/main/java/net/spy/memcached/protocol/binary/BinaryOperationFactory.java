@@ -69,9 +69,9 @@ public class BinaryOperationFactory implements OperationFactory {
 		return new NoopOperationImpl(cb);
 	}
 
-	public CASOperation cas(String key, long casId, int flags,
+	public CASOperation cas(String key, long casId, int flags, int exp,
 			byte[] data, OperationCallback cb) {
-		return new StoreOperationImpl(StoreType.set, key, flags, 0, data,
+		return new StoreOperationImpl(StoreType.set, key, flags, exp, data,
 				casId, cb);
 	}
 

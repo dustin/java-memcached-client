@@ -370,23 +370,40 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	}
 
 	/**
+     * Asynchronous CAS operation.
+     *
+     * @param key the key
+     * @param casId the CAS identifier (from a gets operation)
+     * @param value the new value
+     * @param tc the transcoder to serialize and unserialize the value
+     * @return a future that will indicate the status of the CAS
+     * @throws IllegalStateException in the rare circumstance where queue
+     *         is too full to accept any more requests
+     */
+    public <T> Future<CASResponse> asyncCAS(String key, long casId, T value,
+            Transcoder<T> tc) {
+        return asyncCAS(key, casId, 0, value, tc);
+	}
+
+	/**
 	 * Asynchronous CAS operation.
 	 *
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
+	 * @param exp the expiration of this object
 	 * @param value the new value
 	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a future that will indicate the status of the CAS
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public <T> Future<CASResponse> asyncCAS(String key, long casId, T value,
+	public <T> Future<CASResponse> asyncCAS(String key, long casId, int exp, T value,
 			Transcoder<T> tc) {
 		CachedData co=tc.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASResponse> rv=new OperationFuture<CASResponse>(
 				latch, operationTimeout);
-		Operation op=opFact.cas(key, casId, co.getFlags(),
+		Operation op=opFact.cas(key, casId, co.getFlags(), exp,
 				co.getData(), new OperationCallback() {
 					public void receivedStatus(OperationStatus val) {
 						if(val instanceof CASOperationStatus) {
@@ -421,10 +438,29 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	}
 
 	/**
+     * Perform a synchronous CAS operation.
+     *
+     * @param key the key
+     * @param casId the CAS identifier (from a gets operation)
+     * @param value the new value
+     * @param tc the transcoder to serialize and unserialize the value
+     * @return a CASResponse
+     * @throws OperationTimeoutException if global operation timeout is
+     *         exceeded
+     * @throws IllegalStateException in the rare circumstance where queue
+     *         is too full to accept any more requests
+     */
+    public <T> CASResponse cas(String key, long casId, T value,
+            Transcoder<T> tc) {
+        return cas(key, casId, 0, value, tc);
+    }
+
+	/**
 	 * Perform a synchronous CAS operation.
 	 *
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
+	 * @param exp the expiration of this object
 	 * @param value the new value
 	 * @param tc the transcoder to serialize and unserialize the value
 	 * @return a CASResponse
@@ -433,10 +469,10 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public <T> CASResponse cas(String key, long casId, T value,
+	public <T> CASResponse cas(String key, long casId, int exp, T value,
 			Transcoder<T> tc) {
 		try {
-			return asyncCAS(key, casId, value, tc).get(operationTimeout,
+			return asyncCAS(key, casId, exp, value, tc).get(operationTimeout,
 					TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			throw new RuntimeException("Interrupted waiting for value", e);

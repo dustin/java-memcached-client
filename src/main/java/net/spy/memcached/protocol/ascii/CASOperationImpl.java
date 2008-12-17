@@ -25,14 +25,16 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
 	private final String key;
 	private final long casValue;
 	private final int flags;
+	private final int exp;
 	private final byte[] data;
 
-	public CASOperationImpl(String k, long c, int f,
+	public CASOperationImpl(String k, long c, int f, int e,
 			byte[] d, OperationCallback cb) {
 		super(cb);
 		key=k;
 		casValue=c;
 		flags=f;
+		exp=e;
 		data=d;
 	}
 
@@ -49,7 +51,7 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
 	public void initialize() {
 		ByteBuffer bb=ByteBuffer.allocate(data.length
 				+ KeyUtil.getKeyBytes(key).length + OVERHEAD);
-		setArguments(bb, "cas", key, flags, 0, data.length, casValue);
+		setArguments(bb, "cas", key, flags, exp, data.length, casValue);
 		assert bb.remaining() >= data.length + 2
 			: "Not enough room in buffer, need another "
 				+ (2 + data.length - bb.remaining());

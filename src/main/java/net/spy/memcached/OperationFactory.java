@@ -138,7 +138,7 @@ public interface OperationFactory {
 	 * @param cb the status callback
 	 * @return the new store operation
 	 */
-	CASOperation cas(String key, long casId, int flags, byte[] data,
+	CASOperation cas(String key, long casId, int flags, int exp, byte[] data,
 			OperationCallback cb);
 
 	/**
