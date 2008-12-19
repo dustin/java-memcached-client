@@ -492,6 +492,36 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 	}
 
+	public void testSyncGetTimeouts() throws Exception {
+		final String key="timeoutTestKey";
+		final String value="timeoutTestValue";
+		// Shutting down the default client to get one with a short timeout.
+		assertTrue("Couldn't shut down within five seconds",
+			client.shutdown(5, TimeUnit.SECONDS));
+
+		initClient(new DefaultConnectionFactory() {
+			@Override
+			public long getOperationTimeout() {
+				return 1;
+			}
+		});
+
+		client.set(key, 0, value);
+		try {
+			for(int i=0; i<1000; i++) {
+				client.get(key);
+			}
+			throw new Exception("Didn't get a timeout.");
+		} catch(OperationTimeoutException e) {
+			System.out.println("Got a timeout.");
+		}
+		if(value.equals(client.asyncGet(key).get(1, TimeUnit.SECONDS))) {
+			System.out.println("Got the right value.");
+		} else {
+			throw new Exception("Didn't get the expected value.");
+		}
+	}
+
 	public void xtestGracefulShutdownTooSlow() throws Exception {
 		for(int i=0; i<10000; i++) {
 			client.set("t" + i, 10, i);
