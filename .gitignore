@@ -3,3 +3,4 @@ cobertura.ser
 target/
 reports/
 junit*
+*.iml
