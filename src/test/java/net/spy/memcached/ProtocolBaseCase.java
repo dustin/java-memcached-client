@@ -508,7 +508,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
 		client.set(key, 0, value);
 		try {
-			for(int i=0; i<1000; i++) {
+			for(int i=0; i<1000000; i++) {
 				client.get(key);
 			}
 			throw new Exception("Didn't get a timeout.");
