@@ -37,18 +37,6 @@ public interface MemcachedClientWithTranscoder extends MemcachedClient {
 	<T> Future<Boolean> prepend(long cas, String key, T val, Transcoder<T> tc);
 
 	/**
-	 * Asynchronous CAS operation.
-	 *
-	 * @param key the key
-	 * @param casId the CAS identifier (from a gets operation)
-	 * @param value the new value
-	 * @param tc the transcoder to serialize and unserialize the value
-	 * @return a future that will indicate the status of the CAS
-	 */
-	<T> Future<CASResponse> asyncCAS(String key, long casId, T value,
-			Transcoder<T> tc);
-
-	/**
 	 * Perform a synchronous CAS operation.
 	 *
 	 * @param key the key
@@ -60,6 +48,23 @@ public interface MemcachedClientWithTranscoder extends MemcachedClient {
 	 */
 	<T> CASResponse cas(String key, long casId, T value, Transcoder<T> tc)
 			throws OperationTimeoutException;
+
+	/**
+	 * Perform a synchronous CAS operation.
+	 *
+	 * @param key the key
+	 * @param casId the CAS identifier (from a gets operation)
+	 * @param exp the expiration of this object
+	 * @param value the new value
+	 * @param tc the transcoder to serialize and unserialize the value
+	 * @return a CASResponse
+	 * @throws OperationTimeoutException if global operation timeout is
+	 *         exceeded
+	 * @throws IllegalStateException in the rare circumstance where queue
+	 *         is too full to accept any more requests
+	 */
+	<T> CASResponse cas(String key, long casId, int exp, T value,
+			Transcoder<T> tc);
 
 	/**
 	 * Add an object to the cache iff it does not exist already.
@@ -163,6 +168,35 @@ public interface MemcachedClientWithTranscoder extends MemcachedClient {
 	 * @return a future that will hold the return value of the fetch
 	 */
 	<T> Future<CASValue<T>> asyncGets(final String key, final Transcoder<T> tc);
+
+	/**
+     * Asynchronous CAS operation.
+     *
+     * @param key the key
+     * @param casId the CAS identifier (from a gets operation)
+     * @param value the new value
+     * @param tc the transcoder to serialize and unserialize the value
+     * @return a future that will indicate the status of the CAS
+     * @throws IllegalStateException in the rare circumstance where queue
+     *         is too full to accept any more requests
+     */
+	<T> Future<CASResponse> asyncCAS(String key, long casId, T value,
+					Transcoder<T> tc);
+
+	/**
+	 * Asynchronous CAS operation.
+	 *
+	 * @param key the key
+	 * @param casId the CAS identifier (from a gets operation)
+	 * @param exp the expiration of this object
+	 * @param value the new value
+	 * @param tc the transcoder to serialize and unserialize the value
+	 * @return a future that will indicate the status of the CAS
+	 * @throws IllegalStateException in the rare circumstance where queue
+	 *         is too full to accept any more requests
+	 */
+	<T> Future<CASResponse> asyncCAS(String key, long casId, int exp,
+			T value, Transcoder<T> tc);
 
 	/**
 	 * Gets (with CAS support) with a single key.

@@ -168,93 +168,47 @@ public class MemcachedClientImpl extends SpyObject
 			KeyUtil.getKeyBytes(key), co, operationTimeout);
 	}
 
-	/**
-	 * Append to an existing value in the cache.
-	 *
-	 * @param cas cas identifier (ignored in the ascii protocol)
-	 * @param key the key to whose value will be appended
-	 * @param val the value to append
-	 * @return a future indicating success
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#append(long, java.lang.String, java.lang.Object)
 	 */
 	public Future<Boolean> append(long cas, String key, Object val) {
 		return append(cas, key, val, transcoder);
 	}
 
-	/**
-	 * Append to an existing value in the cache.
-	 *
-	 * @param cas cas identifier (ignored in the ascii protocol)
-	 * @param key the key to whose value will be appended
-	 * @param val the value to append
-	 * @param tc the transcoder to serialize and unserialize the value
-	 * @return a future indicating success
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#append(long, java.lang.String, java.lang.Object, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> Future<Boolean> append(long cas, String key, T val,
 			Transcoder<T> tc) {
 		return asyncCat(ConcatenationType.append, cas, key, val, tc);
 	}
 
-	/**
-	 * Prepend to an existing value in the cache.
-	 *
-	 * @param cas cas identifier (ignored in the ascii protocol)
-	 * @param key the key to whose value will be prepended
-	 * @param val the value to append
-	 * @return a future indicating success
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#prepend(long, java.lang.String, java.lang.Object)
 	 */
 	public Future<Boolean> prepend(long cas, String key, Object val) {
 		return prepend(cas, key, val, transcoder);
 	}
 
-	/**
-	 * Prepend to an existing value in the cache.
-	 *
-	 * @param cas cas identifier (ignored in the ascii protocol)
-	 * @param key the key to whose value will be prepended
-	 * @param val the value to append
-	 * @param tc the transcoder to serialize and unserialize the value
-	 * @return a future indicating success
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#prepend(long, java.lang.String, java.lang.Object, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> Future<Boolean> prepend(long cas, String key, T val,
 			Transcoder<T> tc) {
 		return asyncCat(ConcatenationType.prepend, cas, key, val, tc);
 	}
 
-	/**
-     * Asynchronous CAS operation.
-     *
-     * @param key the key
-     * @param casId the CAS identifier (from a gets operation)
-     * @param value the new value
-     * @param tc the transcoder to serialize and unserialize the value
-     * @return a future that will indicate the status of the CAS
-     * @throws IllegalStateException in the rare circumstance where queue
-     *         is too full to accept any more requests
+    /* (non-Javadoc)
+     * @see net.spy.memcached.MemcachedClientWithTranscoder#asyncCAS(java.lang.String, long, java.lang.Object, net.spy.memcached.transcoders.Transcoder)
      */
     public <T> Future<CASResponse> asyncCAS(String key, long casId, T value,
             Transcoder<T> tc) {
         return asyncCAS(key, casId, 0, value, tc);
 	}
 
-	/**
-	 * Asynchronous CAS operation.
-	 *
-	 * @param key the key
-	 * @param casId the CAS identifier (from a gets operation)
-	 * @param exp the expiration of this object
-	 * @param value the new value
-	 * @param tc the transcoder to serialize and unserialize the value
-	 * @return a future that will indicate the status of the CAS
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#asyncCAS(java.lang.String, long, int, java.lang.Object, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> Future<CASResponse> asyncCAS(String key, long casId, int exp, T value,
 			Transcoder<T> tc) {
@@ -262,51 +216,23 @@ public class MemcachedClientImpl extends SpyObject
 				tc.encode(value), operationTimeout);
 	}
 
-	/**
-	 * Asynchronous CAS operation using the default transcoder.
-	 *
-	 * @param key the key
-	 * @param casId the CAS identifier (from a gets operation)
-	 * @param value the new value
-	 * @return a future that will indicate the status of the CAS
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#asyncCAS(java.lang.String, long, java.lang.Object)
 	 */
 	public Future<CASResponse> asyncCAS(String key, long casId, Object value) {
 		return asyncCAS(key, casId, value, transcoder);
 	}
 
-	/**
-     * Perform a synchronous CAS operation.
-     *
-     * @param key the key
-     * @param casId the CAS identifier (from a gets operation)
-     * @param value the new value
-     * @param tc the transcoder to serialize and unserialize the value
-     * @return a CASResponse
-     * @throws OperationTimeoutException if global operation timeout is
-     *         exceeded
-     * @throws IllegalStateException in the rare circumstance where queue
-     *         is too full to accept any more requests
+    /* (non-Javadoc)
+     * @see net.spy.memcached.MemcachedClientWithTranscoder#cas(java.lang.String, long, java.lang.Object, net.spy.memcached.transcoders.Transcoder)
      */
     public <T> CASResponse cas(String key, long casId, T value,
             Transcoder<T> tc) {
         return cas(key, casId, 0, value, tc);
     }
 
-	/**
-	 * Perform a synchronous CAS operation.
-	 *
-	 * @param key the key
-	 * @param casId the CAS identifier (from a gets operation)
-	 * @param exp the expiration of this object
-	 * @param value the new value
-	 * @param tc the transcoder to serialize and unserialize the value
-	 * @return a CASResponse
-	 * @throws OperationTimeoutException if global operation timeout is
-	 *         exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#cas(java.lang.String, long, int, java.lang.Object, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> CASResponse cas(String key, long casId, int exp, T value,
 			Transcoder<T> tc) {
@@ -322,279 +248,87 @@ public class MemcachedClientImpl extends SpyObject
 		}
 	}
 
-	/**
-	 * Perform a synchronous CAS operation with the default transcoder.
-	 *
-	 * @param key the key
-	 * @param casId the CAS identifier (from a gets operation)
-	 * @param value the new value
-	 * @return a CASResponse
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#cas(java.lang.String, long, java.lang.Object)
 	 */
 	public CASResponse cas(String key, long casId, Object value) {
 		return cas(key, casId, value, transcoder);
 	}
 
-	/**
-	 * Add an object to the cache iff it does not exist already.
-	 *
-	 * <p>
-	 * The <code>exp</code> value is passed along to memcached exactly as
-	 * given, and will be processed per the memcached protocol specification:
-	 * </p>
-	 *
-	 * <blockquote>
-	 * <p>
-	 * The actual value sent may either be
-	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
-	 * value), or a number of seconds starting from current time. In the
-	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
-	 * of seconds in 30 days); if the number sent by a client is larger than
-	 * that, the server will consider it to be real Unix time value rather
-	 * than an offset from current time.
-	 * </p>
-	 * </blockquote>
-	 *
-	 * @param key the key under which this object should be added.
-	 * @param exp the expiration of this object
-	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize the value
-	 * @return a future representing the processing of this operation
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#add(java.lang.String, int, java.lang.Object, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> Future<Boolean> add(String key, int exp, T o, Transcoder<T> tc) {
 		return asyncStore(StoreType.add, key, exp, o, tc);
 	}
 
-	/**
-	 * Add an object to the cache (using the default transcoder)
-	 * iff it does not exist already.
-	 *
-	 * <p>
-	 * The <code>exp</code> value is passed along to memcached exactly as
-	 * given, and will be processed per the memcached protocol specification:
-	 * </p>
-	 *
-	 * <blockquote>
-	 * <p>
-	 * The actual value sent may either be
-	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
-	 * value), or a number of seconds starting from current time. In the
-	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
-	 * of seconds in 30 days); if the number sent by a client is larger than
-	 * that, the server will consider it to be real Unix time value rather
-	 * than an offset from current time.
-	 * </p>
-	 * </blockquote>
-	 *
-	 * @param key the key under which this object should be added.
-	 * @param exp the expiration of this object
-	 * @param o the object to store
-	 * @return a future representing the processing of this operation
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#add(java.lang.String, int, java.lang.Object)
 	 */
 	public Future<Boolean> add(String key, int exp, Object o) {
 		return asyncStore(StoreType.add, key, exp, o, transcoder);
 	}
 
-	/**
-	 * Set an object in the cache regardless of any existing value.
-	 *
-	 * <p>
-	 * The <code>exp</code> value is passed along to memcached exactly as
-	 * given, and will be processed per the memcached protocol specification:
-	 * </p>
-	 *
-	 * <blockquote>
-	 * <p>
-	 * The actual value sent may either be
-	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
-	 * value), or a number of seconds starting from current time. In the
-	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
-	 * of seconds in 30 days); if the number sent by a client is larger than
-	 * that, the server will consider it to be real Unix time value rather
-	 * than an offset from current time.
-	 * </p>
-	 * </blockquote>
-	 *
-	 * @param key the key under which this object should be added.
-	 * @param exp the expiration of this object
-	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize the value
-	 * @return a future representing the processing of this operation
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#set(java.lang.String, int, java.lang.Object, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> Future<Boolean> set(String key, int exp, T o, Transcoder<T> tc) {
 		return asyncStore(StoreType.set, key, exp, o, tc);
 	}
 
-	/**
-	 * Set an object in the cache (using the default transcoder)
-	 * regardless of any existing value.
-	 *
-	 * <p>
-	 * The <code>exp</code> value is passed along to memcached exactly as
-	 * given, and will be processed per the memcached protocol specification:
-	 * </p>
-	 *
-	 * <blockquote>
-	 * <p>
-	 * The actual value sent may either be
-	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
-	 * value), or a number of seconds starting from current time. In the
-	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
-	 * of seconds in 30 days); if the number sent by a client is larger than
-	 * that, the server will consider it to be real Unix time value rather
-	 * than an offset from current time.
-	 * </p>
-	 * </blockquote>
-	 *
-	 * @param key the key under which this object should be added.
-	 * @param exp the expiration of this object
-	 * @param o the object to store
-	 * @return a future representing the processing of this operation
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#set(java.lang.String, int, java.lang.Object)
 	 */
 	public Future<Boolean> set(String key, int exp, Object o) {
 		return asyncStore(StoreType.set, key, exp, o, transcoder);
 	}
 
-	/**
-	 * Replace an object with the given value iff there is already a value
-	 * for the given key.
-	 *
-	 * <p>
-	 * The <code>exp</code> value is passed along to memcached exactly as
-	 * given, and will be processed per the memcached protocol specification:
-	 * </p>
-	 *
-	 * <blockquote>
-	 * <p>
-	 * The actual value sent may either be
-	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
-	 * value), or a number of seconds starting from current time. In the
-	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
-	 * of seconds in 30 days); if the number sent by a client is larger than
-	 * that, the server will consider it to be real Unix time value rather
-	 * than an offset from current time.
-	 * </p>
-	 * </blockquote>
-	 *
-	 * @param key the key under which this object should be added.
-	 * @param exp the expiration of this object
-	 * @param o the object to store
-	 * @param tc the transcoder to serialize and unserialize the value
-	 * @return a future representing the processing of this operation
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#replace(java.lang.String, int, java.lang.Object, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> Future<Boolean> replace(String key, int exp, T o,
 		Transcoder<T> tc) {
 		return asyncStore(StoreType.replace, key, exp, o, tc);
 	}
 
-	/**
-	 * Replace an object with the given value (transcoded with the default
-	 * transcoder) iff there is already a value for the given key.
-	 *
-	 * <p>
-	 * The <code>exp</code> value is passed along to memcached exactly as
-	 * given, and will be processed per the memcached protocol specification:
-	 * </p>
-	 *
-	 * <blockquote>
-	 * <p>
-	 * The actual value sent may either be
-	 * Unix time (number of seconds since January 1, 1970, as a 32-bit
-	 * value), or a number of seconds starting from current time. In the
-	 * latter case, this number of seconds may not exceed 60*60*24*30 (number
-	 * of seconds in 30 days); if the number sent by a client is larger than
-	 * that, the server will consider it to be real Unix time value rather
-	 * than an offset from current time.
-	 * </p>
-	 * </blockquote>
-	 *
-	 * @param key the key under which this object should be added.
-	 * @param exp the expiration of this object
-	 * @param o the object to store
-	 * @return a future representing the processing of this operation
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#replace(java.lang.String, int, java.lang.Object)
 	 */
 	public Future<Boolean> replace(String key, int exp, Object o) {
 		return asyncStore(StoreType.replace, key, exp, o, transcoder);
 	}
 
-	/**
-	 * Get the given key asynchronously.
-	 *
-	 * @param key the key to fetch
-	 * @param tc the transcoder to serialize and unserialize value
-	 * @return a future that will hold the return value of the fetch
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#asyncGet(java.lang.String, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> Future<T> asyncGet(final String key, final Transcoder<T> tc) {
 		return conn.asyncGet(KeyUtil.getKeyBytes(key), tc, operationTimeout);
 	}
 
-	/**
-	 * Get the given key asynchronously and decode with the default
-	 * transcoder.
-	 *
-	 * @param key the key to fetch
-	 * @return a future that will hold the return value of the fetch
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#asyncGet(java.lang.String)
 	 */
 	public Future<Object> asyncGet(final String key) {
 		return asyncGet(key, transcoder);
 	}
 
-	/**
-	 * Gets (with CAS support) the given key asynchronously.
-	 *
-	 * @param key the key to fetch
-	 * @param tc the transcoder to serialize and unserialize value
-	 * @return a future that will hold the return value of the fetch
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#asyncGets(java.lang.String, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> Future<CASValue<T>> asyncGets(final String key,
 			final Transcoder<T> tc) {
 		return conn.asyncGets(KeyUtil.getKeyBytes(key), tc, operationTimeout);
 	}
 
-	/**
-	 * Gets (with CAS support) the given key asynchronously and decode using
-	 * the default transcoder.
-	 *
-	 * @param key the key to fetch
-	 * @return a future that will hold the return value of the fetch
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#asyncGets(java.lang.String)
 	 */
 	public Future<CASValue<Object>> asyncGets(final String key) {
 		return asyncGets(key, transcoder);
 	}
 
-	/**
-	 * Gets (with CAS support) with a single key.
-	 *
-	 * @param key the key to get
-	 * @param tc the transcoder to serialize and unserialize value
-	 * @return the result from the cache and CAS id (null if there is none)
-	 * @throws OperationTimeoutException if global operation timeout is
-	 * 		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#gets(java.lang.String, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> CASValue<T> gets(String key, Transcoder<T> tc) {
 		try {
@@ -609,30 +343,15 @@ public class MemcachedClientImpl extends SpyObject
 		}
 	}
 
-	/**
-	 * Gets (with CAS support) with a single key using the default transcoder.
-	 *
-	 * @param key the key to get
-	 * @return the result from the cache and CAS id (null if there is none)
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#gets(java.lang.String)
 	 */
 	public CASValue<Object> gets(String key) {
 		return gets(key, transcoder);
 	}
 
-	/**
-	 * Get with a single key.
-	 *
-	 * @param key the key to get
-	 * @param tc the transcoder to serialize and unserialize value
-	 * @return the result from the cache (null if there is none)
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#get(java.lang.String, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> T get(String key, Transcoder<T> tc) {
 		try {
@@ -647,28 +366,15 @@ public class MemcachedClientImpl extends SpyObject
 		}
 	}
 
-	/**
-	 * Get with a single key and decode using the default transcoder.
-	 *
-	 * @param key the key to get
-	 * @return the result from the cache (null if there is none)
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#get(java.lang.String)
 	 */
 	public Object get(String key) {
 		return get(key, transcoder);
 	}
 
-	/**
-	 * Asynchronously get a bunch of objects from the cache.
-	 *
-	 * @param keys the keys to request
-	 * @param tc the transcoder to serialize and unserialize value
-	 * @return a Future result of that fetch
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#asyncGetBulk(java.util.Collection, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> Future<Map<String, T>> asyncGetBulk(Collection<String> keys,
 		final Transcoder<T> tc) {
@@ -676,55 +382,30 @@ public class MemcachedClientImpl extends SpyObject
 			operationTimeout);
 	}
 
-	/**
-	 * Asynchronously get a bunch of objects from the cache and decode them
-	 * with the given transcoder.
-	 *
-	 * @param keys the keys to request
-	 * @return a Future result of that fetch
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#asyncGetBulk(java.util.Collection)
 	 */
 	public Future<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
 		return asyncGetBulk(keys, transcoder);
 	}
 
-	/**
-	 * Varargs wrapper for asynchronous bulk gets.
-	 *
-	 * @param tc the transcoder to serialize and unserialize value
-	 * @param keys one more more keys to get
-	 * @return the future values of those keys
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#asyncGetBulk(net.spy.memcached.transcoders.Transcoder, java.lang.String[])
 	 */
 	public <T> Future<Map<String, T>> asyncGetBulk(Transcoder<T> tc,
 		String... keys) {
 		return asyncGetBulk(Arrays.asList(keys), tc);
 	}
 
-	/**
-	 * Varargs wrapper for asynchronous bulk gets with the default transcoder.
-	 *
-	 * @param keys one more more keys to get
-	 * @return the future values of those keys
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#asyncGetBulk(java.lang.String[])
 	 */
 	public Future<Map<String, Object>> asyncGetBulk(String... keys) {
 		return asyncGetBulk(Arrays.asList(keys), transcoder);
 	}
 
-	/**
-	 * Get the values for multiple keys from the cache.
-	 *
-	 * @param keys the keys
-	 * @param tc the transcoder to serialize and unserialize value
-	 * @return a map of the values (for each value that exists)
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#getBulk(java.util.Collection, net.spy.memcached.transcoders.Transcoder)
 	 */
 	public <T> Map<String, T> getBulk(Collection<String> keys,
 			Transcoder<T> tc) {
@@ -741,67 +422,44 @@ public class MemcachedClientImpl extends SpyObject
 		}
 	}
 
-	/**
-	 * Get the values for multiple keys from the cache.
-	 *
-	 * @param keys the keys
-	 * @return a map of the values (for each value that exists)
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#getBulk(java.util.Collection)
 	 */
 	public Map<String, Object> getBulk(Collection<String> keys) {
 		return getBulk(keys, transcoder);
 	}
 
-	/**
-	 * Get the values for multiple keys from the cache.
-	 *
-	 * @param tc the transcoder to serialize and unserialize value
-	 * @param keys the keys
-	 * @return a map of the values (for each value that exists)
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientWithTranscoder#getBulk(net.spy.memcached.transcoders.Transcoder, java.lang.String[])
 	 */
 	public <T> Map<String, T> getBulk(Transcoder<T> tc, String... keys) {
 		return getBulk(Arrays.asList(keys), tc);
 	}
 
-	/**
-	 * Get the values for multiple keys from the cache.
-	 *
-	 * @param keys the keys
-	 * @return a map of the values (for each value that exists)
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#getBulk(java.lang.String[])
 	 */
 	public Map<String, Object> getBulk(String... keys) {
 		return getBulk(Arrays.asList(keys), transcoder);
 	}
 
-	/**
-	 * Get the versions of all of the connected memcacheds.
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#getVersions()
 	 */
 	public Map<SocketAddress, String> getVersions() {
 		return conn.getVersions(operationTimeout);
 	}
 
-	/**
-	 * Get all of the stats from all of the connections.
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#getStats()
 	 */
 	public Map<SocketAddress, Map<String, String>> getStats() {
 		return getStats(null);
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#getStats(java.lang.String)
+	 */
 	public Map<SocketAddress, Map<String, String>> getStats(final String arg) {
 		return conn.getStats(arg, operationTimeout);
 	}
@@ -812,70 +470,33 @@ public class MemcachedClientImpl extends SpyObject
 				operationTimeout);
 	}
 
-	/**
-	 * Increment the given key by the given amount.
-	 *
-	 * @param key the key
-	 * @param by the amount to increment
-	 * @return the new value (-1 if the key doesn't exist)
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#incr(java.lang.String, int)
 	 */
 	public long incr(String key, int by) {
 		return mutate(Mutator.incr, key, by, 0, -1);
 	}
 
-	/**
-	 * Decrement the given key by the given value.
-	 *
-	 * @param key the key
-	 * @param by the value
-	 * @return the new value (-1 if the key doesn't exist)
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#decr(java.lang.String, int)
 	 */
 	public long decr(String key, int by) {
 		return mutate(Mutator.decr, key, by, 0, -1);
 	}
 
-	/**
-	 * Increment the given counter, returning the new value.
-	 *
-	 * @param key the key
-	 * @param by the amount to increment
-	 * @param def the default value (if the counter does not exist)
-	 * @param exp the expiration of this object
-	 * @return the new value, or -1 if we were unable to increment or add
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#incr(java.lang.String, int, long, int)
 	 */
 	public long incr(String key, int by, long def, int exp) {
 		return mutateWithDefault(Mutator.incr, key, by, def, exp);
 	}
 
-	/**
-	 * Decrement the given counter, returning the new value.
-	 *
-	 * @param key the key
-	 * @param by the amount to decrement
-	 * @param def the default value (if the counter does not exist)
-	 * @param exp the expiration of this object
-	 * @return the new value, or -1 if we were unable to decrement or add
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#decr(java.lang.String, int, long, int)
 	 */
 	public long decr(String key, int by, long def, int exp) {
 		return mutateWithDefault(Mutator.decr, key, by, def, exp);
 	}
-
 
 	private long mutateWithDefault(Mutator t, String key,
 			int by, long def, int exp) {
@@ -909,57 +530,29 @@ public class MemcachedClientImpl extends SpyObject
 		return conn.asyncMutate(m, KeyUtil.getKeyBytes(key), by, def, exp);
 	}
 
-	/**
-	 * Asychronous increment.
-	 *
-	 * @return a future with the incremented value, or -1 if the
-	 *		   increment failed.
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#asyncIncr(java.lang.String, int)
 	 */
 	public Future<Long> asyncIncr(String key, int by) {
 		return asyncMutate(Mutator.incr, key, by, 0, -1);
 	}
 
-	/**
-	 * Asynchronous decrement.
-	 *
-	 * @return a future with the decremented value, or -1 if the
-	 *		   increment failed.
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#asyncDecr(java.lang.String, int)
 	 */
 	public Future<Long> asyncDecr(String key, int by) {
 		return asyncMutate(Mutator.decr, key, by, 0, -1);
 	}
 
-	/**
-	 * Increment the given counter, returning the new value.
-	 *
-	 * @param key the key
-	 * @param by the amount to increment
-	 * @param def the default value (if the counter does not exist)
-	 * @return the new value, or -1 if we were unable to increment or add
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#incr(java.lang.String, int, long)
 	 */
 	public long incr(String key, int by, long def) {
 		return mutateWithDefault(Mutator.incr, key, by, def, 0);
 	}
 
-	/**
-	 * Decrement the given counter, returning the new value.
-	 *
-	 * @param key the key
-	 * @param by the amount to decrement
-	 * @param def the default value (if the counter does not exist)
-	 * @return the new value, or -1 if we were unable to decrement or add
-	 * @throws OperationTimeoutException if the global operation timeout is
-	 *		   exceeded
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#decr(java.lang.String, int, long)
 	 */
 	public long decr(String key, int by, long def) {
 		return mutateWithDefault(Mutator.decr, key, by, def, 0);
@@ -988,62 +581,57 @@ public class MemcachedClientImpl extends SpyObject
 		return conn.delete(KeyUtil.getKeyBytes(key), hold, operationTimeout);
 	}
 
-	/**
-	 * Delete the given key from the cache.
-	 *
-	 * @param key the key to delete
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#delete(java.lang.String)
 	 */
 	public Future<Boolean> delete(String key) {
 		return delete(key, 0);
 	}
 
-	/**
-	 * Flush all caches from all servers with a delay of application.
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#flush(int)
 	 */
 	public Future<Boolean> flush(final int delay) {
 		return conn.flush(delay, operationTimeout);
 	}
 
-	/**
-	 * Flush all caches from all servers immediately.
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#flush()
 	 */
 	public Future<Boolean> flush() {
 		return flush(-1);
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#getAvailableServers()
+	 */
 	public Collection<SocketAddress> getAvailableServers() {
 		return conn.getAvailableServers();
 	}
 
-	/**
-	 * Shut down immediately.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#getUnavailableServers()
 	 */
 	public Collection<SocketAddress> getUnavailableServers() {
 		return conn.getUnavailableServers();
 	}
 
-	/**
-	 * Shut down this client gracefully.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#shutdown(long, java.util.concurrent.TimeUnit)
 	 */
 	public boolean shutdown(long timeout, TimeUnit unit) {
 		return conn.shutdown(timeout, unit);
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#shutdown()
+	 */
 	public void shutdown() {
 		conn.shutdown();
 	}
 
-	/**
-	 * Wait for the queues to die down.
-	 *
-	 * @throws IllegalStateException in the rare circumstance where queue
-	 *         is too full to accept any more requests
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClient#waitForQueues(long, java.util.concurrent.TimeUnit)
 	 */
 	public boolean waitForQueues(long timeout, TimeUnit unit) {
 		return conn.waitForQueues(timeout, unit);
