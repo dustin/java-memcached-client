@@ -87,6 +87,10 @@ public class CASMutator<T> extends SpyObject {
 			}
 			// If we have anything mutate and CAS, else add.
 			if(current != null) {
+				// Declaring this impossible since the only way current can
+				// be non-null is if casval was set.
+				assert casval != null : "casval was null with a current value";
+
 				rv=m.getNewValue(current);
 				// There are three possibilities here:
 				//  1) It worked and we're done.
