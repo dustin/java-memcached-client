@@ -5,7 +5,7 @@
 	<classpathentry kind="src" path="target/generated-src"/>
 	<classpathentry kind="src" path="src/test/manual"/>
 	<classpathentry kind="var" path="M2_REPO/jmock/jmock/1.2.0/jmock-1.2.0.jar"/>
-	<classpathentry kind="var" path="M2_REPO/junit/junit/4.3.1/junit-4.3.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/junit/junit/4.4/junit-4.4.jar"/>
 	<classpathentry kind="var" path="M2_REPO/spy/spy/2.4/spy-2.4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="target/classes"/>
