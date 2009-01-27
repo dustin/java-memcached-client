@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import junit.framework.TestCase;
-
 import net.spy.memcached.ops.Operation;
 
 /**

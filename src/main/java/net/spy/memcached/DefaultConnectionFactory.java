@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import net.spy.SpyObject;
+import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;

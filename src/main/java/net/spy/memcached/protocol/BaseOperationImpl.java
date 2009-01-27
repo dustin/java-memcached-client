@@ -3,7 +3,7 @@ package net.spy.memcached.protocol;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import net.spy.SpyObject;
+import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.CancelledOperationStatus;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;

@@ -4,3 +4,4 @@ target/
 reports/
 junit*
 *.iml
+*~

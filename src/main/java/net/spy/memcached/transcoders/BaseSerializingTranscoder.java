@@ -9,8 +9,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import net.spy.SpyObject;
-import net.spy.util.CloseUtil;
+import net.spy.memcached.compat.CloseUtil;
+import net.spy.memcached.compat.SpyObject;
 
 /**
  * Base class for any transcoders that may want to work with serialized or

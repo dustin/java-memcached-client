@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 
-import net.spy.SpyObject;
 import net.spy.memcached.MemcachedNode;
+import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;

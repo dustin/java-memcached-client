@@ -25,7 +25,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 
-import net.spy.SpyObject;
+import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
 

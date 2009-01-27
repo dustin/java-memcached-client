@@ -13,12 +13,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import net.spy.memcached.compat.SyncThread;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.transcoders.BaseSerializingTranscoder;
 import net.spy.memcached.transcoders.SerializingTranscoder;
 import net.spy.memcached.transcoders.Transcoder;
-import net.spy.test.SyncThread;
 
 
 public abstract class ProtocolBaseCase extends ClientBaseCase {

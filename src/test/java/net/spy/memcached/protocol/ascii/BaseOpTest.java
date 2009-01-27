@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.spy.test.BaseMockCase;
+import net.spy.memcached.compat.BaseMockCase;
 
 /**
  * Test the basic operation buffer handling stuff.

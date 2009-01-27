@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import net.spy.SpyObject;
+import net.spy.memcached.compat.SpyObject;
 
 /**
  * This is an implementation of the Ketama consistent hash strategy from

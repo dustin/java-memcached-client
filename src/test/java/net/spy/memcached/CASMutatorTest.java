@@ -2,8 +2,8 @@ package net.spy.memcached;
 
 import java.util.concurrent.Callable;
 
+import net.spy.memcached.compat.SyncThread;
 import net.spy.memcached.transcoders.LongTranscoder;
-import net.spy.test.SyncThread;
 
 /**
  * Test the CAS mutator.

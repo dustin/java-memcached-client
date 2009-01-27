@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 
 import net.spy.memcached.CachedData;
-import net.spy.test.BaseMockCase;
+import net.spy.memcached.compat.BaseMockCase;
 
 /**
  * Basic behavior validation for all transcoders that work with objects.

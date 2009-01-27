@@ -44,7 +44,8 @@ define "memcached" do
   project.version = VERSION_NUMBER
   project.group = GROUP
   manifest["Implementation-Vendor"] = COPYRIGHT
-  compile.with m1("spy:spy:jar:2.4")
+  compile.with "log4j:log4j:jar:1.2.15", "jmock:jmock:jar:1.2.0",
+               "junit:junit:jar:4.4"
 
   # Gen build
   gen_build_info "net.spy.memcached", "git"

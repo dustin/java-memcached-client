@@ -11,7 +11,7 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import net.spy.test.SyncThread;
+import net.spy.memcached.compat.SyncThread;
 
 /**
  * Longer running test case.
