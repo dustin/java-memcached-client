@@ -31,16 +31,6 @@ public class SpyThread extends Thread {
 	}
 
 	/**
-	 * Get an instance of SpyThread with a name.
-	 *
-	 * @param t the threadgroup in which this Thread will survive
-	 * @param name thread name
-	 */
-	public SpyThread(ThreadGroup t, String name) {
-		super(t, name);
-	}
-
-	/**
 	 * Get a Logger instance for this class.
 	 *
 	 * @return an appropriate logger instance.
