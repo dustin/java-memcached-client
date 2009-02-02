@@ -1533,6 +1533,24 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		}
 	}
 
+	/**
+	 * Add a connection observer.
+	 *
+	 * @return true if the observer was added.
+	 */
+	public boolean addObserver(ConnectionObserver obs) {
+		return conn.addObserver(obs);
+	}
+
+	/**
+	 * Remove a connection observer.
+	 *
+	 * @return true if the observer existed, but no longer does
+	 */
+	public boolean removeObserver(ConnectionObserver obs) {
+		return conn.removeObserver(obs);
+	}
+
 	static class BulkGetFuture<T> implements Future<Map<String, T>> {
 		private final Transcoder<T> tc;
 		private final Map<String, CachedData> rvMap;

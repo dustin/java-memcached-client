@@ -58,6 +58,9 @@ public final class MemcachedConnection extends SpyObject {
 	// The key is the time at which they are eligible for reconnect
 	private final SortedMap<Long, MemcachedNode> reconnectQueue;
 
+	private final Collection<ConnectionObserver> connObservers =
+		new ConcurrentLinkedQueue<ConnectionObserver>();
+
 	/**
 	 * Construct a memcached connection.
 	 *
@@ -81,8 +84,7 @@ public final class MemcachedConnection extends SpyObject {
 			int ops=0;
 			if(ch.connect(sa)) {
 				getLogger().info("Connected to %s immediately", qa);
-				qa.connected();
-				assert ch.isConnected();
+				connected(qa);
 			} else {
 				getLogger().info("Added %s to connect queue", qa);
 				ops=SelectionKey.OP_CONNECT;
@@ -169,7 +171,7 @@ public final class MemcachedConnection extends SpyObject {
 						getLogger().info("%s has a ready op, handling IO", sk);
 						handleIO(sk);
 					} else {
-						queueReconnect((MemcachedNode)sk.attachment());
+						lostConnection((MemcachedNode)sk.attachment());
 					}
 				}
 				assert emptySelects < EXCESSIVE_EMPTY
@@ -227,12 +229,46 @@ public final class MemcachedConnection extends SpyObject {
 						}
 					} catch(IOException e) {
 						getLogger().warn("Exception handling write", e);
-						queueReconnect(qa);
+						lostConnection(qa);
 					}
 				}
 				qa.fixupOps();
 			}
 			addedQueue.addAll(toAdd);
+		}
+	}
+
+	/**
+	 * Add a connection observer.
+	 *
+	 * @return whether the observer was successfully added
+	 */
+	public boolean addObserver(ConnectionObserver obs) {
+		return connObservers.add(obs);
+	}
+
+	/**
+	 * Remove a connection observer.
+	 *
+	 * @return true if the observer existed and now doesn't
+	 */
+	public boolean removeObserver(ConnectionObserver obs) {
+		return connObservers.remove(obs);
+	}
+
+	private void connected(MemcachedNode qa) {
+		assert qa.getChannel().isConnected() : "Not connected.";
+		int rt = qa.getReconnectCount();
+		qa.connected();
+		for(ConnectionObserver observer : connObservers) {
+			observer.connectionEstablished(qa.getSocketAddress(), rt);
+		}
+	}
+
+	private void lostConnection(MemcachedNode qa) {
+		queueReconnect(qa);
+		for(ConnectionObserver observer : connObservers) {
+			observer.connectionLost(qa.getSocketAddress());
 		}
 	}
 
@@ -249,8 +285,7 @@ public final class MemcachedConnection extends SpyObject {
 				getLogger().info("Connection state changed for %s", sk);
 				final SocketChannel channel=qa.getChannel();
 				if(channel.finishConnect()) {
-					assert channel.isConnected() : "Not connected.";
-					qa.connected();
+					connected(qa);
 					addedQueue.offer(qa);
 					if(qa.getWbuf().hasRemaining()) {
 						handleWrites(sk, qa);
@@ -270,7 +305,7 @@ public final class MemcachedConnection extends SpyObject {
 			if(!shutDown) {
 				getLogger().info("Closed channel and not shutting down.  "
 					+ "Queueing reconnect on %s", qa, e);
-				queueReconnect(qa);
+				lostConnection(qa);
 			}
 
 		} catch(Exception e) {
