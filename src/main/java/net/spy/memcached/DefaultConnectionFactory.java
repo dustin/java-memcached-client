@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -88,7 +90,8 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public MemcachedConnection createConnection(List<InetSocketAddress> addrs)
 		throws IOException {
-		return new MemcachedConnection(getReadBufSize(), this, addrs);
+		return new MemcachedConnection(getReadBufSize(), this, addrs,
+			getInitialObservers());
 	}
 
 	/* (non-Javadoc)
@@ -160,6 +163,13 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public boolean isDaemon() {
 		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#getInitialObservers()
+	 */
+	public Collection<ConnectionObserver> getInitialObservers() {
+		return Collections.emptyList();
 	}
 
 }

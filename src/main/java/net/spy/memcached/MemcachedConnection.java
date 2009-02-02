@@ -71,8 +71,9 @@ public final class MemcachedConnection extends SpyObject {
 	 * @throws IOException if a connection attempt fails early
 	 */
 	public MemcachedConnection(int bufSize, ConnectionFactory f,
-			List<InetSocketAddress> a)
+			List<InetSocketAddress> a, Collection<ConnectionObserver> obs)
 		throws IOException {
+		connObservers.addAll(obs);
 		reconnectQueue=new TreeMap<Long, MemcachedNode>();
 		addedQueue=new ConcurrentLinkedQueue<MemcachedNode>();
 		selector=Selector.open();

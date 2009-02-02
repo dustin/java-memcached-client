@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
@@ -69,4 +70,12 @@ public interface ConnectionFactory {
 	 * If true, the IO thread should be a daemon thread.
 	 */
 	boolean isDaemon();
+
+	/**
+	 * Observers that should be established at the time of connection
+	 * instantiation.
+	 *
+	 * These observers will see the first connection established.
+	 */
+	Collection<ConnectionObserver> getInitialObservers();
 }
