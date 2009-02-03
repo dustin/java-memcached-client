@@ -7,10 +7,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import net.spy.memcached.ops.Operation;
 
 /**
  * Test queue overflow.
@@ -19,6 +23,10 @@ public class QueueOverflowTest extends ClientBaseCase {
 
 	@Override
 	protected void initClient() throws Exception {
+
+		// We're creating artificially constrained queues with the explicit
+		// goal of overrunning them to verify the client will still be
+		// functional after such conditions occur.
 		initClient(new DefaultConnectionFactory(5, 1024) {
 			@Override
 			public MemcachedConnection createConnection(
@@ -30,6 +38,19 @@ public class QueueOverflowTest extends ClientBaseCase {
 			@Override
 			public long getOperationTimeout() {
 				return 1000;
+			}
+			@Override
+			public BlockingQueue<Operation> createOperationQueue() {
+				return new ArrayBlockingQueue<Operation>(getOpQueueLen());
+			}
+			@Override
+			public BlockingQueue<Operation> createReadOperationQueue() {
+				return new ArrayBlockingQueue<Operation>(
+					(int) (getOpQueueLen() * 1.1));
+			}
+			@Override
+			public BlockingQueue<Operation> createWriteOperationQueue() {
+				return createOperationQueue();
 			}
 		});
 	}
@@ -55,7 +76,8 @@ public class QueueOverflowTest extends ClientBaseCase {
 			// OK, at least we got one back.
 		}
 		Thread.sleep(500);
-		assertTrue(client.set("kx", 0, "woo").get(1, TimeUnit.SECONDS));
+		assertTrue("Was not able to set a key after failure.",
+				client.set("kx", 0, "woo").get(1, TimeUnit.SECONDS));
 	}
 
 	public void testOverflowingInputQueue() throws Exception {
