@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.Operation;
@@ -105,15 +106,14 @@ public class DefaultConnectionFactory extends SpyObject
 	 * @see net.spy.memcached.ConnectionFactory#createReadOperationQueue()
 	 */
 	public BlockingQueue<Operation> createReadOperationQueue() {
-		return new ArrayBlockingQueue<Operation>(
-			(int) (getOpQueueLen() * 1.1));
+		return new LinkedBlockingQueue<Operation>();
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.ConnectionFactory#createWriteOperationQueue()
 	 */
 	public BlockingQueue<Operation> createWriteOperationQueue() {
-		return createOperationQueue();
+		return new LinkedBlockingQueue<Operation>();
 	}
 
 	/* (non-Javadoc)
