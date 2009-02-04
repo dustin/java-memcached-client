@@ -20,10 +20,9 @@ import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
  * Default implementation of ConnectionFactory.
  *
  * <p>
- * This implementation creates connections where each server worker queue is
- * implemented using an ArrayBlockingQueue.  The read queue is automatically
- * configured to be 10% larger than the specified op queue.  The write queue
- * is and input queues are the same size.
+ * This implementation creates connections where the operation queue is an
+ * ArrayBlockingQueue and the read and write queues are unbounded
+ * LinkedBlockingQueues.
  * </p>
  */
 public class DefaultConnectionFactory extends SpyObject
