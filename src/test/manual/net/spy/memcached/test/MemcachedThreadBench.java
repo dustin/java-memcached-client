@@ -25,17 +25,17 @@ public class MemcachedThreadBench extends TestCase {
 	}
 
 	public void testCrap() throws Exception {
-		main(new String[]{"1000", "100", "11211", "100"});
+		main(new String[]{"10000", "100", "11211", "100"});
 	}
 
 	public static void main(String[] args) throws Exception {
 
 		if (args.length != 4) {
+            args = new String[]{"1000", "100", "11211", "100"};
 			System.out.println("Usage: java "
 					+ MemcachedThreadBench.class.getName()
 					+ " <runs> <start> <port> <threads>");
-			System.exit(1);
-		}
+        }
 
 		int runs = Integer.parseInt(args[0]);
 		int start = Integer.parseInt(args[1]);
