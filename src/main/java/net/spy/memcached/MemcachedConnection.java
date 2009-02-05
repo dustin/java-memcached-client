@@ -50,6 +50,7 @@ public final class MemcachedConnection extends SpyObject {
 	private boolean optimizeGets=true;
 	private Selector selector=null;
 	private final NodeLocator locator;
+	private final FailureMode failureMode;
 	private int emptySelects=0;
 	// AddedQueue is used to track the QueueAttachments for which operations
 	// have recently been queued.
@@ -71,11 +72,13 @@ public final class MemcachedConnection extends SpyObject {
 	 * @throws IOException if a connection attempt fails early
 	 */
 	public MemcachedConnection(int bufSize, ConnectionFactory f,
-			List<InetSocketAddress> a, Collection<ConnectionObserver> obs)
+			List<InetSocketAddress> a, Collection<ConnectionObserver> obs,
+			FailureMode fm)
 		throws IOException {
 		connObservers.addAll(obs);
 		reconnectQueue=new TreeMap<Long, MemcachedNode>();
 		addedQueue=new ConcurrentLinkedQueue<MemcachedNode>();
+		failureMode = fm;
 		selector=Selector.open();
 		List<MemcachedNode> connections=new ArrayList<MemcachedNode>(a.size());
 		for(SocketAddress sa : a) {

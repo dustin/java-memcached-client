@@ -22,7 +22,8 @@ import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
  * <p>
  * This implementation creates connections where the operation queue is an
  * ArrayBlockingQueue and the read and write queues are unbounded
- * LinkedBlockingQueues.
+ * LinkedBlockingQueues.  The <code>Redistribute</code> FailureMode is used
+ * by default.
  * </p>
  */
 public class DefaultConnectionFactory extends SpyObject
@@ -91,7 +92,14 @@ public class DefaultConnectionFactory extends SpyObject
 	public MemcachedConnection createConnection(List<InetSocketAddress> addrs)
 		throws IOException {
 		return new MemcachedConnection(getReadBufSize(), this, addrs,
-			getInitialObservers());
+			getInitialObservers(), getFailureMode());
+	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#getFailureMode()
+	 */
+	public FailureMode getFailureMode() {
+		return FailureMode.Redistribute;
 	}
 
 	/* (non-Javadoc)

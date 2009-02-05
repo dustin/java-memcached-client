@@ -78,4 +78,9 @@ public interface ConnectionFactory {
 	 * These observers will see the first connection established.
 	 */
 	Collection<ConnectionObserver> getInitialObservers();
+
+	/**
+	 * Get the default failure mode for the underlying connection.
+	 */
+	FailureMode getFailureMode();
 }
