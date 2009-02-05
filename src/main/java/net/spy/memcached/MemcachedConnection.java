@@ -467,7 +467,7 @@ public final class MemcachedConnection extends SpyObject {
 	public void addOperation(final String key, final Operation o) {
 		MemcachedNode placeIn=null;
 		MemcachedNode primary = locator.getPrimary(key);
-		if(primary.isActive()) {
+		if(primary.isActive() || failureMode == FailureMode.Retry) {
 			placeIn=primary;
 		} else {
 			// Look for another node in sequence that is ready.
