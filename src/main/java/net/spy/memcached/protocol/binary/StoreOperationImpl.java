@@ -17,6 +17,7 @@ class StoreOperationImpl extends OperationImpl
 	private static final int REPLACE=3;
 
 	private final String key;
+	private final StoreType storeType;
 	private final int flags;
 	private final int exp;
 	private final long cas;
@@ -42,6 +43,7 @@ class StoreOperationImpl extends OperationImpl
 		exp=e;
 		data=d;
 		cas=c;
+		storeType=t;
 	}
 
 	@Override
@@ -81,6 +83,14 @@ class StoreOperationImpl extends OperationImpl
 
 	public int getFlags() {
 		return flags;
+	}
+
+	public byte[] getData() {
+		return data;
+	}
+
+	public StoreType getStoreType() {
+		return storeType;
 	}
 
 }

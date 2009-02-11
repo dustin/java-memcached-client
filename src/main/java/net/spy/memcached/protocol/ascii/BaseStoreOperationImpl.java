@@ -64,4 +64,16 @@ abstract class BaseStoreOperationImpl extends OperationImpl {
 	public Collection<String> getKeys() {
 		return Collections.singleton(key);
 	}
+
+	public int getFlags() {
+		return flags;
+	}
+
+	public int getExpiration() {
+		return exp;
+	}
+
+	public byte[] getData() {
+		return data;
+	}
 }

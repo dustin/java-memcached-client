@@ -9,7 +9,7 @@ public interface ConcatenationOperation extends KeyedOperation {
 	/**
 	 * Get the concatenation type for this operation.
 	 */
-	ConcatenationType getType();
+	ConcatenationType getStoreType();
 
 	/**
 	 * Get the CAS value sent with this operation.

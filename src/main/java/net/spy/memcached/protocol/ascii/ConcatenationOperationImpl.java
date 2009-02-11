@@ -23,11 +23,7 @@ public class ConcatenationOperationImpl extends BaseStoreOperationImpl
 		return 0;
 	}
 
-	public byte[] getData() {
-		return data;
-	}
-
-	public ConcatenationType getType() {
+	public ConcatenationType getStoreType() {
 		return concatType;
 	}
 

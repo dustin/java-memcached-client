@@ -13,9 +13,16 @@ import net.spy.memcached.ops.StoreType;
 final class StoreOperationImpl extends BaseStoreOperationImpl
 	implements StoreOperation {
 
+	private final StoreType storeType;
+
 	public StoreOperationImpl(StoreType t, String k, int f, int e,
 			byte[] d, OperationCallback cb) {
 		super(t.name(), k, f, e, d, cb);
+		storeType = t;
+	}
+
+	public StoreType getStoreType() {
+		return storeType;
 	}
 
 }

@@ -73,7 +73,7 @@ class ConcatenationOperationImpl extends OperationImpl
 		return data;
 	}
 
-	public ConcatenationType getType() {
+	public ConcatenationType getStoreType() {
 		return catType;
 	}
 
