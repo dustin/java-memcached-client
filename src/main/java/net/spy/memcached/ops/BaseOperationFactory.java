@@ -1,5 +1,6 @@
 package net.spy.memcached.ops;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import net.spy.memcached.OperationFactory;
@@ -14,9 +15,47 @@ import net.spy.memcached.OperationFactory;
  */
 public abstract class BaseOperationFactory implements OperationFactory {
 
+	private String first(Collection<String> keys) {
+		return keys.iterator().next();
+	}
+
 	public Collection<Operation> clone(KeyedOperation op) {
-		// TODO:  An implementation or something.
-		throw new RuntimeException("Not implemented");
+		assert op.getState() == OperationState.WRITING
+			: "Who passed me an operation in the " + op.getState() + "state?";
+		assert !op.isCancelled() : "Attempted to clone a canceled op";
+		assert !op.hasErrored() : "Attempted to clone an errored op";
+
+		Collection<Operation> rv = new ArrayList<Operation>(
+				op.getKeys().size());
+		if(op instanceof GetOperation) {
+			throw new RuntimeException("Not implemented");
+		} else if(op instanceof GetsOperation) {
+			throw new RuntimeException("Not implemented");
+		} else if(op instanceof CASOperation) {
+			CASOperation cop = (CASOperation)op;
+			rv.add(cas(first(op.getKeys()),
+					cop.getCasValue(), cop.getFlags(), cop.getExpiration(),
+					cop.getBytes(), cop.getCallback()));
+		} else if(op instanceof DeleteOperation) {
+			rv.add(delete(first(op.getKeys()), op.getCallback()));
+		} else if(op instanceof MutatatorOperation) {
+			MutatatorOperation mo = (MutatatorOperation)op;
+			rv.add(mutate(mo.getType(), first(op.getKeys()),
+					mo.getBy(), mo.getDefault(), mo.getExpiration(),
+					op.getCallback()));
+		} else if(op instanceof StoreOperation) {
+			StoreOperation so = (StoreOperation)op;
+			rv.add(store(so.getStoreType(), first(op.getKeys()), so.getFlags(),
+					so.getExpiration(), so.getData(), op.getCallback()));
+		} else if(op instanceof ConcatenationOperation) {
+			ConcatenationOperation c = (ConcatenationOperation)op;
+			rv.add(cat(c.getStoreType(), c.getCasValue(), first(op.getKeys()),
+					c.getData(), c.getCallback()));
+		} else {
+			assert false : "Unhandled operation type: " + op.getClass();
+		}
+
+		return rv;
 	}
 
 }
