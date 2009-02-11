@@ -68,4 +68,20 @@ final class MutatorOperationImpl extends OperationImpl
 		return Collections.singleton(key);
 	}
 
+	public int getBy() {
+		return amount;
+	}
+
+	public long getDefault() {
+		return -1;
+	}
+
+	public int getExpiration() {
+		return -1;
+	}
+
+	public Mutator getType() {
+		return mutator;
+	}
+
 }

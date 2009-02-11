@@ -14,6 +14,7 @@ class MutatorOperationImpl extends OperationImpl implements
 	private static final int CMD_INCR=5;
 	private static final int CMD_DECR=6;
 
+	private final Mutator mutator;
 	private final String key;
 	private final long by;
 	private final int exp;
@@ -23,6 +24,7 @@ class MutatorOperationImpl extends OperationImpl implements
 			long d, int e, OperationCallback cb) {
 		super(m == Mutator.incr ? CMD_INCR : CMD_DECR, generateOpaque(), cb);
 		assert d >= 0 : "Default value is below zero";
+		mutator=m;
 		key=k;
 		by=b;
 		exp=e;
@@ -57,6 +59,22 @@ class MutatorOperationImpl extends OperationImpl implements
 
 	public Collection<String> getKeys() {
 		return Collections.singleton(key);
+	}
+
+	public int getBy() {
+		return (int) by;
+	}
+
+	public long getDefault() {
+		return def;
+	}
+
+	public int getExpiration() {
+		return exp;
+	}
+
+	public Mutator getType() {
+		return mutator;
 	}
 
 }
