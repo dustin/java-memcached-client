@@ -15,6 +15,10 @@ public abstract class ClientBaseCase extends TestCase {
 			public long getOperationTimeout() {
 				return 15000;
 			}
+			@Override
+			public FailureMode getFailureMode() {
+				return FailureMode.Retry;
+			}
 		});
 	}
 

@@ -14,6 +14,10 @@ public class TimeoutTest extends ClientBaseCase {
 			@Override
 			public long getOperationTimeout() {
 				return 1;
+			}
+			@Override
+			public FailureMode getFailureMode() {
+				return FailureMode.Retry;
 			}},
 			AddrUtil.getAddresses("127.0.0.1:11213"));
 	}

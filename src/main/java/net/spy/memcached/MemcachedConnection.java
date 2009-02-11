@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 
 import net.spy.memcached.compat.SpyObject;
+import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
 
@@ -409,6 +410,27 @@ public final class MemcachedConnection extends SpyObject {
 
 			// Need to do a little queue management.
 			qa.setupResend();
+
+			if(failureMode == FailureMode.Redistribute) {
+				redistributeOperations(qa.destroyInputQueue());
+			}
+		}
+	}
+
+	private void redistributeOperations(Collection<Operation> ops) {
+		for(Operation op : ops) {
+			if(op instanceof KeyedOperation) {
+				KeyedOperation ko = (KeyedOperation)op;
+				for(String k : ko.getKeys()) {
+					// TODO XXX: Must build out new objects as these get
+					// reinserted
+					getLogger().debug("Canceling operation for %s", k);
+				}
+				ko.cancel();
+			} else {
+				// Cancel things that don't have definite targets.
+				op.cancel();
+			}
 		}
 	}
 

@@ -8,6 +8,7 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.Collection;
 
 import net.spy.memcached.ops.Operation;
 
@@ -130,6 +131,10 @@ class MemcachedNodeROImpl implements MemcachedNode {
 	}
 
 	public int writeSome() throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
+	public Collection<Operation> destroyInputQueue() {
 		throw new UnsupportedOperationException();
 	}
 

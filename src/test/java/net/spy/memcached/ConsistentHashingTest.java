@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -211,6 +212,10 @@ public class ConsistentHashingTest extends TestCase {
 		public int writeSome() throws IOException {return 0;}
 		public void fixupOps() {
 			// noop
+		}
+
+		public Collection<Operation> destroyInputQueue() {
+			return null;
 		}
 	}
 

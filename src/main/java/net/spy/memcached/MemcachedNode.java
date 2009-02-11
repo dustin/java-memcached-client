@@ -5,6 +5,7 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.Collection;
 
 import net.spy.memcached.ops.Operation;
 
@@ -18,6 +19,13 @@ public interface MemcachedNode {
 	 * write queue.
 	 */
 	void copyInputQueue();
+
+	/**
+	 * Extract all queued items for this node destructively.
+	 *
+	 * This is useful for redistributing items.
+	 */
+	Collection<Operation> destroyInputQueue();
 
 	/**
 	 * Clear the queue of currently processing operations by either cancelling

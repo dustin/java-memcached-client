@@ -68,6 +68,14 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 		writeQ.addAll(tmp);
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#destroyInputQueue()
+	 */
+	public Collection<Operation> destroyInputQueue() {
+		Collection<Operation> rv=new ArrayList<Operation>();
+		inputQueue.drainTo(rv);
+		return rv;
+	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#setupResend()

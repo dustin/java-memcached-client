@@ -30,6 +30,16 @@ public class FailingServerTest extends ClientBaseCase {
 	}
 
 	@Override
+	protected void initClient() throws Exception {
+		initClient(new DefaultConnectionFactory() {
+			@Override
+			public FailureMode getFailureMode() {
+				return FailureMode.Redistribute;
+			}
+		});
+	}
+
+	@Override
 	protected void flushPause() throws InterruptedException {
 		Thread.sleep(100);
 	}
