@@ -73,4 +73,20 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
 		return Collections.singleton(key);
 	}
 
+	public byte[] getBytes() {
+		return data;
+	}
+
+	public long getCasValue() {
+		return casValue;
+	}
+
+	public int getExpiration() {
+		return exp;
+	}
+
+	public int getFlags() {
+		return flags;
+	}
+
 }

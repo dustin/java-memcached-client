@@ -68,4 +68,20 @@ class StoreOperationImpl extends OperationImpl
 		return Collections.singleton(key);
 	}
 
+	public byte[] getBytes() {
+		return data;
+	}
+
+	public long getCasValue() {
+		return cas;
+	}
+
+	public int getExpiration() {
+		return exp;
+	}
+
+	public int getFlags() {
+		return flags;
+	}
+
 }
