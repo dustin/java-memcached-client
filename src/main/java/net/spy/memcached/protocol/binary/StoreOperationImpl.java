@@ -4,14 +4,13 @@ import java.util.Collection;
 import java.util.Collections;
 
 import net.spy.memcached.ops.CASOperation;
-import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 
 class StoreOperationImpl extends OperationImpl
-	implements StoreOperation, CASOperation, ConcatenationOperation {
+	implements StoreOperation, CASOperation {
 
 	private static final int SET=1;
 	private static final int ADD=2;
