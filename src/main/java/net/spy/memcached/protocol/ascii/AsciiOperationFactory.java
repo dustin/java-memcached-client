@@ -2,7 +2,7 @@ package net.spy.memcached.protocol.ascii;
 
 import java.util.Collection;
 
-import net.spy.memcached.OperationFactory;
+import net.spy.memcached.ops.BaseOperationFactory;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.ConcatenationType;
@@ -22,7 +22,7 @@ import net.spy.memcached.ops.VersionOperation;
 /**
  * Operation factory for the ascii protocol.
  */
-public final class AsciiOperationFactory implements OperationFactory {
+public final class AsciiOperationFactory extends BaseOperationFactory {
 
 	public DeleteOperation delete(String key, OperationCallback cb) {
 		return new DeleteOperationImpl(key, cb);

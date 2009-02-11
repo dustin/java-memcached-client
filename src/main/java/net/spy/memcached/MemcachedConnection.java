@@ -62,6 +62,7 @@ public final class MemcachedConnection extends SpyObject {
 
 	private final Collection<ConnectionObserver> connObservers =
 		new ConcurrentLinkedQueue<ConnectionObserver>();
+	private final OperationFactory opFact;
 
 	/**
 	 * Construct a memcached connection.
@@ -74,12 +75,13 @@ public final class MemcachedConnection extends SpyObject {
 	 */
 	public MemcachedConnection(int bufSize, ConnectionFactory f,
 			List<InetSocketAddress> a, Collection<ConnectionObserver> obs,
-			FailureMode fm)
+			FailureMode fm, OperationFactory opfactory)
 		throws IOException {
 		connObservers.addAll(obs);
 		reconnectQueue=new TreeMap<Long, MemcachedNode>();
 		addedQueue=new ConcurrentLinkedQueue<MemcachedNode>();
 		failureMode = fm;
+		opFact = opfactory;
 		selector=Selector.open();
 		List<MemcachedNode> connections=new ArrayList<MemcachedNode>(a.size());
 		for(SocketAddress sa : a) {
@@ -421,12 +423,15 @@ public final class MemcachedConnection extends SpyObject {
 		for(Operation op : ops) {
 			if(op instanceof KeyedOperation) {
 				KeyedOperation ko = (KeyedOperation)op;
+				int added = 0;
 				for(String k : ko.getKeys()) {
-					// TODO XXX: Must build out new objects as these get
-					// reinserted
-					getLogger().debug("Canceling operation for %s", k);
+					for(Operation newop : opFact.clone(ko)) {
+						addOperation(k, newop);
+						added++;
+					}
 				}
-				ko.cancel();
+				assert added > 0
+					: "Didn't add any new operations when redistributing";
 			} else {
 				// Cancel things that don't have definite targets.
 				op.cancel();

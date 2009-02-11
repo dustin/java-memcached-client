@@ -92,7 +92,7 @@ public class DefaultConnectionFactory extends SpyObject
 	public MemcachedConnection createConnection(List<InetSocketAddress> addrs)
 		throws IOException {
 		return new MemcachedConnection(getReadBufSize(), this, addrs,
-			getInitialObservers(), getFailureMode());
+			getInitialObservers(), getFailureMode(), getOperationFactory());
 	}
 
 	/* (non-Javadoc)
