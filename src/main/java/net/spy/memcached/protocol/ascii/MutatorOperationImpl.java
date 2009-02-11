@@ -3,6 +3,8 @@
 package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.Collections;
 
 import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.MutatatorOperation;
@@ -60,6 +62,10 @@ final class MutatorOperationImpl extends OperationImpl
 	protected void wasCancelled() {
 		// XXX:  Replace this comment with why the hell I did this.
 		getCallback().receivedStatus(CANCELLED);
+	}
+
+	public Collection<String> getKeys() {
+		return Collections.singleton(key);
 	}
 
 }

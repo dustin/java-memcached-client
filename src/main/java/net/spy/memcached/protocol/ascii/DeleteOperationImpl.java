@@ -3,6 +3,8 @@
 package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.Collections;
 
 import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.DeleteOperation;
@@ -44,6 +46,10 @@ final class DeleteOperationImpl extends OperationImpl
 		setArguments(b, "delete", key);
 		b.flip();
 		setBuffer(b);
+	}
+
+	public Collection<String> getKeys() {
+		return Collections.singleton(key);
 	}
 
 }

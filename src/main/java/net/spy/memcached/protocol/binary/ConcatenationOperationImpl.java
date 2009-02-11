@@ -1,5 +1,8 @@
 package net.spy.memcached.protocol.binary;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.OperationCallback;
@@ -54,6 +57,10 @@ class ConcatenationOperationImpl extends OperationImpl
 				break;
 		}
 		return rv;
+	}
+
+	public Collection<String> getKeys() {
+		return Collections.singleton(key);
 	}
 
 }

@@ -1,5 +1,8 @@
 package net.spy.memcached.protocol.binary;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
@@ -30,6 +33,10 @@ class DeleteOperationImpl extends OperationImpl implements
 	@Override
 	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
 		return errCode == ERR_NOT_FOUND ? NOT_FOUND_STATUS : null;
+	}
+
+	public Collection<String> getKeys() {
+		return Collections.singleton(key);
 	}
 
 }

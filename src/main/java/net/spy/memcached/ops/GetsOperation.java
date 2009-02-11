@@ -1,11 +1,10 @@
 package net.spy.memcached.ops;
 
-import java.util.Collection;
 
 /**
  * Gets operation (get with CAS identifier support).
  */
-public interface GetsOperation extends Operation {
+public interface GetsOperation extends KeyedOperation {
 
 	/**
 	 * Operation callback for the Gets request.
@@ -21,10 +20,5 @@ public interface GetsOperation extends Operation {
 		 */
 		void gotData(String key, int flags, long cas, byte[] data);
 	}
-
-	/**
-	 * Get the keys requested in this GetsOperation.
-	 */
-	Collection<String> getKeys();
 
 }
