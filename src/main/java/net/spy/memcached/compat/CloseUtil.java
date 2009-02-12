@@ -3,7 +3,6 @@
 package net.spy.memcached.compat;
 
 import java.io.Closeable;
-import java.sql.Connection;
 
 import net.spy.memcached.compat.log.Logger;
 import net.spy.memcached.compat.log.LoggerFactory;
@@ -23,19 +22,6 @@ public final class CloseUtil {
      * Close a closeable.
      */
     public static void close(Closeable closeable) {
-        if (closeable != null) {
-            try {
-                closeable.close();
-            } catch (Exception e) {
-                logger.info("Unable to close %s", closeable, e);
-            }
-        }
-    }
-
-    /**
-     * Close a JDBC connection.
-     */
-    public static void close(Connection closeable) {
         if (closeable != null) {
             try {
                 closeable.close();
