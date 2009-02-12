@@ -1,5 +1,6 @@
 package net.spy.memcached.protocol.binary;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import net.spy.memcached.ops.BaseOperationFactory;
@@ -10,9 +11,11 @@ import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
+import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.NoopOperation;
+import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
@@ -78,6 +81,24 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 	public ConcatenationOperation cat(ConcatenationType catType, long casId,
 			String key, byte[] data, OperationCallback cb) {
 		return new ConcatenationOperationImpl(catType, key, data, casId, cb);
+	}
+
+	@Override
+	protected Collection<? extends Operation> cloneGet(KeyedOperation op) {
+		Collection<Operation> rv=new ArrayList<Operation>();
+		GetOperation.Callback getCb = null;
+		GetsOperation.Callback getsCb = null;
+		// Most likely a GetOperation, but on CCE, we can figure out that the
+		// user actually wanted a gets.
+		try {
+			getCb=(GetOperation.Callback)op.getCallback();
+		} catch(ClassCastException e) {
+			getsCb=(GetsOperation.Callback)op.getCallback();
+		}
+		for(String k : op.getKeys()) {
+			rv.add(getCb == null ? gets(k, getsCb) : get(k, getCb));
+		}
+		return rv;
 	}
 
 }

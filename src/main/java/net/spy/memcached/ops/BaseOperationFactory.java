@@ -28,11 +28,13 @@ public abstract class BaseOperationFactory implements OperationFactory {
 		Collection<Operation> rv = new ArrayList<Operation>(
 				op.getKeys().size());
 		if(op instanceof GetOperation) {
-			// TODO
-			throw new RuntimeException("Not implemented");
+			rv.addAll(cloneGet(op));
 		} else if(op instanceof GetsOperation) {
-			// TODO
-			throw new RuntimeException("Not implemented");
+			GetsOperation.Callback callback =
+				(GetsOperation.Callback)op.getCallback();
+			for(String k : op.getKeys()) {
+				rv.add(gets(k, callback));
+			}
 		} else if(op instanceof CASOperation) {
 			CASOperation cop = (CASOperation)op;
 			rv.add(cas(cop.getStoreType(), first(op.getKeys()),
@@ -59,5 +61,8 @@ public abstract class BaseOperationFactory implements OperationFactory {
 
 		return rv;
 	}
+
+	protected abstract Collection<? extends Operation> cloneGet(
+			KeyedOperation op);
 
 }

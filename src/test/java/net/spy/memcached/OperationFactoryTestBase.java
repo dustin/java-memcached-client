@@ -1,14 +1,16 @@
 package net.spy.memcached;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
-import junit.framework.TestCase;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.DeleteOperation;
+import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
@@ -18,10 +20,12 @@ import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 
+import org.jmock.MockObjectTestCase;
+
 /**
  * Base class for operation factory tests.
  */
-public abstract class OperationFactoryTestBase extends TestCase {
+public abstract class OperationFactoryTestBase extends MockObjectTestCase {
 
 	public final static String TEST_KEY = "someKey";
 	protected OperationFactory ofact = null;
@@ -154,6 +158,50 @@ public abstract class OperationFactoryTestBase extends TestCase {
 		assertSame(ConcatenationType.prepend, op2.getStoreType());
 		assertCallback(op2);
 	}
+
+	public void testSingleGetOperationCloning() {
+		GetOperation.Callback callback =
+			(GetOperation.Callback)mock(GetOperation.Callback.class).proxy();
+		GetOperation op = ofact.get(TEST_KEY, callback);
+
+		GetOperation op2 = cloneOne(GetOperation.class, op);
+		assertKey(op2);
+		assertSame(callback, op.getCallback());
+	}
+
+	public void testSingleGetsOperationCloning() {
+		GetsOperation.Callback callback =
+			(GetsOperation.Callback)mock(GetsOperation.Callback.class).proxy();
+		GetsOperation op = ofact.gets(TEST_KEY, callback);
+
+		GetsOperation op2 = cloneOne(GetsOperation.class, op);
+		assertKey(op2);
+		assertSame(callback, op.getCallback());
+	}
+
+	// These are harder cases as they fan out.
+	public void testMultipleGetOperationCloning() {
+		Collection<String> keys = Arrays.asList("k1", "k2", "k3");
+		GetOperation.Callback callback =
+			(GetOperation.Callback)mock(GetOperation.Callback.class).proxy();
+		GetOperation op = ofact.get(keys, callback);
+
+		Collection<Operation> ops = ofact.clone(op);
+		assertEquals(3, ops.size());
+
+		Collection<String> mutableKeys = new ArrayList<String>(keys);
+		int i = 3;
+		for(Operation o : ops) {
+			assertEquals(i, mutableKeys.size()); // Starting size
+			GetOperation go = (GetOperation)o;
+			mutableKeys.removeAll(go.getKeys());
+			// Verify we matched and removed 1
+			assertEquals(--i, mutableKeys.size());
+			assertSame(callback, go.getCallback());
+		}
+	}
+
+	// TODO:  Test get expansion fanout result dispatch.
 
 	protected void assertKey(KeyedOperation op) {
 		assertEquals(TEST_KEY, op.getKeys().iterator().next());
