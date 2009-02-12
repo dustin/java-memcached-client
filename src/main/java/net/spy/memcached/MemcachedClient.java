@@ -403,7 +403,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASResponse> rv=new OperationFuture<CASResponse>(
 				latch, operationTimeout);
-		Operation op=opFact.cas(key, casId, co.getFlags(), exp,
+		Operation op=opFact.cas(StoreType.set, key, casId, co.getFlags(), exp,
 				co.getData(), new OperationCallback() {
 					public void receivedStatus(OperationStatus val) {
 						if(val instanceof CASOperationStatus) {

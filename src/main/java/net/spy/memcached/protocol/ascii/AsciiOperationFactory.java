@@ -66,8 +66,8 @@ public final class AsciiOperationFactory extends BaseOperationFactory {
 		return new VersionOperationImpl(cb);
 	}
 
-	public CASOperation cas(String key, long casId, int flags, int exp,
-			byte[] data, OperationCallback cb) {
+	public CASOperation cas(StoreType type, String key, long casId, int flags,
+			int exp, byte[] data, OperationCallback cb) {
 		return new CASOperationImpl(key, casId, flags, exp, data, cb);
 	}
 

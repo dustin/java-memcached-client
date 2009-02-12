@@ -33,7 +33,7 @@ public abstract class BaseOperationFactory implements OperationFactory {
 			throw new RuntimeException("Not implemented");
 		} else if(op instanceof CASOperation) {
 			CASOperation cop = (CASOperation)op;
-			rv.add(cas(first(op.getKeys()),
+			rv.add(cas(cop.getStoreType(), first(op.getKeys()),
 					cop.getCasValue(), cop.getFlags(), cop.getExpiration(),
 					cop.getBytes(), cop.getCallback()));
 		} else if(op instanceof DeleteOperation) {

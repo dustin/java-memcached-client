@@ -11,6 +11,7 @@ import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.ops.StoreType;
 
 class CASOperationImpl extends OperationImpl implements CASOperation {
 
@@ -87,6 +88,10 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
 
 	public int getFlags() {
 		return flags;
+	}
+
+	public StoreType getStoreType() {
+		return StoreType.set;
 	}
 
 }
