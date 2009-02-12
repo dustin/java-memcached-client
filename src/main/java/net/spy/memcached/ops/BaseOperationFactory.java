@@ -28,8 +28,10 @@ public abstract class BaseOperationFactory implements OperationFactory {
 		Collection<Operation> rv = new ArrayList<Operation>(
 				op.getKeys().size());
 		if(op instanceof GetOperation) {
+			// TODO
 			throw new RuntimeException("Not implemented");
 		} else if(op instanceof GetsOperation) {
+			// TODO
 			throw new RuntimeException("Not implemented");
 		} else if(op instanceof CASOperation) {
 			CASOperation cop = (CASOperation)op;
