@@ -58,5 +58,8 @@ define "memcached" do
   package :sources
   package :javadoc
 
+  cobertura.exclude 'net.spy.memcached.test\..*'
+  cobertura.exclude 'net.spy.memcached.BuildInfo'
+
 end
 # vim: syntax=ruby et ts=2
