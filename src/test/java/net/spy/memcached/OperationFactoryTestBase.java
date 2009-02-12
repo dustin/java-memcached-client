@@ -3,6 +3,7 @@ package net.spy.memcached;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Random;
 
 import net.spy.memcached.ops.CASOperation;
@@ -20,6 +21,7 @@ import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 
+import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
 
 /**
@@ -197,11 +199,35 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
 			mutableKeys.removeAll(go.getKeys());
 			// Verify we matched and removed 1
 			assertEquals(--i, mutableKeys.size());
-			assertSame(callback, go.getCallback());
 		}
 	}
 
-	// TODO:  Test get expansion fanout result dispatch.
+	public void testMultipleGetOperationFanout() {
+		Collection<String> keys = Arrays.asList("k1", "k2", "k3");
+		Mock m = mock(GetOperation.Callback.class);
+		OperationStatus st=new OperationStatus(true, "blah");
+		m.expects(once()).method("complete");
+		m.expects(once()).method("receivedStatus").with(same(st));
+		m.expects(once()).method("gotData")
+			.with(eq("k1"), eq(1), isA(byte[].class));
+		m.expects(once()).method("gotData")
+			.with(eq("k2"), eq(2), isA(byte[].class));
+		m.expects(once()).method("gotData")
+			.with(eq("k3"), eq(3), isA(byte[].class));
+
+		GetOperation.Callback callback = (GetOperation.Callback)m.proxy();
+		GetOperation op = ofact.get(keys, callback);
+
+		// Transition each operation callback into the complete state.
+		Iterator<String> ki = keys.iterator();
+		int i=0;
+		for(Operation o : ofact.clone(op)) {
+			GetOperation.Callback cb = (GetOperation.Callback)o.getCallback();
+			cb.gotData(ki.next(), ++i, new byte[3]);
+			cb.receivedStatus(st);
+			cb.complete();
+		}
+	}
 
 	protected void assertKey(KeyedOperation op) {
 		assertEquals(TEST_KEY, op.getKeys().iterator().next());

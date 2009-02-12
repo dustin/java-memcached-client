@@ -12,6 +12,8 @@ import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
+import net.spy.memcached.ops.MultiGetOperationCallback;
+import net.spy.memcached.ops.MultiGetsOperationCallback;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.NoopOperation;
@@ -88,12 +90,12 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 		Collection<Operation> rv=new ArrayList<Operation>();
 		GetOperation.Callback getCb = null;
 		GetsOperation.Callback getsCb = null;
-		// Most likely a GetOperation, but on CCE, we can figure out that the
-		// user actually wanted a gets.
-		try {
-			getCb=(GetOperation.Callback)op.getCallback();
-		} catch(ClassCastException e) {
-			getsCb=(GetsOperation.Callback)op.getCallback();
+		if(op.getCallback() instanceof GetOperation.Callback) {
+			getCb=new MultiGetOperationCallback(
+					op.getCallback(), op.getKeys().size());
+		} else {
+			getsCb=new MultiGetsOperationCallback(
+					op.getCallback(), op.getKeys().size());
 		}
 		for(String k : op.getKeys()) {
 			rv.add(getCb == null ? gets(k, getsCb) : get(k, getCb));

@@ -12,6 +12,7 @@ import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
+import net.spy.memcached.ops.MultiGetOperationCallback;
 import net.spy.memcached.ops.MutatatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.NoopOperation;
@@ -83,8 +84,8 @@ public final class AsciiOperationFactory extends BaseOperationFactory {
 	@Override
 	protected Collection<? extends Operation> cloneGet(KeyedOperation op) {
 		Collection<Operation> rv=new ArrayList<Operation>();
-		GetOperation.Callback callback =
-			(GetOperation.Callback)op.getCallback();
+		GetOperation.Callback callback = new MultiGetOperationCallback(
+				op.getCallback(), op.getKeys().size());
 		for(String k : op.getKeys()) {
 			rv.add(get(k, callback));
 		}
