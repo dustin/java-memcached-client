@@ -415,7 +415,15 @@ public final class MemcachedConnection extends SpyObject {
 
 			if(failureMode == FailureMode.Redistribute) {
 				redistributeOperations(qa.destroyInputQueue());
+			} else if(failureMode == FailureMode.Cancel) {
+				cancelOperations(qa.destroyInputQueue());
 			}
+		}
+	}
+
+	private void cancelOperations(Collection<Operation> ops) {
+		for(Operation op : ops) {
+			op.cancel();
 		}
 	}
 
@@ -496,6 +504,8 @@ public final class MemcachedConnection extends SpyObject {
 		MemcachedNode primary = locator.getPrimary(key);
 		if(primary.isActive() || failureMode == FailureMode.Retry) {
 			placeIn=primary;
+		} else if(failureMode == FailureMode.Cancel) {
+			o.cancel();
 		} else {
 			// Look for another node in sequence that is ready.
 			for(Iterator<MemcachedNode> i=locator.getSequence(key);
@@ -512,8 +522,14 @@ public final class MemcachedConnection extends SpyObject {
 			}
 		}
 
-		assert placeIn != null : "No node found for key " + key;
-		addOperation(placeIn, o);
+		assert o.isCancelled() || placeIn != null
+			: "No node found for key " + key;
+		if(placeIn != null) {
+			addOperation(placeIn, o);
+		} else {
+			assert o.isCancelled() : "No not found for "
+				+ key + " (and not immediately cancelled)";
+		}
 	}
 
 	public void addOperation(final MemcachedNode node, final Operation o) {

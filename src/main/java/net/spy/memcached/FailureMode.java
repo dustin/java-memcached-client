@@ -24,6 +24,11 @@ public enum FailureMode {
 	 *  to not wait very long for async command completion.
 	 * </p>
 	 */
-	Retry
+	Retry,
+
+	/**
+	 * Automatically cancel all operations heading towards a downed node.
+	 */
+	Cancel
 
 }
