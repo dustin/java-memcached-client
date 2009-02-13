@@ -8,7 +8,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 
-public class FailingServerTest extends ClientBaseCase {
+public class RedistributeFailureModeTest extends ClientBaseCase {
 
 	private String serverList;
 
