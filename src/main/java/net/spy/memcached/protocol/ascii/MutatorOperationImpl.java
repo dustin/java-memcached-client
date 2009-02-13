@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import net.spy.memcached.KeyUtil;
-import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
@@ -17,7 +17,7 @@ import net.spy.memcached.ops.OperationStatus;
  * Operation for mutating integers inside of memcached.
  */
 final class MutatorOperationImpl extends OperationImpl
-	implements MutatatorOperation {
+	implements MutatorOperation {
 
 	public static final int OVERHEAD=32;
 

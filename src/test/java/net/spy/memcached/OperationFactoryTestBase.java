@@ -13,7 +13,7 @@ import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
-import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
@@ -81,10 +81,10 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
 		int exp = 823862;
 		long def = 28775;
 		int by = 7735;
-		MutatatorOperation op = ofact.mutate(Mutator.incr, TEST_KEY, by, def,
+		MutatorOperation op = ofact.mutate(Mutator.incr, TEST_KEY, by, def,
 				exp, genericCallback);
 
-		MutatatorOperation op2 = cloneOne(MutatatorOperation.class, op);
+		MutatorOperation op2 = cloneOne(MutatorOperation.class, op);
 		assertKey(op2);
 		assertEquals(exp, op2.getExpiration());
 		assertEquals(def, op2.getDefault());
@@ -97,10 +97,10 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
 		int exp = 823862;
 		long def = 28775;
 		int by = 7735;
-		MutatatorOperation op = ofact.mutate(Mutator.decr, TEST_KEY, by, def,
+		MutatorOperation op = ofact.mutate(Mutator.decr, TEST_KEY, by, def,
 				exp, genericCallback);
 
-		MutatatorOperation op2 = cloneOne(MutatatorOperation.class, op);
+		MutatorOperation op2 = cloneOne(MutatorOperation.class, op);
 		assertKey(op2);
 		assertEquals(exp, op2.getExpiration());
 		assertEquals(def, op2.getDefault());

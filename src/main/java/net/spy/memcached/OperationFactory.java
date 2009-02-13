@@ -10,7 +10,7 @@ import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
-import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.Operation;
@@ -90,7 +90,7 @@ public interface OperationFactory {
 	 * @param cb the status callback
 	 * @return the new mutator operation
 	 */
-	MutatatorOperation mutate(Mutator m, String key, int by,
+	MutatorOperation mutate(Mutator m, String key, int by,
 			long def, int exp, OperationCallback cb);
 
 	/**

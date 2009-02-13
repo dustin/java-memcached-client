@@ -14,7 +14,7 @@ import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.MultiGetOperationCallback;
 import net.spy.memcached.ops.MultiGetsOperationCallback;
-import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.Operation;
@@ -51,7 +51,7 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 		return new GetOperationImpl(key, cb);
 	}
 
-	public MutatatorOperation mutate(Mutator m, String key, int by,
+	public MutatorOperation mutate(Mutator m, String key, int by,
 			long def, int exp, OperationCallback cb) {
 		return new MutatorOperationImpl(m, key, by, def, exp, cb);
 	}

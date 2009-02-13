@@ -13,7 +13,7 @@ import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.MultiGetOperationCallback;
-import net.spy.memcached.ops.MutatatorOperation;
+import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.Operation;
@@ -48,7 +48,7 @@ public final class AsciiOperationFactory extends BaseOperationFactory {
 		 return new GetsOperationImpl(key, cb);
 	}
 
-	public MutatatorOperation mutate(Mutator m, String key, int by,
+	public MutatorOperation mutate(Mutator m, String key, int by,
 			long exp, int def, OperationCallback cb) {
 		return new MutatorOperationImpl(m, key, by, cb);
 	}
