@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.transcoders.Transcoder;
 
 /**
  * Factory for creating instances of MemcachedConnection.
@@ -83,4 +84,10 @@ public interface ConnectionFactory {
 	 * Get the default failure mode for the underlying connection.
 	 */
 	FailureMode getFailureMode();
+
+	/**
+	 * Get the default transcoder to be used in connections created by this
+	 * factory.
+	 */
+	Transcoder<Object> getDefaultTranscoder();
 }

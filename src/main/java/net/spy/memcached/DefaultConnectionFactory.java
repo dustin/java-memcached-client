@@ -15,6 +15,8 @@ import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
+import net.spy.memcached.transcoders.SerializingTranscoder;
+import net.spy.memcached.transcoders.Transcoder;
 
 /**
  * Default implementation of ConnectionFactory.
@@ -177,6 +179,13 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public Collection<ConnectionObserver> getInitialObservers() {
 		return Collections.emptyList();
+	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#getDefaultTranscoder()
+	 */
+	public Transcoder<Object> getDefaultTranscoder() {
+		return new SerializingTranscoder();
 	}
 
 }
