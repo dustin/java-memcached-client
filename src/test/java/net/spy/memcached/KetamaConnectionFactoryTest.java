@@ -20,7 +20,6 @@ public class KetamaConnectionFactoryTest extends TestCase {
 		NodeLocator locator = factory.createLocator(new ArrayList<MemcachedNode>());
 		assertTrue(locator instanceof KetamaNodeLocator);
 
-		DefaultConnectionFactory dflt = (DefaultConnectionFactory) factory;
-		assertEquals(HashAlgorithm.KETAMA_HASH, dflt.getHashAlg());
+		assertEquals(HashAlgorithm.KETAMA_HASH, factory.getHashAlg());
 	}
 }

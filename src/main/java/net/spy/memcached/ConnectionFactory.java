@@ -104,4 +104,14 @@ public interface ConnectionFactory {
 	 * If true, low-level optimization is in effect.
 	 */
 	boolean shouldOptimize();
+
+	/*
+	 * Get the read buffer size set at construct time.
+	 */
+	int getReadBufSize();
+
+	/**
+	 * Get the hash algorithm to be used.
+	 */
+	public HashAlgorithm getHashAlg();
 }

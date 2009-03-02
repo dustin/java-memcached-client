@@ -32,6 +32,17 @@ public class DefaultConnectionFactory extends SpyObject
 	implements ConnectionFactory {
 
 	/**
+	 * Default failure mode.
+	 */
+	public static final FailureMode DEFAULT_FAILURE_MODE =
+		FailureMode.Redistribute;
+
+	/**
+	 * Default hash algorithm.
+	 */
+	public static final HashAlgorithm DEFAULT_HASH = HashAlgorithm.NATIVE_HASH;
+
+	/**
 	 * Maximum length of the operation queue returned by this connection
 	 * factory.
 	 */
@@ -70,7 +81,7 @@ public class DefaultConnectionFactory extends SpyObject
 	 * queue length, and the given read buffer size.
 	 */
 	public DefaultConnectionFactory(int qLen, int bufSize) {
-		this(qLen, bufSize, HashAlgorithm.NATIVE_HASH);
+		this(qLen, bufSize, DEFAULT_HASH);
 	}
 
 	/**
@@ -101,7 +112,7 @@ public class DefaultConnectionFactory extends SpyObject
 	 * @see net.spy.memcached.ConnectionFactory#getFailureMode()
 	 */
 	public FailureMode getFailureMode() {
-		return FailureMode.Redistribute;
+		return DEFAULT_FAILURE_MODE;
 	}
 
 	/* (non-Javadoc)
@@ -139,15 +150,15 @@ public class DefaultConnectionFactory extends SpyObject
 		return opQueueLen;
 	}
 
-	/**
-	 * Get the read buffer size set at construct time.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#getReadBufSize()
 	 */
 	public int getReadBufSize() {
 		return readBufSize;
 	}
 
-	/**
-	 * Get the hash algorithm set at construct time.
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#getHashAlg()
 	 */
 	public HashAlgorithm getHashAlg() {
 		return hashAlg;
