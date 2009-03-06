@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+    <title>Changelog for SpyMemcached</title>
+    <style type="text/css">
+        .pie {
+            float: right;
+        }
+        h2 {
+            clear: both;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Changelog for SpyMemcached</h1>
+<h2>Changes from release 2.1 to 2.2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:rEEEEC&amp;chl=Dustin|Boris|Kristian|Nelz|Nick|Robey" alt="contributors"/><pre>Changes since 2.1:
+
+* Data decoding occurs in caller threads instead of IO thread.
+  This should greatly improve performance by spreading out the load to
+  more threads. (Kristian Eide)
+* MemcachedClientIF is added as an interface the client represents.
+  This allows a client making use of the interface to mock the memcached
+  interaction for better test coverage (Nelz)
+* Binary protocol stat support (protocol wasn't complete until October 19).
+* Async incr/decr with no default (Nick Brachet)
+* Whalin V1 transcoder (Boris Partensky)
+* Stats subcommands are now supported.
+* Removed delete with hold support (pulled from server in 1.3).
+* Miscellaneous bug fixes.
+
+Contributors:
+
+    22  Dustin Sallings
+     2  Boris Partensky
+     2  Kristian Eide
+     2  Nelz
+     2  Nick Brachet
+     1  Robey Pointer
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAkkJR8sACgkQeWDnv0PlnVR6tgCfZIwI3cZRRUsrR8ECQpO/rwYU
+pCYAn2BKDsOJw0q/8MzvUo/PqIRn7LkD
+=YTZN
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.0.2 to 2.1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:0HB&amp;chl=Dustin|Ray|Nelz" alt="contributors"/><pre>2.1 release
+
+Main features since 2.0:
+
+* Operation timeouts for blocking operations.
+* Support for append and prepend.
+* Optional Whalin compatible transcoder.
+* Canned connection factory for Ketama compatible consistent hashing.
+* More tweakability with respect to operation queue sizes.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAkg+K0UACgkQeWDnv0PlnVRBTgCcCCAa7/XJej8fbDJfcXJ5VijY
+twIAn3ujjpt1bdVlJUhmyb847vIzEfOk
+=t9ek
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.0.1 to 2.0.2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Binary protocol updates.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (Darwin)
+
+iEYEABECAAYFAkgYKl0ACgkQeWDnv0PlnVR+8QCfQfdAZUWrvys6dk4rAyZmsbqM
+WxwAn2VcyPEjp8A4uh0vOZR1SkoJj+nx
+=wEoe
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.0 to 2.0.1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Some minor post-2.0 fixes.
+
+* Binary protocol changes re alignment (as released in memcached 1.3.0)
+* More input validation when constructing a client.
+* Transcoder flag consistency.
+* More tests
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (Darwin)
+
+iEYEABECAAYFAkfx0PMACgkQeWDnv0PlnVTBZwCgzG1X1H6gzLE9BFS7XQkNSFqy
+g2UAn1dtsFf5fDuDplULfIWSBY2Rsfuu
+=Ycwi
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 1.4 to 2.0</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:3G&amp;chl=Dustin|Blair" alt="contributors"/><pre>2.0 has been a long time coming.
+
+The initial reason for it to exist was protocol abstraction (specifically to
+implement the binary protocol).  The slowness of the binary protocol release
+has kept this dangling for quite a while.
+
+Although there still isn't a released binary server, I want to get this release
+out because there are a lot of other good things that have happened since:
+
+ * CAS
+ * Hash implementations and tests
+ * node location algorithms (e.g. ketama consistent hashing)
+ * Lots of fixes.
+
+There are still things to do, but much of what people have been asking for can
+be found within. this release and all of the bugs that have been reported
+to-date have been fixed.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (Darwin)
+
+iEYEABECAAYFAkfTlSMACgkQeWDnv0PlnVRUWACgnmNlRgwW8vd4/+LD5TvpYTcT
+FnAAn1PeBUmqOr0eCpIVppsU14R1pbRm
+=2k6j
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 1.3.1 to 1.4</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.4
+</pre></div><h2>Changes from release 1.3 to 1.3.1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.3.1
+</pre></div><h2>Changes from release 1.2 to 1.3</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.3
+</pre></div><h2>Changes from release 1.1 to 1.2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.2
+</pre></div><h2>Changes from release 1.0.44 to 1.1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.1
+</pre></div><h2>Changes from release 1.0.43 to 1.0.44</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.44
+</pre></div><h2>Changes from release 1.0.42 to 1.0.43</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.43
+</pre></div><h2>Changes from release 1.0.41 to 1.0.42</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.42
+</pre></div><h2>Changes from release 1.0.40 to 1.0.41</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.41
+</pre></div><h2>Changes from release 1.0.39 to 1.0.40</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.40
+</pre></div><h2>Changes from release 1.0.38 to 1.0.39</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.39
+</pre></div><h2>Changes from release 1.0.37 to 1.0.38</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.38
+</pre></div><h2>Changes from release 1.0.36 to 1.0.37</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.37
+</pre></div><h2>Changes from release 1.0.34 to 1.0.36</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.36
+</pre></div><h2>Release 1.0.34</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:" alt="contributors"/><pre>release 1.0.34
+</pre></div></body></html>
