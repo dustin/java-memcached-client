@@ -1,0 +1,81 @@
+html {
+  font-family: verdana;
+  margin: 0;
+  margin-left: 2px;
+  margin-right: 2px;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+h1, h2, h3 {
+  background: #ddd;
+  padding: 3px;
+  color: black;
+  border: solid 1px #77d;
+}
+
+table {
+  border: solid 1px;
+  border-collapse: collapse;
+}
+
+table th, table td {
+  border: solid 1px;
+  padding: 2px;
+}
+
+pre.source {
+  color: green;
+  background: #111;
+  padding: 1em;
+  margin-left: 2em;
+  margin-right: 2em;
+}
+
+#main {
+  margin-left: 150px;
+  margin-top: 5em;
+}
+
+#nav {
+  position: absolute;
+  border: solid 1px;
+  width: 140px;
+}
+
+#nav h1 {
+  font-size: small;
+  position: relative;
+  text-align: center;
+  margin: 0;
+  background: #ddd;
+  color: black;
+  border: none;
+  border-bottom: solid 1px black;
+}
+
+#nav ul {
+  list-style: none;
+  margin: 0;
+  margin-left: 5px;
+  margin-right: 5px;
+  padding: 0;
+  text-indent: 0;
+  font-size: smaller;
+}
+
+#footer {
+  text-align: right;
+  font-size: small;
+  border-top: solid 1px;
+}
