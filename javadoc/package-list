@@ -1,0 +1,8 @@
+net.spy.memcached
+net.spy.memcached.compat
+net.spy.memcached.compat.log
+net.spy.memcached.ops
+net.spy.memcached.protocol
+net.spy.memcached.protocol.ascii
+net.spy.memcached.protocol.binary
+net.spy.memcached.transcoders
