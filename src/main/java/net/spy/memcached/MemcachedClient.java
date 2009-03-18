@@ -210,6 +210,10 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 			throw new IllegalArgumentException("Key is too long (maxlen = "
 					+ MAX_KEY_LENGTH + ")");
 		}
+		if(keyBytes.length == 0) {
+			throw new IllegalArgumentException(
+				"Key must contain at least one character.");
+		}
 		// Validate the key
 		for(byte b : keyBytes) {
 			if(b == ' ' || b == '\n' || b == '\r' || b == 0) {

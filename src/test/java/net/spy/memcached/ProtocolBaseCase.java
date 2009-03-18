@@ -173,6 +173,14 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 	}
 
+	public void testInvalidKeyBlank() throws Exception {
+		try {
+			Object val=client.get("");
+			fail("Expected IllegalArgumentException, got " + val);
+		} catch(IllegalArgumentException e) {
+			// pass
+		}
+	}
 
 	public void testInvalidKeyBulk() throws Exception {
 		try {
