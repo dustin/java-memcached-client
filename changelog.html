@@ -18,7 +18,43 @@
 <body>
 
 <h1>Changelog for SpyMemcached</h1>
-<h2>Changes from release 2.1 to 2.2</h2>
+<h2>Changes from release 2.2 to 2.3</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:5CBB&amp;chl=Dustin|raykrueger|Nick|Valeri" alt="contributors"/><pre>Release 2.3.
+
+Changes since 2.2:
+
+* A Map interface to memcached
+    This is somewhat limited, of course, in that you obviously can't
+    list all of the mappings, but you can replace many Map<String,V>
+    usages with a memcached backed map.
+
+* Failure Modes
+    There are now three failure modes to choose from so you can decide
+    what you want to do in the case of a node failure. (see
+    FailureMode in the documentation for more details).
+
+* Connection Observation
+    You can register for callbacks that will notify you when a node
+    goes up or down.  This is useful for things like notifying
+    monitoring systems, or preventing a system from starting up until
+    a required minimum number of memcached servers come online.
+
+* Misc bug fixes and accessibility to memcached functionality.
+
+Contributors:
+
+    54  Dustin Sallings
+     2  raykrueger
+     1  Nick Brachet
+     1  Valeri Felberg
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAknBXjQACgkQeWDnv0PlnVQvogCgy6VzHZgtr/Q+J/y8dLR84CYb
++nwAn2VflMFw63uAO8Tr0Q6jZm1kifAk
+=+GSJ
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.1 to 2.2</h2>
 <div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:rEEEEC&amp;chl=Dustin|Boris|Kristian|Nelz|Nick|Robey" alt="contributors"/><pre>Changes since 2.1:
 
 * Data decoding occurs in caller threads instead of IO thread.
