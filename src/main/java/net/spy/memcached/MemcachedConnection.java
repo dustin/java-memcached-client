@@ -314,13 +314,18 @@ public final class MemcachedConnection extends SpyObject {
 					+ "Queueing reconnect on %s", qa, e);
 				lostConnection(qa);
 			}
-
+		} catch(ConnectException e) {
+			// Failures to establish a connection should attempt a reconnect
+			// without signaling the observers.
+			getLogger().info("Reconnecting due to failure to connect to %s",
+					qa, e);
+			queueReconnect(qa);
 		} catch(Exception e) {
 			// Various errors occur on Linux that wind up here.  However, any
 			// particular error processing an item should simply cause us to
 			// reconnect to the server.
 			getLogger().info("Reconnecting due to exception on %s", qa, e);
-			queueReconnect(qa);
+			lostConnection(qa);
 		}
 		qa.fixupOps();
 	}
