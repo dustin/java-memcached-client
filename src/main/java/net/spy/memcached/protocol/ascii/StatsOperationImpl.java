@@ -37,8 +37,8 @@ final class StatsOperationImpl extends OperationImpl
 			cb.receivedStatus(END);
 			transitionState(OperationState.COMPLETE);
 		} else {
-			String[] parts=line.split(" ");
-			assert parts.length >= 3;
+			String[] parts=line.split(" ", 3);
+			assert parts.length == 3;
 			cb.gotStat(parts[1], parts[2]);
 		}
 	}

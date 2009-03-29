@@ -51,6 +51,30 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertTrue(oneStat.containsKey("1:chunk_size"));
 	}
 
+	public void testGetStatsSizes() throws Exception {
+		// There needs to at least have been one value set or there may be
+		// no sizes to check.
+		client.set("sizeinitializer", 0, "hi");
+		Map<SocketAddress, Map<String, String>> stats = client.getStats("sizes");
+		System.out.println("Stats:  " + stats);
+		assertEquals(1, stats.size());
+		Map<String, String> oneStat=stats.values().iterator().next();
+		assertEquals("1", oneStat.get("96"));
+	}
+
+	public void testGetStatsCacheDump() throws Exception {
+		// There needs to at least have been one value set or there
+		// won't be anything to dump
+		client.set("dumpinitializer", 0, "hi");
+		Map<SocketAddress, Map<String, String>> stats =
+				client.getStats("cachedump 1 10000");
+		System.out.println("Stats:  " + stats);
+		assertEquals(1, stats.size());
+		Map<String, String> oneStat=stats.values().iterator().next();
+		String val = oneStat.get("dumpinitializer");
+		assertTrue(val + "doesn't match", val.matches("\\[2 b; \\d+ s\\]"));
+	}
+
 	public void testDelayedFlush() throws Exception {
 		assertNull(client.get("test1"));
 		client.set("test1", 5, "test1value");
