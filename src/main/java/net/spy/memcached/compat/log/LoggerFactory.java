@@ -9,8 +9,10 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Factory to get logger instances.
- * The system property <code>net.spy.log.LoggerImpl</code> should point to
- * an implementation of net.spy.log.Logger to use.
+ *
+ * The system property <code>net.spy.compat.log.LoggerImpl</code>
+ * should point to an implementation of net.spy.compat.log.Logger to
+ * use.
  *
  * <p>
  *  Depending on how and where this was compiled, a sun logger (jdk 1.4)
@@ -114,13 +116,13 @@ public final class LoggerFactory extends Object {
 			} catch(NoClassDefFoundError e) {
 				System.err.println("Warning:  " + className
 					+ " not found while initializing"
-					+ " net.spy.log.LoggerFactory");
+					+ " net.spy.compat.log.LoggerFactory");
 				e.printStackTrace();
 				c=DefaultLogger.class;
 			} catch(ClassNotFoundException e) {
 				System.err.println("Warning:  " + className
 					+ " not found while initializing"
-					+ " net.spy.log.LoggerFactory");
+					+ " net.spy.compat.log.LoggerFactory");
 				e.printStackTrace();
 				c=DefaultLogger.class;
 			}
