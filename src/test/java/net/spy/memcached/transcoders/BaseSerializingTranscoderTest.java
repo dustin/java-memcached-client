@@ -3,6 +3,7 @@ package net.spy.memcached.transcoders;
 import java.io.UnsupportedEncodingException;
 
 import junit.framework.TestCase;
+import net.spy.memcached.CachedData;
 
 /**
  * Base tests of the base serializing transcoder stuff.
@@ -107,6 +108,9 @@ public class BaseSerializingTranscoderTest extends TestCase {
 	// Expose the protected methods so I can test them.
 	static class Exposer extends BaseSerializingTranscoder {
 
+		public Exposer() {
+			super(CachedData.MAX_SIZE);
+		}
 
 		public void overrideCharsetSet(String to) {
 			charset=to;

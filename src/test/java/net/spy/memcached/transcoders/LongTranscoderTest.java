@@ -22,6 +22,7 @@ public class LongTranscoderTest extends TestCase {
 
 	public void testBadFlags() throws Exception {
 		CachedData cd=tc.encode(9284L);
-		assertNull(tc.decode(new CachedData(cd.getFlags()+1, cd.getData())));
+		assertNull(tc.decode(new CachedData(cd.getFlags()+1, cd.getData(),
+				CachedData.MAX_SIZE)));
 	}
 }

@@ -12,8 +12,6 @@ import net.spy.memcached.CachedData;
 public class SerializingTranscoder extends BaseSerializingTranscoder
 	implements Transcoder<Object> {
 
-	private final int maxSize;
-
 	// General flags
 	static final int SERIALIZED=1;
 	static final int COMPRESSED=2;
@@ -42,7 +40,7 @@ public class SerializingTranscoder extends BaseSerializingTranscoder
 	 * Get a serializing transcoder that specifies the max data size.
 	 */
 	public SerializingTranscoder(int max) {
-		maxSize=max;
+		super(max);
 	}
 
 	/* (non-Javadoc)
@@ -142,7 +140,7 @@ public class SerializingTranscoder extends BaseSerializingTranscoder
 					o.getClass().getName(), b.length, compressed.length);
 			}
 		}
-		return new CachedData(flags, b, maxSize);
+		return new CachedData(flags, b, getMaxSize());
 	}
 
 }

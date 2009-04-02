@@ -583,7 +583,8 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 			client.set("bigassthing", 60, data, st).get();
 			fail("Didn't fail setting bigass thing.");
 		} catch(IllegalArgumentException e) {
-			assertEquals("Cannot cache data larger than 1MB "
+			assertEquals("Cannot cache data larger than "
+					+ CachedData.MAX_SIZE + " bytes "
 					+ "(you tried to cache a " + data.length + " byte object)",
 				e.getMessage());
 		}
@@ -729,7 +730,11 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 
 		public CachedData encode(String o) {
-			return new CachedData(flags, o.getBytes());
+			return new CachedData(flags, o.getBytes(), getMaxSize());
+		}
+
+		public int getMaxSize() {
+			return CachedData.MAX_SIZE;
 		}
 	}
 }

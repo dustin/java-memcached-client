@@ -25,4 +25,9 @@ public interface Transcoder<T> {
 	 * @return the return value
 	 */
 	T decode(CachedData d);
+
+	/**
+	 * Get the maximum size of objects handled by this transcoder.
+	 */
+	int getMaxSize();
 }

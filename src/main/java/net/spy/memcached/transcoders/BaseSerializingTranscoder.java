@@ -28,6 +28,15 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
 	protected int compressionThreshold=DEFAULT_COMPRESSION_THRESHOLD;
 	protected String charset=DEFAULT_CHARSET;
 
+	private final int maxSize;
+
+	/**
+	 * Initialize a serializing transcoder with the given maximum data size.
+	 */
+	public BaseSerializingTranscoder(int max) {
+		super();
+		maxSize = max;
+	}
 
 	/**
 	 * Set the compression threshold to the given number of bytes.  This
@@ -173,6 +182,10 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
 			throw new RuntimeException(e);
 		}
 		return rv;
+	}
+
+	public int getMaxSize() {
+		return maxSize;
 	}
 
 }

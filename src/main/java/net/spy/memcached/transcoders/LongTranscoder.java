@@ -16,7 +16,7 @@ public final class LongTranscoder extends SpyObject
 	private final TranscoderUtils tu=new TranscoderUtils(true);
 
 	public CachedData encode(java.lang.Long l) {
-		return new CachedData(flags, tu.encodeLong(l));
+		return new CachedData(flags, tu.encodeLong(l), getMaxSize());
 	}
 
 	public Long decode(CachedData d) {
@@ -27,6 +27,10 @@ public final class LongTranscoder extends SpyObject
 				+ d.getFlags() + " wanted " + flags);
 			return null;
 		}
+	}
+
+	public int getMaxSize() {
+		return CachedData.MAX_SIZE;
 	}
 
 }

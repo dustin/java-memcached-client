@@ -707,7 +707,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 			}
 			public void gotData(String k, int flags, byte[] data) {
 				assert key.equals(k) : "Wrong key returned";
-				val=new CachedData(flags, data);
+				val=new CachedData(flags, data, tc.getMaxSize());
 			}
 			public void complete() {
 				latch.countDown();
@@ -755,8 +755,8 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 			public void gotData(String k, int flags, long cas, byte[] data) {
 				assert key.equals(k) : "Wrong key returned";
 				assert cas > 0 : "CAS was less than zero:  " + cas;
-				val=new CASValue<T>(cas,
-						tc.decode(new CachedData(flags, data)));
+				val=new CASValue<T>(cas, tc.decode(
+					new CachedData(flags, data, tc.getMaxSize())));
 			}
 			public void complete() {
 				latch.countDown();
@@ -909,7 +909,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 					}
 				}
 				public void gotData(String k, int flags, byte[] data) {
-					m.put(k, new CachedData(flags, data));
+					m.put(k, new CachedData(flags, data, tc.getMaxSize()));
 				}
 				public void complete() {
 					latch.countDown();

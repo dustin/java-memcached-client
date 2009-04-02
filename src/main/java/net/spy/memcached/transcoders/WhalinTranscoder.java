@@ -28,6 +28,10 @@ public class WhalinTranscoder extends BaseSerializingTranscoder
 
 	private final TranscoderUtils tu=new TranscoderUtils(false);
 
+	public WhalinTranscoder() {
+		super(CachedData.MAX_SIZE);
+	}
+
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.Transcoder#decode(net.spy.memcached.CachedData)
 	 */
@@ -148,7 +152,7 @@ public class WhalinTranscoder extends BaseSerializingTranscoder
 					o.getClass().getName(), b.length, compressed.length);
 			}
 		}
-		return new CachedData(flags, b);
+		return new CachedData(flags, b, getMaxSize());
 	}
 
 	protected Character decodeCharacter(byte[] b){

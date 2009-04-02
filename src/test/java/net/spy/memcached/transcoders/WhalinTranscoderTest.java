@@ -84,19 +84,22 @@ public class WhalinTranscoderTest extends BaseTranscoderCase {
 		CachedData cd=new CachedData(
 				Integer.MAX_VALUE &
 				~(WhalinTranscoder.COMPRESSED | WhalinTranscoder.SERIALIZED),
-				tu.encodeInt(Integer.MAX_VALUE));
+				tu.encodeInt(Integer.MAX_VALUE),
+				tc.getMaxSize());
 		assertNull(tc.decode(cd));
 	}
 
 	public void testUndecodeableSerialized() throws Exception {
 		CachedData cd=new CachedData(WhalinTranscoder.SERIALIZED,
-				tu.encodeInt(Integer.MAX_VALUE));
+				tu.encodeInt(Integer.MAX_VALUE),
+				tc.getMaxSize());
 		assertNull(tc.decode(cd));
 	}
 
 	public void testUndecodeableCompressed() throws Exception {
 		CachedData cd=new CachedData(WhalinTranscoder.COMPRESSED,
-				tu.encodeInt(Integer.MAX_VALUE));
+				tu.encodeInt(Integer.MAX_VALUE),
+				tc.getMaxSize());
 		assertNull(tc.decode(cd));
 	}
 

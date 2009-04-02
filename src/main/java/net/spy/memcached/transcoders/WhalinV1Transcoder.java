@@ -30,6 +30,10 @@ public class WhalinV1Transcoder extends BaseSerializingTranscoder
 	public static final int COMPRESSED = 2;
 	public static final int SERIALIZED = 8;
 
+	public WhalinV1Transcoder() {
+		super(CachedData.MAX_SIZE);
+	}
+
 	public CachedData encode(Object o) {
 		byte[] b = null;
 		int flags = 0;
@@ -77,7 +81,7 @@ public class WhalinV1Transcoder extends BaseSerializingTranscoder
 						o.getClass().getName(), b.length, compressed.length);
 			}
 		}
-		return new CachedData(flags, b);
+		return new CachedData(flags, b, getMaxSize());
 	}
 
 	public Object decode(CachedData d) {

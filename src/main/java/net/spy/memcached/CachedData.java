@@ -28,21 +28,12 @@ public final class CachedData {
 		super();
 		if(d.length > max_size) {
 			throw new IllegalArgumentException(
-				"Cannot cache data larger than 1MB (you tried to cache a "
+				"Cannot cache data larger than " + max_size
+					+ " bytes (you tried to cache a "
 					+ d.length + " byte object)");
 		}
 		flags=f;
 		data=d;
-	}
-
-	/**
-	 * Get a CachedData instance for the given flags and byte array.
-	 *
-	 * @param f the flags
-	 * @param d the data
-	 */
-	public CachedData(int f, byte[] d) {
-		this(f, d, MAX_SIZE);
 	}
 
 	/**

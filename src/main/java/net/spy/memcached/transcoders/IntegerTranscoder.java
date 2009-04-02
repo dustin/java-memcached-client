@@ -16,7 +16,7 @@ public final class IntegerTranscoder extends SpyObject
 	private final TranscoderUtils tu=new TranscoderUtils(true);
 
 	public CachedData encode(java.lang.Integer l) {
-		return new CachedData(flags, tu.encodeInt(l));
+		return new CachedData(flags, tu.encodeInt(l), getMaxSize());
 	}
 
 	public Integer decode(CachedData d) {
@@ -25,6 +25,10 @@ public final class IntegerTranscoder extends SpyObject
 		} else {
 			return null;
 		}
+	}
+
+	public int getMaxSize() {
+		return CachedData.MAX_SIZE;
 	}
 
 }

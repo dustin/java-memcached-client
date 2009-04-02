@@ -83,20 +83,23 @@ public class SerializingTranscoderTest extends BaseTranscoderCase {
 				Integer.MAX_VALUE &
 				~(SerializingTranscoder.COMPRESSED
 						| SerializingTranscoder.SERIALIZED),
-				tu.encodeInt(Integer.MAX_VALUE));
+				tu.encodeInt(Integer.MAX_VALUE),
+				tc.getMaxSize());
 		assertNull(tc.decode(cd));
 	}
 
 	public void testUndecodeableSerialized() throws Exception {
 		CachedData cd=new CachedData(SerializingTranscoder.SERIALIZED,
-				tu.encodeInt(Integer.MAX_VALUE));
+				tu.encodeInt(Integer.MAX_VALUE),
+				tc.getMaxSize());
 		assertNull(tc.decode(cd));
 	}
 
 	public void testUndecodeableCompressed() throws Exception {
 		CachedData cd=new CachedData(
 			SerializingTranscoder.COMPRESSED,
-			tu.encodeInt(Integer.MAX_VALUE));
+			tu.encodeInt(Integer.MAX_VALUE),
+			tc.getMaxSize());
 		System.out.println("got " + tc.decode(cd));
 		assertNull(tc.decode(cd));
 	}
