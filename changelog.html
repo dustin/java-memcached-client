@@ -18,7 +18,41 @@
 <body>
 
 <h1>Changelog for SpyMemcached</h1>
-<h2>Changes from release 2.2 to 2.3</h2>
+<h2>Changes from release 2.3 to 2.3.1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.3.1
+
+Changes since 2.3:
+
+* Fixed connection observeration.
+  There was a condition where an exception could occur that wouldn't
+  be tracked properly.  There's no automated test for this, but a test
+  was constructed to manually verify the behavior with different
+  server failure conditions.
+
+* Fixed stat parsing for some stats.
+  Tests were added to confirm that both stat responses that don't
+  begin with STAT and stat values that contain spaces are handled
+  correctly.
+
+* Honor transcoder sizes.
+  This adds a new requirement on the transcoder API to specify how
+  many bytes the transcoder can store or read.  This both allows small
+  transcoders to put size constraints in that will immediately throw
+  an IllegalArgumentException when a result is too large to possibly
+  work as well as allowing users to customize their memcached
+  instances to allow for larger than normal objects.
+
+Contributors:
+
+     4  Dustin Sallings
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAknU3IsACgkQeWDnv0PlnVTpggCeP5eeyreCoZxG91G/BqHCuTnw
+SCYAmgM37FG/pVg3VqsREqEuR4z64Vgo
+=+IGM
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.2 to 2.3</h2>
 <div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:5CBB&amp;chl=Dustin|raykrueger|Nick|Valeri" alt="contributors"/><pre>Release 2.3.
 
 Changes since 2.2:
