@@ -412,8 +412,16 @@ public final class MemcachedConnection extends SpyObject {
 			qa.setChannel(null);
 
 			long delay=Math.min((100*qa.getReconnectCount()) ^ 2, MAX_DELAY);
+			long reconTime = System.currentTimeMillis() + delay;
 
-			reconnectQueue.put(System.currentTimeMillis() + delay, qa);
+			// Avoid potential condition where two connections are scheduled
+			// for reconnect at the exact same time.  This is expected to be
+			// a rare situation.
+			while(reconnectQueue.containsKey(reconTime)) {
+				reconTime++;
+			}
+
+			reconnectQueue.put(reconTime, qa);
 
 			// Need to do a little queue management.
 			qa.setupResend();
