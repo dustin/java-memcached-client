@@ -34,7 +34,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	private SocketChannel channel;
 	private int toWrite=0;
 	protected GetOperation getOp=null;
-	private SelectionKey sk=null;
+	private volatile SelectionKey sk=null;
 
 	public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
@@ -377,10 +377,13 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 
 
 	public final void fixupOps() {
-		if(sk != null && sk.isValid()) {
+		// As the selection key can be changed at any point due to node
+		// failure, we'll grab the current volatile value and configure it.
+		SelectionKey s = sk;
+		if(s != null && s.isValid()) {
 			int iops=getSelectionOps();
 			getLogger().debug("Setting interested opts to %d", iops);
-			sk.interestOps(iops);
+			s.interestOps(iops);
 		} else {
 			getLogger().debug("Selection key is not valid.");
 		}
