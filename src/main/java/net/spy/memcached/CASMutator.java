@@ -65,6 +65,11 @@ public class CASMutator<T> extends SpyObject {
 	/**
 	 * CAS a new value in for a key.
 	 *
+	 * <p>
+	 * Note that if initial is null, this method will only update existing
+	 * values.
+	 * </p>
+	 *
 	 * @param key the key to be CASed
 	 * @param initial the value to use when the object is not cached
 	 * @param initialExp the expiration time to use when initializing
@@ -106,7 +111,10 @@ public class CASMutator<T> extends SpyObject {
 				}
 			} else {
 				// No value found, try an add.
-				if(client.add(key, initialExp, initial, transcoder).get()) {
+				if(initial == null) {
+					done = true;
+					rv = null;
+				} else if(client.add(key, initialExp, initial, transcoder).get()) {
 					done=true;
 					rv=initial;
 				}

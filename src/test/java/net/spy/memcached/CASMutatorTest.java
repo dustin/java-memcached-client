@@ -49,6 +49,19 @@ public class CASMutatorTest extends ClientBaseCase {
 		}
 	}
 
+	public void testCASUpdateWithNullInitial() throws Throwable {
+		client.set("x", 0, 1L);
+		Long rv=mutator.cas("x", (Long)null, 0, mutation);
+		assertEquals(rv, (Long)2L);
+	}
+
+	public void testCASUpdateWithNullInitialNoExistingVal() throws Throwable {
+		assertNull(client.get("x"));
+		Long rv=mutator.cas("x", (Long)null, 0, mutation);
+		assertNull(rv);
+		assertNull(client.get("x"));
+	}
+
 	public void testCASValueToString() {
 		CASValue<String> c=new CASValue<String>(717L, "hi");
 		assertEquals("{CasValue 717/hi}", c.toString());
