@@ -33,7 +33,7 @@ public class CASMutator<T> extends SpyObject {
 
 	private static final int MAX_TRIES=8192;
 
-	private final MemcachedClient client;
+	private final MemcachedClientIF client;
 	private final Transcoder<T> transcoder;
 	private final int max;
 
@@ -44,7 +44,7 @@ public class CASMutator<T> extends SpyObject {
 	 * @param tc the Transcoder to use
 	 * @param max_tries the maximum number of attempts to get a CAS to succeed
 	 */
-	public CASMutator(MemcachedClient c, Transcoder<T> tc, int max_tries) {
+	public CASMutator(MemcachedClientIF c, Transcoder<T> tc, int max_tries) {
 		super();
 		client=c;
 		transcoder=tc;
@@ -58,7 +58,7 @@ public class CASMutator<T> extends SpyObject {
 	 * @param tc the Transcoder to use
 	 * @param max_tries the maximum number of attempts to get a CAS to succeed
 	 */
-	public CASMutator(MemcachedClient c, Transcoder<T> tc) {
+	public CASMutator(MemcachedClientIF c, Transcoder<T> tc) {
 		this(c, tc, MAX_TRIES);
 	}
 
