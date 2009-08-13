@@ -89,17 +89,23 @@ public final class MemcachedConnection extends SpyObject {
 			ch.configureBlocking(false);
 			MemcachedNode qa=f.createMemcachedNode(sa, ch, bufSize);
 			int ops=0;
-			if(ch.connect(sa)) {
-				getLogger().info("Connected to %s immediately", qa);
-				connected(qa);
-			} else {
-				getLogger().info("Added %s to connect queue", qa);
-				ops=SelectionKey.OP_CONNECT;
+			// Initially I had attempted to skirt this by queueing every
+			// connect, but it considerably slowed down start time.
+			try {
+				if(ch.connect(sa)) {
+					getLogger().info("Connected to %s immediately", qa);
+					connected(qa);
+				} else {
+					getLogger().info("Added %s to connect queue", qa);
+					ops=SelectionKey.OP_CONNECT;
+				}
+				qa.setSk(ch.register(selector, ops, qa));
+				assert ch.isConnected()
+					|| qa.getSk().interestOps() == SelectionKey.OP_CONNECT
+					: "Not connected, and not wanting to connect";
+			} catch(ConnectException e) {
+				queueReconnect(qa);
 			}
-			qa.setSk(ch.register(selector, ops, qa));
-			assert ch.isConnected()
-				|| qa.getSk().interestOps() == SelectionKey.OP_CONNECT
-				: "Not connected, and not wanting to connect";
 			connections.add(qa);
 		}
 		locator=f.createLocator(connections);
