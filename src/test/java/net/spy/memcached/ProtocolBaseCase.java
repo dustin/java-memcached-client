@@ -141,6 +141,13 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("new value", client.get(key));
 	}
 
+	public void testReallyLongCASId() throws Exception {
+		String key = "this-is-my-key";
+		assertSame("Expected error CASing with no existing value.",
+				CASResponse.NOT_FOUND,
+				client.cas(key, 9223372036854775807l, "bad value"));
+	}
+
 	public void testExtendedUTF8Key() throws Exception {
 		String key="\u2013\u00ba\u2013\u220f\u2014\u00c4";
 		assertNull(client.get(key));

@@ -16,7 +16,9 @@ import net.spy.memcached.ops.StoreType;
 class CASOperationImpl extends OperationImpl implements CASOperation {
 
 	// Overhead storage stuff to make sure the buffer pushes out far enough.
-	private static final int OVERHEAD = 32;
+	// This is "cas" + length(flags) + length(length(data)) + length(cas id)
+	// + spaces
+	private static final int OVERHEAD = 64;
 
 	private static final OperationStatus STORED=
 		new CASOperationStatus(true, "STORED", CASResponse.OK);
