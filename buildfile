@@ -23,8 +23,8 @@ plugins=[
   'spy:m1compat:rake:1.0',
   'spy:site:rake:1.2.3',
   'spy:git_tree_version:rake:1.0',
-  'spy:build_info:rake:1.1'
-] 
+  'spy:build_info:rake:1.1.1'
+]
 
 plugins.each do |spec|
   artifact(spec).tap do |plugin|
