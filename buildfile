@@ -17,7 +17,7 @@ RELEASED_VERSIONS=%W(#{VERSION_NUMBER} 2.2 2.1 1.4 1.3.1 1.2 1.1 1.0.44)
 repositories.remote << "http://www.ibiblio.org/maven2/"
 repositories.remote << "http://bleu.west.spy.net/~dustin/m2repo/"
 
-require 'buildr/cobertura'
+require 'buildr/java/cobertura'
 
 plugins=[
   'spy:m1compat:rake:1.0',
