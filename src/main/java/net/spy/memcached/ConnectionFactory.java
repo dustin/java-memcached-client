@@ -73,6 +73,15 @@ public interface ConnectionFactory {
 	boolean isDaemon();
 
 	/**
+	 * If true, the nagle algorithm will be used on connected sockets.
+	 *
+	 * <p>
+	 * See {@link java.net.Socket#setTcpNoDelay(boolean)} for more information.
+	 * </p>
+	 */
+	boolean useNagleAlgorithm();
+
+	/**
 	 * Observers that should be established at the time of connection
 	 * instantiation.
 	 *

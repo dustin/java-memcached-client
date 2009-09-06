@@ -188,4 +188,11 @@ public class DefaultConnectionFactory extends SpyObject
 		return new SerializingTranscoder();
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#useNagleAlgorithm()
+	 */
+	public boolean useNagleAlgorithm() {
+		return false;
+	}
+
 }

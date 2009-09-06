@@ -89,6 +89,7 @@ public final class MemcachedConnection extends SpyObject {
 			ch.configureBlocking(false);
 			MemcachedNode qa=f.createMemcachedNode(sa, ch, bufSize);
 			int ops=0;
+			ch.socket().setTcpNoDelay(!f.useNagleAlgorithm());
 			// Initially I had attempted to skirt this by queueing every
 			// connect, but it considerably slowed down start time.
 			try {
