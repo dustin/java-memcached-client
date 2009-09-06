@@ -50,6 +50,13 @@ public class TranscodeService extends SpyObject {
 		pool.shutdown();
 	}
 
+	/**
+	 * Ask whether this service has been shut down.
+	 */
+	public boolean isShutdown() {
+		return pool.isShutdown();
+	}
+
 	private static class Task<T> extends FutureTask<T> {
 		private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
@@ -77,4 +84,5 @@ public class TranscodeService extends SpyObject {
 			}
 		}
 	}
+
 }
