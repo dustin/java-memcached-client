@@ -98,6 +98,8 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 
 	final Transcoder<Object> transcoder;
 
+	final TranscodeService tcService;
+
 	/**
 	 * Get a memcache client operating on the specified memcached locations.
 	 *
@@ -142,6 +144,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 			throw new IllegalArgumentException(
 				"Operation timeout must be positive.");
 		}
+		tcService = new TranscodeService();
 		transcoder=cf.getDefaultTranscoder();
 		opFact=cf.getOperationFactory();
 		assert opFact != null : "Connection factory failed to make op factory";
@@ -708,8 +711,8 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 			}
 			public void gotData(String k, int flags, byte[] data) {
 				assert key.equals(k) : "Wrong key returned";
-				val=TranscodeService.getInstance().decode(tc,
-						new CachedData(flags, data, tc.getMaxSize()));
+				val=tcService.decode(tc,
+					new CachedData(flags, data, tc.getMaxSize()));
 			}
 			public void complete() {
 				latch.countDown();
@@ -911,7 +914,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 					}
 				}
 				public void gotData(String k, int flags, byte[] data) {
-					m.put(k, TranscodeService.getInstance().decode(tc,
+					m.put(k, tcService.decode(tc,
 							new CachedData(flags, data, tc.getMaxSize())));
 				}
 				public void complete() {
@@ -1491,6 +1494,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 				running=false;
 				conn.shutdown();
 				setName(baseName + " - SHUTTING DOWN (informed client)");
+				tcService.shutdown();
 			} catch (IOException e) {
 				getLogger().warn("exception while shutting down", e);
 			}

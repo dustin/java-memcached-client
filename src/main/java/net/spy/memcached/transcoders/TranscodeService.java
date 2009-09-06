@@ -11,31 +11,46 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.spy.memcached.CachedData;
+import net.spy.memcached.compat.SpyObject;
 
-public class TranscodeService {
-	private static final TranscodeService INSTANCE = new TranscodeService();
-	private final ThreadPoolExecutor pool = new ThreadPoolExecutor(1, 10,
-                                    60L, TimeUnit.MILLISECONDS,
-                                    new ArrayBlockingQueue<Runnable>(100),
-									new ThreadPoolExecutor.DiscardPolicy());
+/**
+ * Asynchronous transcoder.
+ */
+public class TranscodeService extends SpyObject {
 
-	public static TranscodeService getInstance() {
-		return TranscodeService.INSTANCE;
-	}
+	private final ThreadPoolExecutor pool = new ThreadPoolExecutor(1, 10, 60L,
+			TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(100),
+			new ThreadPoolExecutor.DiscardPolicy());
 
-	private TranscodeService() {
-		// Not constructable.
-	}
+	/**
+	 * Perform a decode.
+	 */
+	public <T> Future<T> decode(final Transcoder<T> tc,
+			final CachedData cachedData) {
 
-	public <T> Future<T> decode(final Transcoder<T> tc, final CachedData cachedData) {
-		TranscodeService.Task<T> task = new TranscodeService.Task<T>(new Callable<T>() { public T call() { return tc.decode(cachedData); } });
+		assert !pool.isShutdown() : "Pool has already shut down.";
+
+		TranscodeService.Task<T> task = new TranscodeService.Task<T>(
+				new Callable<T>() {
+					public T call() {
+						return tc.decode(cachedData);
+					}
+				});
+
 		if (tc.asyncDecode(cachedData)) {
 			this.pool.execute(task);
 		}
 		return task;
 	}
 
-	public class Task<T> extends FutureTask<T> {
+	/**
+	 * Shut down the pool.
+	 */
+	public void shutdown() {
+		pool.shutdown();
+	}
+
+	private static class Task<T> extends FutureTask<T> {
 		private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
 		public Task(Callable<T> callable) {
@@ -49,7 +64,8 @@ public class TranscodeService {
 		}
 
 		@Override
-		public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+		public T get(long timeout, TimeUnit unit) throws InterruptedException,
+				ExecutionException, TimeoutException {
 			this.run();
 			return super.get(timeout, unit);
 		}
