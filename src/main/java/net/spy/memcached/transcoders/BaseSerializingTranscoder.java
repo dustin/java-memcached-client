@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import net.spy.memcached.CachedData;
 import net.spy.memcached.compat.CloseUtil;
 import net.spy.memcached.compat.SpyObject;
 
@@ -36,6 +37,10 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
 	public BaseSerializingTranscoder(int max) {
 		super();
 		maxSize = max;
+	}
+
+	public boolean asyncDecode(CachedData d) {
+		return false;
 	}
 
 	/**

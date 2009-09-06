@@ -38,6 +38,7 @@ import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreType;
+import net.spy.memcached.transcoders.TranscodeService;
 import net.spy.memcached.transcoders.Transcoder;
 
 /**
@@ -697,17 +698,18 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	public <T> Future<T> asyncGet(final String key, final Transcoder<T> tc) {
 
 		final CountDownLatch latch=new CountDownLatch(1);
-		final GetFuture<T> rv=new GetFuture<T>(tc, latch, operationTimeout);
+		final GetFuture<T> rv=new GetFuture<T>(latch, operationTimeout);
 
 		Operation op=opFact.get(key,
 				new GetOperation.Callback() {
-			private CachedData val=null;
+			private Future<T> val=null;
 			public void receivedStatus(OperationStatus status) {
 				rv.set(val);
 			}
 			public void gotData(String k, int flags, byte[] data) {
 				assert key.equals(k) : "Wrong key returned";
-				val=new CachedData(flags, data, tc.getMaxSize());
+				val=TranscodeService.getInstance().decode(tc,
+						new CachedData(flags, data, tc.getMaxSize()));
 			}
 			public void complete() {
 				latch.countDown();
@@ -866,7 +868,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	 */
 	public <T> Future<Map<String, T>> asyncGetBulk(Collection<String> keys,
 		final Transcoder<T> tc) {
-		final Map<String, CachedData> m=new ConcurrentHashMap<String, CachedData>();
+		final Map<String, Future<T>> m=new ConcurrentHashMap<String, Future<T>>();
 		// Break the gets down into groups by key
 		final Map<MemcachedNode, Collection<String>> chunks
 			=new HashMap<MemcachedNode, Collection<String>>();
@@ -909,7 +911,8 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 					}
 				}
 				public void gotData(String k, int flags, byte[] data) {
-					m.put(k, new CachedData(flags, data, tc.getMaxSize()));
+					m.put(k, TranscodeService.getInstance().decode(tc,
+							new CachedData(flags, data, tc.getMaxSize())));
 				}
 				public void complete() {
 					latch.countDown();
@@ -930,7 +933,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		assert mops.size() == chunks.size();
 		checkState();
 		conn.addOperations(mops);
-		return new BulkGetFuture<T>(tc, m, ops, latch);
+		return new BulkGetFuture<T>(m, ops, latch);
 	}
 
 	/**
@@ -1544,16 +1547,14 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	}
 
 	static class BulkGetFuture<T> implements Future<Map<String, T>> {
-		private final Transcoder<T> tc;
-		private final Map<String, CachedData> rvMap;
+		private final Map<String, Future<T>> rvMap;
 		private final Collection<Operation> ops;
 		private final CountDownLatch latch;
 		private boolean cancelled=false;
 
-		public BulkGetFuture(Transcoder<T> tc, Map<String, CachedData> m,
+		public BulkGetFuture(Map<String, Future<T>> m,
 				Collection<Operation> getOps, CountDownLatch l) {
 			super();
-			this.tc = tc;
 			rvMap = m;
 			ops = getOps;
 			latch=l;
@@ -1564,6 +1565,9 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 			for(Operation op : ops) {
 				rv |= op.getState() == OperationState.WRITING;
 				op.cancel();
+			}
+			for (Future<T> v : rvMap.values()) {
+				v.cancel(ign);
 			}
 			cancelled=true;
 			return rv;
@@ -1594,13 +1598,8 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 				}
 			}
 			Map<String, T> m = new HashMap<String, T>();
-			for (Map.Entry<String, CachedData> me : rvMap.entrySet()) {
-				T val = tc.decode(me.getValue());
-				// val may be null if the transcoder did not understand
-				// the value.
-				if(val != null) {
-					m.put(me.getKey(), val);
-				}
+			for (Map.Entry<String, Future<T>> me : rvMap.entrySet()) {
+				m.put(me.getKey(), me.getValue().get());
 			}
 			return m;
 		}
@@ -1687,12 +1686,10 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	}
 
 	static class GetFuture<T> implements Future<T> {
-		private final Transcoder<T> tc;
-		private final OperationFuture<CachedData> rv;
+		private final OperationFuture<Future<T>> rv;
 
-		public GetFuture(Transcoder<T> tc, CountDownLatch l, long globalOperationTimeout) {
-			this.tc = tc;
-			this.rv = new OperationFuture<CachedData>(l, globalOperationTimeout);
+		public GetFuture(CountDownLatch l, long globalOperationTimeout) {
+			this.rv = new OperationFuture<Future<T>>(l, globalOperationTimeout);
 		}
 
 		public boolean cancel(boolean ign) {
@@ -1700,19 +1697,17 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		}
 
 		public T get() throws InterruptedException, ExecutionException {
-			return decode(rv.get());
+			Future<T> v = rv.get();
+			return v == null ? null : v.get();
 		}
 
 		public T get(long duration, TimeUnit units)
 			throws InterruptedException, TimeoutException, ExecutionException {
-			return decode(rv.get(duration, units));
+			Future<T> v = rv.get(duration, units);
+			return v == null ? null : v.get();
 		}
 
-		private T decode(CachedData d) {
-			return d == null ? null : tc.decode(d);
-		}
-
-		void set(CachedData d) {
+		void set(Future<T> d) {
 			rv.set(d);
 		}
 
@@ -1727,6 +1722,5 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 		public boolean isDone() {
 			return rv.isDone();
 		}
-
 	}
 }
