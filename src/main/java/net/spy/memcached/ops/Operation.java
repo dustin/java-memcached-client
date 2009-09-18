@@ -3,6 +3,8 @@ package net.spy.memcached.ops;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.MemcachedNode;
+
 
 /**
  * Base interface for all operations.
@@ -67,4 +69,15 @@ public interface Operation {
 	 */
 	void handleRead(ByteBuffer data);
 
+	/**
+	 * Get the node that should've been handling this operation.
+	 */
+	MemcachedNode getHandlingNode();
+
+	/**
+	 * Set a reference to the node that will be/is handling this operation.
+	 *
+	 * @param to a memcached node
+	 */
+	void setHandlingNode(MemcachedNode to);
 }

@@ -553,6 +553,7 @@ public final class MemcachedConnection extends SpyObject {
 	}
 
 	public void addOperation(final MemcachedNode node, final Operation o) {
+		o.setHandlingNode(node);
 		o.initialize();
 		node.addOp(o);
 		addedQueue.offer(node);
@@ -566,6 +567,7 @@ public final class MemcachedConnection extends SpyObject {
 		for(Map.Entry<MemcachedNode, Operation> me : ops.entrySet()) {
 			final MemcachedNode node=me.getKey();
 			Operation o=me.getValue();
+			o.setHandlingNode(node);
 			o.initialize();
 			node.addOp(o);
 			addedQueue.offer(node);

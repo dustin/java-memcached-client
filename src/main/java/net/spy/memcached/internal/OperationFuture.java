@@ -56,7 +56,8 @@ public class OperationFuture<T> implements Future<T> {
 	public T get(long duration, TimeUnit units)
 		throws InterruptedException, TimeoutException, ExecutionException {
 		if(!latch.await(duration, units)) {
-			throw new TimeoutException("Timed out waiting for operation");
+			throw new CheckedOperationTimeoutException(
+					"Timed out waiting for operation", op);
 		}
 		if(op != null && op.hasErrored()) {
 			throw new ExecutionException(op.getException());

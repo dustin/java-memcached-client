@@ -2,6 +2,7 @@ package net.spy.memcached.internal;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -59,7 +60,14 @@ public class BulkGetFuture<T> implements Future<Map<String, T>> {
 		throws InterruptedException,
 		ExecutionException, TimeoutException {
 		if(!latch.await(timeout, unit)) {
-			throw new TimeoutException("Operation timed out.");
+			Collection<Operation> timedoutOps = new HashSet<Operation>();
+			for(Operation op : ops) {
+				if(op.getState() != OperationState.COMPLETE) {
+					timedoutOps.add(op);
+				}
+			}
+			throw new CheckedOperationTimeoutException("Operation timed out.",
+					timedoutOps);
 		}
 		for(Operation op : ops) {
 			if(op.isCancelled()) {
