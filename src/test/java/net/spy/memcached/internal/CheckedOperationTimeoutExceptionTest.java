@@ -20,6 +20,21 @@ public class CheckedOperationTimeoutExceptionTest extends TestCase {
 				new CheckedOperationTimeoutException("test", op).toString());
 	}
 
+	public void testNullNode() {
+		Operation op = new TestOperation();
+		assertEquals(CheckedOperationTimeoutException.class.getName()
+				+ ": test - failing node: <unknown>",
+				new CheckedOperationTimeoutException("test", op).toString());
+	}
+
+	public void testNullOperation() {
+		assertEquals(CheckedOperationTimeoutException.class.getName()
+				+ ": test - failing node: <unknown>",
+				new CheckedOperationTimeoutException("test",
+						(Operation)null).toString());
+	}
+
+
 	public void testMultipleOperation() {
 		Collection<Operation> ops = new ArrayList<Operation>();
 		ops.add(buildOp(11211));

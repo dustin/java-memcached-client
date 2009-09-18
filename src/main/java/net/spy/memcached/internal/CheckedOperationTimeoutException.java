@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.TimeoutException;
 
+import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.ops.Operation;
 
 /**
@@ -42,7 +43,8 @@ public class CheckedOperationTimeoutException extends TimeoutException {
 			} else {
 				rv.append(", ");
 			}
-			rv.append(op.getHandlingNode().getSocketAddress());
+			MemcachedNode node = op == null ? null : op.getHandlingNode();
+			rv.append(node == null ? "<unknown>" : node.getSocketAddress());
 		}
 		return rv.toString();
 	}
