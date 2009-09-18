@@ -585,6 +585,7 @@ public final class MemcachedConnection extends SpyObject {
 			Operation op = of.newOp(node, latch);
 			op.initialize();
 			node.addOp(op);
+			op.setHandlingNode(node);
 			addedQueue.offer(node);
 		}
 		Selector s=selector.wakeup();
