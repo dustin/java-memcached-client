@@ -58,29 +58,8 @@ public class CacheLoader extends SpyObject {
 		Future<Boolean> mostRecent = null;
 		while(i.hasNext()) {
 			Map.Entry<String, T> e = i.next();
-			boolean stored = false;
-			while(!stored) {
-				try {
-					mostRecent = client.set(e.getKey(), expiration,
-							e.getValue());
-					stored = true;
-					watch(e.getKey(), mostRecent);
-				} catch(IllegalStateException ex) {
-					// Need to slow down a bit when we start getting rejections.
-					try {
-						if(mostRecent != null) {
-							mostRecent.get(250, TimeUnit.MILLISECONDS);
-						} else {
-							Thread.sleep(250);
-						}
-					} catch(InterruptedException ie) {
-						Thread.currentThread().interrupt();
-					} catch(Exception e2) {
-						// Ignore exceptions here.  We're just trying to slow
-						// down input.
-					}
-				}
-			}
+			mostRecent = push(e.getKey(), e.getValue());
+			watch(e.getKey(), mostRecent);
 		}
 
 		return mostRecent == null ? new ImmediateFuture(true) : mostRecent;
@@ -94,6 +73,41 @@ public class CacheLoader extends SpyObject {
 	 */
 	public <T> Future<?> loadData(Map<String, T> map) {
 		return loadData(map.entrySet().iterator());
+	}
+
+	/**
+	 * Push a value into the cache.
+	 *
+	 * This is a wrapper around set that throttles and retries on full queues.
+	 *
+	 * @param <T> the type being stored
+	 * @param k the key
+	 * @param value the value
+	 * @return the future representing the stored data
+	 */
+	public <T> Future<Boolean> push(String k, T value) {
+		Future<Boolean> rv = null;
+		while(rv == null) {
+			try {
+				rv = client.set(k, expiration, value);
+			} catch(IllegalStateException ex) {
+				// Need to slow down a bit when we start getting rejections.
+				try {
+					if(rv != null) {
+						rv.get(250, TimeUnit.MILLISECONDS);
+					} else {
+						Thread.sleep(250);
+					}
+				} catch(InterruptedException ie) {
+					Thread.currentThread().interrupt();
+				} catch(Exception e2) {
+					// Ignore exceptions here.  We're just trying to slow
+					// down input.
+				}
+			}
+
+		}
+		return rv;
 	}
 
 	private void watch(final String key, final Future<Boolean> f) {
