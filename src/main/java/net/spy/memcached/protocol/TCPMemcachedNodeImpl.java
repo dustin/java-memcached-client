@@ -118,7 +118,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#fillWriteBuffer(boolean)
 	 */
-	public final void fillWriteBuffer(boolean optimizeGets) {
+	public final void fillWriteBuffer(boolean shouldOptimize) {
 		if(toWrite == 0 && readQ.remainingCapacity() > 0) {
 			getWbuf().clear();
 			Operation o=getCurrentWriteOp();
@@ -137,7 +137,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 					transitionWriteItem();
 
 					preparePending();
-					if(optimizeGets) {
+					if(shouldOptimize) {
 						optimize();
 					}
 

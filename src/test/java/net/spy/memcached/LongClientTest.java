@@ -26,12 +26,15 @@ public class LongClientTest extends ClientBaseCase {
 			public MemcachedConnection createConnection(
 					List<InetSocketAddress> addrs) throws IOException {
 				MemcachedConnection rv = super.createConnection(addrs);
-				rv.setGetOptimization(false);
 				return rv;
 			}
 			@Override
 			public long getOperationTimeout() {
 				return 15000;
+			}
+			@Override
+			public boolean shouldOptimize() {
+				return false;
 			}
 			});
 

@@ -99,4 +99,9 @@ public interface ConnectionFactory {
 	 * factory.
 	 */
 	Transcoder<Object> getDefaultTranscoder();
+
+	/**
+	 * If true, low-level optimization is in effect.
+	 */
+	boolean shouldOptimize();
 }

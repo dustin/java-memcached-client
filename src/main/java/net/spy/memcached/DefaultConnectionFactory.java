@@ -195,4 +195,11 @@ public class DefaultConnectionFactory extends SpyObject
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#shouldOptimize()
+	 */
+	public boolean shouldOptimize() {
+		return true;
+	}
+
 }

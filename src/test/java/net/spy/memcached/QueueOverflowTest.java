@@ -32,7 +32,6 @@ public class QueueOverflowTest extends ClientBaseCase {
 			public MemcachedConnection createConnection(
 					List<InetSocketAddress> addrs) throws IOException {
 				MemcachedConnection rv = super.createConnection(addrs);
-				rv.setGetOptimization(false);
 				return rv;
 			}
 			@Override
@@ -51,6 +50,10 @@ public class QueueOverflowTest extends ClientBaseCase {
 			@Override
 			public BlockingQueue<Operation> createWriteOperationQueue() {
 				return createOperationQueue();
+			}
+			@Override
+			public boolean shouldOptimize() {
+				return false;
 			}
 		});
 	}

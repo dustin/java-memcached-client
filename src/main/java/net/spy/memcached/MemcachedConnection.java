@@ -47,8 +47,8 @@ public final class MemcachedConnection extends SpyObject {
 	private static final long MAX_DELAY = 30000;
 
 	private volatile boolean shutDown=false;
-	// If true, get optimization will collapse multiple sequential get ops
-	private boolean optimizeGets=true;
+	// If true, optimization will collapse multiple sequential get ops
+	private final boolean shouldOptimize;
 	private Selector selector=null;
 	private final NodeLocator locator;
 	private final FailureMode failureMode;
@@ -81,6 +81,7 @@ public final class MemcachedConnection extends SpyObject {
 		reconnectQueue=new TreeMap<Long, MemcachedNode>();
 		addedQueue=new ConcurrentLinkedQueue<MemcachedNode>();
 		failureMode = fm;
+		shouldOptimize = f.shouldOptimize();
 		opFact = opfactory;
 		selector=Selector.open();
 		List<MemcachedNode> connections=new ArrayList<MemcachedNode>(a.size());
@@ -110,15 +111,6 @@ public final class MemcachedConnection extends SpyObject {
 			connections.add(qa);
 		}
 		locator=f.createLocator(connections);
-	}
-
-	/**
-	 * Enable or disable get optimization.
-	 *
-	 * When enabled (default), multiple sequential gets are collapsed into one.
-	 */
-	public void setGetOptimization(boolean to) {
-		optimizeGets=to;
 	}
 
 	private boolean selectorsMakeSense() {
@@ -339,11 +331,11 @@ public final class MemcachedConnection extends SpyObject {
 
 	private void handleWrites(SelectionKey sk, MemcachedNode qa)
 		throws IOException {
-		qa.fillWriteBuffer(optimizeGets);
+		qa.fillWriteBuffer(shouldOptimize);
 		boolean canWriteMore=qa.getBytesRemainingToWrite() > 0;
 		while(canWriteMore) {
 			int wrote=qa.writeSome();
-			qa.fillWriteBuffer(optimizeGets);
+			qa.fillWriteBuffer(shouldOptimize);
 			canWriteMore = wrote > 0 && qa.getBytesRemainingToWrite() > 0;
 		}
 	}
