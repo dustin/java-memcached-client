@@ -11,7 +11,6 @@ import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
-import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
 
@@ -33,7 +32,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	private volatile int reconnectAttempt=1;
 	private SocketChannel channel;
 	private int toWrite=0;
-	protected GetOperation getOp=null;
+	protected Operation optimizedOp=null;
 	private volatile SelectionKey sk=null;
 
 	public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
@@ -189,18 +188,18 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 * @see net.spy.memcached.MemcachedNode#getCurrentWriteOp()
 	 */
 	public final Operation getCurrentWriteOp() {
-		return getOp == null ? writeQ.peek() : getOp;
+		return optimizedOp == null ? writeQ.peek() : optimizedOp;
 	}
 
 	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#removeCurrentWriteOp()
 	 */
 	public final Operation removeCurrentWriteOp() {
-		Operation rv=getOp;
+		Operation rv=optimizedOp;
 		if(rv == null) {
 			rv=writeQ.remove();
 		} else {
-			getOp=null;
+			optimizedOp=null;
 		}
 		return rv;
 	}
@@ -216,7 +215,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 * @see net.spy.memcached.MemcachedNode#hasWriteOp()
 	 */
 	public final boolean hasWriteOp() {
-		return !(getOp == null && writeQ.isEmpty());
+		return !(optimizedOp == null && writeQ.isEmpty());
 	}
 
 	/* (non-Javadoc)
@@ -304,7 +303,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 		if(getSk()!= null && getSk().isValid()) {
 			sops=getSk().interestOps();
 		}
-		int rsize=readQ.size() + (getOp == null ? 0 : 1);
+		int rsize=readQ.size() + (optimizedOp == null ? 0 : 1);
 		int wsize=writeQ.size();
 		int isize=inputQueue.size();
 		return "{QA sa=" + getSocketAddress() + ", #Rops=" + rsize

@@ -16,6 +16,13 @@ class StoreOperationImpl extends OperationImpl
 	private static final int ADD=2;
 	private static final int REPLACE=3;
 
+	static final int SETQ=0x11;
+	static final int ADDQ=0x12;
+	static final int REPLACEQ=0x13;
+
+	// 4-byte flags, 4-byte expiration
+	static final int EXTRA_LEN = 8;
+
 	private final String key;
 	private final StoreType storeType;
 	private final int flags;

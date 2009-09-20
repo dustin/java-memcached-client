@@ -26,10 +26,11 @@ public final class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 		// make sure there are at least two get operations in a row before
 		// attempting to optimize them.
 		if(writeQ.peek() instanceof GetOperation) {
-			getOp=(GetOperationImpl)writeQ.remove();
+			optimizedOp=writeQ.remove();
 			if(writeQ.peek() instanceof GetOperation) {
-				OptimizedGetImpl og=new OptimizedGetImpl(getOp);
-				getOp=og;
+				OptimizedGetImpl og=new OptimizedGetImpl(
+						(GetOperation)optimizedOp);
+				optimizedOp=og;
 
 				while(writeQ.peek() instanceof GetOperation) {
 					GetOperationImpl o=(GetOperationImpl) writeQ.remove();
@@ -39,8 +40,8 @@ public final class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 				}
 
 				// Initialize the new mega get
-				getOp.initialize();
-				assert getOp.getState() == OperationState.WRITING;
+				optimizedOp.initialize();
+				assert optimizedOp.getState() == OperationState.WRITING;
 				ProxyCallback pcb=(ProxyCallback) og.getCallback();
 				getLogger().debug("Set up %s with %s keys and %s callbacks",
 					this, pcb.numKeys(), pcb.numCallbacks());

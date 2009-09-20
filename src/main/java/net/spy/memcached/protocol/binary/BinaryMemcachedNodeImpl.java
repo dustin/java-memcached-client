@@ -4,9 +4,11 @@ import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.BlockingQueue;
 
+import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.protocol.ProxyCallback;
 import net.spy.memcached.protocol.TCPMemcachedNodeImpl;
 
@@ -23,29 +25,58 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 
 	@Override
 	protected void optimize() {
-		// make sure there are at least two get operations in a row before
-		// attempting to optimize them.
-		if(writeQ.peek() instanceof GetOperation) {
-			getOp=(GetOperation)writeQ.remove();
-			if(writeQ.peek() instanceof GetOperation) {
-				OptimizedGetImpl og=new OptimizedGetImpl(getOp);
-				getOp=og;
-
-				while(writeQ.peek() instanceof GetOperation) {
-					GetOperation o=(GetOperation) writeQ.remove();
-					if(!o.isCancelled()) {
-						og.addOperation(o);
-					}
-				}
-
-				// Initialize the new mega get
-				getOp.initialize();
-				assert getOp.getState() == OperationState.WRITING;
-				ProxyCallback pcb=(ProxyCallback) og.getCallback();
-				getLogger().debug("Set up %s with %s keys and %s callbacks",
-					this, pcb.numKeys(), pcb.numCallbacks());
-			}
+		Operation firstOp = writeQ.peek();
+		if(firstOp instanceof GetOperation) {
+			optimizeGets();
+		} else if(firstOp instanceof CASOperation) {
+			optimizeSets();
 		}
 	}
 
+	private void optimizeGets() {
+		// make sure there are at least two get operations in a row before
+		// attempting to optimize them.
+		optimizedOp=writeQ.remove();
+		if(writeQ.peek() instanceof GetOperation) {
+			OptimizedGetImpl og=new OptimizedGetImpl(
+					(GetOperation)optimizedOp);
+			optimizedOp=og;
+
+			while(writeQ.peek() instanceof GetOperation) {
+				GetOperation o=(GetOperation) writeQ.remove();
+				if(!o.isCancelled()) {
+					og.addOperation(o);
+				}
+			}
+
+			// Initialize the new mega get
+			optimizedOp.initialize();
+			assert optimizedOp.getState() == OperationState.WRITING;
+			ProxyCallback pcb=(ProxyCallback) og.getCallback();
+			getLogger().debug("Set up %s with %s keys and %s callbacks",
+					this, pcb.numKeys(), pcb.numCallbacks());
+		}
+	}
+
+	private void optimizeSets() {
+		// make sure there are at least two get operations in a row before
+		// attempting to optimize them.
+		optimizedOp=writeQ.remove();
+		if(writeQ.peek() instanceof CASOperation) {
+			OptimizedSetImpl og=new OptimizedSetImpl(
+					(CASOperation)optimizedOp);
+			optimizedOp=og;
+
+			while(writeQ.peek() instanceof StoreOperation) {
+				CASOperation o=(CASOperation) writeQ.remove();
+				if(!o.isCancelled()) {
+					og.addOperation(o);
+				}
+			}
+
+			// Initialize the new mega set
+			optimizedOp.initialize();
+			assert optimizedOp.getState() == OperationState.WRITING;
+		}
+	}
 }
