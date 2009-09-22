@@ -8,6 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import junit.framework.TestCase;
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.transcoders.SerializingTranscoder;
@@ -67,6 +68,10 @@ public class ConnectionFactoryBuilderTest extends TestCase {
 		BlockingQueue<Operation> rQueue = new LinkedBlockingQueue<Operation>();
 		BlockingQueue<Operation> wQueue = new LinkedBlockingQueue<Operation>();
 
+		OperationQueueFactory opQueueFactory = new DirectFactory(oQueue);
+		OperationQueueFactory rQueueFactory = new DirectFactory(rQueue);
+		OperationQueueFactory wQueueFactory = new DirectFactory(wQueue);
+
 		ConnectionFactory f = b.setDaemon(false)
 			.setShouldOptimize(false)
 			.setFailureMode(FailureMode.Redistribute)
@@ -74,9 +79,9 @@ public class ConnectionFactoryBuilderTest extends TestCase {
 			.setInitialObservers(Collections.singleton(testObserver))
 			.setOpFact(new BinaryOperationFactory())
 			.setOpTimeout(4225)
-			.setOpQueue(oQueue)
-			.setReadOpQueue(rQueue)
-			.setWriteOpQueue(wQueue)
+			.setOpQueueFactory(opQueueFactory)
+			.setReadOpQueueFactory(rQueueFactory)
+			.setWriteOpQueueFactory(wQueueFactory)
 			.setReadBufferSize(19)
 			.setTranscoder(new WhalinTranscoder())
 			.build();
@@ -96,4 +101,17 @@ public class ConnectionFactoryBuilderTest extends TestCase {
 		assertFalse(f.shouldOptimize());
 	}
 
+	static class DirectFactory implements OperationQueueFactory {
+		private final BlockingQueue<Operation> queue;
+
+		public DirectFactory(BlockingQueue<Operation> q) {
+			super();
+			queue = q;
+		}
+
+		public BlockingQueue<Operation> create() {
+			return queue;
+		}
+
+	}
 }

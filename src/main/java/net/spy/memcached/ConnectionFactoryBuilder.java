@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.transcoders.Transcoder;
 
 /**
@@ -12,9 +13,9 @@ import net.spy.memcached.transcoders.Transcoder;
  */
 public class ConnectionFactoryBuilder {
 
-	private BlockingQueue<Operation> opQueue;
-	private BlockingQueue<Operation> readOpQueue;
-	private BlockingQueue<Operation> writeOpQueue;
+	private OperationQueueFactory opQueueFactory;
+	private OperationQueueFactory readQueueFactory;
+	private OperationQueueFactory writeQueueFactory;
 
 	private Transcoder<Object> transcoder;
 
@@ -32,18 +33,18 @@ public class ConnectionFactoryBuilder {
 	private int readBufSize = -1;
 	private HashAlgorithm hashAlg;
 
-	public ConnectionFactoryBuilder setOpQueue(BlockingQueue<Operation> q) {
-		opQueue = q;
+	public ConnectionFactoryBuilder setOpQueueFactory(OperationQueueFactory q) {
+		opQueueFactory = q;
 		return this;
 	}
 
-	public ConnectionFactoryBuilder setReadOpQueue(BlockingQueue<Operation> q) {
-		readOpQueue = q;
+	public ConnectionFactoryBuilder setReadOpQueueFactory(OperationQueueFactory q) {
+		readQueueFactory = q;
 		return this;
 	}
 
-	public ConnectionFactoryBuilder setWriteOpQueue(BlockingQueue<Operation> q) {
-		writeOpQueue = q;
+	public ConnectionFactoryBuilder setWriteOpQueueFactory(OperationQueueFactory q) {
+		writeQueueFactory = q;
 		return this;
 	}
 
@@ -102,20 +103,22 @@ public class ConnectionFactoryBuilder {
 
 			@Override
 			public BlockingQueue<Operation> createOperationQueue() {
-				return opQueue == null ?
-						super.createOperationQueue() : opQueue;
+				return opQueueFactory == null ?
+						super.createOperationQueue() : opQueueFactory.create();
 			}
 
 			@Override
 			public BlockingQueue<Operation> createReadOperationQueue() {
-				return readOpQueue == null ?
-						super.createReadOperationQueue() : readOpQueue;
+				return readQueueFactory == null ?
+						super.createReadOperationQueue()
+						: readQueueFactory.create();
 			}
 
 			@Override
 			public BlockingQueue<Operation> createWriteOperationQueue() {
-				return writeOpQueue == null ?
-						super.createWriteOperationQueue() : writeOpQueue;
+				return writeQueueFactory == null ?
+						super.createReadOperationQueue()
+						: writeQueueFactory.create();
 			}
 
 			@Override
