@@ -11,7 +11,20 @@ COPYRIGHT = "2006-2009  Dustin Sallings"
 MAVEN_1_RELEASE = true
 RELEASE_REPO = 'http://bleu.west.spy.net/~dustin/repo'
 PROJECT_NAME = "memcached"
-RELEASED_VERSIONS=%W(#{VERSION_NUMBER} 2.2 2.1 1.4 1.3.1 1.2 1.1 1.0.44)
+
+def compute_released_verions
+  h = {}
+  `git tag`.reject{|i| i =~ /pre|rc/}.map{|v| v.strip}.each do |v|
+    a=v.split('.')
+    h[a[0..1].join('.')] = v
+  end
+  require 'set'
+  rv = Set.new h.values
+  rv << VERSION_NUMBER
+  rv
+end
+
+RELEASED_VERSIONS=compute_released_verions.sort.reverse
 
 # Specify Maven 2.0 remote repositories here, like this:
 repositories.remote << "http://www.ibiblio.org/maven2/"
