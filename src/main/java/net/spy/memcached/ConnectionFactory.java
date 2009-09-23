@@ -50,7 +50,6 @@ public interface ConnectionFactory {
 	 */
 	BlockingQueue<Operation> createWriteOperationQueue();
 
-
 	/**
 	 * Create a NodeLocator instance for the given list of nodes.
 	 */
