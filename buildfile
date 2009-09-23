@@ -34,7 +34,7 @@ require 'buildr/java/emma'
 
 plugins=[
   'spy:m1compat:rake:1.0',
-  'spy:site:rake:1.2.3',
+  'spy:site:rake:1.2.4',
   'spy:git_tree_version:rake:1.0',
   'spy:build_info:rake:1.1.1'
 ]
