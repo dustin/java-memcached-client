@@ -15,6 +15,8 @@ import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
+import net.spy.memcached.protocol.binary.BinaryMemcachedNodeImpl;
+import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.transcoders.SerializingTranscoder;
 import net.spy.memcached.transcoders.Transcoder;
 
@@ -93,10 +95,22 @@ public class DefaultConnectionFactory extends SpyObject
 
 	public MemcachedNode createMemcachedNode(SocketAddress sa,
 			SocketChannel c, int bufSize) {
-		return new AsciiMemcachedNodeImpl(sa, c, bufSize,
+
+		OperationFactory of = getOperationFactory();
+		if(of instanceof AsciiOperationFactory) {
+			return new AsciiMemcachedNodeImpl(sa, c, bufSize,
 				createReadOperationQueue(),
 				createWriteOperationQueue(),
 				createOperationQueue());
+		} else if(of instanceof BinaryOperationFactory) {
+			return new BinaryMemcachedNodeImpl(sa, c, bufSize,
+					createReadOperationQueue(),
+					createWriteOperationQueue(),
+					createOperationQueue());
+		} else {
+			throw new IllegalStateException(
+				"Unhandled operation factory type " + of);
+		}
 	}
 
 	/* (non-Javadoc)

@@ -6,6 +6,8 @@ import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationQueueFactory;
+import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
+import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.transcoders.Transcoder;
 
 /**
@@ -101,6 +103,19 @@ public class ConnectionFactoryBuilder {
 		return this;
 	}
 
+	public ConnectionFactoryBuilder setProtocol(Protocol prot) {
+		switch(prot) {
+			case TEXT:
+				opFact = new AsciiOperationFactory();
+				break;
+			case BINARY:
+				opFact = new BinaryOperationFactory();
+				break;
+			default: assert false : "Unhandled protocol: " + prot;
+		}
+		return this;
+	}
+
 	/**
 	 * Get the ConnectionFactory set up with the provided parameters.
 	 */
@@ -184,4 +199,17 @@ public class ConnectionFactoryBuilder {
 
 	}
 
+	/**
+	 * Type of protocol to use for connections.
+	 */
+	public static enum Protocol {
+		/**
+		 * Use the text (ascii) protocol.
+		 */
+		TEXT,
+		/**
+		 * Use the binary protocol.
+		 */
+		BINARY
+	}
 }
