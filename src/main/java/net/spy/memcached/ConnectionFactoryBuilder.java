@@ -29,6 +29,7 @@ public class ConnectionFactoryBuilder {
 	private long opTimeout = -1;
 	private boolean isDaemon = true;
 	private boolean shouldOptimize = true;
+	private boolean useNagle = false;
 
 	private int readBufSize = -1;
 	private HashAlgorithm hashAlg;
@@ -92,6 +93,11 @@ public class ConnectionFactoryBuilder {
 
 	public ConnectionFactoryBuilder setHashAlg(HashAlgorithm to) {
 		hashAlg = to;
+		return this;
+	}
+
+	public ConnectionFactoryBuilder setUseNagleAlgorithm(boolean to) {
+		useNagle = to;
 		return this;
 	}
 
@@ -168,6 +174,11 @@ public class ConnectionFactoryBuilder {
 			@Override
 			public boolean shouldOptimize() {
 				return shouldOptimize;
+			}
+
+			@Override
+			public boolean useNagleAlgorithm() {
+				return useNagle;
 			}
 		};
 

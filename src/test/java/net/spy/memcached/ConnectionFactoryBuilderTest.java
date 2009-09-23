@@ -53,6 +53,7 @@ public class ConnectionFactoryBuilderTest extends TestCase {
 
 		assertTrue(f.isDaemon());
 		assertTrue(f.shouldOptimize());
+		assertFalse(f.useNagleAlgorithm());
 	}
 
 	public void testModifications() {
@@ -84,6 +85,7 @@ public class ConnectionFactoryBuilderTest extends TestCase {
 			.setWriteOpQueueFactory(wQueueFactory)
 			.setReadBufferSize(19)
 			.setTranscoder(new WhalinTranscoder())
+			.setUseNagleAlgorithm(true)
 			.build();
 
 		assertEquals(4225, f.getOperationTimeout());
@@ -99,6 +101,7 @@ public class ConnectionFactoryBuilderTest extends TestCase {
 		assertSame(wQueue, f.createWriteOperationQueue());
 		assertFalse(f.isDaemon());
 		assertFalse(f.shouldOptimize());
+		assertTrue(f.useNagleAlgorithm());
 	}
 
 	static class DirectFactory implements OperationQueueFactory {
