@@ -25,6 +25,9 @@ public class OptimizedSetImpl extends OperationImpl implements Operation {
 		new HashMap<Integer, OperationCallback>();
 	private final List<CASOperation> ops = new ArrayList<CASOperation>();
 
+	// If nothing else, this will be a NOOP.
+	private int byteCount = MIN_RECV_PACKET;
+
 	/**
 	 * Construct an optimized get starting with the given get operation.
 	 */
@@ -35,24 +38,28 @@ public class OptimizedSetImpl extends OperationImpl implements Operation {
 
 	public void addOperation(CASOperation op) {
 		ops.add(op);
+
+		// Count the bytes required by this operation.
+		Iterator<String> is = op.getKeys().iterator();
+		String k = is.next();
+		int keylen = KeyUtil.getKeyBytes(k).length;
+
+		byteCount += MIN_RECV_PACKET + StoreOperationImpl.EXTRA_LEN
+			+ keylen + op.getBytes().length;
+	}
+
+	public int size() {
+		return ops.size();
+	}
+
+	public int bytes() {
+		return byteCount;
 	}
 
 	@Override
 	public void initialize() {
-		// Start with the length of the NOOP
-		int length = MIN_RECV_PACKET;
-		// Then add the length of all of the other packets
-		for(CASOperation so : ops) {
-			length += MIN_RECV_PACKET + StoreOperationImpl.EXTRA_LEN;
-			Iterator<String> is = so.getKeys().iterator();
-			String k = is.next();
-			length += KeyUtil.getKeyBytes(k).length;
-			assert !is.hasNext();
-			length += so.getBytes().length;
-		}
-
 		// Now create a buffer.
-		ByteBuffer bb=ByteBuffer.allocate(length);
+		ByteBuffer bb=ByteBuffer.allocate(byteCount);
 		for(CASOperation so : ops) {
 			Iterator<String> is = so.getKeys().iterator();
 			String k = is.next();
