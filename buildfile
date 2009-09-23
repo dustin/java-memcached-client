@@ -30,7 +30,7 @@ RELEASED_VERSIONS=compute_released_verions.sort.reverse
 repositories.remote << "http://www.ibiblio.org/maven2/"
 repositories.remote << "http://bleu.west.spy.net/~dustin/m2repo/"
 
-require 'buildr/java/cobertura'
+require 'buildr/java/emma'
 
 plugins=[
   'spy:m1compat:rake:1.0',
@@ -71,8 +71,8 @@ define "memcached" do
   package :sources
   package :javadoc
 
-  cobertura.exclude 'net.spy.memcached.test\..*'
-  cobertura.exclude 'net.spy.memcached.BuildInfo'
+  emma.exclude 'net.spy.memcached.test.*'
+  emma.exclude 'net.spy.memcached.BuildInfo'
 
 end
 # vim: syntax=ruby et ts=2
