@@ -66,7 +66,7 @@ define "memcached" do
   resources.from "target/generated-rsrc"
 
   package(:jar).with :manifest =>
-    manifest.merge("Main-Class" => "net.spy.memcached.BuildInfo\n")
+    manifest.merge("Main-Class" => "net.spy.memcached.BuildInfo")
 
   package :sources
   package :javadoc
