@@ -2,6 +2,7 @@ package net.spy.memcached;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.ops.Operation;
@@ -28,6 +29,7 @@ public class ConnectionFactoryBuilder {
 
 	private OperationFactory opFact;
 
+	private Locator locator = Locator.ARRAY_MOD;
 	private long opTimeout = -1;
 	private boolean isDaemon = true;
 	private boolean shouldOptimize = true;
@@ -163,6 +165,14 @@ public class ConnectionFactoryBuilder {
 	}
 
 	/**
+	 * Set the locator type.
+	 */
+	public ConnectionFactoryBuilder setLocatorType(Locator l) {
+		locator = l;
+		return this;
+	}
+
+	/**
 	 * Get the ConnectionFactory set up with the provided parameters.
 	 */
 	public ConnectionFactory build() {
@@ -186,6 +196,18 @@ public class ConnectionFactoryBuilder {
 				return writeQueueFactory == null ?
 						super.createReadOperationQueue()
 						: writeQueueFactory.create();
+			}
+
+			@Override
+			public NodeLocator createLocator(List<MemcachedNode> nodes) {
+				switch(locator) {
+					case ARRAY_MOD:
+						return new ArrayModNodeLocator(nodes, getHashAlg());
+					case CONSISTENT:
+						return new KetamaNodeLocator(nodes, getHashAlg());
+					default: throw new IllegalStateException(
+							"Unhandled locator type: " + locator);
+				}
 			}
 
 			@Override
@@ -257,5 +279,22 @@ public class ConnectionFactoryBuilder {
 		 * Use the binary protocol.
 		 */
 		BINARY
+	}
+
+	/**
+	 * Type of node locator to use.
+	 */
+	public static enum Locator {
+		/**
+		 * Array modulus - the classic node location algorithm.
+		 */
+		ARRAY_MOD,
+		/**
+		 * Consistent hash algorithm.
+		 *
+		 * This uses ketema's distribution algorithm, but may be used with any
+		 * hash algorithm.
+		 */
+		CONSISTENT
 	}
 }

@@ -8,6 +8,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import net.spy.memcached.ConnectionFactoryBuilder.Locator;
 import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.compat.BaseMockCase;
 import net.spy.memcached.ops.Operation;
@@ -56,6 +57,10 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 		BlockingQueue<Operation> writeOpQueue = f.createWriteOperationQueue();
 		assertTrue(writeOpQueue instanceof LinkedBlockingQueue<?>);
 
+		MemcachedNode n = (MemcachedNode)mock(MemcachedNode.class).proxy();
+		assertTrue(f.createLocator(Collections.singletonList(n))
+				instanceof ArrayModNodeLocator);
+
 		SocketChannel sc = SocketChannel.open();
 		try {
 			assertTrue(f.createMemcachedNode(
@@ -101,6 +106,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 			.setReadBufferSize(19)
 			.setTranscoder(new WhalinTranscoder())
 			.setUseNagleAlgorithm(true)
+			.setLocatorType(Locator.CONSISTENT)
 			.build();
 
 		assertEquals(4225, f.getOperationTimeout());
@@ -117,6 +123,11 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 		assertFalse(f.isDaemon());
 		assertFalse(f.shouldOptimize());
 		assertTrue(f.useNagleAlgorithm());
+
+		MemcachedNode n = new MockMemcachedNode(
+			InetSocketAddress.createUnresolved("localhost", 11211));
+		assertTrue(f.createLocator(Collections.singletonList(n))
+				instanceof KetamaNodeLocator);
 
 		SocketChannel sc = SocketChannel.open();
 		try {
