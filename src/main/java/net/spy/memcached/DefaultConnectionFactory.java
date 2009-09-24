@@ -67,9 +67,9 @@ public class DefaultConnectionFactory extends SpyObject
 	/**
 	 * Construct a DefaultConnectionFactory with the given parameters.
 	 *
-	 * @param hashAlgorithm the algorithm to use for hashing
-	 * @param bufSize the buffer size
 	 * @param qLen the queue length.
+	 * @param bufSize the buffer size
+	 * @param hash the algorithm to use for hashing
 	 */
 	public DefaultConnectionFactory(int qLen, int bufSize, HashAlgorithm hash) {
 		super();

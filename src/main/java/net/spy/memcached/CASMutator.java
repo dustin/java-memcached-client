@@ -56,7 +56,6 @@ public class CASMutator<T> extends SpyObject {
 	 *
 	 * @param c the client
 	 * @param tc the Transcoder to use
-	 * @param max_tries the maximum number of attempts to get a CAS to succeed
 	 */
 	public CASMutator(MemcachedClientIF c, Transcoder<T> tc) {
 		this(c, tc, MAX_TRIES);

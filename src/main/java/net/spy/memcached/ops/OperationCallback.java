@@ -10,7 +10,7 @@ public interface OperationCallback {
 	/**
 	 * Method invoked with the status when the operation is complete.
 	 *
-	 * @param line the line containing the final status of the operation
+	 * @param status the result of the operation
 	 */
 	void receivedStatus(OperationStatus status);
 

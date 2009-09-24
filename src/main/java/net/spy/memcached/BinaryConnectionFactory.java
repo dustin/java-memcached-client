@@ -29,9 +29,9 @@ public class BinaryConnectionFactory extends DefaultConnectionFactory {
 	/**
 	 * Construct a BinaryConnectionFactory with the given parameters.
 	 *
-	 * @param hashAlgorithm the algorithm to use for hashing
+	 * @param len the queue length.
 	 * @param bufSize the buffer size
-	 * @param qLen the queue length.
+ 	 * @param hash the algorithm to use for hashing
 	 */
 	public BinaryConnectionFactory(int len, int bufSize, HashAlgorithm hash) {
 		super(len, bufSize, hash);

@@ -508,7 +508,7 @@ public final class MemcachedConnection extends SpyObject {
 	/**
 	 * Add an operation to the given connection.
 	 *
-	 * @param which the connection offset
+	 * @param key the key the operation is operating upon
 	 * @param o the operation
 	 */
 	public void addOperation(final String key, final Operation o) {

@@ -73,11 +73,11 @@ public interface OperationFactory {
 	/**
 	 * Create a get operation.
 	 *
-	 * @param key the collection of keys to get
-	 * @param callback the callback that will contain the results
+	 * @param keys the collection of keys to get
+	 * @param cb the callback that will contain the results
 	 * @return a new GetOperation
 	 */
-	GetOperation get(Collection<String> value, GetOperation.Callback cb);
+	GetOperation get(Collection<String> keys, GetOperation.Callback cb);
 
 	/**
 	 * Create a mutator operation.

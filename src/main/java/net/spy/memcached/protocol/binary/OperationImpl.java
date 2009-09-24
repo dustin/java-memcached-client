@@ -221,8 +221,8 @@ abstract class OperationImpl extends BaseOperationImpl {
 	/**
 	 * Prepare a send buffer.
 	 *
-	 * @param cmd the command identifier
 	 * @param key the key (for keyed ops)
+	 * @param cas the cas value
 	 * @param val the data payload
 	 * @param extraHeaders any additional headers that need to be sent
 	 */

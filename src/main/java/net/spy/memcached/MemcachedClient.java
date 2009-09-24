@@ -127,7 +127,7 @@ public final class MemcachedClient extends SpyThread implements MemcachedClientI
 	/**
 	 * Get a memcache client over the specified memcached locations.
 	 *
-	 * @param bufSize read buffer size per connection (in bytes)
+	 * @param cf the connection factory to configure connections for this client
 	 * @param addrs the socket addresses
 	 * @throws IOException if connections cannot be established
 	 */
