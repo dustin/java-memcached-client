@@ -70,6 +70,13 @@ define "memcached" do
 
   package :sources
   package :javadoc
+  javadoc.using(:windowtitle => "javadocs for spymemcached #{TREE_VER}",
+                :doctitle => "Javadocs for spymemcached #{TREE_VER}",
+                :use => true,
+                :charset => 'utf-8',
+                :overview => 'src/main/java/net/spy/memcached/overview.html',
+                :group => { 'Core' => 'net.spy.memcached' },
+                :link => 'http://java.sun.com/j2se/1.5.0/docs/api/')
 
   emma.exclude 'net.spy.memcached.test.*'
   emma.exclude 'net.spy.memcached.BuildInfo'
