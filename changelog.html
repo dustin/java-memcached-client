@@ -18,7 +18,76 @@
 <body>
 
 <h1>Changelog for SpyMemcached</h1>
-<h2>Changes from release 2.3 to 2.3.1</h2>
+<h2>Changes from release 2.3.1 to 2.4rc1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:5CC&amp;chl=Dustin|Joseph|Wang" alt="contributors"/><pre>Prerelease of 2.4
+
+Changes since the 2.3 series.
+
+Bug Fixes:
+
+* Memcached node tracking.
+  When a timeout occurs on an operation, the exception indicates the
+  server node that was the intendend recipient of the operation.
+* Fixed reconnect loss on multiple simultaneous connection failures.
+  This is a rare occurrence, but the wrong thing would happen if two
+  simultaneous reconnects were requeued for any reason.
+* Fixed a race condition that occurred when tearing down a connection.
+  There was a case where shutting down a connection would cause an NPE
+  to get logged due to the a race between a selector check and the
+  selector being shut down.  Unlikely to affect a running app, but
+  it was still wrong.
+* Handle initial connect failures.
+  There were rare cases where an async connect would error instantly
+  on the first attempt, but that connect wouldn't be retried.
+
+Features:
+
+* ConnectionFactoryBuilder
+  Rather than having to build a custom subclass of
+  DefaultConnectionFactory to override behaviors, you can now use a
+  ConnectionFactoryBuilder to easily assemble a ConnectionFactory as
+  you want it.
+* Mutation-only CAS mutator
+  Previously, the CASMutator required an initial object to use if the
+  object you were attempting to mutate wasn't found.  Now you can
+  specify this as NULL and CASMutator will *only* mutate an existing
+  object, but never create a new one.
+* CacheLoader
+  CacheLoader provides a couple of convenient mechanisms for
+  efficiently loading bulk data.  I've seen many benchmarks trying to
+  see how fast data can go into memcached through the client (as
+  opposed to normal usage), but they do things to make it
+  unnecessarily slow.  This should satisfy both benchmarking
+  requirements and legitimate bulk loading requirements.
+
+Performance Enhancements:
+
+* Disable Nagle Algorithm by Default
+  The usage of the Nagle algorithm (tcpNoDelay) is now configurable
+  and is configured off by default (Nagle algorithm off = tcpNoDelay
+  on).  This should be more optimal for most configurations.
+* Multi-set Escalation in the Binary Protocol
+  With no changes to the API, multiple sequential sets will be
+  escalated into a multi-set operation similar to multi-get.  In a
+  bulk load test, this is generally around 2x faster.
+* Asynchronous Transcoding Service
+  A transcoder can request a transcoder service (effectively a
+  threadpool) to asynchronously decode cache response objects both
+  outside of the API and outside of the caller thread.
+
+Contributors:
+
+    30  Dustin Sallings
+     1  Joseph Hart
+     1  Wang Nan
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAkq6ppQACgkQeWDnv0PlnVRwUgCggSCV7VelTY946bpFJuRgPhtJ
+FC8Ani097J6tQN55vuq8u0p9qSU+ALI0
+=NGik
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.3 to 2.3.1</h2>
 <div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.3.1
 
 Changes since 2.3:
