@@ -11,10 +11,9 @@ import java.util.List;
  * handling. Where it differs is that it uses both the <code>
  * KetamaNodeLocator</code> and the <code>HashAlgorithm.KETAMA_HASH</code>
  * to provide consistent node hashing.
- *
- * @see http://www.last.fm/user/RJ/journal/2007/04/10/392555/
- *
  * </p>
+ *
+ * @see <a href="http://www.last.fm/user/RJ/journal/2007/04/10/392555/">RJ's blog post</a>
  */
 public class KetamaConnectionFactory extends DefaultConnectionFactory {
 	/**

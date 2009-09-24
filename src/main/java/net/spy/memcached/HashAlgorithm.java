@@ -27,8 +27,8 @@ public enum HashAlgorithm {
 	 * rate. The FNV speed allows one to quickly hash lots of data while
 	 * maintaining a reasonable collision rate.
 	 *
-	 * @see http://www.isthe.com/chongo/tech/comp/fnv/
-	 * @see http://en.wikipedia.org/wiki/Fowler_Noll_Vo_hash
+	 * @see <a href="http://www.isthe.com/chongo/tech/comp/fnv/">fnv comparisons</a>
+	 * @see <a href="http://en.wikipedia.org/wiki/Fowler_Noll_Vo_hash">fnv at wikipedia</a>
 	 */
 	FNV1_64_HASH,
 	/**

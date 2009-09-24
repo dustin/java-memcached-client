@@ -17,7 +17,7 @@ import net.spy.memcached.compat.SpyObject;
  *
  * Note that this implementation does not currently supported weighted nodes.
  *
- * @see http://www.last.fm/user/RJ/journal/2007/04/10/392555/
+ * @see <a href="http://www.last.fm/user/RJ/journal/2007/04/10/392555/">RJ's blog post</a>
  */
 public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
