@@ -160,9 +160,9 @@ public interface OperationFactory {
 	 *   Note that it returns more than one operation because a multi-get
 	 *   could potentially need to be played against a large number of
 	 *   underlying servers.  In this case, there's a separate operation for
-	 *   each, and callback façade to reassemble them.  It is left up to the
-	 *   operation pipeline to perform whatever optimization is required to
-	 *   turn these back into multi-gets.
+	 *   each, and callback fa\u00E7ade to reassemble them.  It is left up to
+	 *   the operation pipeline to perform whatever optimization is required
+	 *   to turn these back into multi-gets.
 	 * </p>
 	 *
 	 * @param op the operation to clone
