@@ -1,26 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!-- Copyright (c) 2006  Dustin Sallings <dustin+html@spy.net> -->
 <html lang="en">
-	<head>
-		<title>Memcached client and transformation utils</title>
-	</head>
+  <head>
+    <title>Memcached client and transformation utils</title>
+  </head>
 
-	<body>
-		<h1>Memcached client and transformation utils</h1>
+  <body>
+    <h1>Memcached client and transformation utils</h1>
 
-		<p>
-			Usage should be pretty straightforward.  Get a MemcachedClient object and
-			start setting and getting stuff in memcached.
-		</p>
-		<p>
-			All operations are asynchronous internally, but most at least provide
-			synchronous convenience interfaces.  Some only provide synchronous
-			interfaces (getVersion, getStats) and some only provide asynchronous
-			interfaces (delete, flush).  That'll probably all get cleared up if it
-			bothers anyone.
-		</p>
-	</body>
+    <p>
+      Usage should be pretty straightforward.  Get a {@link
+      net.spy.memcached.MemcachedClient} object and start setting and
+      getting stuff in memcached.
+    </p>
+    <p>
+      All operations are asynchronous internally, but most at least provide
+      synchronous convenience interfaces.  Some only provide synchronous
+      interfaces (getVersion, getStats) and some only provide asynchronous
+      interfaces (delete, flush).  That'll probably all get cleared up if it
+      bothers anyone.
+    </p>
+    <p>
+      You may also find the
+      online <a href="http://code.google.com/p/spymemcached/wiki/Examples">examples</a>
+      helpful.
+    <p>
+  </body>
 </html>
 
