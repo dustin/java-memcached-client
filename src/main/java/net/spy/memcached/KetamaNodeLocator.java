@@ -9,6 +9,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import net.spy.memcached.compat.SpyObject;
+import net.spy.memcached.ketama.DefaultKetamaNodeLocatorConfiguration;
+import net.spy.memcached.ketama.KetamaNodeLocatorConfiguration;
 
 /**
  * This is an implementation of the Ketama consistent hash strategy from
@@ -21,26 +23,31 @@ import net.spy.memcached.compat.SpyObject;
  */
 public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
-	static final int NUM_REPS = 160;
 
 	final SortedMap<Long, MemcachedNode> ketamaNodes;
 	final Collection<MemcachedNode> allNodes;
 
 	final HashAlgorithm hashAlg;
+    final KetamaNodeLocatorConfiguration config;
+
 
 	public KetamaNodeLocator(List<MemcachedNode> nodes, HashAlgorithm alg) {
+        this(nodes, alg, new DefaultKetamaNodeLocatorConfiguration());
+	}
+
+    public KetamaNodeLocator(List<MemcachedNode> nodes, HashAlgorithm alg, KetamaNodeLocatorConfiguration conf) {
 		super();
 		allNodes = nodes;
 		hashAlg = alg;
 		ketamaNodes=new TreeMap<Long, MemcachedNode>();
+        config= conf;
 
+        int numReps= config.getNodeRepetitions();
 		for(MemcachedNode node : nodes) {
-			// XXX:  Replace getSocketAddress() with something more precise
-			String sockStr=String.valueOf(node.getSocketAddress());
 			// Ketama does some special work with md5 where it reuses chunks.
 			if(alg == HashAlgorithm.KETAMA_HASH) {
-				for(int i=0; i<NUM_REPS / 4; i++) {
-					byte[] digest=HashAlgorithm.computeMd5(sockStr + "-" + i);
+				for(int i=0; i<numReps / 4; i++) {
+					byte[] digest=HashAlgorithm.computeMd5(config.getKeyForNode(node, i));
 					for(int h=0;h<4;h++) {
 						Long k = ((long)(digest[3+h*4]&0xFF) << 24)
 							| ((long)(digest[2+h*4]&0xFF) << 16)
@@ -51,20 +58,22 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
 				}
 			} else {
-				for(int i=0; i<NUM_REPS; i++) {
-					ketamaNodes.put(hashAlg.hash(sockStr + "-" + i), node);
+				for(int i=0; i<numReps; i++) {
+
+					ketamaNodes.put(hashAlg.hash(config.getKeyForNode(node, i)), node);
 				}
 			}
 		}
-		assert ketamaNodes.size() == NUM_REPS * nodes.size();
-	}
+		assert ketamaNodes.size() == numReps * nodes.size();
+    }
 
 	private KetamaNodeLocator(SortedMap<Long, MemcachedNode> smn,
-			Collection<MemcachedNode> an, HashAlgorithm alg) {
+			Collection<MemcachedNode> an, HashAlgorithm alg, KetamaNodeLocatorConfiguration conf) {
 		super();
 		ketamaNodes=smn;
 		allNodes=an;
 		hashAlg=alg;
+        config=conf;
 	}
 
 	public Collection<MemcachedNode> getAll() {
@@ -116,7 +125,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 			an.add(new MemcachedNodeROImpl(n));
 		}
 
-		return new KetamaNodeLocator(smn, an, hashAlg);
+		return new KetamaNodeLocator(smn, an, hashAlg, config);
 	}
 
 	class KetamaIterator implements Iterator<MemcachedNode> {
