@@ -9,8 +9,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import net.spy.memcached.compat.SpyObject;
-import net.spy.memcached.ketama.DefaultKetamaNodeLocatorConfiguration;
-import net.spy.memcached.ketama.KetamaNodeLocatorConfiguration;
+import net.spy.memcached.util.DefaultKetamaNodeLocatorConfiguration;
+import net.spy.memcached.util.KetamaNodeLocatorConfiguration;
 
 /**
  * This is an implementation of the Ketama consistent hash strategy from

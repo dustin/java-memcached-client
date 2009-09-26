@@ -1,4 +1,4 @@
-package net.spy.memcached.ketama;
+package net.spy.memcached.util;
 
 import java.util.HashMap;
 import java.util.Map;
