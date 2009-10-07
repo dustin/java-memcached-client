@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.transcoders.Transcoder;
 
 /**
@@ -141,4 +142,14 @@ public interface MemcachedClientIF {
 	boolean addObserver(ConnectionObserver obs);
 
 	boolean removeObserver(ConnectionObserver obs);
+
+	/**
+	 * Authenticate this client with the given username and password.
+	 *
+	 * @param username the username to authenticate
+	 * @param password the password to authenticate
+	 * @throws OperationException if authentication is not possible
+	 */
+	void authenticate(String username, String password)
+		throws OperationException;
 }

@@ -24,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import net.spy.memcached.auth.PlainCallbackHandler;
 import net.spy.memcached.compat.SpyThread;
 import net.spy.memcached.internal.BulkGetFuture;
 import net.spy.memcached.internal.GetFuture;
@@ -37,6 +38,8 @@ import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationErrorType;
+import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StatsOperation;
@@ -1438,6 +1441,34 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 		return flush(-1);
 	}
 
+	public void authenticate(final String username, final String password)
+		throws OperationException {
+		final ConcurrentLinkedQueue<OperationStatus> statuses =
+			new ConcurrentLinkedQueue<OperationStatus>();
+
+		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
+			public Operation newOp(final MemcachedNode n,
+					final CountDownLatch latch) {
+				Operation op=opFact.saslAuth(new String[]{"PLAIN"},
+						n.toString(), null,
+						new PlainCallbackHandler(username, password,
+								latch, statuses));
+				return op;
+			}});
+		try {
+			blatch.await();
+		} catch(InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+
+		for(OperationStatus status : statuses) {
+			if (!status.isSuccess()) {
+				throw new OperationException(
+					OperationErrorType.GENERAL, status.getMessage());
+			}
+		}
+	}
+
 	private void logRunException(Exception e) {
 		if(shuttingDown) {
 			// There are a couple types of errors that occur during the
@@ -1557,4 +1588,5 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 	public boolean removeObserver(ConnectionObserver obs) {
 		return conn.removeObserver(obs);
 	}
+
 }

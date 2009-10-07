@@ -1,7 +1,9 @@
 package net.spy.memcached;
 
 import java.util.Collection;
+import java.util.Map;
 
+import net.spy.memcached.auth.AuthHandlerBridge;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.ConcatenationType;
@@ -15,6 +17,9 @@ import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.SASLAuthOperation;
+import net.spy.memcached.ops.SASLMechsOperation;
+import net.spy.memcached.ops.SASLStepOperation;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
@@ -147,6 +152,22 @@ public interface OperationFactory {
 	 * Create a new version operation.
 	 */
 	VersionOperation version(OperationCallback cb);
+
+	/**
+	 * Create a new SASL mechs operation.
+	 */
+	SASLMechsOperation saslMechs(OperationCallback cb);
+
+	/**
+	 * Create a new sasl auth operation.
+	 */
+	SASLAuthOperation saslAuth(String[] mech, String serverName,
+			Map<String, ?> props, AuthHandlerBridge cb);
+
+	/**
+	 * Create a new sasl step operation.
+	 */
+	SASLStepOperation saslStep(OperationCallback cb);
 
 	/**
 	 * Clone an operation.

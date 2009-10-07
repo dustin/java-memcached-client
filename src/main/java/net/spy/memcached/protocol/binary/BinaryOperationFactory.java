@@ -2,7 +2,9 @@ package net.spy.memcached.protocol.binary;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
+import net.spy.memcached.auth.AuthHandlerBridge;
 import net.spy.memcached.ops.BaseOperationFactory;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
@@ -19,6 +21,9 @@ import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.SASLAuthOperation;
+import net.spy.memcached.ops.SASLMechsOperation;
+import net.spy.memcached.ops.SASLStepOperation;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
@@ -101,6 +106,19 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 			rv.add(getCb == null ? gets(k, getsCb) : get(k, getCb));
 		}
 		return rv;
+	}
+
+	public SASLAuthOperation saslAuth(String[] mech, String serverName,
+			Map<String, ?> props, AuthHandlerBridge cb) {
+		return new SASLAuthOperationImpl(mech, serverName, props, cb);
+	}
+
+	public SASLMechsOperation saslMechs(OperationCallback cb) {
+		return new SASLMechsOperationImpl(cb);
+	}
+
+	public SASLStepOperation saslStep(OperationCallback cb) {
+		throw new UnsupportedOperationException();
 	}
 
 }
