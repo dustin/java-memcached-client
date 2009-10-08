@@ -24,7 +24,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import net.spy.memcached.auth.PlainCallbackHandler;
+import javax.security.auth.callback.CallbackHandler;
+
 import net.spy.memcached.compat.SpyThread;
 import net.spy.memcached.internal.BulkGetFuture;
 import net.spy.memcached.internal.GetFuture;
@@ -1441,7 +1442,7 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 		return flush(-1);
 	}
 
-	public void authenticate(final String username, final String password)
+	public void authenticate(final CallbackHandler cbh)
 		throws OperationException {
 		final ConcurrentLinkedQueue<OperationStatus> statuses =
 			new ConcurrentLinkedQueue<OperationStatus>();
@@ -1450,11 +1451,17 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
 				Operation op=opFact.saslAuth(new String[]{"PLAIN"},
-						n.toString(), null,
-						new PlainCallbackHandler(username, password,
-								latch, statuses));
+						n.toString(), null, cbh, new OperationCallback() {
+							public void receivedStatus(OperationStatus status) {
+								statuses.add(status);
+							}
+							public void complete() {
+								latch.countDown();
+							}
+						});
 				return op;
 			}});
+
 		try {
 			blatch.await();
 		} catch(InterruptedException e) {

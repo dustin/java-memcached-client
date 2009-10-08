@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-import net.spy.memcached.auth.AuthHandlerBridge;
+import javax.security.auth.callback.CallbackHandler;
+
 import net.spy.memcached.ops.BaseOperationFactory;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
@@ -109,8 +110,8 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 	}
 
 	public SASLAuthOperation saslAuth(String[] mech, String serverName,
-			Map<String, ?> props, AuthHandlerBridge cb) {
-		return new SASLAuthOperationImpl(mech, serverName, props, cb);
+			Map<String, ?> props, CallbackHandler cbh, OperationCallback cb) {
+		return new SASLAuthOperationImpl(mech, serverName, props, cbh, cb);
 	}
 
 	public SASLMechsOperation saslMechs(OperationCallback cb) {

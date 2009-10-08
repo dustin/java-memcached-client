@@ -3,7 +3,8 @@ package net.spy.memcached;
 import java.util.Collection;
 import java.util.Map;
 
-import net.spy.memcached.auth.AuthHandlerBridge;
+import javax.security.auth.callback.CallbackHandler;
+
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.ConcatenationType;
@@ -162,7 +163,7 @@ public interface OperationFactory {
 	 * Create a new sasl auth operation.
 	 */
 	SASLAuthOperation saslAuth(String[] mech, String serverName,
-			Map<String, ?> props, AuthHandlerBridge cb);
+			Map<String, ?> props, CallbackHandler cbh, OperationCallback cb);
 
 	/**
 	 * Create a new sasl step operation.

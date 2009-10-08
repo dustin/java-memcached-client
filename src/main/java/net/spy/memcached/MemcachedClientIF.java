@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import javax.security.auth.callback.CallbackHandler;
+
 import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.transcoders.Transcoder;
 
@@ -146,10 +148,9 @@ public interface MemcachedClientIF {
 	/**
 	 * Authenticate this client with the given username and password.
 	 *
-	 * @param username the username to authenticate
-	 * @param password the password to authenticate
+	 * @param cbh SSL callback handler
 	 * @throws OperationException if authentication is not possible
 	 */
-	void authenticate(String username, String password)
+	void authenticate(final CallbackHandler cbh)
 		throws OperationException;
 }

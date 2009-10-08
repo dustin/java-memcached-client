@@ -3,6 +3,7 @@ package net.spy.memcached.test;
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.BinaryConnectionFactory;
 import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.auth.PlainCallbackHandler;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.OperationException;
 
@@ -32,7 +33,7 @@ public class AuthTest extends SpyObject implements Runnable {
 
 	public void run() {
 		try {
-			client.authenticate(username, password);
+			client.authenticate(new PlainCallbackHandler(username, password));
 		} catch(OperationException e) {
 			throw new RuntimeException(e);
 		}
