@@ -168,7 +168,9 @@ public interface OperationFactory {
 	/**
 	 * Create a new sasl step operation.
 	 */
-	SASLStepOperation saslStep(OperationCallback cb);
+	SASLStepOperation saslStep(String[] mech, String challenge,
+			String serverName, Map<String, ?> props, CallbackHandler cbh,
+			OperationCallback cb);
 
 	/**
 	 * Clone an operation.

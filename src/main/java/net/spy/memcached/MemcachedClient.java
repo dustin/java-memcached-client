@@ -1456,41 +1456,57 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 		final ConcurrentHashMap<MemcachedNode, OperationStatus> statuses =
 			new ConcurrentHashMap<MemcachedNode, OperationStatus>();
 
-		Collection<MemcachedNode> todo = conn.getLocator().getAll();
+		Collection<MemcachedNode> todo = new ArrayList<MemcachedNode>(
+				conn.getLocator().getAll());
 
 		BroadcastOpFactory bfact = new BroadcastOpFactory() {
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
+				final OperationCallback cb = new OperationCallback() {
+					public void receivedStatus(OperationStatus status) {
+						statuses.put(n, status);
+					}
+					public void complete() {
+						latch.countDown();
+					}
+				};
 				if(statuses.containsKey(n)) {
-					return opFact.saslStep(null); // TODO
+					OperationStatus priorStatus=statuses.remove(n);
+					return opFact.saslStep(mechs, priorStatus.getMessage(),
+							n.toString(), null, cbh, cb);
 				} else {
-					return opFact.saslAuth(mechs,
-							n.toString(), null, cbh,new OperationCallback() {
-						public void receivedStatus(OperationStatus status) {
-							statuses.put(n, status);
-						}
-						public void complete() {
-							latch.countDown();
-						}
-					});
+					return opFact.saslAuth(mechs, n.toString(), null, cbh, cb);
 				}
 			}
 		};
 
-		CountDownLatch blatch = broadcastOp(bfact, todo);
+		boolean done = false;
+		while (!done) {
+			CountDownLatch blatch=broadcastOp(bfact, todo);
+			todo.clear();
 
-		try {
-			blatch.await();
-		} catch(InterruptedException e) {
-			Thread.currentThread().interrupt();
+			try {
+				blatch.await();
+			} catch(InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+
+			done = true;
+			for(Map.Entry<MemcachedNode, OperationStatus> me
+					: statuses.entrySet()) {
+				if(!me.getValue().isSuccess()) {
+					throw new OperationException(OperationErrorType.GENERAL,
+							me.getValue().getMessage());
+				}
+
+				if(me.getValue().getMessage().length() == 0) {
+					statuses.remove(me.getKey());
+				} else {
+					todo.add(me.getKey());
+					done = false;
+				}
+			}
 		}
-
-		for(OperationStatus status : statuses.values()) {
-	        if (!status.isSuccess()) {
-	                throw new OperationException(
-	                        OperationErrorType.GENERAL, status.getMessage());
-	        }
-	}
 
 	}
 

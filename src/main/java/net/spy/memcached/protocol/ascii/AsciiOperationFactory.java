@@ -102,7 +102,9 @@ public class AsciiOperationFactory extends BaseOperationFactory {
 		throw new UnsupportedOperationException();
 	}
 
-	public SASLStepOperation saslStep(OperationCallback cb) {
+	public SASLStepOperation saslStep(String[] mech, String challenge,
+			String serverName, Map<String, ?> props, CallbackHandler cbh,
+			OperationCallback cb) {
 		throw new UnsupportedOperationException();
 	}
 
