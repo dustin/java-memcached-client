@@ -118,7 +118,7 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 		return new SASLMechsOperationImpl(cb);
 	}
 
-	public SASLStepOperation saslStep(String[] mech, String challenge,
+	public SASLStepOperation saslStep(String[] mech, byte[] challenge,
 			String serverName, Map<String, ?> props, CallbackHandler cbh,
 			OperationCallback cb) {
 		return new SASLStepOperationImpl(mech, challenge, serverName,
