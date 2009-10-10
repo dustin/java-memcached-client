@@ -148,9 +148,10 @@ public interface MemcachedClientIF {
 	/**
 	 * Authenticate this client with the given username and password.
 	 *
+	 * @param mechs the SASL mechanisms to try (e.g. {"DIGEST-MD5", "PLAIN"}).
 	 * @param cbh SSL callback handler
 	 * @throws OperationException if authentication is not possible
 	 */
-	void authenticate(final CallbackHandler cbh)
+	void authenticate(String mechs[], CallbackHandler cbh)
 		throws OperationException;
 }

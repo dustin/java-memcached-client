@@ -33,7 +33,8 @@ public class AuthTest extends SpyObject implements Runnable {
 
 	public void run() {
 		try {
-			client.authenticate(new PlainCallbackHandler(username, password));
+			client.authenticate(new String[] {"PLAIN"},
+					new PlainCallbackHandler(username, password));
 		} catch(OperationException e) {
 			throw new RuntimeException(e);
 		}

@@ -1442,7 +1442,10 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 		return flush(-1);
 	}
 
-	public void authenticate(final CallbackHandler cbh)
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedClientIF#authenticate(java.lang.String[], javax.security.auth.callback.CallbackHandler)
+	 */
+	public void authenticate(final String[] mechs, final CallbackHandler cbh)
 		throws OperationException {
 		final ConcurrentLinkedQueue<OperationStatus> statuses =
 			new ConcurrentLinkedQueue<OperationStatus>();
@@ -1450,7 +1453,7 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
-				Operation op=opFact.saslAuth(new String[]{"PLAIN"},
+				Operation op=opFact.saslAuth(mechs,
 						n.toString(), null, cbh, new OperationCallback() {
 							public void receivedStatus(OperationStatus status) {
 								statuses.add(status);
