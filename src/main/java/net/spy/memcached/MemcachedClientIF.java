@@ -3,6 +3,7 @@ package net.spy.memcached;
 import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -154,4 +155,11 @@ public interface MemcachedClientIF {
 	 */
 	void authenticate(String mechs[], CallbackHandler cbh)
 		throws OperationException;
+
+	/**
+	 * Get the set of SASL mechanisms supported by the servers.
+	 *
+	 * @return the union of all SASL mechanisms supported by the servers.
+	 */
+	Set<String> listSaslMechanisms();
 }

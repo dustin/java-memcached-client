@@ -14,8 +14,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -1446,6 +1448,35 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 	 */
 	public Future<Boolean> flush() {
 		return flush(-1);
+	}
+
+	public Set<String> listSaslMechanisms() {
+		final ConcurrentMap<String, String> rv
+			= new ConcurrentHashMap<String, String>();
+
+		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory() {
+			public Operation newOp(MemcachedNode n,
+					final CountDownLatch latch) {
+				return opFact.saslMechs(new OperationCallback() {
+					public void receivedStatus(OperationStatus status) {
+						for(String s : status.getMessage().split(" ")) {
+							rv.put(s, s);
+						}
+					}
+					public void complete() {
+						latch.countDown();
+					}
+				});
+			}
+		});
+
+		try {
+			blatch.await();
+		} catch(InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+
+		return rv.keySet();
 	}
 
 	/* (non-Javadoc)

@@ -33,6 +33,8 @@ public class AuthTest extends SpyObject implements Runnable {
 
 	public void run() {
 		try {
+			System.out.println("Available mechs:  "
+					+ client.listSaslMechanisms());
 			client.authenticate(new String[] {"CRAM-MD5"},
 					new PlainCallbackHandler(username, password));
 		} catch(OperationException e) {
