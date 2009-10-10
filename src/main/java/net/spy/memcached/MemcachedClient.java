@@ -262,15 +262,21 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 	}
 
 	CountDownLatch broadcastOp(final BroadcastOpFactory of) {
-		return broadcastOp(of, true);
+		return broadcastOp(of, conn.getLocator().getAll(), true);
+	}
+
+	CountDownLatch broadcastOp(final BroadcastOpFactory of,
+			Collection<MemcachedNode> nodes) {
+		return broadcastOp(of, nodes, true);
 	}
 
 	private CountDownLatch broadcastOp(BroadcastOpFactory of,
+			Collection<MemcachedNode> nodes,
 			boolean checkShuttingDown) {
 		if(checkShuttingDown && shuttingDown) {
 			throw new IllegalStateException("Shutting down");
 		}
-		return conn.broadcastOperation(of);
+		return conn.broadcastOperation(of, nodes);
 	}
 
 	private <T> Future<Boolean> asyncStore(StoreType storeType, String key,
@@ -1447,23 +1453,31 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 	 */
 	public void authenticate(final String[] mechs, final CallbackHandler cbh)
 		throws OperationException {
-		final ConcurrentLinkedQueue<OperationStatus> statuses =
-			new ConcurrentLinkedQueue<OperationStatus>();
+		final ConcurrentHashMap<MemcachedNode, OperationStatus> statuses =
+			new ConcurrentHashMap<MemcachedNode, OperationStatus>();
 
-		CountDownLatch blatch = broadcastOp(new BroadcastOpFactory(){
+		Collection<MemcachedNode> todo = conn.getLocator().getAll();
+
+		BroadcastOpFactory bfact = new BroadcastOpFactory() {
 			public Operation newOp(final MemcachedNode n,
 					final CountDownLatch latch) {
-				Operation op=opFact.saslAuth(mechs,
-						n.toString(), null, cbh, new OperationCallback() {
-							public void receivedStatus(OperationStatus status) {
-								statuses.add(status);
-							}
-							public void complete() {
-								latch.countDown();
-							}
-						});
-				return op;
-			}});
+				if(statuses.containsKey(n)) {
+					return opFact.saslStep(null); // TODO
+				} else {
+					return opFact.saslAuth(mechs,
+							n.toString(), null, cbh,new OperationCallback() {
+						public void receivedStatus(OperationStatus status) {
+							statuses.put(n, status);
+						}
+						public void complete() {
+							latch.countDown();
+						}
+					});
+				}
+			}
+		};
+
+		CountDownLatch blatch = broadcastOp(bfact, todo);
 
 		try {
 			blatch.await();
@@ -1471,12 +1485,13 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 			Thread.currentThread().interrupt();
 		}
 
-		for(OperationStatus status : statuses) {
-			if (!status.isSuccess()) {
-				throw new OperationException(
-					OperationErrorType.GENERAL, status.getMessage());
-			}
-		}
+		for(OperationStatus status : statuses.values()) {
+	        if (!status.isSuccess()) {
+	                throw new OperationException(
+	                        OperationErrorType.GENERAL, status.getMessage());
+	        }
+	}
+
 	}
 
 	private void logRunException(Exception e) {
@@ -1571,7 +1586,7 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 								// necessary to complete the interface
 							}
 						});
-			}}, false);
+			}}, conn.getLocator().getAll(), false);
 		try {
 			// XXX:  Perhaps IllegalStateException should be caught here
 			// and the check retried.
