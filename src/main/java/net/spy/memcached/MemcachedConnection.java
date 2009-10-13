@@ -43,8 +43,6 @@ public final class MemcachedConnection extends SpyObject {
 	// easy to write a bug that causes it to loop uncontrollably.  This helps
 	// find those bugs and often works around them.
 	private static final int EXCESSIVE_EMPTY = 0x1000000;
-	// maximum amount of time to wait between reconnect attempts
-	private static final long MAX_DELAY = 30000;
 
 	private volatile boolean shutDown=false;
 	// If true, optimization will collapse multiple sequential get ops
@@ -52,6 +50,8 @@ public final class MemcachedConnection extends SpyObject {
 	private Selector selector=null;
 	private final NodeLocator locator;
 	private final FailureMode failureMode;
+	// maximum amount of time to wait between reconnect attempts
+	private final long maxDelay;
 	private int emptySelects=0;
 	// AddedQueue is used to track the QueueAttachments for which operations
 	// have recently been queued.
@@ -82,6 +82,7 @@ public final class MemcachedConnection extends SpyObject {
 		addedQueue=new ConcurrentLinkedQueue<MemcachedNode>();
 		failureMode = fm;
 		shouldOptimize = f.shouldOptimize();
+		maxDelay = f.getMaxReconnectDelay();
 		opFact = opfactory;
 		selector=Selector.open();
 		List<MemcachedNode> connections=new ArrayList<MemcachedNode>(a.size());
@@ -410,7 +411,7 @@ public final class MemcachedConnection extends SpyObject {
 			}
 			qa.setChannel(null);
 
-			long delay = (long)Math.min(MAX_DELAY,
+			long delay = (long)Math.min(maxDelay,
 					Math.pow(2, qa.getReconnectCount())) * 1000;
 			long reconTime = System.currentTimeMillis() + delay;
 

@@ -34,6 +34,8 @@ public class ConnectionFactoryBuilder {
 	private boolean isDaemon = true;
 	private boolean shouldOptimize = true;
 	private boolean useNagle = false;
+	private long maxReconnectDelay =
+		DefaultConnectionFactory.DEFAULT_MAX_RECONNECT_DELAY;
 
 	private int readBufSize = -1;
 	private HashAlgorithm hashAlg;
@@ -173,6 +175,15 @@ public class ConnectionFactoryBuilder {
 	}
 
 	/**
+	 * Set the maximum reconnect delay.
+	 */
+	public ConnectionFactoryBuilder setMaxReconnectDelay(long to) {
+		assert to > 0 : "Reconnect delay must be a positive number";
+		maxReconnectDelay = to;
+		return this;
+	}
+
+	/**
 	 * Get the ConnectionFactory set up with the provided parameters.
 	 */
 	public ConnectionFactory build() {
@@ -263,6 +274,12 @@ public class ConnectionFactoryBuilder {
 			public boolean useNagleAlgorithm() {
 				return useNagle;
 			}
+
+			@Override
+			public long getMaxReconnectDelay() {
+				return maxReconnectDelay;
+			}
+
 		};
 
 	}

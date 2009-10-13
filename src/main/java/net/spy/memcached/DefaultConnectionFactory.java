@@ -60,6 +60,11 @@ public class DefaultConnectionFactory extends SpyObject
      */
     public static final long DEFAULT_OPERATION_TIMEOUT = 1000;
 
+    /**
+     * Maximum amount of time (in seconds) to wait between reconnect attempts.
+     */
+    public static final long DEFAULT_MAX_RECONNECT_DELAY = 30;
+
 	private final int opQueueLen;
 	private final int readBufSize;
 	private final HashAlgorithm hashAlg;
@@ -225,6 +230,13 @@ public class DefaultConnectionFactory extends SpyObject
 	 */
 	public boolean shouldOptimize() {
 		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#getMaxReconnectDelay()
+	 */
+	public long getMaxReconnectDelay() {
+		return DEFAULT_MAX_RECONNECT_DELAY;
 	}
 
 }
