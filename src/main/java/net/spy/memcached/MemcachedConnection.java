@@ -410,7 +410,8 @@ public final class MemcachedConnection extends SpyObject {
 			}
 			qa.setChannel(null);
 
-			long delay=Math.min((100*qa.getReconnectCount()) ^ 2, MAX_DELAY);
+			long delay = (long)Math.min(MAX_DELAY,
+					Math.pow(2, qa.getReconnectCount())) * 1000;
 			long reconTime = System.currentTimeMillis() + delay;
 
 			// Avoid potential condition where two connections are scheduled
