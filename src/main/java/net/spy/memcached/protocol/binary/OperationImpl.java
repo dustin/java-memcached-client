@@ -285,11 +285,10 @@ abstract class OperationImpl extends BaseOperationImpl {
 	 * Generate an opaque ID.
 	 */
 	static int generateOpaque() {
-		int rv=seqNumber.incrementAndGet();
+		int rv = seqNumber.incrementAndGet();
 		while(rv < 0) {
-			if(seqNumber.compareAndSet(rv, 0)) {
-				rv=seqNumber.incrementAndGet();
-			}
+			seqNumber.compareAndSet(rv, 0);
+			rv=seqNumber.incrementAndGet();
 		}
 		return rv;
 	}
