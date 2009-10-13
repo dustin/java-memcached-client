@@ -18,8 +18,8 @@
 <body>
 
 <h1>Changelog for SpyMemcached</h1>
-<h2>Changes from release 2.3.1 to 2.4rc1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:5CC&amp;chl=Dustin|Joseph|Wang" alt="contributors"/><pre>Prerelease of 2.4
+<h2>Changes from release 2.3.1 to 2.4</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:3BBBB&amp;chl=Dustin|Joseph|Lewis|Wang|ciaranj" alt="contributors"/><pre>Version 2.4
 
 Changes since the 2.3 series.
 
@@ -39,6 +39,14 @@ Bug Fixes:
 * Handle initial connect failures.
   There were rare cases where an async connect would error instantly
   on the first attempt, but that connect wouldn't be retried.
+* Sequence number wrapping bug.
+  If you sent more than 2 billion or so requests to a node, the client
+  would find itself in an infinite loop trying to cmoe up with a new
+  opaque value.
+* Suboptimal back-off algorithm.
+  The previous back-off algorithm wouldn't create a reasonable
+  reconnect curve.  The new one is more gradual and has a configurable
+  maximum ceiling.
 
 Features:
 
@@ -59,6 +67,9 @@ Features:
   opposed to normal usage), but they do things to make it
   unnecessarily slow.  This should satisfy both benchmarking
   requirements and legitimate bulk loading requirements.
+* KetamaNodeLocator is more configurable.
+  The node data ketama uses for building a hash is configurable now in
+  an effort to make consistent hashing work between java and C#.
 
 Performance Enhancements:
 
@@ -77,15 +88,17 @@ Performance Enhancements:
 
 Contributors:
 
-    30  Dustin Sallings
+    40  Dustin Sallings
      1  Joseph Hart
+     1  Lewis Zimmerman
      1  Wang Nan
+     1  ciaranj
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (Darwin)
 
-iEYEABECAAYFAkq6ppQACgkQeWDnv0PlnVRwUgCggSCV7VelTY946bpFJuRgPhtJ
-FC8Ani097J6tQN55vuq8u0p9qSU+ALI0
-=NGik
+iEYEABECAAYFAkrU6jwACgkQeWDnv0PlnVTvRQCfRnwYXIM/ELclluJ2r9t/eLnm
+GXsAoI/FFr8b3HN50IlPYFr/OBTtWc/8
+=T4x/
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.3 to 2.3.1</h2>
 <div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.3.1
