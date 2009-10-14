@@ -56,6 +56,7 @@ define "memcached" do
 
   project.version = VERSION_NUMBER
   project.group = GROUP
+  compile.options.target = '1.5'
   manifest["Implementation-Vendor"] = COPYRIGHT
   compile.with "log4j:log4j:jar:1.2.15", "jmock:jmock:jar:1.2.0",
                "junit:junit:jar:4.4"
