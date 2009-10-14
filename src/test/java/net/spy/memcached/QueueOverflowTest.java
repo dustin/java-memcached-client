@@ -121,6 +121,6 @@ public class QueueOverflowTest extends ClientBaseCase {
 			// OK, at least we got one back.
 		}
 		Thread.sleep(500);
-		assertTrue(client.set("kx", 0, "woo").get(1, TimeUnit.SECONDS));
+		assertTrue(client.set("kx", 0, "woo").get(5, TimeUnit.SECONDS));
 	}
 }
