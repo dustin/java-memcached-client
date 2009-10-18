@@ -47,7 +47,7 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
 			prepareBuffer(mechanism, 0, response);
 		} catch(SaslException e) {
 			// XXX:  Probably something saner can be done here.
-			throw new RuntimeException("Can't make SASL go.");
+			throw new RuntimeException("Can't make SASL go.", e);
 		}
 	}
 
