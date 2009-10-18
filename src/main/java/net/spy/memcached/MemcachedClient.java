@@ -1505,9 +1505,11 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 					OperationStatus priorStatus=statuses.remove(n);
 					return opFact.saslStep(mechs,
 							KeyUtil.getKeyBytes(priorStatus.getMessage()),
-							n.toString(), null, cbh, cb);
+							n.getSocketAddress().toString(), null, cbh, cb);
 				} else {
-					return opFact.saslAuth(mechs, n.toString(), null, cbh, cb);
+					return opFact.saslAuth(mechs,
+										   n.getSocketAddress().toString(),
+										   null, cbh, cb);
 				}
 			}
 		};
