@@ -128,7 +128,7 @@ public class CacheLoader extends SpyObject {
 	 * If you are interested in the results of your data load, this interface
 	 * will receive them.
 	 */
-	interface StorageListener {
+	public interface StorageListener {
 
 		/**
 		 * Normal path response for a set.
