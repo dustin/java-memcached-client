@@ -125,7 +125,6 @@ public class OptimizedSetImpl extends OperationImpl implements Operation {
 			}
 			transitionState(OperationState.COMPLETE);
 		} else {
-			System.out.println("Got " + errorCode + " for " + responseOpaque);
 			OperationCallback cb = callbacks.remove(responseOpaque);
 			assert errorCode != 0 : "Got no error on a quiet mutation.";
 			OperationStatus status=getStatusForErrorCode(errorCode, pl);
