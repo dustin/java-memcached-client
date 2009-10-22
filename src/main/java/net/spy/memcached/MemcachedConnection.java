@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
@@ -106,7 +107,7 @@ public final class MemcachedConnection extends SpyObject {
 				assert ch.isConnected()
 					|| qa.getSk().interestOps() == SelectionKey.OP_CONNECT
 					: "Not connected, and not wanting to connect";
-			} catch(ConnectException e) {
+			} catch(SocketException e) {
 				queueReconnect(qa);
 			}
 			connections.add(qa);
@@ -489,7 +490,7 @@ public final class MemcachedConnection extends SpyObject {
 					getLogger().debug(
 						"Skipping duplicate reconnect request for %s", qa);
 				}
-			} catch(ConnectException e) {
+			} catch(SocketException e) {
 				getLogger().warn("Error on reconnect", e);
 				rereQueue.add(qa);
 			}
