@@ -1,5 +1,7 @@
 package net.spy.memcached.transcoders;
 
+import java.util.Arrays;
+
 import net.spy.memcached.CachedData;
 
 public class WhalinV1TranscoderTest extends BaseTranscoderCase {
@@ -13,12 +15,11 @@ public class WhalinV1TranscoderTest extends BaseTranscoderCase {
 	@Override
 	public void testByteArray() throws Exception {
 		byte[] a={'a', 'b', 'c'};
-		try {
-			CachedData cd=getTranscoder().encode(a);
-			fail("Expected IllegalArgumentException, got " + cd);
-		} catch(IllegalArgumentException e) {
-			// pass
-		}
+
+		CachedData cd=getTranscoder().encode(a);
+		byte[] decoded=(byte[])getTranscoder().decode(cd);
+		assertNotNull(decoded);
+		assertTrue(Arrays.equals(a, decoded));
 	}
 
 	@Override

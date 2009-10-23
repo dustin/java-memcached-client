@@ -59,8 +59,6 @@ public class WhalinV1Transcoder extends BaseSerializingTranscoder
 			b = encodeFloat((Float) o);
 		} else if (o instanceof Double) {
 			b = encodeDouble((Double) o);
-		} else if (o instanceof byte[]) {
-			throw new IllegalArgumentException("Cannot handle byte arrays.");
 		} else if (o instanceof Character) {
 			b = encodeCharacter((Character) o);
 		} else {
