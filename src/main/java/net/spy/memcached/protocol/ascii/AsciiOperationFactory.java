@@ -13,8 +13,8 @@ import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.MultiGetOperationCallback;
-import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.Mutator;
+import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
@@ -26,7 +26,7 @@ import net.spy.memcached.ops.VersionOperation;
 /**
  * Operation factory for the ascii protocol.
  */
-public final class AsciiOperationFactory extends BaseOperationFactory {
+public class AsciiOperationFactory extends BaseOperationFactory {
 
 	public DeleteOperation delete(String key, OperationCallback cb) {
 		return new DeleteOperationImpl(key, cb);

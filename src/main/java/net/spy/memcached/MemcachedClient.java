@@ -94,7 +94,7 @@ import net.spy.memcached.transcoders.Transcoder;
  *      }
  * </pre>
  */
-public final class MemcachedClient extends SpyThread implements MemcachedClientIF {
+public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 
 	private volatile boolean running=true;
 	private volatile boolean shuttingDown=false;
