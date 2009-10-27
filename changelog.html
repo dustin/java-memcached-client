@@ -18,7 +18,56 @@
 <body>
 
 <h1>Changelog for SpyMemcached</h1>
-<h2>Changes from release 2.3.1 to 2.4</h2>
+<h2>Changes from release 2.4.1 to 2.4.2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:jRJ&amp;chl=Dustin|Kevin|Matt" alt="contributors"/><pre>Release 2.4.2
+
+Changes since 2.4.1:
+
+Dustin Sallings (4):
+      StorageListener should be public.
+      Removed a debugging stdout thing.
+      Handle operations that are writing and reading at the same time.
+      Allow MemcachedClient and AsciiOperationFactory extensibility.
+
+Kevin Lafferty (2):
+      MemcachedConnection constructor should catch SocketException
+      Support byte arrays in WhalinV1Transcoder.
+
+Matt Ingenthron (1):
+      Some javadoc cleanup in MemcachedClient examples.
+
+Bugs fixed:
+
+    http://code.google.com/p/spymemcached/issues/detail?id=98
+    http://code.google.com/p/spymemcached/issues/detail?id=68
+    http://code.google.com/p/spymemcached/issues/detail?id=83
+    http://code.google.com/p/spymemcached/issues/detail?id=74
+    http://code.google.com/p/spymemcached/issues/detail?id=95
+    http://code.google.com/p/spymemcached/issues/detail?id=97
+    http://code.google.com/p/spymemcached/issues/detail?id=94
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAkrnPD0ACgkQeWDnv0PlnVQbfQCfYo5nY18nJD47xF/wgIibIX/3
+ErYAn1iFb2oJzIXYagDftjRweLekwgHY
+=1DIS
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.4 to 2.4.1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.4.1
+
+Changes since 2.4:
+
+* Build system now targets java 1.5.
+  Java 1.5 is EOL'd at the end of this month, but I don't do anything
+  special that would make it *not* work there.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAkrWGpwACgkQeWDnv0PlnVS7UACgju74mIRLgqTTQE1WZIut5LC3
+U4EAoKa8kOConX0SX5eFXJQQNioIk3bQ
+=dLTz
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.3.1 to 2.4</h2>
 <div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:3BBBB&amp;chl=Dustin|Joseph|Lewis|Wang|ciaranj" alt="contributors"/><pre>Version 2.4
 
 Changes since the 2.3 series.
