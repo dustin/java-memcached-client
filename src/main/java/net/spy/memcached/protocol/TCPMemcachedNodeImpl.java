@@ -83,14 +83,22 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 		// First, reset the current write op.
 		Operation op=getCurrentWriteOp();
 		if(op != null) {
-			op.getBuffer().reset();
+			ByteBuffer buf=op.getBuffer();
+			if(buf != null) {
+				buf.reset();
+			} else {
+				getLogger().info("No buffer for current write op, removing");
+				removeCurrentWriteOp();
+			}
 		}
 		// Now cancel all the pending read operations.  Might be better to
 		// to requeue them.
 		while(hasReadOp()) {
 			op=removeCurrentReadOp();
-			getLogger().warn("Discarding partially completed op: %s", op);
-			op.cancel();
+			if (op != getCurrentWriteOp()) {
+				getLogger().warn("Discarding partially completed op: %s", op);
+				op.cancel();
+			}
 		}
 
 		getWbuf().clear();
@@ -123,7 +131,16 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 			Operation o=getCurrentWriteOp();
 			while(o != null && toWrite < getWbuf().capacity()) {
 				assert o.getState() == OperationState.WRITING;
+				// This isn't the most optimal way to do this, but it hints
+				// at a larger design problem that may need to be taken care
+				// if in the bowels of the client.
+				// In practice, readQ should be small, however.
+				if(!readQ.contains(o)) {
+					readQ.add(o);
+				}
+
 				ByteBuffer obuf=o.getBuffer();
+				assert obuf != null : "Didn't get a write buffer from " + o;
 				int bytesToCopy=Math.min(getWbuf().remaining(),
 						obuf.remaining());
 				byte b[]=new byte[bytesToCopy];
@@ -161,8 +178,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	public final void transitionWriteItem() {
 		Operation op=removeCurrentWriteOp();
 		assert op != null : "There is no write item to transition";
-		getLogger().debug("Transitioning %s to read", op);
-		readQ.add(op);
+		getLogger().debug("Finished writing %s", op);
 	}
 
 	/* (non-Javadoc)

@@ -77,7 +77,6 @@ public abstract class BaseOperationImpl extends SpyObject {
 	}
 
 	public final ByteBuffer getBuffer() {
-		assert cmd != null : "No output buffer.";
 		return cmd;
 	}
 
