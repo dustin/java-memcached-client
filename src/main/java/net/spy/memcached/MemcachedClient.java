@@ -72,21 +72,26 @@ import net.spy.memcached.transcoders.Transcoder;
  *	</p>
  *
  *	<pre>
- *	// Get a memcached client connected to several servers
- *	MemcachedClient c=new MemcachedClient(
- *		AddrUtil.getAddresses("server1:11211 server2:11211"));
+ *      // Get a memcached client connected to several servers
+ *      // over the binary protocol
+ *      MemcachedClient c = new MemcachedClient(new BinaryConnectionFactory(),
+ *              AddrUtil.getAddresses("server1:11211 server2:11211"));
  *
- *	// Try to get a value, for up to 5 seconds, and cancel if it doesn't return
- *	Object myObj=null;
- *	Future&lt;Object&gt; f=c.asyncGet("someKey");
- *	try {
- *		myObj=f.get(5, TimeUnit.SECONDS);
- *	} catch(TimeoutException e) {
- *		// Since we don't need this, go ahead and cancel the operation.  This
- *		// is not strictly necessary, but it'll save some work on the server.
- *		f.cancel();
- *		// Do other timeout related stuff
- *	}
+ *      // Try to get a value, for up to 5 seconds, and cancel if it
+ *      // doesn't return
+ *      Object myObj = null;
+ *      Future&lt;Object&gt; f = c.asyncGet("someKey");
+ *      try {
+ *          myObj = f.get(5, TimeUnit.SECONDS);
+ *      // throws expecting InterruptedException, ExecutionException
+ *      // or TimeoutException
+ *      } catch (Exception e) {  /*  /
+ *          // Since we don't need this, go ahead and cancel the operation.
+ *          // This is not strictly necessary, but it'll save some work on
+ *          // the server.  It is okay to cancel it if running.
+ *          f.cancel(true);
+ *          // Do other timeout related stuff
+ *      }
  * </pre>
  */
 public final class MemcachedClient extends SpyThread implements MemcachedClientIF {
