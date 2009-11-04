@@ -11,6 +11,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;
@@ -239,4 +240,10 @@ public class DefaultConnectionFactory extends SpyObject
 		return DEFAULT_MAX_RECONNECT_DELAY;
 	}
 
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#getAuthDescriptor()
+	 */
+	public AuthDescriptor getAuthDescriptor() {
+		return null;
+	}
 }

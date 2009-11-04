@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
+import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.transcoders.Transcoder;
 
@@ -118,4 +119,11 @@ public interface ConnectionFactory {
 	 * Maximum number of milliseconds to wait between reconnect attempts.
 	 */
 	long getMaxReconnectDelay();
+
+	/**
+	 * Authenticate connections using the given auth descriptor.
+	 *
+	 * @return null if no authentication should take place
+	 */
+	AuthDescriptor getAuthDescriptor();
 }

@@ -30,6 +30,10 @@ class MemcachedNodeROImpl implements MemcachedNode {
 		throw new UnsupportedOperationException();
 	}
 
+	public void insertOp(Operation op) {
+		throw new UnsupportedOperationException();
+	}
+
 	public void connected() {
 		throw new UnsupportedOperationException();
 	}

@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
+import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
@@ -39,6 +40,7 @@ public class ConnectionFactoryBuilder {
 
 	private int readBufSize = -1;
 	private HashAlgorithm hashAlg;
+	private AuthDescriptor authDescriptor = null;
 
 	/**
 	 * Set the operation queue factory.
@@ -184,6 +186,14 @@ public class ConnectionFactoryBuilder {
 	}
 
 	/**
+	 * Set the auth descriptor to enable authentication on new connections.
+	 */
+	public ConnectionFactoryBuilder setAuthDescriptor(AuthDescriptor to) {
+		authDescriptor = to;
+		return this;
+	}
+
+	/**
 	 * Get the ConnectionFactory set up with the provided parameters.
 	 */
 	public ConnectionFactory build() {
@@ -280,6 +290,10 @@ public class ConnectionFactoryBuilder {
 				return maxReconnectDelay;
 			}
 
+			@Override
+			public AuthDescriptor getAuthDescriptor() {
+				return authDescriptor;
+			}
 		};
 
 	}

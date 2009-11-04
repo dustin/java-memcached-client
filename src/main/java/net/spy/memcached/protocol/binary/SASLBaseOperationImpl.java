@@ -62,6 +62,9 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
 			getCallback().receivedStatus(new OperationStatus(true,
 					new String(pl)));
 			transitionState(OperationState.COMPLETE);
+		} else if(errorCode == 0) {
+			getCallback().receivedStatus(new OperationStatus(true, ""));
+			transitionState(OperationState.COMPLETE);
 		} else {
 			super.finishedPayload(pl);
 		}

@@ -7,9 +7,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.security.auth.callback.CallbackHandler;
-
-import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.transcoders.Transcoder;
 
 /**
@@ -145,16 +142,6 @@ public interface MemcachedClientIF {
 	boolean addObserver(ConnectionObserver obs);
 
 	boolean removeObserver(ConnectionObserver obs);
-
-	/**
-	 * Authenticate this client with the given username and password.
-	 *
-	 * @param mechs the SASL mechanisms to try (e.g. {"DIGEST-MD5", "PLAIN"}).
-	 * @param cbh SSL callback handler
-	 * @throws OperationException if authentication is not possible
-	 */
-	void authenticate(String mechs[], CallbackHandler cbh)
-		throws OperationException;
 
 	/**
 	 * Get the set of SASL mechanisms supported by the servers.

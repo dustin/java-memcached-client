@@ -1,11 +1,11 @@
 package net.spy.memcached.test;
 
 import net.spy.memcached.AddrUtil;
-import net.spy.memcached.BinaryConnectionFactory;
+import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.MemcachedClient;
-import net.spy.memcached.auth.PlainCallbackHandler;
+import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
+import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.compat.SpyObject;
-import net.spy.memcached.ops.OperationException;
 
 /**
  * Loader performance test.
@@ -23,7 +23,10 @@ public class AuthTest extends SpyObject implements Runnable {
 
 	public void init() throws Exception {
 		client = new MemcachedClient(
-				new BinaryConnectionFactory(),
+				new ConnectionFactoryBuilder()
+					.setProtocol(Protocol.BINARY)
+					.setAuthDescriptor(AuthDescriptor.typical(username, password))
+					.build(),
 				AddrUtil.getAddresses("localhost:11212"));
 	}
 
@@ -32,14 +35,14 @@ public class AuthTest extends SpyObject implements Runnable {
 	}
 
 	public void run() {
+		System.out.println("Available mechs:  "
+				+ client.listSaslMechanisms());
 		try {
-			System.out.println("Available mechs:  "
-					+ client.listSaslMechanisms());
-			client.authenticate(new String[] {"CRAM-MD5"},
-					new PlainCallbackHandler(username, password));
-		} catch(OperationException e) {
-			throw new RuntimeException(e);
+			Thread.sleep(1000);
+		} catch(InterruptedException e) {
+			e.printStackTrace();
 		}
+		client.getVersions();
 	}
 
 	public static void main(String[] a) throws Exception {

@@ -84,6 +84,13 @@ public interface MemcachedNode {
 	void addOp(Operation op);
 
 	/**
+	 * Insert an operation to the beginning of the queue.
+	 *
+	 * This method is meant to be invoked rarely.
+	 */
+	void insertOp(Operation o);
+
+	/**
 	 * Compute the appropriate selection operations for the channel this
 	 * MemcachedNode holds to the server.
 	 */

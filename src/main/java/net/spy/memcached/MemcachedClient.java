@@ -26,8 +26,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import javax.security.auth.callback.CallbackHandler;
-
+import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.auth.AuthThread;
 import net.spy.memcached.compat.SpyThread;
 import net.spy.memcached.internal.BulkGetFuture;
 import net.spy.memcached.internal.GetFuture;
@@ -41,8 +41,6 @@ import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.OperationErrorType;
-import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StatsOperation;
@@ -100,7 +98,8 @@ import net.spy.memcached.transcoders.Transcoder;
  *      }
  * </pre>
  */
-public class MemcachedClient extends SpyThread implements MemcachedClientIF {
+public class MemcachedClient extends SpyThread
+	implements MemcachedClientIF, ConnectionObserver {
 
 	private volatile boolean running=true;
 	private volatile boolean shuttingDown=false;
@@ -113,6 +112,8 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 	final Transcoder<Object> transcoder;
 
 	final TranscodeService tcService;
+
+	final AuthDescriptor authDescriptor;
 
 	/**
 	 * Get a memcache client operating on the specified memcached locations.
@@ -165,6 +166,10 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 		conn=cf.createConnection(addrs);
 		assert conn != null : "Connection factory failed to make a connection";
 		operationTimeout = cf.getOperationTimeout();
+		authDescriptor = cf.getAuthDescriptor();
+		if(authDescriptor != null) {
+			addObserver(this);
+		}
 		setName("Memcached IO over " + conn);
 		setDaemon(cf.isDaemon());
 		start();
@@ -1479,71 +1484,6 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 		return rv.keySet();
 	}
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.MemcachedClientIF#authenticate(java.lang.String[], javax.security.auth.callback.CallbackHandler)
-	 */
-	public void authenticate(final String[] mechs, final CallbackHandler cbh)
-		throws OperationException {
-		final ConcurrentHashMap<MemcachedNode, OperationStatus> statuses =
-			new ConcurrentHashMap<MemcachedNode, OperationStatus>();
-
-		Collection<MemcachedNode> todo = new ArrayList<MemcachedNode>(
-				conn.getLocator().getAll());
-
-		BroadcastOpFactory bfact = new BroadcastOpFactory() {
-			public Operation newOp(final MemcachedNode n,
-					final CountDownLatch latch) {
-				final OperationCallback cb = new OperationCallback() {
-					public void receivedStatus(OperationStatus status) {
-						statuses.put(n, status);
-					}
-					public void complete() {
-						latch.countDown();
-					}
-				};
-				if(statuses.containsKey(n)) {
-					OperationStatus priorStatus=statuses.remove(n);
-					return opFact.saslStep(mechs,
-							KeyUtil.getKeyBytes(priorStatus.getMessage()),
-							n.getSocketAddress().toString(), null, cbh, cb);
-				} else {
-					return opFact.saslAuth(mechs,
-										   n.getSocketAddress().toString(),
-										   null, cbh, cb);
-				}
-			}
-		};
-
-		boolean done = false;
-		while (!done) {
-			CountDownLatch blatch=broadcastOp(bfact, todo);
-			todo.clear();
-
-			try {
-				blatch.await();
-			} catch(InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-
-			done = true;
-			for(Map.Entry<MemcachedNode, OperationStatus> me
-					: statuses.entrySet()) {
-				if(!me.getValue().isSuccess()) {
-					throw new OperationException(OperationErrorType.GENERAL,
-							me.getValue().getMessage());
-				}
-
-				if(me.getValue().getMessage().length() == 0) {
-					statuses.remove(me.getKey());
-				} else {
-					todo.add(me.getKey());
-					done = false;
-				}
-			}
-		}
-
-	}
-
 	private void logRunException(Exception e) {
 		if(shuttingDown) {
 			// There are a couple types of errors that occur during the
@@ -1649,10 +1589,21 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 	/**
 	 * Add a connection observer.
 	 *
+	 * If connections are already established, your observer will be called
+	 * with the address and -1.
+	 *
 	 * @return true if the observer was added.
 	 */
 	public boolean addObserver(ConnectionObserver obs) {
-		return conn.addObserver(obs);
+		boolean rv = conn.addObserver(obs);
+		if(rv) {
+			for(MemcachedNode node : conn.getLocator().getAll()) {
+				if(node.isActive()) {
+					obs.connectionEstablished(node.getSocketAddress(), -1);
+				}
+			}
+		}
+		return rv;
 	}
 
 	/**
@@ -1662,6 +1613,27 @@ public class MemcachedClient extends SpyThread implements MemcachedClientIF {
 	 */
 	public boolean removeObserver(ConnectionObserver obs) {
 		return conn.removeObserver(obs);
+	}
+
+	public void connectionEstablished(SocketAddress sa, int reconnectCount) {
+		if(authDescriptor != null) {
+			new AuthThread(conn, opFact, authDescriptor, findNode(sa));
+		}
+	}
+
+	private MemcachedNode findNode(SocketAddress sa) {
+		MemcachedNode node = null;
+		for(MemcachedNode n : conn.getLocator().getAll()) {
+			if(n.getSocketAddress().equals(sa)) {
+				node = n;
+			}
+		}
+		assert node != null : "Couldn't find node connected to " + sa;
+		return node;
+	}
+
+	public void connectionLost(SocketAddress sa) {
+		// Don't care.
 	}
 
 }

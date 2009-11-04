@@ -547,6 +547,16 @@ public final class MemcachedConnection extends SpyObject {
 		}
 	}
 
+	public void insertOperation(final MemcachedNode node, final Operation o) {
+		o.setHandlingNode(node);
+		o.initialize();
+		node.insertOp(o);
+		addedQueue.offer(node);
+		Selector s=selector.wakeup();
+		assert s == selector : "Wakeup returned the wrong selector.";
+		getLogger().debug("Added %s to %s", o, node);
+	}
+
 	public void addOperation(final MemcachedNode node, final Operation o) {
 		o.setHandlingNode(node);
 		o.initialize();

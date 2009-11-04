@@ -67,6 +67,9 @@ public class MockMemcachedNode implements MemcachedNode {
 	public void addOp(Operation op) {
 		// noop
 	}
+	public void insertOp(Operation op) {
+		// noop
+	}
 	public int getSelectionOps() {return 0;}
 	public ByteBuffer getRbuf() {return null;}
 	public ByteBuffer getWbuf() {return null;}

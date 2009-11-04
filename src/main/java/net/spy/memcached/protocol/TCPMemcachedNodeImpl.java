@@ -243,6 +243,17 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	}
 
 	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#insertOp(net.spy.memcached.ops.Operation)
+	 */
+	public final void insertOp(Operation op) {
+		ArrayList<Operation> tmp = new ArrayList<Operation>(
+				inputQueue.size() + 1);
+		tmp.add(op);
+		inputQueue.drainTo(tmp);
+		inputQueue.addAll(tmp);
+	}
+
+	/* (non-Javadoc)
 	 * @see net.spy.memcached.MemcachedNode#getSelectionOps()
 	 */
 	public final int getSelectionOps() {
