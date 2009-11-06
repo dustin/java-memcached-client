@@ -10,8 +10,10 @@ import java.util.List;
 public class AddrUtil {
 
 	/**
-	 * Split a string in the form of "host:port host2:port" into a List of
-	 * InetSocketAddress instances suitable for instantiating a MemcachedClient.
+	 * Split a string containing whitespace or comma separated host or
+	 * IP addresses and port numbers of the form "host:port host2:port"
+	 * or "host:port, host2:port" into a List of InetSocketAddress
+	 * instances suitable for instantiating a MemcachedClient.
 	 *
 	 * Note that colon-delimited IPv6 is also supported.
 	 * For example:  ::1:11211
@@ -27,7 +29,11 @@ public class AddrUtil {
 		ArrayList<InetSocketAddress> addrs=
 			new ArrayList<InetSocketAddress>();
 
-		for(String hoststuff : s.split(" ")) {
+		for(String hoststuff : s.split("(?:\\s|,)+")) {
+			if(hoststuff.equals("")) {
+				continue;
+			}
+
 			int finalColon=hoststuff.lastIndexOf(':');
 			if(finalColon < 1) {
 				throw new IllegalArgumentException("Invalid server ``"
