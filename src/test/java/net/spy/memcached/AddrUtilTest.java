@@ -1,7 +1,9 @@
 package net.spy.memcached;
 
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -94,7 +96,12 @@ public class AddrUtilTest extends TestCase {
 		List<InetSocketAddress> addrs=
 			AddrUtil.getAddresses("::1:80");
 		assertEquals(1, addrs.size());
-		assertEquals("localhost", addrs.get(0).getHostName());
+
+	        Set<String> validLocalhostNames=new HashSet<String>();
+		validLocalhostNames.add("localhost");
+		validLocalhostNames.add("ip6-localhost");
+		validLocalhostNames.add("localhost6.localdomain6");
+		assert(validLocalhostNames.contains(addrs.get(0).getHostName()));
 		assertEquals(80, addrs.get(0).getPort());
 	}
 }
