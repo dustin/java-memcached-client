@@ -108,6 +108,7 @@ public final class MemcachedConnection extends SpyObject {
 					|| qa.getSk().interestOps() == SelectionKey.OP_CONNECT
 					: "Not connected, and not wanting to connect";
 			} catch(SocketException e) {
+				getLogger().warn("Socket error on initial connect", e);
 				queueReconnect(qa);
 			}
 			connections.add(qa);
