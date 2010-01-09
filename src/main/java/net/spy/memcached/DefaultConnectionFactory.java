@@ -77,7 +77,6 @@ public class DefaultConnectionFactory extends SpyObject
     public static final long DEFAULT_MAX_RECONNECT_DELAY = 30;
 
 	private final int opQueueLen;
-	private final long opQueueMaxBlockTime;
 	private final int readBufSize;
 	private final HashAlgorithm hashAlg;
 
@@ -86,16 +85,12 @@ public class DefaultConnectionFactory extends SpyObject
 	 *
 	 * @param qLen the queue length.
 	 * @param bufSize the buffer size
-	 * @param opQueueMaxBlockTime maximum amount of time to wait for space
-	 *        in an input queue (in milliseconds)
 	 * @param hash the algorithm to use for hashing
 	 */
-	public DefaultConnectionFactory(int qLen, int bufSize,
-			long opQueueMaxBlockTime, HashAlgorithm hash) {
+	public DefaultConnectionFactory(int qLen, int bufSize, HashAlgorithm hash) {
 		super();
 		opQueueLen=qLen;
 		readBufSize=bufSize;
-		this.opQueueMaxBlockTime = opQueueMaxBlockTime;
 		hashAlg=hash;
 	}
 
@@ -104,7 +99,7 @@ public class DefaultConnectionFactory extends SpyObject
 	 * queue length, and the given read buffer size.
 	 */
 	public DefaultConnectionFactory(int qLen, int bufSize) {
-		this(qLen, bufSize, DEFAULT_OP_QUEUE_MAX_BLOCK_TIME, DEFAULT_HASH);
+		this(qLen, bufSize, DEFAULT_HASH);
 	}
 
 	/**
@@ -192,7 +187,7 @@ public class DefaultConnectionFactory extends SpyObject
 	 *         complete, in milliseconds, or null for no waiting.
 	 */
 	public long getOpQueueMaxBlockTime() {
-		return opQueueMaxBlockTime;
+		return DEFAULT_OP_QUEUE_MAX_BLOCK_TIME;
 	}
 
 	/* (non-Javadoc)

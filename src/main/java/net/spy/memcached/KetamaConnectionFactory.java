@@ -25,7 +25,7 @@ public class KetamaConnectionFactory extends DefaultConnectionFactory {
 	 */
 	public KetamaConnectionFactory(int qLen, int bufSize,
 			long opQueueMaxBlockTime) {
-		super(qLen, bufSize, opQueueMaxBlockTime, HashAlgorithm.KETAMA_HASH);
+		super(qLen, bufSize, HashAlgorithm.KETAMA_HASH);
 	}
 
 	/**
