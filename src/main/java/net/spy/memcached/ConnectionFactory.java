@@ -52,6 +52,12 @@ public interface ConnectionFactory {
 	BlockingQueue<Operation> createWriteOperationQueue();
 
 	/**
+	 * Get the maximum amount of time (in milliseconds) a client is willing
+	 * to wait to add a new item to a queue.
+	 */
+	long getOpQueueMaxBlockTime();
+
+	/**
 	 * Create a NodeLocator instance for the given list of nodes.
 	 */
 	NodeLocator createLocator(List<MemcachedNode> nodes);

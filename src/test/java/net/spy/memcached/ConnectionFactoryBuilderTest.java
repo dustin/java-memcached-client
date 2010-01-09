@@ -74,6 +74,8 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 		assertTrue(f.isDaemon());
 		assertTrue(f.shouldOptimize());
 		assertFalse(f.useNagleAlgorithm());
+		assertEquals(f.getOpQueueMaxBlockTime(),
+				DefaultConnectionFactory.DEFAULT_OP_QUEUE_MAX_BLOCK_TIME);
 	}
 
 	public void testModifications() throws Exception {
@@ -107,6 +109,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 			.setTranscoder(new WhalinTranscoder())
 			.setUseNagleAlgorithm(true)
 			.setLocatorType(Locator.CONSISTENT)
+			.setOpQueueMaxBlockTime(19)
 			.build();
 
 		assertEquals(4225, f.getOperationTimeout());
@@ -123,6 +126,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 		assertFalse(f.isDaemon());
 		assertFalse(f.shouldOptimize());
 		assertTrue(f.useNagleAlgorithm());
+		assertEquals(f.getOpQueueMaxBlockTime(), 19);
 
 		MemcachedNode n = new MockMemcachedNode(
 			InetSocketAddress.createUnresolved("localhost", 11211));

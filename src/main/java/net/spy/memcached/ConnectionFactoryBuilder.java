@@ -41,6 +41,7 @@ public class ConnectionFactoryBuilder {
 	private int readBufSize = -1;
 	private HashAlgorithm hashAlg;
 	private AuthDescriptor authDescriptor = null;
+	private long opQueueMaxBlockTime = -1;
 
 	/**
 	 * Set the operation queue factory.
@@ -63,6 +64,15 @@ public class ConnectionFactoryBuilder {
 	 */
 	public ConnectionFactoryBuilder setWriteOpQueueFactory(OperationQueueFactory q) {
 		writeQueueFactory = q;
+		return this;
+	}
+
+	/**
+	 * Set the maximum amount of time (in milliseconds) a client is willing to
+	 * wait for space to become available in an output queue.
+	 */
+	public ConnectionFactoryBuilder setOpQueueMaxBlockTime(long t) {
+		opQueueMaxBlockTime = t;
 		return this;
 	}
 
@@ -293,6 +303,12 @@ public class ConnectionFactoryBuilder {
 			@Override
 			public AuthDescriptor getAuthDescriptor() {
 				return authDescriptor;
+			}
+
+			@Override
+			public long getOpQueueMaxBlockTime() {
+				return opQueueMaxBlockTime > -1 ? opQueueMaxBlockTime
+						: super.getOpQueueMaxBlockTime();
 			}
 		};
 
