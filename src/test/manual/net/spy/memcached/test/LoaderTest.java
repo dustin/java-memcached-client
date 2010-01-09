@@ -4,8 +4,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.AddrUtil;
-import net.spy.memcached.BinaryConnectionFactory;
+import net.spy.memcached.ConnectionFactoryBuilder;
 import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.util.CacheLoader;
 
@@ -23,7 +24,10 @@ public class LoaderTest extends SpyObject implements Runnable {
 
 	public void init() throws Exception {
 		client = new MemcachedClient(
-				new BinaryConnectionFactory(),
+				new ConnectionFactoryBuilder()
+					.setProtocol(Protocol.BINARY)
+					.setOpQueueMaxBlockTime(1000)
+					.build(),
 				AddrUtil.getAddresses("localhost:11211"));
 	}
 
