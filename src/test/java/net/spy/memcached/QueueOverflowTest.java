@@ -55,6 +55,11 @@ public class QueueOverflowTest extends ClientBaseCase {
 			public boolean shouldOptimize() {
 				return false;
 			}
+			@Override
+			public Long getOpQueueMaxBlockTimeNs() {
+				return null;
+			}
+
 		});
 	}
 
@@ -80,7 +85,7 @@ public class QueueOverflowTest extends ClientBaseCase {
 		}
 		Thread.sleep(500);
 		assertTrue("Was not able to set a key after failure.",
-				client.set("kx", 0, "woo").get(1, TimeUnit.SECONDS));
+				client.set("kx", 0, "woo").get(10, TimeUnit.SECONDS));
 	}
 
 	public void testOverflowingInputQueue() throws Exception {

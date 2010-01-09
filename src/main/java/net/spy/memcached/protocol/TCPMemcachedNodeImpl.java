@@ -8,6 +8,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
@@ -27,6 +28,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	protected final BlockingQueue<Operation> writeQ;
 	private final BlockingQueue<Operation> readQ;
 	private final BlockingQueue<Operation> inputQueue;
+	private final Long opQueueMaxBlockTimeNs;
 	// This has been declared volatile so it can be used as an availability
 	// indicator.
 	private volatile int reconnectAttempt=1;
@@ -37,7 +39,8 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 
 	public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
-			BlockingQueue<Operation> wq, BlockingQueue<Operation> iq) {
+			BlockingQueue<Operation> wq, BlockingQueue<Operation> iq,
+			Long opQueueMaxBlockTimeNs) {
 		super();
 		assert sa != null : "No SocketAddress";
 		assert c != null : "No SocketChannel";
@@ -53,6 +56,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 		readQ=rq;
 		writeQ=wq;
 		inputQueue=iq;
+		this.opQueueMaxBlockTimeNs = opQueueMaxBlockTimeNs;
 	}
 
 	/* (non-Javadoc)
@@ -238,8 +242,20 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 * @see net.spy.memcached.MemcachedNode#addOp(net.spy.memcached.ops.Operation)
 	 */
 	public final void addOp(Operation op) {
-		boolean added=inputQueue.add(op);
-		assert added; // documented to throw an IllegalStateException
+		if (opQueueMaxBlockTimeNs == null) {
+			if (!inputQueue.offer(op))
+				throw new IllegalStateException("Could not add " + op + ": Queue full");
+		} else {
+			try {
+				if (!inputQueue.offer(op, opQueueMaxBlockTimeNs, TimeUnit.NANOSECONDS))
+					throw new IllegalStateException("Timed out waiting to add "
+							+ op + "(max wait=" + opQueueMaxBlockTimeNs + "ns)");
+			} catch (InterruptedException e) {
+				// Restore the interrupted status
+				Thread.currentThread().interrupt();
+				throw new IllegalStateException("Interrupted while waiting to add " + op);
+			}
+		}
 	}
 
 	/* (non-Javadoc)
