@@ -28,7 +28,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	protected final BlockingQueue<Operation> writeQ;
 	private final BlockingQueue<Operation> readQ;
 	private final BlockingQueue<Operation> inputQueue;
-	private final Long opQueueMaxBlockTimeNs;
+	private final long opQueueMaxBlockTime;
 	// This has been declared volatile so it can be used as an availability
 	// indicator.
 	private volatile int reconnectAttempt=1;
@@ -40,7 +40,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
 			BlockingQueue<Operation> wq, BlockingQueue<Operation> iq,
-			Long opQueueMaxBlockTimeNs) {
+			long opQueueMaxBlockTime) {
 		super();
 		assert sa != null : "No SocketAddress";
 		assert c != null : "No SocketChannel";
@@ -56,7 +56,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 		readQ=rq;
 		writeQ=wq;
 		inputQueue=iq;
-		this.opQueueMaxBlockTimeNs = opQueueMaxBlockTimeNs;
+		this.opQueueMaxBlockTime = opQueueMaxBlockTime;
 	}
 
 	/* (non-Javadoc)
@@ -242,19 +242,17 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 * @see net.spy.memcached.MemcachedNode#addOp(net.spy.memcached.ops.Operation)
 	 */
 	public final void addOp(Operation op) {
-		if (opQueueMaxBlockTimeNs == null) {
-			if (!inputQueue.offer(op))
-				throw new IllegalStateException("Could not add " + op + ": Queue full");
-		} else {
-			try {
-				if (!inputQueue.offer(op, opQueueMaxBlockTimeNs, TimeUnit.NANOSECONDS))
-					throw new IllegalStateException("Timed out waiting to add "
-							+ op + "(max wait=" + opQueueMaxBlockTimeNs + "ns)");
-			} catch (InterruptedException e) {
-				// Restore the interrupted status
-				Thread.currentThread().interrupt();
-				throw new IllegalStateException("Interrupted while waiting to add " + op);
+		try {
+			if(!inputQueue.offer(op, opQueueMaxBlockTime,
+					TimeUnit.MILLISECONDS)) {
+				throw new IllegalStateException("Timed out waiting to add "
+						+ op + "(max wait=" + opQueueMaxBlockTime + "ms)");
 			}
+		} catch(InterruptedException e) {
+			// Restore the interrupted status
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException("Interrupted while waiting to add "
+					+ op);
 		}
 	}
 

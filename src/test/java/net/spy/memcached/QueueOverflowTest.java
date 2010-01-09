@@ -56,8 +56,8 @@ public class QueueOverflowTest extends ClientBaseCase {
 				return false;
 			}
 			@Override
-			public Long getOpQueueMaxBlockTimeNs() {
-				return null;
+			public long getOpQueueMaxBlockTime() {
+				return 0;
 			}
 
 		});

@@ -32,13 +32,12 @@ public class BinaryConnectionFactory extends DefaultConnectionFactory {
 	 * @param len the queue length.
 	 * @param bufSize the buffer size
 	 * @param opQueueMaxBlockTimeNs the maximum time to block waiting for op
-	 *        queue operations to complete, in nanoseconds, or null for no
-	 *        waiting
+	 *        queue operations to complete, in milliseconds
  	 * @param hash the algorithm to use for hashing
 	 */
 	public BinaryConnectionFactory(int len, int bufSize,
-			Long opQueueMaxBlockTimeNs, HashAlgorithm hash) {
-		super(len, bufSize, opQueueMaxBlockTimeNs, hash);
+			long opQueueMaxBlockTime, HashAlgorithm hash) {
+		super(len, bufSize, opQueueMaxBlockTime, hash);
 	}
 
 	@Override
@@ -48,7 +47,7 @@ public class BinaryConnectionFactory extends DefaultConnectionFactory {
 			createReadOperationQueue(),
 			createWriteOperationQueue(),
 			createOperationQueue(),
-			getOpQueueMaxBlockTimeNs());
+			getOpQueueMaxBlockTime());
 	}
 
 	@Override

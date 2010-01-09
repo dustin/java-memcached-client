@@ -20,17 +20,20 @@ public class KetamaConnectionFactory extends DefaultConnectionFactory {
 	 * Create a KetamaConnectionFactory with the given maximum operation
 	 * queue length, and the given read buffer size.
 	 *
-	 * @param opQueueMaxBlockTimeNs the maximum time to block waiting for op queue operations to complete, in nanoseconds, or null for no waiting
+	 * @param opQueueMaxBlockTime the maximum time to block waiting for op
+	 *        queue operations to complete, in milliseconds
 	 */
-	public KetamaConnectionFactory(int qLen, int bufSize, Long opQueueMaxBlockTimeNs) {
-		super(qLen, bufSize, opQueueMaxBlockTimeNs, HashAlgorithm.KETAMA_HASH);
+	public KetamaConnectionFactory(int qLen, int bufSize,
+			long opQueueMaxBlockTime) {
+		super(qLen, bufSize, opQueueMaxBlockTime, HashAlgorithm.KETAMA_HASH);
 	}
 
 	/**
 	 * Create a KetamaConnectionFactory with the default parameters.
 	 */
 	public KetamaConnectionFactory() {
-		this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE, DEFAULT_OP_QUEUE_MAX_BLOCK_TIME_NS);
+		this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE,
+				DEFAULT_OP_QUEUE_MAX_BLOCK_TIME);
 	}
 
 	/* (non-Javadoc)

@@ -54,12 +54,12 @@ public class DefaultConnectionFactory extends SpyObject
 
 	/**
 	 * The maximum time to block waiting for op queue operations to complete,
-	 * in nanoseconds, or null for no waiting. The default has been set with
-	 * the expectation that most requests are interactive and waiting for more
-	 * than a few seconds is thus more undesirable than failing the request.
+	 * in milliseconds. The default has been set with the expectation that
+	 * most requests are interactive and waiting for more than a few seconds
+	 * is thus more undesirable than failing the request.
 	 */
-	public static final long DEFAULT_OP_QUEUE_MAX_BLOCK_TIME_NS =
-		TimeUnit.SECONDS.toNanos(10);
+	public static final long DEFAULT_OP_QUEUE_MAX_BLOCK_TIME =
+		TimeUnit.SECONDS.toMillis(10);
 
 	/**
 	 * The read buffer size for each server connection from this factory.
@@ -77,7 +77,7 @@ public class DefaultConnectionFactory extends SpyObject
     public static final long DEFAULT_MAX_RECONNECT_DELAY = 30;
 
 	private final int opQueueLen;
-	private final Long opQueueMaxBlockTimeNs;
+	private final long opQueueMaxBlockTime;
 	private final int readBufSize;
 	private final HashAlgorithm hashAlg;
 
@@ -86,16 +86,16 @@ public class DefaultConnectionFactory extends SpyObject
 	 *
 	 * @param qLen the queue length.
 	 * @param bufSize the buffer size
-	 * @param opQueueMaxBlockTimeNs maximum amount of time to wait for space
-	 *        in an input queue
+	 * @param opQueueMaxBlockTime maximum amount of time to wait for space
+	 *        in an input queue (in milliseconds)
 	 * @param hash the algorithm to use for hashing
 	 */
 	public DefaultConnectionFactory(int qLen, int bufSize,
-			Long opQueueMaxBlockTimeNs, HashAlgorithm hash) {
+			long opQueueMaxBlockTime, HashAlgorithm hash) {
 		super();
 		opQueueLen=qLen;
 		readBufSize=bufSize;
-		this.opQueueMaxBlockTimeNs = opQueueMaxBlockTimeNs;
+		this.opQueueMaxBlockTime = opQueueMaxBlockTime;
 		hashAlg=hash;
 	}
 
@@ -104,7 +104,7 @@ public class DefaultConnectionFactory extends SpyObject
 	 * queue length, and the given read buffer size.
 	 */
 	public DefaultConnectionFactory(int qLen, int bufSize) {
-		this(qLen, bufSize, DEFAULT_OP_QUEUE_MAX_BLOCK_TIME_NS, DEFAULT_HASH);
+		this(qLen, bufSize, DEFAULT_OP_QUEUE_MAX_BLOCK_TIME, DEFAULT_HASH);
 	}
 
 	/**
@@ -123,13 +123,13 @@ public class DefaultConnectionFactory extends SpyObject
 				createReadOperationQueue(),
 				createWriteOperationQueue(),
 				createOperationQueue(),
-				getOpQueueMaxBlockTimeNs());
+				getOpQueueMaxBlockTime());
 		} else if(of instanceof BinaryOperationFactory) {
 			return new BinaryMemcachedNodeImpl(sa, c, bufSize,
 					createReadOperationQueue(),
 					createWriteOperationQueue(),
 					createOperationQueue(),
-					getOpQueueMaxBlockTimeNs());
+					getOpQueueMaxBlockTime());
 		} else {
 			throw new IllegalStateException(
 				"Unhandled operation factory type " + of);
@@ -189,10 +189,10 @@ public class DefaultConnectionFactory extends SpyObject
 
 	/**
 	 * @return the maximum time to block waiting for op queue operations to
-	 *         complete, in nanoseconds, or null for no waiting.
+	 *         complete, in milliseconds, or null for no waiting.
 	 */
-	public Long getOpQueueMaxBlockTimeNs() {
-		return opQueueMaxBlockTimeNs;
+	public long getOpQueueMaxBlockTime() {
+		return opQueueMaxBlockTime;
 	}
 
 	/* (non-Javadoc)
