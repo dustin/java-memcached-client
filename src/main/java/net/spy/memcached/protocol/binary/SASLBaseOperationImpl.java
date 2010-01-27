@@ -39,9 +39,7 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
 			SaslClient sc=Sasl.createSaslClient(mech, null,
 					"memcached", serverName, props, cbh);
 
-			byte[] response = challenge.length > 0
-				? sc.evaluateChallenge(challenge) : EMPTY_BYTES;
-
+			byte[] response = buildResponse(sc);
 			String mechanism = sc.getMechanismName();
 
 			prepareBuffer(mechanism, 0, response);
@@ -50,6 +48,8 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
 			throw new RuntimeException("Can't make SASL go.", e);
 		}
 	}
+
+	protected abstract byte[] buildResponse(SaslClient sc) throws SaslException;
 
 	@Override
 	protected void decodePayload(byte[] pl) {
