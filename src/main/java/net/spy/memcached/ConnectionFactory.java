@@ -132,4 +132,9 @@ public interface ConnectionFactory {
 	 * @return null if no authentication should take place
 	 */
 	AuthDescriptor getAuthDescriptor();
+
+	/**
+	 * Maximum number of timeout exception for shutdown connection
+	 */
+	int getTimeoutExceptionThreshold();
 }

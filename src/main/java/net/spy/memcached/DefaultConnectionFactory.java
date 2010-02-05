@@ -76,6 +76,11 @@ public class DefaultConnectionFactory extends SpyObject
      */
     public static final long DEFAULT_MAX_RECONNECT_DELAY = 30;
 
+    /**
+     * Maximum number + 2 of timeout exception for shutdown connection
+     */
+    public static final int DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD = 998;
+
 	private final int opQueueLen;
 	private final int readBufSize;
 	private final HashAlgorithm hashAlg;
@@ -266,4 +271,12 @@ public class DefaultConnectionFactory extends SpyObject
 	public AuthDescriptor getAuthDescriptor() {
 		return null;
 	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.ConnectionFactory#getTimeoutExceptionThreshold()
+	 */
+	public int getTimeoutExceptionThreshold() {
+		return DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
+	}
+
 }

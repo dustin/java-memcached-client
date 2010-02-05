@@ -25,6 +25,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.KeyedOperation;
@@ -64,6 +65,24 @@ public final class MemcachedConnection extends SpyObject {
 	private final Collection<ConnectionObserver> connObservers =
 		new ConcurrentLinkedQueue<ConnectionObserver>();
 	private final OperationFactory opFact;
+	private final int timeoutExceptionThreshold;
+	// timeout counter
+	private static AtomicInteger continuousTimeout = new AtomicInteger(0);
+
+	/**
+	 * whenever timeout exception occur, timeout counter increase by 1 until timeout exception threshold
+	 * but, if isIncrease is false, timeout counter will be reset
+	 * @param isIncrease
+	 */
+	public static void setContinuousTimeout(boolean isIncrease) {
+		if (isIncrease) {
+			continuousTimeout.getAndAdd(1);
+		} else {
+			if (continuousTimeout.get() != 0) {
+				continuousTimeout.set(0);
+			}
+		}
+	}
 
 	/**
 	 * Construct a memcached connection.
@@ -85,6 +104,7 @@ public final class MemcachedConnection extends SpyObject {
 		shouldOptimize = f.shouldOptimize();
 		maxDelay = f.getMaxReconnectDelay();
 		opFact = opfactory;
+		timeoutExceptionThreshold = f.getTimeoutExceptionThreshold();
 		selector=Selector.open();
 		List<MemcachedNode> connections=new ArrayList<MemcachedNode>(a.size());
 		for(SocketAddress sa : a) {
@@ -191,7 +211,14 @@ public final class MemcachedConnection extends SpyObject {
 					selected, selectedKeys.size());
 			emptySelects=0;
 			for(SelectionKey sk : selectedKeys) {
-				handleIO(sk);
+				if (continuousTimeout.get() > timeoutExceptionThreshold) {
+					// timeout counter exceeds timeout exception threshold?
+					MemcachedNode mn = (MemcachedNode)sk.attachment();
+					lostConnection(mn);
+				} else {
+					// regular transaction
+					handleIO(sk);
+				}
 			} // for each selector
 			selectedKeys.clear();
 		}

@@ -43,6 +43,7 @@ public class ConnectionFactoryBuilder {
 	private AuthDescriptor authDescriptor = null;
 	private long opQueueMaxBlockTime = -1;
 
+	private int timeoutExceptionThreshold = DefaultConnectionFactory.DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
 	/**
 	 * Set the operation queue factory.
 	 */
@@ -204,6 +205,17 @@ public class ConnectionFactoryBuilder {
 	}
 
 	/**
+	 * Set the maximum timeout exception threshold
+	 */
+	public ConnectionFactoryBuilder setTimeoutExceptionThreshold(int to) {
+		assert to > 1 : "Minimum timeout exception threshold is 2";
+		if (to > 1) {
+			timeoutExceptionThreshold = to -2;
+		}
+		return this;
+	}
+
+	/**
 	 * Get the ConnectionFactory set up with the provided parameters.
 	 */
 	public ConnectionFactory build() {
@@ -310,6 +322,12 @@ public class ConnectionFactoryBuilder {
 				return opQueueMaxBlockTime > -1 ? opQueueMaxBlockTime
 						: super.getOpQueueMaxBlockTime();
 			}
+
+			@Override
+			public int getTimeoutExceptionThreshold() {
+				return timeoutExceptionThreshold;
+			}
+
 		};
 
 	}
