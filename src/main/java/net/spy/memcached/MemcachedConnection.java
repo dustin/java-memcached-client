@@ -78,9 +78,7 @@ public final class MemcachedConnection extends SpyObject {
 		if (isIncrease) {
 			continuousTimeout.getAndAdd(1);
 		} else {
-			if (continuousTimeout.get() != 0) {
-				continuousTimeout.set(0);
-			}
+			continuousTimeout.set(0);
 		}
 	}
 
