@@ -71,7 +71,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 			sc.close();
 		}
 
-		assertTrue(f.isDaemon());
+		assertFalse(f.isDaemon());
 		assertTrue(f.shouldOptimize());
 		assertFalse(f.useNagleAlgorithm());
 		assertEquals(f.getOpQueueMaxBlockTime(),
@@ -95,7 +95,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 		OperationQueueFactory rQueueFactory = new DirectFactory(rQueue);
 		OperationQueueFactory wQueueFactory = new DirectFactory(wQueue);
 
-		ConnectionFactory f = b.setDaemon(false)
+		ConnectionFactory f = b.setDaemon(true)
 			.setShouldOptimize(false)
 			.setFailureMode(FailureMode.Redistribute)
 			.setHashAlg(HashAlgorithm.KETAMA_HASH)
@@ -123,7 +123,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 		assertSame(oQueue, f.createOperationQueue());
 		assertSame(rQueue, f.createReadOperationQueue());
 		assertSame(wQueue, f.createWriteOperationQueue());
-		assertFalse(f.isDaemon());
+		assertTrue(f.isDaemon());
 		assertFalse(f.shouldOptimize());
 		assertTrue(f.useNagleAlgorithm());
 		assertEquals(f.getOpQueueMaxBlockTime(), 19);
