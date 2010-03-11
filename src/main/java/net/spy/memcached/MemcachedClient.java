@@ -1183,6 +1183,10 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Increment the given key by the given amount.
 	 *
+	 * Due to the way the memcached server operates on items, incremented
+	 * and decremented items will be returned as Strings with any
+	 * operations that return a value.
+	 *
 	 * @param key the key
 	 * @param by the amount to increment
 	 * @return the new value (-1 if the key doesn't exist)
@@ -1198,6 +1202,10 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Decrement the given key by the given value.
 	 *
+	 * Due to the way the memcached server operates on items, incremented
+	 * and decremented items will be returned as Strings with any
+	 * operations that return a value.
+	 *
 	 * @param key the key
 	 * @param by the value
 	 * @return the new value (-1 if the key doesn't exist)
@@ -1212,6 +1220,10 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Increment the given counter, returning the new value.
+	 *
+	 * Due to the way the memcached server operates on items, incremented
+	 * and decremented items will be returned as Strings with any
+	 * operations that return a value.
 	 *
 	 * @param key the key
 	 * @param by the amount to increment
@@ -1229,6 +1241,10 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Decrement the given counter, returning the new value.
+	 *
+	 * Due to the way the memcached server operates on items, incremented
+	 * and decremented items will be returned as Strings with any
+	 * operations that return a value.
 	 *
 	 * @param key the key
 	 * @param by the amount to decrement
