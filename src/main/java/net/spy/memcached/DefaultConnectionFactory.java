@@ -28,8 +28,10 @@ import net.spy.memcached.transcoders.Transcoder;
  * <p>
  * This implementation creates connections where the operation queue is an
  * ArrayBlockingQueue and the read and write queues are unbounded
- * LinkedBlockingQueues.  The <code>Redistribute</code> FailureMode is used
- * by default.
+ * LinkedBlockingQueues.  The <code>Redistribute</code> FailureMode is always
+ * used.  If other FailureModes are needed, look at the
+ * ConnectionFactoryBuilder.
+ *
  * </p>
  */
 public class DefaultConnectionFactory extends SpyObject
