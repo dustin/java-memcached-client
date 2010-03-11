@@ -341,10 +341,14 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Append to an existing value in the cache.
 	 *
+	 * <p>Note that the return will be false any time a mutation has not
+	 * occurred.</p>
+	 *
 	 * @param cas cas identifier (ignored in the ascii protocol)
 	 * @param key the key to whose value will be appended
 	 * @param val the value to append
-	 * @return a future indicating success
+	 * @return a future indicating success, false if there was no change
+	 *         to the value
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
@@ -354,6 +358,9 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Append to an existing value in the cache.
+	 *
+	 * <p>Note that the return will be false any time a mutation has not
+	 * occurred.</p>
 	 *
 	 * @param <T>
 	 * @param cas cas identifier (ignored in the ascii protocol)
@@ -372,6 +379,9 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Prepend to an existing value in the cache.
 	 *
+	 * <p>Note that the return will be false any time a mutation has not
+	 * occurred.</p>
+	 *
 	 * @param cas cas identifier (ignored in the ascii protocol)
 	 * @param key the key to whose value will be prepended
 	 * @param val the value to append
@@ -385,6 +395,9 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Prepend to an existing value in the cache.
+	 *
+	 * <p>Note that the return will be false any time a mutation has not
+	 * occurred.</p>
 	 *
 	 * @param <T>
 	 * @param cas cas identifier (ignored in the ascii protocol)
@@ -542,6 +555,9 @@ public class MemcachedClient extends SpyThread
 	 * given, and will be processed per the memcached protocol specification:
 	 * </p>
 	 *
+	 * <p>Note that the return will be false any time a mutation has not
+	 * occurred.</p>
+	 *
 	 * <blockquote>
 	 * <p>
 	 * The actual value sent may either be
@@ -576,6 +592,9 @@ public class MemcachedClient extends SpyThread
 	 * given, and will be processed per the memcached protocol specification:
 	 * </p>
 	 *
+	 * <p>Note that the return will be false any time a mutation has not
+	 * occurred.</p>
+	 *
 	 * <blockquote>
 	 * <p>
 	 * The actual value sent may either be
@@ -606,6 +625,9 @@ public class MemcachedClient extends SpyThread
 	 * The <code>exp</code> value is passed along to memcached exactly as
 	 * given, and will be processed per the memcached protocol specification:
 	 * </p>
+	 *
+	 * <p>Note that the return will be false any time a mutation has not
+	 * occurred.</p>
 	 *
 	 * <blockquote>
 	 * <p>
@@ -641,6 +663,9 @@ public class MemcachedClient extends SpyThread
 	 * given, and will be processed per the memcached protocol specification:
 	 * </p>
 	 *
+	 * <p>Note that the return will be false any time a mutation has not
+	 * occurred.</p>
+	 *
 	 * <blockquote>
 	 * <p>
 	 * The actual value sent may either be
@@ -672,6 +697,9 @@ public class MemcachedClient extends SpyThread
 	 * The <code>exp</code> value is passed along to memcached exactly as
 	 * given, and will be processed per the memcached protocol specification:
 	 * </p>
+	 *
+	 * <p>Note that the return will be false any time a mutation has not
+	 * occurred.</p>
 	 *
 	 * <blockquote>
 	 * <p>
@@ -707,6 +735,9 @@ public class MemcachedClient extends SpyThread
 	 * The <code>exp</code> value is passed along to memcached exactly as
 	 * given, and will be processed per the memcached protocol specification:
 	 * </p>
+	 *
+	 * <p>Note that the return will be false any time a mutation has not
+	 * occurred.</p>
 	 *
 	 * <blockquote>
 	 * <p>
