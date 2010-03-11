@@ -183,6 +183,8 @@ public class MemcachedClient extends SpyThread
 	 * completely accurate, but is a useful for getting a feel for what's
 	 * working and what's not working.
 	 * </p>
+	 *
+	 * @return point-in-time view of currently available servers
 	 */
 	public Collection<SocketAddress> getAvailableServers() {
 		Collection<SocketAddress> rv=new ArrayList<SocketAddress>();
@@ -202,6 +204,8 @@ public class MemcachedClient extends SpyThread
 	 * completely accurate, but is a useful for getting a feel for what's
 	 * working and what's not working.
 	 * </p>
+	 *
+	 * @return point-in-time view of currently available servers
 	 */
 	public Collection<SocketAddress> getUnavailableServers() {
 		Collection<SocketAddress> rv=new ArrayList<SocketAddress>();
@@ -215,6 +219,8 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Get a read-only wrapper around the node locator wrapping this instance.
+	 *
+	 * @return this instance's NodeLocator
 	 */
 	public NodeLocator getNodeLocator() {
 		return conn.getLocator().getReadonlyCopy();
@@ -222,6 +228,8 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Get the default transcoder that's in use.
+	 *
+	 * @return this instance's Transcoder
 	 */
 	public Transcoder<Object> getTranscoder() {
 		return transcoder;
@@ -347,6 +355,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Append to an existing value in the cache.
 	 *
+	 * @param <T>
 	 * @param cas cas identifier (ignored in the ascii protocol)
 	 * @param key the key to whose value will be appended
 	 * @param val the value to append
@@ -377,6 +386,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Prepend to an existing value in the cache.
 	 *
+	 * @param <T>
 	 * @param cas cas identifier (ignored in the ascii protocol)
 	 * @param key the key to whose value will be prepended
 	 * @param val the value to append
@@ -393,6 +403,7 @@ public class MemcachedClient extends SpyThread
 	/**
      * Asynchronous CAS operation.
      *
+     * @param <T>
      * @param key the key
      * @param casId the CAS identifier (from a gets operation)
      * @param value the new value
@@ -409,6 +420,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Asynchronous CAS operation.
 	 *
+	 * @param <T>
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param exp the expiration of this object
@@ -461,6 +473,7 @@ public class MemcachedClient extends SpyThread
 	/**
      * Perform a synchronous CAS operation.
      *
+     * @param <T>
      * @param key the key
      * @param casId the CAS identifier (from a gets operation)
      * @param value the new value
@@ -479,6 +492,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Perform a synchronous CAS operation.
 	 *
+	 * @param <T>
 	 * @param key the key
 	 * @param casId the CAS identifier (from a gets operation)
 	 * @param exp the expiration of this object
@@ -540,6 +554,7 @@ public class MemcachedClient extends SpyThread
 	 * </p>
 	 * </blockquote>
 	 *
+	 * @param <T>
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
@@ -604,6 +619,7 @@ public class MemcachedClient extends SpyThread
 	 * </p>
 	 * </blockquote>
 	 *
+	 * @param <T>
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
@@ -669,6 +685,7 @@ public class MemcachedClient extends SpyThread
 	 * </p>
 	 * </blockquote>
 	 *
+	 * @param <T>
 	 * @param key the key under which this object should be added.
 	 * @param exp the expiration of this object
 	 * @param o the object to store
@@ -717,6 +734,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Get the given key asynchronously.
 	 *
+	 * @param <T>
 	 * @param key the key to fetch
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a future that will hold the return value of the fetch
@@ -763,6 +781,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Gets (with CAS support) the given key asynchronously.
 	 *
+	 * @param <T>
 	 * @param key the key to fetch
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a future that will hold the return value of the fetch
@@ -812,6 +831,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Gets (with CAS support) with a single key.
 	 *
+	 * @param <T>
 	 * @param key the key to get
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return the result from the cache and CAS id (null if there is none)
@@ -850,6 +870,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Get with a single key.
 	 *
+	 * @param <T>
 	 * @param key the key to get
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return the result from the cache (null if there is none)
@@ -888,6 +909,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Asynchronously get a bunch of objects from the cache.
 	 *
+	 * @param <T>
 	 * @param keys the keys to request
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a Future result of that fetch
@@ -980,6 +1002,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Varargs wrapper for asynchronous bulk gets.
 	 *
+	 * @param <T>
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @param keys one more more keys to get
 	 * @return the future values of those keys
@@ -1006,6 +1029,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Get the values for multiple keys from the cache.
 	 *
+	 * @param <T>
 	 * @param keys the keys
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @return a map of the values (for each value that exists)
@@ -1046,6 +1070,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Get the values for multiple keys from the cache.
 	 *
+	 * @param <T>
 	 * @param tc the transcoder to serialize and unserialize value
 	 * @param keys the keys
 	 * @return a map of the values (for each value that exists)
@@ -1074,6 +1099,8 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Get the versions of all of the connected memcacheds.
+	 *
+	 * @return a Map of SocketAddress to String for connected servers
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
@@ -1105,6 +1132,8 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Get all of the stats from all of the connections.
+	 *
+	 * @return a Map of a Map of stats replies by SocketAddress
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
@@ -1309,6 +1338,8 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Asychronous increment.
 	 *
+	 * @param key key to increment
+	 * @param by the amount to increment the value by
 	 * @return a future with the incremented value, or -1 if the
 	 *		   increment failed.
 	 * @throws IllegalStateException in the rare circumstance where queue
@@ -1321,6 +1352,8 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Asynchronous decrement.
 	 *
+	 * @param key key to increment
+	 * @param by the amount to increment the value by
 	 * @return a future with the decremented value, or -1 if the
 	 *		   increment failed.
 	 * @throws IllegalStateException in the rare circumstance where queue
@@ -1378,6 +1411,7 @@ public class MemcachedClient extends SpyThread
 	 * @param key the key to delete
 	 * @param hold how long the key should be unavailable to add commands
 	 *
+	 * @return whether or not the operation was performed
 	 * @deprecated Hold values are no longer honored.
 	 */
 	@Deprecated
@@ -1389,6 +1423,7 @@ public class MemcachedClient extends SpyThread
 	 * Delete the given key from the cache.
 	 *
 	 * @param key the key to delete
+	 * @return whether or not the operation was performed
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
@@ -1411,6 +1446,8 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Flush all caches from all servers with a delay of application.
+	 * @param delay the period of time to delay, in seconds
+	 * @return whether or not the operation was accepted
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
@@ -1464,6 +1501,7 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Flush all caches from all servers immediately.
+	 * @return whether or not the operation was performed
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
@@ -1540,6 +1578,10 @@ public class MemcachedClient extends SpyThread
 
 	/**
 	 * Shut down this client gracefully.
+	 *
+	 * @param timeout the amount of time time for shutdown
+	 * @param unit the TimeUnit for the timeout
+	 * @return result of the shutdown request
 	 */
 	public boolean shutdown(long timeout, TimeUnit unit) {
 		// Guard against double shutdowns (bug 8).
@@ -1575,6 +1617,9 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Wait for the queues to die down.
 	 *
+	 * @param timeout the amount of time time for shutdown
+	 * @param unit the TimeUnit for the timeout
+	 * @return result of the request for the wait
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
@@ -1608,6 +1653,7 @@ public class MemcachedClient extends SpyThread
 	 * If connections are already established, your observer will be called
 	 * with the address and -1.
 	 *
+	 * @param obs the ConnectionObserver you wish to add
 	 * @return true if the observer was added.
 	 */
 	public boolean addObserver(ConnectionObserver obs) {
@@ -1625,6 +1671,7 @@ public class MemcachedClient extends SpyThread
 	/**
 	 * Remove a connection observer.
 	 *
+	 * @param obs the ConnectionObserver you wish to add
 	 * @return true if the observer existed, but no longer does
 	 */
 	public boolean removeObserver(ConnectionObserver obs) {
