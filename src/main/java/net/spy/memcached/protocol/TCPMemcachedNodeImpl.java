@@ -90,9 +90,12 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 * @see net.spy.memcached.MemcachedNode#setupResend()
 	 */
 	public final void setupResend() {
-		// First, reset the current write op.
+		// First, reset the current write op, or cancel it if we should
+		// be authenticating
 		Operation op=getCurrentWriteOp();
-		if(op != null) {
+		if(shouldAuth && op != null) {
+		    op.cancel();
+		} else if(op != null) {
 			ByteBuffer buf=op.getBuffer();
 			if(buf != null) {
 				buf.reset();
@@ -110,6 +113,13 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 				op.cancel();
 			}
 		}
+
+		while(shouldAuth && hasWriteOp()) {
+			op=removeCurrentWriteOp();
+			getLogger().warn("Discarding partially completed op: %s", op);
+			op.cancel();
+		}
+
 
 		getWbuf().clear();
 		getRbuf().clear();
@@ -249,7 +259,15 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 */
 	public final void addOp(Operation op) {
 		try {
-			authLatch.await();
+			if (!authLatch.await(1, TimeUnit.SECONDS)) {
+			    op.cancel();
+				getLogger().warn(
+					"Operation canceled because authentication " +
+					"or reconnection and authentication has " +
+					"taken more than one second to complete.");
+				getLogger().debug("Canceled operation %s", op.toString());
+				return;
+			}
 			if(!inputQueue.offer(op, opQueueMaxBlockTime,
 					TimeUnit.MILLISECONDS)) {
 				throw new IllegalStateException("Timed out waiting to add "
@@ -446,12 +464,13 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	public final void setupForAuth() {
 		if (shouldAuth) {
 			authLatch = new CountDownLatch(1);
-			setupResend();
 			if (inputQueue.size() > 0) {
 				reconnectBlocked = new ArrayList<Operation>(
 				inputQueue.size() + 1);
 				inputQueue.drainTo(reconnectBlocked);
 			}
+			assert(inputQueue.size() == 0);
+			setupResend();
 		} else {
 			authLatch = new CountDownLatch(0);
 		}

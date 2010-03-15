@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.memcached.auth.AuthDescriptor;
-import net.spy.memcached.auth.AuthThread;
+import net.spy.memcached.auth.AuthThreadMonitor;
 import net.spy.memcached.compat.SpyThread;
 import net.spy.memcached.internal.BulkGetFuture;
 import net.spy.memcached.internal.GetFuture;
@@ -114,6 +114,8 @@ public class MemcachedClient extends SpyThread
 	final TranscodeService tcService;
 
 	final AuthDescriptor authDescriptor;
+
+	private final AuthThreadMonitor authMonitor = new AuthThreadMonitor();
 
 	/**
 	 * Get a memcache client operating on the specified memcached locations.
@@ -1711,7 +1713,10 @@ public class MemcachedClient extends SpyThread
 
 	public void connectionEstablished(SocketAddress sa, int reconnectCount) {
 		if(authDescriptor != null) {
-			new AuthThread(conn, opFact, authDescriptor, findNode(sa));
+                    if (authDescriptor.authThresholdReached()) {
+                        this.shutdown();
+                    }
+			authMonitor.authConnection(conn, opFact, authDescriptor, findNode(sa));
 		}
 	}
 
