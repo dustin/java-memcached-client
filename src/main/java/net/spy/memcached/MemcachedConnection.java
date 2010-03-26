@@ -375,8 +375,9 @@ public final class MemcachedConnection extends SpyObject {
 		final SocketChannel channel = qa.getChannel();
 		int read=channel.read(rbuf);
 		if (read < 0) {
-		    // GRUMBLE.
-		    throw new IOException("Disconnected");
+		    // our model is to keep the connection alive for future ops
+		    // so we'll queue a reconnect if disconnected via an IOException
+		    throw new IOException("Disconnected unexpected, will reconnect.");
 		}
 		while(read > 0) {
 			getLogger().debug("Read %d bytes", read);
