@@ -40,11 +40,13 @@ public class BinaryConnectionFactory extends DefaultConnectionFactory {
 	@Override
 	public MemcachedNode createMemcachedNode(SocketAddress sa,
 			SocketChannel c, int bufSize) {
+		boolean doAuth = false;
 		return new BinaryMemcachedNodeImpl(sa, c, bufSize,
 			createReadOperationQueue(),
 			createWriteOperationQueue(),
 			createOperationQueue(),
-			getOpQueueMaxBlockTime());
+			getOpQueueMaxBlockTime(),
+			doAuth);
 	}
 
 	@Override

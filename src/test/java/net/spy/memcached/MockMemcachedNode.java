@@ -101,4 +101,12 @@ public class MockMemcachedNode implements MemcachedNode {
 	public Collection<Operation> destroyInputQueue() {
 		return null;
 	}
+
+	public void authComplete() {
+		// noop
+	}
+
+	public void setupForAuth() {
+		// noop
+	}
 }

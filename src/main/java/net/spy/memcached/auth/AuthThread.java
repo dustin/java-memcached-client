@@ -44,6 +44,7 @@ public class AuthThread extends SpyThread {
 					// If the status we found was null, we're done.
 					if(val.getMessage().isEmpty()) {
 						done.set(true);
+						node.authComplete();
 						getLogger().info("Authenticated to "
 								+ node.getSocketAddress());
 					} else {
@@ -78,6 +79,7 @@ public class AuthThread extends SpyThread {
 				}
 			}
 		}
+		return;
 	}
 
 	private Operation buildOperation(OperationStatus st, OperationCallback cb) {

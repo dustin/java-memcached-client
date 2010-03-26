@@ -142,4 +142,11 @@ class MemcachedNodeROImpl implements MemcachedNode {
 		throw new UnsupportedOperationException();
 	}
 
+	public void authComplete() {
+		throw new UnsupportedOperationException();
+	}
+
+	public void setupForAuth() {
+		throw new UnsupportedOperationException();
+	}
 }

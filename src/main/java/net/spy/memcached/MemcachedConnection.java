@@ -336,6 +336,7 @@ public final class MemcachedConnection extends SpyObject {
 				}
 			}
 		} catch(ClosedChannelException e) {
+			// Note, not all channel closes end up here
 			if(!shutDown) {
 				getLogger().info("Closed channel and not shutting down.  "
 					+ "Queueing reconnect on %s", qa, e);
@@ -348,9 +349,13 @@ public final class MemcachedConnection extends SpyObject {
 					qa, e);
 			queueReconnect(qa);
 		} catch(Exception e) {
-			// Various errors occur on Linux that wind up here.  However, any
-			// particular error processing an item should simply cause us to
-			// reconnect to the server.
+			// Any particular error processing an item should simply
+			// cause us to reconnect to the server.
+			//
+			// One cause is just network oddness or servers
+			// restarting, which lead here with IOException
+
+			qa.setupForAuth(); // noop if !shouldAuth
 			getLogger().info("Reconnecting due to exception on %s", qa, e);
 			lostConnection(qa);
 		}

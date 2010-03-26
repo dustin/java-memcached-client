@@ -127,11 +127,16 @@ public class DefaultConnectionFactory extends SpyObject
 				createOperationQueue(),
 				getOpQueueMaxBlockTime());
 		} else if(of instanceof BinaryOperationFactory) {
+			boolean doAuth = false;
+			if (getAuthDescriptor() != null) {
+			    doAuth = true;
+			}
 			return new BinaryMemcachedNodeImpl(sa, c, bufSize,
 					createReadOperationQueue(),
 					createWriteOperationQueue(),
 					createOperationQueue(),
-					getOpQueueMaxBlockTime());
+					getOpQueueMaxBlockTime(),
+					doAuth);
 		} else {
 			throw new IllegalStateException(
 				"Unhandled operation factory type " + of);
