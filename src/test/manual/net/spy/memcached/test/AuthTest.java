@@ -8,7 +8,7 @@ import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.compat.SpyObject;
 
 /**
- * Loader performance test.
+ * Authentication functional test.
  */
 public class AuthTest extends SpyObject implements Runnable {
 
