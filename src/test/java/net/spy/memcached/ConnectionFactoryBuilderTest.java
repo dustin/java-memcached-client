@@ -10,6 +10,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import net.spy.memcached.ConnectionFactoryBuilder.Locator;
 import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
+import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.auth.PlainCallbackHandler;
 import net.spy.memcached.compat.BaseMockCase;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationQueueFactory;
@@ -94,6 +96,8 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 		OperationQueueFactory opQueueFactory = new DirectFactory(oQueue);
 		OperationQueueFactory rQueueFactory = new DirectFactory(rQueue);
 		OperationQueueFactory wQueueFactory = new DirectFactory(wQueue);
+		AuthDescriptor anAuthDescriptor = new AuthDescriptor(new String[]{"PLAIN"},
+			new PlainCallbackHandler("username", "password"));
 
 		ConnectionFactory f = b.setDaemon(true)
 			.setShouldOptimize(false)
@@ -110,6 +114,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 			.setUseNagleAlgorithm(true)
 			.setLocatorType(Locator.CONSISTENT)
 			.setOpQueueMaxBlockTime(19)
+			.setAuthDescriptor(anAuthDescriptor)
 			.build();
 
 		assertEquals(4225, f.getOperationTimeout());
@@ -127,6 +132,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 		assertFalse(f.shouldOptimize());
 		assertTrue(f.useNagleAlgorithm());
 		assertEquals(f.getOpQueueMaxBlockTime(), 19);
+		assertSame(anAuthDescriptor, f.getAuthDescriptor());
 
 		MemcachedNode n = new MockMemcachedNode(
 			InetSocketAddress.createUnresolved("localhost", 11211));
