@@ -1,4 +1,3 @@
-
 package net.spy.memcached.test;
 
 import java.io.IOException;
@@ -33,15 +32,15 @@ public class SASLConnectReconnect {
 	AuthDescriptor ad = new AuthDescriptor(new String[]{"PLAIN"},
 		new PlainCallbackHandler(username, password));
 	try {
-	    if (mc == null) {
-		List<InetSocketAddress> addresses = AddrUtil.getAddresses(host);
-		mc = new MemcachedClient(
-			new ConnectionFactoryBuilder().setProtocol(Protocol.BINARY).setAuthDescriptor(ad).build(),
-			addresses);
-	    }
+	    List<InetSocketAddress> addresses = AddrUtil.getAddresses(host);
+	    mc = new MemcachedClient(
+		    new ConnectionFactoryBuilder().setProtocol(Protocol.BINARY).setAuthDescriptor(ad).build(),
+		    addresses);
 	} catch (IOException ex) {
 	    System.err.println("Couldn't create a connection, bailing out: \nIOException " + ex.getMessage());
-	    mc.shutdown();
+	    if (mc != null) {
+		mc.shutdown();
+	    }
 	}
 
 
