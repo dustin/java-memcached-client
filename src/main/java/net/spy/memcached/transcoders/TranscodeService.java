@@ -12,15 +12,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.spy.memcached.CachedData;
 import net.spy.memcached.compat.SpyObject;
+import net.spy.memcached.internal.BasicThreadFactory;
 
 /**
  * Asynchronous transcoder.
  */
 public class TranscodeService extends SpyObject {
 
-	private final ThreadPoolExecutor pool = new ThreadPoolExecutor(1, 10, 60L,
+	private final ThreadPoolExecutor pool;
+
+	public TranscodeService(boolean daemon) {
+		pool = new ThreadPoolExecutor(1, 10, 60L,
 			TimeUnit.MILLISECONDS, new ArrayBlockingQueue<Runnable>(100),
+			new BasicThreadFactory("transcoder", daemon),
 			new ThreadPoolExecutor.DiscardPolicy());
+	}
 
 	/**
 	 * Perform a decode.
