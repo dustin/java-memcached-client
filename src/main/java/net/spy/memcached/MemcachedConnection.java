@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.Operation;
+import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.OperationState;
 
 /**
@@ -348,6 +349,12 @@ public final class MemcachedConnection extends SpyObject {
 			getLogger().info("Reconnecting due to failure to connect to %s",
 					qa, e);
 			queueReconnect(qa);
+		} catch (OperationException e) {
+			qa.setupForAuth(); // noop if !shouldAuth
+			getLogger().info("Reconnection due to exception " +
+				"handling a memcached operation on %s.  " +
+				"This may be due to an authentication failure.", qa, e);
+			lostConnection(qa);
 		} catch(Exception e) {
 			// Any particular error processing an item should simply
 			// cause us to reconnect to the server.
