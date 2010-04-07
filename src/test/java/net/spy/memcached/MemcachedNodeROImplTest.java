@@ -4,6 +4,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
@@ -23,10 +26,13 @@ public class MemcachedNodeROImplTest extends MockObjectTestCase {
 		assertSame(sa, node.getSocketAddress());
 		assertEquals(m.proxy().toString(), node.toString());
 
+		Set<String> acceptable = new HashSet<String>(Arrays.asList(
+				"toString", "getSocketAddress", "getBytesRemainingToWrite",
+				"getReconnectCount", "getSelectionOps", "hasReadOp",
+				"hasWriteOp", "isActive"));
+
 		for(Method meth : MemcachedNode.class.getMethods()) {
-			if(meth.getName().equals("toString")) {
-				// ok
-			} else if(meth.getName().equals("getSocketAddress")) {
+			if(acceptable.contains(meth.getName())) {
 				// ok
 			} else {
 				Object[] args=new Object[meth.getParameterTypes().length];
@@ -35,7 +41,8 @@ public class MemcachedNodeROImplTest extends MockObjectTestCase {
 					meth.invoke(node, args);
 					fail("Failed to break on " + meth.getName());
 				} catch(InvocationTargetException e) {
-					assertSame(UnsupportedOperationException.class,
+					assertSame("Fail at " + meth.getName(),
+						UnsupportedOperationException.class,
 						e.getCause().getClass());
 				}
 			}

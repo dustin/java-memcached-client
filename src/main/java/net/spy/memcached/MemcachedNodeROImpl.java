@@ -51,7 +51,7 @@ class MemcachedNodeROImpl implements MemcachedNode {
 	}
 
 	public int getBytesRemainingToWrite() {
-		throw new UnsupportedOperationException();
+		return root.getBytesRemainingToWrite();
 	}
 
 	public SocketChannel getChannel() {
@@ -71,11 +71,11 @@ class MemcachedNodeROImpl implements MemcachedNode {
 	}
 
 	public int getReconnectCount() {
-		throw new UnsupportedOperationException();
+		return root.getReconnectCount();
 	}
 
 	public int getSelectionOps() {
-		throw new UnsupportedOperationException();
+		return root.getSelectionOps();
 	}
 
 	public SelectionKey getSk() {
@@ -91,15 +91,15 @@ class MemcachedNodeROImpl implements MemcachedNode {
 	}
 
 	public boolean hasReadOp() {
-		throw new UnsupportedOperationException();
+		return root.hasReadOp();
 	}
 
 	public boolean hasWriteOp() {
-		throw new UnsupportedOperationException();
+		return root.hasReadOp();
 	}
 
 	public boolean isActive() {
-		throw new UnsupportedOperationException();
+		return root.isActive();
 	}
 
 	public void reconnecting() {
