@@ -3,6 +3,7 @@ package net.spy.memcached.test;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -95,7 +96,7 @@ public class SASLConnectReconnect {
 	m.verifySetAndGet();
 	System.err.println("Pass one done.");
 	Thread.sleep(60000);
-	m.verifySetAndGet2();
+	m.verifySetAndGet2(Integer.parseInt(args[3]));
 	System.err.println("Pass two done.");
 
     }
@@ -118,10 +119,9 @@ public class SASLConnectReconnect {
     /**
      * verify set and get go to the right place
      */
-    public void verifySetAndGet2() {
+    public void verifySetAndGet2(int iterations) {
 	try {
-	    int iterations = 50000;
-	    for (int i = 0; i < iterations; i++) {
+	    for (int i = 0; i <= iterations; i++) {
 		mc.set("me" + i, 0, "me" + i);
 	    }
 
@@ -137,6 +137,7 @@ public class SASLConnectReconnect {
 		    System.err.println("Operation timeed out, continuing.");
 		}
 	    }
+	mc.shutdown(1, TimeUnit.SECONDS);
 	} catch (Exception ex) {
 	    System.err.println("Bailing out " + ex.toString() + "\n");
 	    ex.printStackTrace();
