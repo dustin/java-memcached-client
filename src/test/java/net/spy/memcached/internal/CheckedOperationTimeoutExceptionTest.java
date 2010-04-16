@@ -38,9 +38,9 @@ public class CheckedOperationTimeoutExceptionTest extends TestCase {
 	public void testMultipleOperation() {
 		Collection<Operation> ops = new ArrayList<Operation>();
 		ops.add(buildOp(11211));
-		ops.add(buildOp(11212));
+		ops.add(buildOp(64212));
 		assertEquals(CheckedOperationTimeoutException.class.getName()
-				+ ": test - failing nodes: localhost:11211, localhost:11212",
+				+ ": test - failing nodes: localhost:11211, localhost:64212",
 				new CheckedOperationTimeoutException("test", ops).toString());
 	}
 

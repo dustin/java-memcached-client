@@ -19,7 +19,7 @@ public class TimeoutTest extends ClientBaseCase {
 			public FailureMode getFailureMode() {
 				return FailureMode.Retry;
 			}},
-			AddrUtil.getAddresses("127.0.0.1:11213"));
+			AddrUtil.getAddresses("127.0.0.1:64213"));
 	}
 
 	private void tryTimeout(String name, Runnable r) {
