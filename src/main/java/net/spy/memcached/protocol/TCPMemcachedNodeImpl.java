@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
@@ -40,6 +41,10 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	private boolean shouldAuth=false;
 	private CountDownLatch authLatch;
 	private ArrayList<Operation> reconnectBlocked;
+
+	// operation Future.get timeout counter
+	private final AtomicInteger continuousTimeout = new AtomicInteger(0);
+
 
 	public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
@@ -344,6 +349,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 */
 	public final void reconnecting() {
 		reconnectAttempt++;
+		continuousTimeout.set(0);
 	}
 
 	/* (non-Javadoc)
@@ -351,6 +357,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	 */
 	public final void connected() {
 		reconnectAttempt=0;
+		continuousTimeout.set(0);
 	}
 
 	/* (non-Javadoc)
@@ -438,6 +445,25 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 				+ " bytes for " + this;
 		getLogger().debug("Wrote %d bytes", wrote);
 		return wrote;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#setContinuousTimeout
+	 */
+	public void setContinuousTimeout(boolean timedOut) {
+		if (timedOut && isActive()) {
+			continuousTimeout.incrementAndGet();
+		} else {
+			continuousTimeout.set(0);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see net.spy.memcached.MemcachedNode#getContinuousTimeout
+	 */
+	public int getContinuousTimeout() {
+		return continuousTimeout.get();
 	}
 
 

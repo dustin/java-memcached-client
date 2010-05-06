@@ -25,7 +25,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.KeyedOperation;
@@ -67,21 +66,6 @@ public final class MemcachedConnection extends SpyObject {
 		new ConcurrentLinkedQueue<ConnectionObserver>();
 	private final OperationFactory opFact;
 	private final int timeoutExceptionThreshold;
-	// timeout counter
-	private static AtomicInteger continuousTimeout = new AtomicInteger(0);
-
-	/**
-	 * whenever timeout exception occur, timeout counter increase by 1 until timeout exception threshold
-	 * but, if isIncrease is false, timeout counter will be reset
-	 * @param isIncrease
-	 */
-	public static void setContinuousTimeout(boolean isIncrease) {
-		if (isIncrease) {
-			continuousTimeout.getAndAdd(1);
-		} else {
-			continuousTimeout.set(0);
-		}
-	}
 
 	/**
 	 * Construct a memcached connection.
@@ -209,17 +193,23 @@ public final class MemcachedConnection extends SpyObject {
 			getLogger().debug("Selected %d, selected %d keys",
 					selected, selectedKeys.size());
 			emptySelects=0;
+
 			for(SelectionKey sk : selectedKeys) {
-				if (continuousTimeout.get() > timeoutExceptionThreshold) {
-					// timeout counter exceeds timeout exception threshold?
-					MemcachedNode mn = (MemcachedNode)sk.attachment();
-					lostConnection(mn);
-				} else {
-					// regular transaction
-					handleIO(sk);
-				}
-			} // for each selector
+				handleIO(sk);
+			}
+
 			selectedKeys.clear();
+		}
+
+
+		// see if any connections blew up with large number of timeouts
+		for(SelectionKey sk : selector.keys()) {
+			MemcachedNode mn = (MemcachedNode)sk.attachment();
+			if (mn.getContinuousTimeout() > timeoutExceptionThreshold)
+			{
+				getLogger().info("%s exceeded continuous timeout threshold", sk);
+				lostConnection(mn);
+			}
 		}
 
 		if(!shutDown && !reconnectQueue.isEmpty()) {
