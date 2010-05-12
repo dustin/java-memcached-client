@@ -18,7 +18,107 @@
 <body>
 
 <h1>Changelog for SpyMemcached</h1>
-<h2>Changes from release 2.4.1 to 2.4.2</h2>
+<h2>Changes from release 2.4.2 to 2.5</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:dVFDCC&amp;chl=Dustin|Matt|Blair|Ahn|Greg|Kristian" alt="contributors"/><pre>Release of 2.5
+
+Changes since the 2.4 series:
+
+The main new feature of the 2.5 release is support for SASL auth
+to go along with the same feature in the memcached 1.4.3 and later
+servers.
+
+There is also a new feature which can be used in conjunction with the
+failure cancel mode to close all connections to memcached servers if
+there are timeouts against a server.  This helps to recover from
+situations where a memcached server in the list may hard fail.
+
+Also notable is this commit:
+cba26c1 If the String value of the socket address starts with a /, remove it.
+
+This does affect Ketama hashing, as it was found there could be some
+occasional mismatch with libketama.  A much larger test was added
+and to a pretty large degree, compatibility with libketama's hashing is
+assured.  Proceed with caution if you'll be running a mixed environment
+of 2.5 and pre-2.5 spymemcached clients.  To get the old behavior by
+default, a custom interface is easily implemented.
+
+Additionally, there have been a number of bug fixes, comment cleanups
+some new tests, and some consistency fixes.
+
+Changes since 2.4.2:
+
+Ahn Seong Hwa (2):
+      New TCP connection timeout feature; if server fails completely, d/c.
+      fix for useless check statement that is for continuous timeout exception counter
+
+Blair Zajac (3):
+      Be more generous in the strings that AddrUtil#getAddresses() will parse.
+      Fix AddrUtilTest#testIPv6Host() hostname assertion.
+      Fix consistency issue in ConnectionFactoryBuilder.isDaemon()
+
+Dustin Sallings (19):
+      Beginnings of SASL support.
+      A slightly better model for SASL auth.
+      Authentication should allow specification of a mechanism.
+      Refactored broadcast to allow for node selection.
+      Working multi-step auth.
+      Refactored SASL auth for greater reuse.
+      Added support for listing SASL mechanisms.
+      Reformatted callback handler.
+      Don't throw away an exception.
+      Use the socket address as the realm.
+      Better auth API, handles connection drops.
+      Log the bug that causes reconnection on first connect.
+      Replaced Long nanos with long millis for op queue block offer timeout.
+      Ensure the factory builder can be used to specify enqueue block size.
+      Get rid of special constructors for op enqueue timeouts.
+      Do blocking inserts from the cache loader test.
+      Auth fix for mechanisms that have an initial response.
+      If the String value of the socket address starts with a /, remove it.
+      A larger libketama extract for compatibility testing.
+
+Greg Kim (1):
+      Implementing read-only methods in MemcachedNodeROImpl - issue86
+
+Kristian Eide (1):
+      Allow user-specified wait time for availability of queue space.
+
+Matt Ingenthron (14):
+      Invert the ConnectionFactoryBuilderTest to go with new logic.
+      Document unexpected incr/decr behavior.  Issue 48.
+      Various Javadoc completeness.
+      Docs for path to FailureModes on DefaultConnectionFactory. Issue 115.
+      Clarify Future<Boolean>, issue 63.
+      Clarify what is planned after a disconnect.
+      Enhance MemcachedNode to know whether auth should happen.
+      Changed AuthTest description to match reality.
+      Manual test to ensure correct connection handling with SASL.
+      Enhanced ConnectionFactoryBuilder test for auth.
+      Minor fixes to SASL reconnect test.
+      Handle auth failures more gracefully; maximum failures.
+      Log operation failures as potential auth failures.
+      Actually use the args to SASLConnectReconnect; shutdown nicely.
+
+Bugs fixed/closed:
+http://code.google.com/p/spymemcached/issues/detail?id=48
+http://code.google.com/p/spymemcached/issues/detail?id=115
+http://code.google.com/p/spymemcached/issues/detail?id=63
+http://code.google.com/p/spymemcached/issues/detail?id=112
+http://code.google.com/p/spymemcached/issues/detail?id=111
+http://code.google.com/p/spymemcached/issues/detail?id=109
+http://code.google.com/p/spymemcached/issues/detail?id=78
+http://code.google.com/p/spymemcached/issues/detail?id=104
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAkvDyG4ACgkQQM0/OE2fY9o/BwCfZBcaORvnKuLFBtjsOcZmSiI9
+IFEAnArde+Jn1xkICom2MmQg6h3rFZdz
+=1oIc
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.4.1 to 2.4.2</h2>
 <div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:jRJ&amp;chl=Dustin|Kevin|Matt" alt="contributors"/><pre>Release 2.4.2
 
 Changes since 2.4.1:
