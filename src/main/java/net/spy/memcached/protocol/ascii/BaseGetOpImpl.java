@@ -16,6 +16,7 @@ import net.spy.memcached.ops.OperationStatus;
 abstract class BaseGetOpImpl extends OperationImpl {
 
 	private static final OperationStatus END = new OperationStatus(true, "END");
+	private static final byte[] RN_BYTES = "\r\n".getBytes();
 	private final String cmd;
 	private final Collection<String> keys;
 	private String currentKey = null;
@@ -139,7 +140,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
 			b.put((byte)' ');
 			b.put(k);
 		}
-		b.put("\r\n".getBytes());
+		b.put(RN_BYTES);
 		b.flip();
 		setBuffer(b);
 	}
