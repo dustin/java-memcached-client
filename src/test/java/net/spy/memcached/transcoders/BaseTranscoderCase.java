@@ -64,10 +64,6 @@ public abstract class BaseTranscoderCase extends BaseMockCase {
 		assertEquals((byte)-127, tc.decode(tc.encode((byte)-127)));
 	}
 
-	public void testCharacter() throws Exception {
-		assertEquals('c', tc.decode(tc.encode('c')));
-	}
-
 	public void testStringBuilder() throws Exception {
 		StringBuilder sb=new StringBuilder("test");
 		StringBuilder sb2=(StringBuilder)tc.decode(tc.encode(sb));
