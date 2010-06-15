@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.auth.AuthThreadMonitor;
 import net.spy.memcached.compat.SpyThread;
+import net.spy.memcached.internal.BulkFuture;
 import net.spy.memcached.internal.BulkGetFuture;
 import net.spy.memcached.internal.GetFuture;
 import net.spy.memcached.internal.OperationFuture;
@@ -949,7 +950,8 @@ public class MemcachedClient extends SpyThread
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public <T> Future<Map<String, T>> asyncGetBulk(Collection<String> keys,
+	@Override
+	public <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys,
 		final Transcoder<T> tc) {
 		final Map<String, Future<T>> m=new ConcurrentHashMap<String, Future<T>>();
 		// Break the gets down into groups by key
@@ -1028,7 +1030,8 @@ public class MemcachedClient extends SpyThread
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public Future<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
+	@Override
+	public BulkFuture<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
 		return asyncGetBulk(keys, transcoder);
 	}
 
@@ -1042,7 +1045,8 @@ public class MemcachedClient extends SpyThread
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public <T> Future<Map<String, T>> asyncGetBulk(Transcoder<T> tc,
+	@Override
+	public <T> BulkFuture<Map<String, T>> asyncGetBulk(Transcoder<T> tc,
 		String... keys) {
 		return asyncGetBulk(Arrays.asList(keys), tc);
 	}
@@ -1055,7 +1059,8 @@ public class MemcachedClient extends SpyThread
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	public Future<Map<String, Object>> asyncGetBulk(String... keys) {
+	@Override
+	public BulkFuture<Map<String, Object>> asyncGetBulk(String... keys) {
 		return asyncGetBulk(Arrays.asList(keys), transcoder);
 	}
 
