@@ -25,7 +25,7 @@ public class CacheLoaderTest extends BaseMockCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		BlockingQueue<Runnable> wq = new LinkedBlockingQueue<Runnable>();
-		es = new ThreadPoolExecutor(10, 10, 5, TimeUnit.MINUTES, wq);
+		es = new ThreadPoolExecutor(10, 10, 5*60, TimeUnit.SECONDS, wq);
 	}
 
 	@Override
