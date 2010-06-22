@@ -950,7 +950,6 @@ public class MemcachedClient extends SpyThread
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	@Override
 	public <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys,
 		final Transcoder<T> tc) {
 		final Map<String, Future<T>> m=new ConcurrentHashMap<String, Future<T>>();
@@ -1030,7 +1029,6 @@ public class MemcachedClient extends SpyThread
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	@Override
 	public BulkFuture<Map<String, Object>> asyncGetBulk(Collection<String> keys) {
 		return asyncGetBulk(keys, transcoder);
 	}
@@ -1045,7 +1043,6 @@ public class MemcachedClient extends SpyThread
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	@Override
 	public <T> BulkFuture<Map<String, T>> asyncGetBulk(Transcoder<T> tc,
 		String... keys) {
 		return asyncGetBulk(Arrays.asList(keys), tc);
@@ -1059,7 +1056,6 @@ public class MemcachedClient extends SpyThread
 	 * @throws IllegalStateException in the rare circumstance where queue
 	 *         is too full to accept any more requests
 	 */
-	@Override
 	public BulkFuture<Map<String, Object>> asyncGetBulk(String... keys) {
 		return asyncGetBulk(Arrays.asList(keys), transcoder);
 	}

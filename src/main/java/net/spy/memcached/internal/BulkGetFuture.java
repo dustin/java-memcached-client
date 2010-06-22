@@ -82,10 +82,10 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
      * @see java.util.concurrent.Future#get(long,
      * java.util.concurrent.TimeUnit)
      */
-    public Map<String, T> get(long timeout, TimeUnit unit)
+    public Map<String, T> get(long to, TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException {
         Collection<Operation> timedoutOps = new HashSet<Operation>();
-        Map<String, T> ret = internalGet(timeout, unit, timedoutOps);
+        Map<String, T> ret = internalGet(to, unit, timedoutOps);
         if (timedoutOps.size() > 0) {
             this.timeout = true;
             throw new CheckedOperationTimeoutException("Operation timed out.",
@@ -98,17 +98,17 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
      * refactored code common to both get(long, TimeUnit)
      * and getSome(long, TimeUnit)
      *
-     * @param timeout
+     * @param to
      * @param unit
      * @param timedoutOps
      * @return
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    private Map<String, T> internalGet(long timeout, TimeUnit unit,
+    private Map<String, T> internalGet(long to, TimeUnit unit,
             Collection<Operation> timedoutOps) throws InterruptedException,
             ExecutionException {
-        if (!latch.await(timeout, unit)) {
+        if (!latch.await(to, unit)) {
             for (Operation op : ops) {
                 if (op.getState() != OperationState.COMPLETE) {
                     timedoutOps.add(op);
