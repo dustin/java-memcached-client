@@ -2,6 +2,7 @@ package net.spy.memcached;
 
 import java.net.SocketAddress;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -79,6 +80,9 @@ public interface MemcachedClientIF {
 		throws OperationTimeoutException;
 
 	Object get(String key) throws OperationTimeoutException;
+
+	<T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys,
+		Iterator<Transcoder<T>> tcs);
 
 	<T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys,
 		Transcoder<T> tc);

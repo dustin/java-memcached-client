@@ -1,5 +1,6 @@
 package net.spy.memcached;
 
+import java.nio.ByteBuffer;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -391,6 +392,48 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertEquals("val2", vals.get().get("test2"));
 	}
 
+	public void testAsyncGetBulkWithTranscoderIterator() throws Exception {
+		ArrayList<String> keys = new ArrayList<String>();
+		keys.add("test1");
+		keys.add("test2");
+		keys.add("test3");
+
+		ArrayList<Transcoder<String>> tcs = new ArrayList<Transcoder<String>>(keys.size());
+		for (String key : keys) {
+			tcs.add(new TestWithKeyTranscoder(key));
+		}
+
+		// Any transcoders listed after list of keys should be
+		// ignored.
+		for (String key : keys) {
+			tcs.add(new TestWithKeyTranscoder(key));
+		}
+
+		assertEquals(0, client.asyncGetBulk(keys, tcs.listIterator()).get().size());
+
+		client.set(keys.get(0), 5, "val1", tcs.get(0));
+		client.set(keys.get(1), 5, "val2", tcs.get(1));
+		Future<Map<String, String>> vals=client.asyncGetBulk(keys, tcs.listIterator());
+		assertEquals(2, vals.get().size());
+		assertEquals("val1", vals.get().get(keys.get(0)));
+		assertEquals("val2", vals.get().get(keys.get(1)));
+
+		// Set with one transcoder with the proper key and get
+		// with another transcoder with the wrong key.
+		keys.add(0, "test4");
+		Transcoder<String> encodeTranscoder = new TestWithKeyTranscoder(keys.get(0));
+		client.set(keys.get(0), 5, "val4", encodeTranscoder).get();
+
+		Transcoder<String> decodeTranscoder = new TestWithKeyTranscoder("not " + keys.get(0));
+		tcs.add(0, decodeTranscoder);
+		try {
+			client.asyncGetBulk(keys, tcs.listIterator()).get();
+			fail("Expected ExecutionException caused by key mismatch");
+		} catch (java.util.concurrent.ExecutionException e) {
+			// pass
+		}
+	}
+
 	public void testAvailableServers() {
 		client.getVersions();
 		assertEquals(new ArrayList<String>(
@@ -738,6 +781,57 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
 		public CachedData encode(String o) {
 			return new CachedData(flags, o.getBytes(), getMaxSize());
+		}
+
+		public int getMaxSize() {
+			return CachedData.MAX_SIZE;
+		}
+
+		public boolean asyncDecode(CachedData d) {
+			return false;
+		}
+	}
+
+	private static class TestWithKeyTranscoder implements Transcoder<String> {
+		private static final int flags=238885207;
+
+		private final String key;
+
+		TestWithKeyTranscoder(String k) {
+			key = k;
+		}
+
+		public String decode(CachedData d) {
+			assert d.getFlags() == flags
+				: "expected " + flags + " got " + d.getFlags();
+
+			ByteBuffer bb = ByteBuffer.wrap(d.getData());
+
+			int keyLength = bb.getInt();
+			byte[] keyBytes = new byte[keyLength];
+			bb.get(keyBytes);
+			String k = new String(keyBytes);
+
+			assertEquals(key, k);
+
+			int valueLength = bb.getInt();
+			byte[] valueBytes = new byte[valueLength];
+			bb.get(valueBytes);
+
+			return new String(valueBytes);
+		}
+
+		public CachedData encode(String o) {
+			byte[] keyBytes = key.getBytes();
+			byte[] valueBytes = o.getBytes();
+			int length = 4 + keyBytes.length + 4 + valueBytes.length;
+			byte[] bytes = new byte[length];
+
+			ByteBuffer bb = ByteBuffer.wrap(bytes);
+			bb.putInt(keyBytes.length).put(keyBytes);
+			bb.putInt(valueBytes.length).put(valueBytes);
+
+			return new CachedData(flags, bytes, getMaxSize());
 		}
 
 		public int getMaxSize() {
