@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 
 import net.spy.memcached.compat.SpyObject;
+import net.spy.memcached.compat.log.LoggerFactory;
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationException;
@@ -207,7 +208,7 @@ public final class MemcachedConnection extends SpyObject {
 			MemcachedNode mn = (MemcachedNode)sk.attachment();
 			if (mn.getContinuousTimeout() > timeoutExceptionThreshold)
 			{
-				getLogger().info("%s exceeded continuous timeout threshold", sk);
+				getLogger().warn("%s exceeded continuous timeout threshold", sk);
 				lostConnection(mn);
 			}
 		}
@@ -685,5 +686,46 @@ public final class MemcachedConnection extends SpyObject {
 		sb.append("}");
 		return sb.toString();
 	}
+
+	/**
+     * helper method: increase timeout count on node attached to this op
+     *
+     * @param op
+     */
+    public static void opTimedOut(Operation op) {
+        MemcachedConnection.setTimeout(op, true);
+    }
+
+    /**
+     * helper method: reset timeout counter
+     *
+     * @param op
+     */
+    public static void opSucceeded(Operation op) {
+        MemcachedConnection.setTimeout(op, false);
+    }
+
+    /**
+     * helper method: do some error checking and set timeout boolean
+     *
+     * @param op
+     * @param isTimeout
+     */
+    private static void setTimeout(Operation op, boolean isTimeout) {
+        try {
+            if (op == null) {
+                throw new IllegalArgumentException("op is null!");
+            }
+            MemcachedNode node = op.getHandlingNode();
+            if (node == null) {
+                LoggerFactory.getLogger(MemcachedConnection.class).warn("handling node for operation is not set");
+            }
+            else {
+                node.setContinuousTimeout(isTimeout);
+            }
+        } catch (Exception e) {
+            LoggerFactory.getLogger(MemcachedConnection.class).error(e.getMessage());
+        }
+    }
 
 }

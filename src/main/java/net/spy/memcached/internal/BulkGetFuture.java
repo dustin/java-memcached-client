@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import net.spy.memcached.MemcachedConnection;
 import net.spy.memcached.compat.log.LoggerFactory;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
@@ -111,7 +112,10 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
         if (!latch.await(to, unit)) {
             for (Operation op : ops) {
                 if (op.getState() != OperationState.COMPLETE) {
+                    MemcachedConnection.opTimedOut(op);
                     timedoutOps.add(op);
+                } else {
+                    MemcachedConnection.opSucceeded(op);
                 }
             }
         }
