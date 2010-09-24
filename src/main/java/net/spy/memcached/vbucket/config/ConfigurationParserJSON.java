@@ -89,7 +89,7 @@ public class ConfigurationParserJSON extends SpyObject implements ConfigurationP
             String bucketname = bucketJO.get("name").toString();
             String streamingUri = bucketJO.get("streamingUri").toString();
             ConfigFactory cf = new DefaultConfigFactory();
-            Config config = cf.createConfigFromJSON(bucketJO);
+            Config config = cf.create(bucketJO);
             List<Node> nodes = new ArrayList<Node>();
             JSONArray nodesJA = bucketJO.getJSONArray("nodes");
             for(int i = 0; i < nodesJA.length(); ++i) {

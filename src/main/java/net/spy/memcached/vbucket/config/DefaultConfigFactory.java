@@ -103,10 +103,11 @@ public class DefaultConfigFactory implements ConfigFactory {
                     "Number of buckets must be a power of two, > 0 and <= "
                             + VBucket.MAX_BUCKETS);
         }
-
+	List<String> populateServers = populateServers(servers);
+	List<VBucket> populateVbuckets = populateVbuckets(vbuckets);
         Config config = new DefaultConfig(hashAlgorithm, serversCount,
-                replicasCount, vbucketsCount, populateServers(servers),
-                populateVbuckets(servers));
+                replicasCount, vbucketsCount, populateServers,
+                populateVbuckets);
 
         return config;
     }

@@ -19,7 +19,7 @@ public class ConfigurationParserMock implements ConfigurationParser {
     private String poolUri = "/pools/default";
     private String poolStreamingUri = "/poolsStreaming/default";
     private String bucketName = "Administrator";
-    private DefaultConfig vbuckets = new DefaultConfig(HashAlgorithm.NATIVE_HASH, 1, 1, 1);
+    private DefaultConfig vbuckets = new DefaultConfig(HashAlgorithm.NATIVE_HASH, 1, 1, 1, null, null);
     private String bucketsUri = "/pools/default/buckets";
     private String bucketStreamingUri = "/pools/default/bucketsStreaming/Administrator";
     private List<Node> nodes = Collections.singletonList(
