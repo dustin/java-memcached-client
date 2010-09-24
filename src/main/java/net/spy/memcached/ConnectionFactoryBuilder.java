@@ -11,6 +11,8 @@ import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.transcoders.Transcoder;
+import net.spy.memcached.vbucket.VBucketNodeLocator;
+import net.spy.memcached.vbucket.config.Config;
 
 /**
  * Builder for more easily configuring a ConnectionFactory.
@@ -44,6 +46,7 @@ public class ConnectionFactoryBuilder {
 	private long opQueueMaxBlockTime = -1;
 
 	private int timeoutExceptionThreshold = DefaultConnectionFactory.DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
+    private Config vBucketConfig;
 	/**
 	 * Set the operation queue factory.
 	 */
@@ -215,6 +218,14 @@ public class ConnectionFactoryBuilder {
 		return this;
 	}
 
+    public Config getVBucketConfig() {
+        return vBucketConfig;
+    }
+
+    public void setVBucketConfig(Config vBucketConfig) {
+        this.vBucketConfig = vBucketConfig;
+    }
+
 	/**
 	 * Get the ConnectionFactory set up with the provided parameters.
 	 */
@@ -248,6 +259,8 @@ public class ConnectionFactoryBuilder {
 						return new ArrayModNodeLocator(nodes, getHashAlg());
 					case CONSISTENT:
 						return new KetamaNodeLocator(nodes, getHashAlg());
+                    case VBUCKET:
+                        return new VBucketNodeLocator(nodes, getVBucketConfig());
 					default: throw new IllegalStateException(
 							"Unhandled locator type: " + locator);
 				}
@@ -360,6 +373,10 @@ public class ConnectionFactoryBuilder {
 		 * This uses ketema's distribution algorithm, but may be used with any
 		 * hash algorithm.
 		 */
-		CONSISTENT
+		CONSISTENT,
+        /**
+         * VBucket support
+         */
+        VBUCKET
 	}
 }

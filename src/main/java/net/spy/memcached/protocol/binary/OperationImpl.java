@@ -31,6 +31,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 	protected static final int ERR_EXISTS = 2;
 	protected static final int ERR_EINVAL = 4;
 	protected static final int ERR_NOT_STORED = 5;
+	protected static final int ERR_NOT_MY_VBUCKET = 7;
 	protected static final int ERR_TEMP_FAIL = 134;
 
 	protected static final OperationStatus NOT_FOUND_STATUS =
@@ -39,6 +40,8 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 		new CASOperationStatus(false, "Object exists", CASResponse.EXISTS);
 	protected static final OperationStatus NOT_STORED_STATUS =
 		new CASOperationStatus(false, "Not Stored", CASResponse.NOT_FOUND);
+	protected static final OperationStatus NOT_MY_VBUCKET_STATUS =
+		new OperationStatus(false, "Not my vbucket");
 	protected static final OperationStatus TEMP_FAIL =
 		new OperationStatus(false, "Temporary Error");
 
@@ -149,6 +152,9 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 			OperationStatus status=getStatusForErrorCode(errorCode, pl);
 			if(status == null) {
 				handleError(OperationErrorType.SERVER, new String(pl));
+			} else if (status == NOT_MY_VBUCKET_STATUS && !getState().equals(OperationState.COMPLETE)) {
+                transitionState(OperationState.RETRY);
+                //errorCode = 0;
 			} else {
 				getCallback().receivedStatus(status);
 				transitionState(OperationState.COMPLETE);
@@ -166,6 +172,9 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 	 * @return the status to return, or null if this is an exceptional case
 	 */
 	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
+        if (errCode == ERR_NOT_MY_VBUCKET) {
+            return NOT_MY_VBUCKET_STATUS;
+        }
 		return null;
 	}
 
@@ -259,7 +268,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 		bb.putShort((short)keyBytes.length);
 		bb.put((byte)extraLen);
 		bb.put((byte)0); // data type
-		bb.putShort((short)0); // reserved
+		bb.putShort((short) vbucket); // reserved
 		bb.putInt(keyBytes.length + val.length + extraLen);
 		bb.putInt(opaque);
 		bb.putLong(cas);

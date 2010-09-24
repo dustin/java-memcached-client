@@ -32,6 +32,8 @@ import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.VBucketAware;
+import net.spy.memcached.vbucket.VBucketNodeLocator;
 
 /**
  * Connection to a cluster of memcached servers.
@@ -67,6 +69,8 @@ public final class MemcachedConnection extends SpyObject {
 		new ConcurrentLinkedQueue<ConnectionObserver>();
 	private final OperationFactory opFact;
 	private final int timeoutExceptionThreshold;
+        private final Collection<Operation> retryOps;
+
 
 	/**
 	 * Construct a memcached connection.
@@ -90,6 +94,8 @@ public final class MemcachedConnection extends SpyObject {
 		opFact = opfactory;
 		timeoutExceptionThreshold = f.getTimeoutExceptionThreshold();
 		selector=Selector.open();
+                retryOps = new ArrayList<Operation>();
+
 		List<MemcachedNode> connections=new ArrayList<MemcachedNode>(a.size());
 		for(SocketAddress sa : a) {
 			SocketChannel ch=SocketChannel.open();
@@ -216,6 +222,10 @@ public final class MemcachedConnection extends SpyObject {
 		if(!shutDown && !reconnectQueue.isEmpty()) {
 			attemptReconnects();
 		}
+        // rehash operations that in retry state
+        redistributeOperations(retryOps);
+        retryOps.clear();
+
 	}
 
 	// Handle any requests that have been made against the client.
@@ -398,6 +408,16 @@ public final class MemcachedConnection extends SpyObject {
 					assert op == currentOp
 					: "Expected to pop " + currentOp + " got " + op;
 					currentOp=qa.getCurrentReadOp();
+				} else if (currentOp.getState() == OperationState.RETRY) {
+                    getLogger().debug(
+                            "Reschedule read op due to NOT_MY_VBUCKET error: %s ",
+                            currentOp);
+                    Operation op=qa.removeCurrentReadOp();
+                    assert op == currentOp
+                    : "Expected to pop " + currentOp + " got " + op;
+                    retryOps.add(currentOp);
+                    currentOp=qa.getCurrentReadOp();
+
 				}
 			}
 			rbuf.clear();
@@ -588,6 +608,14 @@ public final class MemcachedConnection extends SpyObject {
 		assert o.isCancelled() || placeIn != null
 			: "No node found for key " + key;
 		if(placeIn != null) {
+            // add the vbucketIndex to the operation
+            if (locator instanceof VBucketNodeLocator) {
+                int vbucketIndex = ((VBucketNodeLocator) locator).getVBucketIndex(key);
+                if (o instanceof VBucketAware) {
+                    ((VBucketAware) o).setVBucket(vbucketIndex);
+                }
+            }
+
 			addOperation(placeIn, o);
 		} else {
 			assert o.isCancelled() : "No node found for "
