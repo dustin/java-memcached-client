@@ -5,6 +5,7 @@ package net.spy.memcached;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.URI;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedSelectorException;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.auth.AuthThreadMonitor;
+import net.spy.memcached.auth.PlainCallbackHandler;
 import net.spy.memcached.compat.SpyThread;
 import net.spy.memcached.internal.BulkFuture;
 import net.spy.memcached.internal.BulkGetFuture;
@@ -51,6 +53,11 @@ import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.transcoders.TranscodeService;
 import net.spy.memcached.transcoders.Transcoder;
+import net.spy.memcached.vbucket.ConfigurationException;
+import net.spy.memcached.vbucket.ConfigurationProvider;
+import net.spy.memcached.vbucket.ConfigurationProviderHTTP;
+import net.spy.memcached.vbucket.Reconfigurable;
+import net.spy.memcached.vbucket.config.Bucket;
 
 /**
  * Client to a memcached server.
@@ -103,7 +110,7 @@ import net.spy.memcached.transcoders.Transcoder;
  * </pre>
  */
 public class MemcachedClient extends SpyThread
-	implements MemcachedClientIF, ConnectionObserver {
+	implements MemcachedClientIF, ConnectionObserver, Reconfigurable {
 
 	private volatile boolean running=true;
 	private volatile boolean shuttingDown=false;
@@ -120,6 +127,8 @@ public class MemcachedClient extends SpyThread
 	final AuthDescriptor authDescriptor;
 
 	private final AuthThreadMonitor authMonitor = new AuthThreadMonitor();
+	private volatile boolean reconfiguring = false;
+	private ConfigurationProvider configurationProvider;
 
 	/**
 	 * Get a memcache client operating on the specified memcached locations.
@@ -180,6 +189,82 @@ public class MemcachedClient extends SpyThread
 		setDaemon(cf.isDaemon());
 		start();
 	}
+
+    public MemcachedClient(final List<URI> baseList,
+                           final String bucketName,
+                           final String usr, final String pwd,
+                           final boolean isVBucketAware) throws IOException, ConfigurationException {
+        for (URI bu : baseList) {
+            if (!bu.isAbsolute()) {
+                throw new IllegalArgumentException("The base URI must be absolute");
+            }
+        }
+
+        configurationProvider = new ConfigurationProviderHTTP(baseList, usr, pwd);
+        Bucket bucket = configurationProvider.getBucketConfiguration(bucketName);
+        ConnectionFactoryBuilder cfb = new ConnectionFactoryBuilder();
+        if (isVBucketAware) {
+            cfb.setFailureMode(FailureMode.Retry)
+                    .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
+                    .setHashAlg(HashAlgorithm.KETAMA_HASH)
+                    .setLocatorType(ConnectionFactoryBuilder.Locator.VBUCKET)
+                    .setVBucketConfig(bucket.getVbuckets());
+        } else {
+            cfb.setFailureMode(FailureMode.Retry)
+                    .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
+                    .setHashAlg(HashAlgorithm.KETAMA_HASH)
+                    .setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT);
+
+        }
+        if (!configurationProvider.getAnonymousAuthBucket().equals(bucketName) && usr != null) {
+            AuthDescriptor ad = new AuthDescriptor(new String[]{"PLAIN"},
+                    new PlainCallbackHandler(usr, pwd));
+            cfb.setAuthDescriptor(ad);
+        }
+        ConnectionFactory cf = cfb.build();
+        List<InetSocketAddress> addrs = AddrUtil.getAddresses(bucket.getVbuckets().getServers());
+
+        if(cf == null) {
+            throw new NullPointerException("Connection factory required");
+        }
+        if(addrs == null) {
+            throw new NullPointerException("Server list required");
+        }
+        if(addrs.isEmpty()) {
+            throw new IllegalArgumentException(
+                "You must have at least one server to connect to");
+        }
+        if(cf.getOperationTimeout() <= 0) {
+            throw new IllegalArgumentException(
+                "Operation timeout must be positive.");
+        }
+        tcService = new TranscodeService(cf.isDaemon());
+        transcoder=cf.getDefaultTranscoder();
+        opFact=cf.getOperationFactory();
+        assert opFact != null : "Connection factory failed to make op factory";
+        conn=cf.createConnection(addrs);
+        assert conn != null : "Connection factory failed to make a connection";
+        operationTimeout = cf.getOperationTimeout();
+        authDescriptor = cf.getAuthDescriptor();
+        if(authDescriptor != null) {
+            addObserver(this);
+        }
+        setName("Memcached IO over " + conn);
+        setDaemon(cf.isDaemon());
+        configurationProvider.subscribe(bucketName, this);
+        start();
+    }
+
+	public void reconfigure(Bucket bucket) {
+		reconfiguring = true;
+		try {
+			conn.reconfigure(bucket);
+		} catch (IllegalArgumentException ex) {
+			getLogger().warn("Failed to reconfigure client, staying with previous configuration.", ex);
+		} finally {
+			reconfiguring = false;
+		}
+    }
 
 	/**
 	 * Get the addresses of available servers.
@@ -1847,16 +1932,18 @@ public class MemcachedClient extends SpyThread
 	@Override
 	public void run() {
 		while(running) {
-			try {
-				conn.handleIO();
-			} catch(IOException e) {
-				logRunException(e);
-			} catch(CancelledKeyException e) {
-				logRunException(e);
-			} catch(ClosedSelectorException e) {
-				logRunException(e);
-			} catch(IllegalStateException e) {
-				logRunException(e);
+            if (!reconfiguring) {
+                try {
+                    conn.handleIO();
+                } catch (IOException e) {
+                    logRunException(e);
+                } catch (CancelledKeyException e) {
+                    logRunException(e);
+                } catch (ClosedSelectorException e) {
+                    logRunException(e);
+                } catch (IllegalStateException e) {
+                    logRunException(e);
+                }
 			}
 		}
 		getLogger().info("Shut down memcached client");
@@ -1900,8 +1987,11 @@ public class MemcachedClient extends SpyThread
 				conn.shutdown();
 				setName(baseName + " - SHUTTING DOWN (informed client)");
 				tcService.shutdown();
+                if (configurationProvider != null) {
+                    configurationProvider.shutdown();
+                }
 			} catch (IOException e) {
-				getLogger().warn("exception while shutting down", e);
+				getLogger().warn("exception while shutting down configuration provider", e);
 			}
 		}
 		return rv;
