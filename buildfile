@@ -59,7 +59,9 @@ define "spymemcached" do
   manifest["Implementation-Vendor"] = COPYRIGHT
   manifest['Copyright'] = COPYRIGHT
   compile.with "log4j:log4j:jar:1.2.15", "jmock:jmock:jar:1.2.0",
-               "junit:junit:jar:4.4", "org.springframework:spring-beans:jar:3.0.3.RELEASE"
+               "junit:junit:jar:4.4",
+               "org.springframework:spring-beans:jar:3.0.3.RELEASE",
+               "org.codehaus.jettison:jettison:jar:1.1"
 
   # Gen build
   gen_build_info "net.spy.memcached", "git"

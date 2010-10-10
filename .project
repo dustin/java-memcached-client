@@ -1,5 +1,5 @@
 <projectDescription>
-  <name>memcached</name>
+  <name>spymemcached</name>
   <projects/>
   <buildSpec>
     <buildCommand>
