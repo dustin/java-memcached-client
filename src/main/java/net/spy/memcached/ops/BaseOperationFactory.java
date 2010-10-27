@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import net.spy.memcached.OperationFactory;
+import net.spy.memcached.MemcachedNode;
 
 /**
  * Base class for operation factories.
@@ -58,7 +59,14 @@ public abstract class BaseOperationFactory implements OperationFactory {
 		} else {
 			assert false : "Unhandled operation type: " + op.getClass();
 		}
-
+        if (!op.getNotMyVbucketNodes().isEmpty()) {
+            for (Operation operation : rv) {
+                if (operation instanceof KeyedOperation) {
+                    Collection<MemcachedNode> notMyVbucketNodes = op.getNotMyVbucketNodes();
+                    ((KeyedOperation) operation).setNotMyVbucketNodes(notMyVbucketNodes);
+                }
+            }
+        }
 		return rv;
 	}
 

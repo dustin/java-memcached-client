@@ -2,6 +2,8 @@ package net.spy.memcached.protocol;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.HashSet;
 
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
@@ -33,6 +35,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
 	private long creationTime;
 	private boolean timedOutUnsent = false;
 	protected int vbucket;
+	protected Collection<MemcachedNode> notMyVbucketNodes = new HashSet<MemcachedNode>();
 
 	public BaseOperationImpl() {
 		super();
@@ -155,6 +158,18 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
 
 	public void setVBucket(int vbucket) {
 		this.vbucket = vbucket;
+	}
+
+	public Collection<MemcachedNode> getNotMyVbucketNodes() {
+		return notMyVbucketNodes;
+	}
+
+	public void addNotMyVbucketNode(MemcachedNode node) {
+		notMyVbucketNodes.add(node);
+	}
+
+	public void setNotMyVbucketNodes(Collection<MemcachedNode> nodes) {
+		notMyVbucketNodes = nodes;
 	}
 
         @Override

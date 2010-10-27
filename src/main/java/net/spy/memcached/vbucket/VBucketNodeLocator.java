@@ -70,4 +70,13 @@ public class VBucketNodeLocator implements NodeLocator {
     private void setConfig(final Config config) {
         this.config = config;
     }
+    public MemcachedNode getAlternative(String k, Collection<MemcachedNode> notMyVbucketNodes) {
+        Collection<MemcachedNode> nodes = nodesMap.values();
+        nodes.removeAll(notMyVbucketNodes);
+        if (nodes.isEmpty()) {
+            return null;
+        } else {
+            return nodes.iterator().next();
+        }
+    }
 }
