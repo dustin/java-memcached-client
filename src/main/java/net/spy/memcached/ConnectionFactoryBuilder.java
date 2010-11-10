@@ -44,6 +44,9 @@ public class ConnectionFactoryBuilder {
 	private long opQueueMaxBlockTime = -1;
 
 	private int timeoutExceptionThreshold = DefaultConnectionFactory.DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
+	
+	private int maxFrontCacheElements = DefaultConnectionFactory.DEFAULT_MAX_FRONTCACHE_ELEMENTS;
+	private int frontCacheExpireTime = DefaultConnectionFactory.DEFAULT_FRONTCACHE_EXPIRETIME;
 	/**
 	 * Set the operation queue factory.
 	 */
@@ -214,6 +217,24 @@ public class ConnectionFactoryBuilder {
 		}
 		return this;
 	}
+	
+	/**
+	 * Set the maximum number of front cache elements.
+	 */
+	public ConnectionFactoryBuilder setMaxFrontCacheElements(int to) {
+		assert to > 0 : "In case of front cache, the number must be a positive number";
+		maxFrontCacheElements = to;
+		return this;
+	}
+	
+	/**
+	 * Set front cache's expire time.
+	 */
+	public ConnectionFactoryBuilder setFrontCacheExpireTime(int to) {
+		assert to > 0 : "Front cache's expire time must be a positive number";
+		frontCacheExpireTime = to;
+		return this;
+	}
 
 	/**
 	 * Get the ConnectionFactory set up with the provided parameters.
@@ -326,6 +347,16 @@ public class ConnectionFactoryBuilder {
 			@Override
 			public int getTimeoutExceptionThreshold() {
 				return timeoutExceptionThreshold;
+			}
+			
+			@Override
+			public int getMaxFrantCacheElements() {
+				return maxFrontCacheElements;
+			}
+			
+			@Override
+			public int getFrontCacheExpireTime() {
+				return frontCacheExpireTime;
 			}
 
 		};

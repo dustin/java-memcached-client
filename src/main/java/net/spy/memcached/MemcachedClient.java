@@ -105,6 +105,7 @@ public class MemcachedClient extends SpyThread
 
 	private volatile boolean running=true;
 	private volatile boolean shuttingDown=false;
+	public boolean isFrontCache = false;
 
 	private final long operationTimeout;
 
@@ -793,6 +794,9 @@ public class MemcachedClient extends SpyThread
 					new CachedData(flags, data, tc.getMaxSize()));
 			}
 			public void complete() {
+				if (isFrontCache) {
+					putFrontCache(key, val, operationTimeout);
+				}
 				latch.countDown();
 			}});
 		rv.setOperation(op);
@@ -1764,6 +1768,20 @@ public class MemcachedClient extends SpyThread
 
 	public void connectionLost(SocketAddress sa) {
 		// Don't care.
+	}
+	
+	/**
+	 * After the fetch from remote cache server, 
+	 * if the fetch is not null, it will stored to front cache server
+	 * 
+	 * @param <T> 
+	 * @param key the key to store
+	 * @param val a future that will hold the return value of the fetch
+	 * @param operationTimeout operation timeout
+	 * @return
+	 */
+	public <T> boolean putFrontCache(String key, Future<T> val, long operationTimeout) {
+		return false;
 	}
 
 }
