@@ -999,7 +999,7 @@ public class MemcachedClient extends SpyThread
 		}
 
 		final CountDownLatch latch=new CountDownLatch(chunks.size());
-		final Collection<Operation> ops=new ArrayList<Operation>();
+		final Collection<Operation> ops=new ArrayList<Operation>(chunks.size());
 
 		GetOperation.Callback cb=new GetOperation.Callback() {
 				@SuppressWarnings("synthetic-access")
