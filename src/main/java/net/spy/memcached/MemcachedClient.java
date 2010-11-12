@@ -191,7 +191,7 @@ public class MemcachedClient extends SpyThread
 	 * @return point-in-time view of currently available servers
 	 */
 	public Collection<SocketAddress> getAvailableServers() {
-		Collection<SocketAddress> rv=new ArrayList<SocketAddress>();
+		ArrayList<SocketAddress> rv=new ArrayList<SocketAddress>();
 		for(MemcachedNode node : conn.getLocator().getAll()) {
 			if(node.isActive()) {
 				rv.add(node.getSocketAddress());
@@ -212,7 +212,7 @@ public class MemcachedClient extends SpyThread
 	 * @return point-in-time view of currently available servers
 	 */
 	public Collection<SocketAddress> getUnavailableServers() {
-		Collection<SocketAddress> rv=new ArrayList<SocketAddress>();
+		ArrayList<SocketAddress> rv=new ArrayList<SocketAddress>();
 		for(MemcachedNode node : conn.getLocator().getAll()) {
 			if(!node.isActive()) {
 				rv.add(node.getSocketAddress());
