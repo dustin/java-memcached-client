@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.spy.memcached.KeyUtil;
+import net.spy.memcached.protocol.BaseOperationImpl;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
@@ -76,7 +77,7 @@ public class OptimizedSetImpl extends OperationImpl implements Operation {
 			bb.putShort((short)keyBytes.length);
 			bb.put((byte)StoreOperationImpl.EXTRA_LEN); // extralen
 			bb.put((byte)0); // data type
-			bb.putShort((short)0); // reserved
+			bb.putShort((short) ((BaseOperationImpl)so).getVbucket()); // reserved
 			bb.putInt(keyBytes.length + data.length +
 						StoreOperationImpl.EXTRA_LEN);
 			bb.putInt(myOpaque);
