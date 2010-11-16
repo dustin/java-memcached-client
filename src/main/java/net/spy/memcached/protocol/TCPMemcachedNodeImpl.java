@@ -41,6 +41,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	private boolean shouldAuth=false;
 	private CountDownLatch authLatch;
 	private ArrayList<Operation> reconnectBlocked;
+	private long defaultOpTimeout;
 
 	// operation Future.get timeout counter
 	private final AtomicInteger continuousTimeout = new AtomicInteger(0);
@@ -49,7 +50,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 	public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
 			int bufSize, BlockingQueue<Operation> rq,
 			BlockingQueue<Operation> wq, BlockingQueue<Operation> iq,
-			long opQueueMaxBlockTime, boolean waitForAuth) {
+			long opQueueMaxBlockTime, boolean waitForAuth, long dt) {
 		super();
 		assert sa != null : "No SocketAddress";
 		assert c != null : "No SocketChannel";
@@ -67,6 +68,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 		inputQueue=iq;
 		this.opQueueMaxBlockTime = opQueueMaxBlockTime;
 		shouldAuth = waitForAuth;
+		defaultOpTimeout = dt;
 		setupForAuth();
 	}
 
@@ -154,6 +156,16 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 		if(toWrite == 0 && readQ.remainingCapacity() > 0) {
 			getWbuf().clear();
 			Operation o=getCurrentWriteOp();
+                        if (o != null && (o.isCancelled())) {
+                            getLogger().debug("Not writing cancelled op.");
+                            return;
+                        }
+			if (o != null && o.isTimedOut(defaultOpTimeout)) {
+                            getLogger().debug("Not writing timed out op.");
+			    Operation timedOutOp = removeCurrentWriteOp();
+			    assert o == timedOutOp;
+                            return;
+			}
 			while(o != null && toWrite < getWbuf().capacity()) {
 				assert o.getState() == OperationState.WRITING;
 				// This isn't the most optimal way to do this, but it hints

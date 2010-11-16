@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.CancelledOperationStatus;
+import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationException;
@@ -15,10 +16,10 @@ import net.spy.memcached.ops.OperationStatus;
 /**
  * Base class for protocol-specific operation implementations.
  */
-public abstract class BaseOperationImpl extends SpyObject {
+public abstract class BaseOperationImpl extends SpyObject implements Operation {
 
 	/**
-	 * Status object for cancelled operations.
+	 * Status object for canceled operations.
 	 */
 	public static final OperationStatus CANCELLED =
 		new CancelledOperationStatus();
@@ -28,9 +29,12 @@ public abstract class BaseOperationImpl extends SpyObject {
 	private OperationException exception = null;
 	protected OperationCallback callback = null;
 	private volatile MemcachedNode handlingNode = null;
+	private boolean timedout;
+	private long creationTime;
 
 	public BaseOperationImpl() {
 		super();
+		creationTime = System.nanoTime();
 	}
 
 	/**
@@ -143,4 +147,29 @@ public abstract class BaseOperationImpl extends SpyObject {
 		handlingNode = to;
 	}
 
+        @Override
+        public void timeOut() {
+            timedout = true;
+        }
+
+        @Override
+        public boolean isTimedOut() {
+            return timedout;
+        }
+
+	@Override
+	public boolean isTimedOut(long ttlMillis) {
+		long elapsed = System.nanoTime();
+		long ttlNanos = ttlMillis * 1000 * 1000;
+		if (elapsed - creationTime > ttlNanos) {
+			timedout = true;
+		} else {
+			// timedout would be false, but we cannot allow you to untimeout an operation
+			if (timedout) {
+				throw new IllegalArgumentException("Operation has already timed out; ttl " +
+								   "specified would allow it to be valid.");
+			}
+		}
+		return timedout;
+        }
 }
