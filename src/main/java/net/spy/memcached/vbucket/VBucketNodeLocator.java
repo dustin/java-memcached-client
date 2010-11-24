@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.net.InetSocketAddress;
 
+/**
+ * Implementation of the {@link NodeLocator} interface that contains vbucket hashing methods
+ */
 public class VBucketNodeLocator implements NodeLocator {
 
     private Map<String, MemcachedNode> nodesMap;
@@ -29,7 +32,9 @@ public class VBucketNodeLocator implements NodeLocator {
         setConfig(jsonConfig);
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     public MemcachedNode getPrimary(String k) {
         int vbucket = config.getVbucketByKey(k);
         int serverNumber = config.getMaster(vbucket);
@@ -38,14 +43,23 @@ public class VBucketNodeLocator implements NodeLocator {
         return nodesMap.get(server);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Iterator<MemcachedNode> getSequence(String k) {
         return nodesMap.values().iterator();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public Collection<MemcachedNode> getAll() {
         return this.nodesMap.values();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public NodeLocator getReadonlyCopy() {
         return this;
     }
@@ -54,9 +68,15 @@ public class VBucketNodeLocator implements NodeLocator {
         setConfig(config);
     }
 
+    /**
+     * Returns a vbucket index for the given key
+     * @param key the key
+     * @return vbucket index
+     */
     public int getVBucketIndex(String key) {
         return config.getVbucketByKey(key);
     }
+
     private void setNodes(Collection<MemcachedNode> nodes) {
         Map<String, MemcachedNode> nodesMap = new HashMap<String, MemcachedNode>();
         for (MemcachedNode node : nodes) {
@@ -67,9 +87,17 @@ public class VBucketNodeLocator implements NodeLocator {
 
         this.nodesMap = nodesMap;
     }
+
     private void setConfig(final Config config) {
         this.config = config;
     }
+
+    /**
+     * Method returns the node that is not contained in the specified collection of the failed nodes
+     * @param k the key
+     * @param notMyVbucketNodes a collection of the nodes are excluded
+     * @return The first MemcachedNode which mets requirements
+     */
     public MemcachedNode getAlternative(String k, Collection<MemcachedNode> notMyVbucketNodes) {
         Collection<MemcachedNode> nodes = nodesMap.values();
         nodes.removeAll(notMyVbucketNodes);
