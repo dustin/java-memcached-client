@@ -714,7 +714,7 @@ public final class MemcachedConnection extends SpyObject {
     private static void setTimeout(Operation op, boolean isTimeout) {
         try {
             if (op == null) {
-                throw new IllegalArgumentException("op is null!");
+                return; // op may be null in some cases, e.g. flush
             }
             MemcachedNode node = op.getHandlingNode();
             if (node == null) {
