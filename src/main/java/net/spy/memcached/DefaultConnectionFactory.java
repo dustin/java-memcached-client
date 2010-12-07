@@ -71,7 +71,7 @@ public class DefaultConnectionFactory extends SpyObject
     /**
      * Default operation timeout in milliseconds.
      */
-    public static final long DEFAULT_OPERATION_TIMEOUT = 1000;
+    public static final long DEFAULT_OPERATION_TIMEOUT = 2500;
 
     /**
      * Maximum amount of time (in seconds) to wait between reconnect attempts.
