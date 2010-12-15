@@ -53,14 +53,18 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	}
 
 	public void testGetStatsSizes() throws Exception {
-		// There needs to at least have been one value set or there may be
-		// no sizes to check.
+		// There needs to at least have been one value set or there may
+		// be no sizes to check.  Note the protocol says
+		// flushed/expired items may come back in stats sizes and we
+		// use flush when testing, so we check that there's at least
+		// one.
 		client.set("sizeinitializer", 0, "hi");
 		Map<SocketAddress, Map<String, String>> stats = client.getStats("sizes");
-		System.out.println("Stats:  " + stats);
+		System.out.println("Stats sizes:  " + stats);
 		assertEquals(1, stats.size());
 		Map<String, String> oneStat=stats.values().iterator().next();
-		assertEquals("1", oneStat.get("96"));
+		String noItemsSmall = oneStat.get("96");
+		assertTrue(Integer.parseInt(noItemsSmall) >= 1);
 	}
 
 	public void testGetStatsCacheDump() throws Exception {
@@ -69,7 +73,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		client.set("dumpinitializer", 0, "hi");
 		Map<SocketAddress, Map<String, String>> stats =
 				client.getStats("cachedump 1 10000");
-		System.out.println("Stats:  " + stats);
+		System.out.println("Stats cachedump:  " + stats);
 		assertEquals(1, stats.size());
 		Map<String, String> oneStat=stats.values().iterator().next();
 		String val = oneStat.get("dumpinitializer");
@@ -560,7 +564,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		initClient(new DefaultConnectionFactory() {
 			@Override
 			public long getOperationTimeout() {
-				return 1;
+				return 20;
 			}
 		});
 
