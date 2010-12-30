@@ -13,7 +13,7 @@ public class TimeoutTest extends ClientBaseCase {
 		client=new MemcachedClient(new DefaultConnectionFactory() {
 			@Override
 			public long getOperationTimeout() {
-				return 1;
+				return 20;
 			}
 			@Override
 			public FailureMode getFailureMode() {
