@@ -564,24 +564,63 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		initClient(new DefaultConnectionFactory() {
 			@Override
 			public long getOperationTimeout() {
-				return 20;
+				return 2;
+			}
+
+			@Override
+			public int getTimeoutExceptionThreshold() {
+				return 1000000;
 			}
 		});
 
-		client.set(key, 0, value);
+		Thread.sleep(50); // allow connections to be established
+
+		int j = 0;
+		boolean set = false;
+		do {
+			set = client.set(key, 0, value).get();
+			j++;
+		} while (!set && j < 10);
+		assert set == true;
+
+		int i = 0;
 		try {
-			for(int i=0; i<1000000; i++) {
+			for(i = 0; i < 1000000; i++) {
 				client.get(key);
 			}
 			throw new Exception("Didn't get a timeout.");
 		} catch(OperationTimeoutException e) {
-			System.out.println("Got a timeout.");
+			System.out.println("Got a timeout at iteration " + i + ".");
 		}
-		if(value.equals(client.asyncGet(key).get(1, TimeUnit.SECONDS))) {
+		Thread.sleep(50); // let whatever caused the timeout to pass
+		try {
+			client.asyncGet("boundaryBefore").get(30, TimeUnit.SECONDS);
+			if (value.equals(client.asyncGet(key).get(30, TimeUnit.SECONDS))) {
 			System.out.println("Got the right value.");
 		} else {
 			throw new Exception("Didn't get the expected value.");
 		}
+		} catch (java.util.concurrent.TimeoutException timeoutException) {
+		        debugNodeInfo(client.getNodeLocator().getAll());
+			client.asyncGet("boundaryAfter").get(30, TimeUnit.SECONDS);
+			throw new Exception("Unexpected timeout after 30 seconds waiting", timeoutException);
+		}
+	}
+
+	private void debugNodeInfo(Collection<MemcachedNode> nodes) {
+	    System.err.println("Debug nodes:");
+	    for (MemcachedNode node : nodes) {
+		    System.err.println(node);
+		    System.err.println("Is active? " + node.isActive());
+		    System.err.println("Has read operation? " + node.hasReadOp() + " Has write operation? " + node.hasWriteOp());
+		try {
+		    System.err.println("Has timed out this many times: " + node.getContinuousTimeout());
+		    System.err.println("Write op: " + node.getCurrentWriteOp());
+		    System.err.println("Read op: " + node.getCurrentReadOp());
+		} catch (UnsupportedOperationException e) {
+		    System.err.println("Node does not support full interface, likely read only.");
+		}
+	    }
 	}
 
 	public void xtestGracefulShutdownTooSlow() throws Exception {
