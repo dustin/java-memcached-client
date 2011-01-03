@@ -106,6 +106,10 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
 		if(state == OperationState.COMPLETE) {
 			callback.complete();
 		}
+		if(state == OperationState.TIMEDOUT) {
+			cmd = null;
+			callback.complete();
+		}
 	}
 
 	public final void writeComplete() {
@@ -149,6 +153,8 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
 
         @Override
         public void timeOut() {
+	    assert (state != OperationState.READING || state != OperationState.COMPLETE);
+	    this.transitionState(OperationState.TIMEDOUT);
             timedout = true;
         }
 
@@ -162,6 +168,8 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
 		long elapsed = System.nanoTime();
 		long ttlNanos = ttlMillis * 1000 * 1000;
 		if (elapsed - creationTime > ttlNanos) {
+			assert (state != OperationState.READING || state != OperationState.COMPLETE);
+			this.transitionState(OperationState.TIMEDOUT);
 			timedout = true;
 		} else {
 			// timedout would be false, but we cannot allow you to untimeout an operation

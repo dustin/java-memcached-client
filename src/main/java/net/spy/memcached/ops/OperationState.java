@@ -15,5 +15,9 @@ public enum OperationState {
 	/**
 	 * State indicating this operation is complete.
 	 */
-	COMPLETE
+	COMPLETE,
+	/**
+	 * State indicating this operation timed out without completing.
+	 */
+	TIMEDOUT
 }
