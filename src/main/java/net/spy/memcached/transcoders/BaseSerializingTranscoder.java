@@ -103,10 +103,10 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
 			}
 		} catch(IOException e) {
 			getLogger().warn("Caught IOException decoding %d bytes of data",
-					in.length, e);
+					in == null ? 0 : in.length, e);
 		} catch (ClassNotFoundException e) {
 			getLogger().warn("Caught CNFE decoding %d bytes of data",
-					in.length, e);
+					in == null ? 0 : in.length, e);
 		}
 		return rv;
 	}
