@@ -1,12 +1,11 @@
 package net.spy.memcached;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.nio.ByteBuffer;
+
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.ascii.ExtensibleOperationImpl;
-import java.nio.ByteBuffer;
 
 /**
  *
