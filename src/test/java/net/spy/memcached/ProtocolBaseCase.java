@@ -573,7 +573,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 			}
 		});
 
-		Thread.sleep(50); // allow connections to be established
+		Thread.sleep(100); // allow connections to be established
 
 		int j = 0;
 		boolean set = false;
@@ -589,12 +589,11 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 				client.get(key);
 			}
 			throw new Exception("Didn't get a timeout.");
-		} catch(OperationTimeoutException e) {
+		} catch(RuntimeException e) {
 			System.out.println("Got a timeout at iteration " + i + ".");
 		}
-		Thread.sleep(50); // let whatever caused the timeout to pass
+		Thread.sleep(100); // let whatever caused the timeout to pass
 		try {
-			client.asyncGet("boundaryBefore").get(30, TimeUnit.SECONDS);
 			if (value.equals(client.asyncGet(key).get(30, TimeUnit.SECONDS))) {
 			System.out.println("Got the right value.");
 		} else {
@@ -602,7 +601,6 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 		} catch (java.util.concurrent.TimeoutException timeoutException) {
 		        debugNodeInfo(client.getNodeLocator().getAll());
-			client.asyncGet("boundaryAfter").get(30, TimeUnit.SECONDS);
 			throw new Exception("Unexpected timeout after 30 seconds waiting", timeoutException);
 		}
 	}
