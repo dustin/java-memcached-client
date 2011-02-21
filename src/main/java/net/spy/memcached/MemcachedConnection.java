@@ -590,7 +590,7 @@ public final class MemcachedConnection extends SpyObject {
 		if(placeIn != null) {
 			addOperation(placeIn, o);
 		} else {
-			assert o.isCancelled() : "No not found for "
+			assert o.isCancelled() : "No node found for "
 				+ key + " (and not immediately cancelled)";
 		}
 	}
