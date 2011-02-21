@@ -580,6 +580,8 @@ public final class MemcachedConnection extends SpyObject {
 			// and wait for it to come back online.
 			if(placeIn == null) {
 				placeIn = primary;
+				this.getLogger().warn("Could not redistribute " +
+					"to another node, retrying primary node for %s.", key);
 			}
 		}
 
