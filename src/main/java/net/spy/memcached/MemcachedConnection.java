@@ -715,7 +715,7 @@ public final class MemcachedConnection extends SpyObject {
      */
     private static void setTimeout(Operation op, boolean isTimeout) {
         try {
-            if (op == null) {
+            if (op == null || op.isTimedOutUnsent()) {
                 return; // op may be null in some cases, e.g. flush
             }
             MemcachedNode node = op.getHandlingNode();
