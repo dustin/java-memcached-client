@@ -59,7 +59,7 @@ define "memcached" do
   compile.options.target = '1.5'
   manifest["Implementation-Vendor"] = COPYRIGHT
   compile.with "log4j:log4j:jar:1.2.15", "jmock:jmock:jar:1.2.0",
-               "junit:junit:jar:4.4"
+               "junit:junit:jar:4.4", "org.springframework:spring-beans:jar:3.0.3.RELEASE"
 
   # Gen build
   gen_build_info "net.spy.memcached", "git"
