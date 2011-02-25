@@ -152,7 +152,7 @@ public class ConfigurationProviderHTTP extends SpyObject implements Configuratio
 
     public List<InetSocketAddress> getServerList(final String bucketname) throws ConfigurationException {
         Bucket bucket = getBucketConfiguration(bucketname);
-        List<String> servers = bucket.getVbuckets().getServers();
+        List<String> servers = bucket.getConfig().getServers();
         StringBuilder serversString = new StringBuilder();
         for (String server : servers) {
             serversString.append(server).append(' ');
@@ -196,7 +196,7 @@ public class ConfigurationProviderHTTP extends SpyObject implements Configuratio
 
     public Config getLatestConfig(String bucketname) throws ConfigurationException {
         Bucket bucket = getBucketConfiguration(bucketname);
-        return bucket.getVbuckets();
+        return bucket.getConfig();
     }
 
     public String getAnonymousAuthBucket() {

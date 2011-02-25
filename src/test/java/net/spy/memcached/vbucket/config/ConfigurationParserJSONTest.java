@@ -52,7 +52,7 @@ public class ConfigurationParserJSONTest extends TestCase {
         assertNotNull("Bucket is null", bucket);
         assertNotNull(bucket.getName());
         assertNotNull(bucket.getStreamingURI());
-        assertNotNull(bucket.getVbuckets());
+        assertNotNull(bucket.getConfig());
     }
 
     private static final String baseString = "{\"pools\":[{\"name\":\"default\",\"uri\":\"/pools/default\"," +
