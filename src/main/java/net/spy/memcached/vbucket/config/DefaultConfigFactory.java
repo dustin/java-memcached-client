@@ -80,12 +80,31 @@ public class DefaultConfigFactory implements ConfigFactory {
     }
 
     private Config parseJSON(JSONObject jsonObject) throws JSONException {
-        // Allows clients to have a JSON envelope.
-        if (jsonObject.has("vBucketServerMap")) {
-            return parseJSON(jsonObject.getJSONObject("vBucketServerMap"));
+	// the incoming config could be cache or EP object types, JSON envelope picked apart
+	if (!jsonObject.has("vBucketServerMap" )) {
+	    return parseCacheJSON(jsonObject);
+	}
+	return parseEpJSON(jsonObject.getJSONObject("vBucketServerMap"));
+    }
+
+    private Config parseCacheJSON(JSONObject jsonObject) throws JSONException {
+
+	JSONArray nodes = jsonObject.getJSONArray("nodes");
+        if (nodes.length() <= 0) {
+            throw new ConfigParsingException("Empty nodes list.");
         }
-        HashAlgorithm hashAlgorithm = lookupHashAlgorithm(jsonObject
-                .getString("hashAlgorithm"));
+        int serversCount = nodes.length();
+
+	CacheConfig config = new CacheConfig(serversCount);
+        populateServers(config, nodes);
+
+	return config;
+    }
+
+	/* ep is for ep-engine, a.k.a. membase */
+    private Config parseEpJSON(JSONObject jsonObject) throws JSONException {
+
+        HashAlgorithm hashAlgorithm = lookupHashAlgorithm(jsonObject.getString("hashAlgorithm"));
         int replicasCount = jsonObject.getInt("numReplicas");
         if (replicasCount > VBucket.MAX_REPLICAS) {
             throw new ConfigParsingException("Expected number <= "
@@ -105,15 +124,13 @@ public class DefaultConfigFactory implements ConfigFactory {
         }
 	List<String> populateServers = populateServers(servers);
 	List<VBucket> populateVbuckets = populateVbuckets(vbuckets);
-        Config config = new DefaultConfig(hashAlgorithm, serversCount,
-                replicasCount, vbucketsCount, populateServers,
-                populateVbuckets);
+
+        DefaultConfig config = new DefaultConfig(hashAlgorithm, serversCount, replicasCount, vbucketsCount, populateServers, populateVbuckets);
 
         return config;
     }
 
-    private List<String> populateServers(JSONArray servers)
-            throws JSONException {
+    private List<String> populateServers(JSONArray servers) throws JSONException {
         List<String> serverNames = new ArrayList<String>();
         for (int i = 0; i < servers.length(); i++) {
             String server = servers.getString(i);
@@ -122,8 +139,21 @@ public class DefaultConfigFactory implements ConfigFactory {
         return serverNames;
     }
 
-    private List<VBucket> populateVbuckets(JSONArray jsonVbuckets)
-            throws JSONException {
+
+    private void populateServers(CacheConfig config, JSONArray nodes) throws JSONException {
+	List<String> serverNames = new ArrayList<String>();
+	for (int i = 0; i < nodes.length(); i++) {
+	    JSONObject node = nodes.getJSONObject(i);
+	    String webHostPort = node.getString("hostname");
+	    String[] splitHostPort = webHostPort.split(":");
+	    JSONObject portsList = node.getJSONObject("ports");
+	    int port = portsList.getInt("direct");
+	    serverNames.add(splitHostPort[0] + ":" + port);
+	}
+	config.setServers(serverNames);
+    }
+
+    private List<VBucket> populateVbuckets(JSONArray jsonVbuckets) throws JSONException {
         List<VBucket> vBuckets = new ArrayList<VBucket>();
         for (int i = 0; i < jsonVbuckets.length(); i++) {
             JSONArray rows = jsonVbuckets.getJSONArray(i);
