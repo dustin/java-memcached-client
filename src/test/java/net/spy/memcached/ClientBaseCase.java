@@ -11,6 +11,7 @@ public abstract class ClientBaseCase extends TestCase {
 
 	protected MemcachedClient client = null;
 	protected Boolean membase;
+	protected Boolean moxi;
 
 	protected void initClient() throws Exception {
 		initClient(new DefaultConnectionFactory() {
@@ -79,15 +80,36 @@ public abstract class ClientBaseCase extends TestCase {
 		for (Map<String, String> node : stats.values()) {
 			if (node.get("ep_version") != null) {
 				membase = true;
-				   System.err.println("Found membase!");
+				   System.err.println("Found membase");
 				break;
 			} else {
 				membase = false;
-				   System.err.println("Found memcached!");
+				   System.err.println("Found memcached");
 			}
 
 	    }
 	    return membase.booleanValue();
+	}
+
+	protected boolean isMoxi() {
+	    if (moxi != null) {
+		    return moxi.booleanValue();
+	    }
+		// some tests are invalid if using moxi
+
+		Map<SocketAddress, Map<String, String>> stats = client.getStats("proxy");
+		for (Map<String, String> node : stats.values()) {
+			if (node.get("basic:version") != null) {
+				moxi = true;
+				   System.err.println("Using proxy");
+				break;
+			} else {
+				moxi = false;
+				   System.err.println("Not using proxy");
+			}
+
+	    }
+	    return moxi.booleanValue();
 	}
 
 }
