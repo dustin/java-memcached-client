@@ -123,7 +123,7 @@ public class BucketMonitor extends Observable {
                 HttpVersion.HTTP_1_1, HttpMethod.GET, uri.toASCIIString());
         request.setHeader(HttpHeaders.Names.HOST, host);
         if (getHttpUser() != null) {
-            request.setHeader(HttpHeaders.Names.AUTHORIZATION, getAuthHeader());
+            request.setHeader(HttpHeaders.Names.AUTHORIZATION, ConfigurationProviderHTTP.buildAuthHeader(getHttpUser(), getHttpPass()));
         }
         request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);  // No keep-alives for this
         request.setHeader(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);
@@ -145,29 +145,6 @@ public class BucketMonitor extends Observable {
             setChanged();
             notifyObservers(this.bucket);
         }
-    }
-
-    /**
-     * Since netty seems to have base64 and have a header for basic auth, but
-     * oddly no way to generate a base64 enoded auth heder, this utility function
-     * will.
-     *
-     * @return a value for an HTTP Basic Auth Header
-     */
-    private String getAuthHeader() {
-        // apparently netty isn't familiar with HTTP Basic Auth
-        StringBuffer clearText = new StringBuffer(getHttpUser());
-        clearText.append(':');
-        if (getHttpPass() != null) {
-            clearText.append(getHttpPass());
-        }
-        // and apache base64 codec has extra \n\l we have to strip off
-        String encodedText = org.apache.commons.codec.binary.Base64.encodeBase64String(clearText.toString().getBytes());
-        char[] encodedWoNewline = new char[encodedText.length() - 2];
-        encodedText.getChars(0, encodedText.length() - 2, encodedWoNewline, 0);
-        String authVal = "Basic " + new String(encodedWoNewline);
-
-        return authVal;
     }
 
     /**

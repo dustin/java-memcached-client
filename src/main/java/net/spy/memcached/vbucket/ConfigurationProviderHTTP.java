@@ -273,4 +273,27 @@ public class ConfigurationProviderHTTP extends SpyObject implements Configuratio
 	}
     }
 
+    /**
+     * Oddly, lots of things that do HTTP seem to not know how to do this and
+     * Authenticator caches for the process.  Since we only need Basic at the
+     * moment simply, add the header.
+     *
+     * @return a value for an HTTP Basic Auth Header
+     */
+    protected static String buildAuthHeader(String username, String password) {
+        // apparently netty isn't familiar with HTTP Basic Auth
+        StringBuilder clearText = new StringBuilder(username);
+        clearText.append(':');
+        if (password != null) {
+            clearText.append(password);
+        }
+        // and apache base64 codec has extra \n\l we have to strip off
+        String encodedText = org.apache.commons.codec.binary.Base64.encodeBase64String(clearText.toString().getBytes());
+        char[] encodedWoNewline = new char[encodedText.length() - 2];
+        encodedText.getChars(0, encodedText.length() - 2, encodedWoNewline, 0);
+        String authVal = "Basic " + new String(encodedWoNewline);
+
+        return authVal;
+    }
+
 }
