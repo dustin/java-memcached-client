@@ -95,12 +95,12 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
 
 	public void testSequence1() {
 		setupNodes(4);
-		assertSequence("dustin", 0, 2, 1, 2);
+		assertSequence("dustin", 0, 2, 1, 2, 3, 2, 0);
 	}
 
 	public void testSequence2() {
 		setupNodes(4);
-		assertSequence("noelani", 2, 1, 1, 3);
+		assertSequence("noelani", 2, 1, 1, 3, 2, 2, 3);
 	}
 
 	private void assertPosForKey(String k, int nid) {
@@ -118,7 +118,7 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
 	public void testFNV1A_32() {
 		HashAlgorithm alg=HashAlgorithm.FNV1A_32_HASH;
 		setupNodes(alg, 5);
-		assertSequence("noelani", 1, 2, 2, 2, 3);
+		assertSequence("noelani", 1, 2, 2, 2, 3, 4, 2);
 
 		assertSame(nodes[2], locator.getPrimary("dustin"));
 		assertSame(nodes[1], locator.getPrimary("noelani"));
