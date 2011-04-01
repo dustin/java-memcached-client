@@ -43,8 +43,8 @@ public class ConsistentHashingTest extends TestCase {
 		KetamaNodeLocator smLocator = new KetamaNodeLocator(
 			smaller, HashAlgorithm.KETAMA_HASH);
 
-		SortedMap<Long, MemcachedNode> lgMap = lgLocator.ketamaNodes;
-		SortedMap<Long, MemcachedNode> smMap = smLocator.ketamaNodes;
+		SortedMap<Long, MemcachedNode> lgMap = lgLocator.getKetamaNodes();
+		SortedMap<Long, MemcachedNode> smMap = smLocator.getKetamaNodes();
 
 		// Verify that EVERY entry in the smaller map has an equivalent
 		// mapping in the larger map.
