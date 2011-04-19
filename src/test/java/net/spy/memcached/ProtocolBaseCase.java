@@ -645,13 +645,14 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
 		st.setCompressionThreshold(Integer.MAX_VALUE);
 
-		byte data[]=new byte[10*1024*1024];
+		byte data[]=new byte[21*1024*1024];
 		r.nextBytes(data);
 
 		try {
 			client.set("bigassthing", 60, data, st).get();
 			fail("Didn't fail setting bigass thing.");
 		} catch(ExecutionException e) {
+			System.err.println("Successful failure setting bigassthing.  Ass size " + data.length + " bytes doesn't fit.");
 			e.printStackTrace();
 			OperationException oe=(OperationException)e.getCause();
 			assertSame(OperationErrorType.SERVER, oe.getType());
@@ -667,7 +668,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		SerializingTranscoder st=new SerializingTranscoder();
 		st.setCompressionThreshold(Integer.MAX_VALUE);
 
-		byte data[]=new byte[10*1024*1024];
+		byte data[]=new byte[21*1024*1024];
 		r.nextBytes(data);
 
 		try {
