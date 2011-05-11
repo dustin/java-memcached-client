@@ -30,7 +30,7 @@ public class MemcachedClientFactoryBeanTest extends TestCase {
     final Transcoder<Object> transcoder = new SerializingTranscoder();
     factory.setTranscoder(transcoder);
 
-    final MemcachedClient memcachedClient = factory.getObject();
+    final MemcachedClient memcachedClient = (MemcachedClient)factory.getObject();
 
     Assert.assertEquals("deamon", true, memcachedClient.isDaemon());
     Assert.assertEquals("servers", 2, memcachedClient.getUnavailableServers().size());
