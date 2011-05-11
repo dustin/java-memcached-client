@@ -33,15 +33,6 @@ public class TimeoutNowriteTest extends ClientBaseCase {
 			AddrUtil.getAddresses("127.0.0.1:11211"));
 	}
 
-	private void tryTimeout(String name, Runnable r) {
-		try {
-			r.run();
-			fail("Expected timeout in " + name);
-		} catch(OperationTimeoutException e) {
-			// pass
-		}
-	}
-
 	public void testTimeoutDontwrite() {
 		Operation op = new ExtensibleOperationImpl(new OperationCallback(){
 			public void complete() {
