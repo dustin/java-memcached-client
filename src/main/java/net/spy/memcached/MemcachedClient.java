@@ -343,6 +343,50 @@ public class MemcachedClient extends SpyThread
 	}
 
 	/**
+	 * Touch the given key to reset its expiration time with the default
+	 * transcoder.
+	 *
+	 * @param key the key to fetch
+	 * @param exp the new expiration to set for the given key
+	 * @return a future that will hold the return value of whether or not
+	 * the fetch succeeded
+	 * @throws IllegalStateException in the rare circumstance where queue
+	 *         is too full to accept any more requests
+	 */
+	public <T> Future<Boolean> touch(final String key, final int exp) {
+		return touch(key, exp, transcoder);
+	}
+
+	/**
+	 * Touch the given key to reset its expiration time.
+	 *
+	 * @param key the key to fetch
+	 * @param exp the new expiration to set for the given key
+	 * @param tc the transcoder to serialize and unserialize value
+	 * @return a future that will hold the return value of whether or not
+	 * the fetch succeeded
+	 * @throws IllegalStateException in the rare circumstance where queue
+	 *         is too full to accept any more requests
+	 */
+	public <T> Future<Boolean> touch(final String key, final int exp,
+			final Transcoder<T> tc) {
+		final CountDownLatch latch=new CountDownLatch(1);
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch,
+				operationTimeout);
+
+		Operation op=opFact.touch(key, exp, new OperationCallback() {
+			public void receivedStatus(OperationStatus status) {
+				rv.set(status.isSuccess());
+		}
+			public void complete() {
+				latch.countDown();
+			}});
+		rv.setOperation(op);
+		addOp(key, op);
+		return rv;
+	}
+
+	/**
 	 * Append to an existing value in the cache.
 	 *
 	 * <p>Note that the return will be false any time a mutation has not

@@ -68,6 +68,11 @@ public class AsciiOperationFactory extends BaseOperationFactory {
 		return new StoreOperationImpl(storeType, key, flags, exp, data, cb);
 	}
 
+	public KeyedOperation touch(String key, int expiration, OperationCallback cb) {
+		throw new UnsupportedOperationException("Touch is only supported in" +
+				" the binary protocol");
+	}
+
 	public VersionOperation version(OperationCallback cb) {
 		return new VersionOperationImpl(cb);
 	}

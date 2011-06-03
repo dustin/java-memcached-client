@@ -72,6 +72,10 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 		return new StoreOperationImpl(storeType, key, flags, exp, data, 0, cb);
 	}
 
+	public KeyedOperation touch(String key, int expiration, OperationCallback cb) {
+		return new TouchOperationImpl(key, expiration, cb);
+	}
+
 	public VersionOperation version(OperationCallback cb) {
 		return new VersionOperationImpl(cb);
 	}
