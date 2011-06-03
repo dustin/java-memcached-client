@@ -31,6 +31,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 	protected static final int ERR_EXISTS = 2;
 	protected static final int ERR_EINVAL = 4;
 	protected static final int ERR_NOT_STORED = 5;
+	protected static final int ERR_TEMP_FAIL = 134;
 
 	protected static final OperationStatus NOT_FOUND_STATUS =
 		new CASOperationStatus(false, "Not Found", CASResponse.NOT_FOUND);
@@ -38,6 +39,8 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 		new CASOperationStatus(false, "Object exists", CASResponse.EXISTS);
 	protected static final OperationStatus NOT_STORED_STATUS =
 		new CASOperationStatus(false, "Not Stored", CASResponse.NOT_FOUND);
+	protected static final OperationStatus TEMP_FAIL =
+		new OperationStatus(false, "Temporary Error");
 
 	protected static final byte[] EMPTY_BYTES = new byte[0];
 

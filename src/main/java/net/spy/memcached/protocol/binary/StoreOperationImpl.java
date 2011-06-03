@@ -68,6 +68,9 @@ class StoreOperationImpl extends OperationImpl
 			case ERR_NOT_FOUND:
 				rv=NOT_FOUND_STATUS;
 				break;
+			case ERR_TEMP_FAIL:
+				rv=TEMP_FAIL;
+				break;
 		}
 		return rv;
 	}
