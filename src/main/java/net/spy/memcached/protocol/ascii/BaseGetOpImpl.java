@@ -2,9 +2,11 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.Collections;
 
 import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetlOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
@@ -20,6 +22,8 @@ abstract class BaseGetOpImpl extends OperationImpl {
 	private final String cmd;
 	private final Collection<String> keys;
 	private String currentKey = null;
+	private final int exp;
+	private final boolean hasExp;
 	private long casValue=0;
 	private int currentFlags = 0;
 	private byte[] data = null;
@@ -31,6 +35,17 @@ abstract class BaseGetOpImpl extends OperationImpl {
 		super(cb);
 		cmd=c;
 		keys=k;
+		exp=0;
+		hasExp=false;
+	}
+
+	public BaseGetOpImpl(String c, int e, GetlOperation.Callback cb,
+			String k) {
+		super(cb);
+		cmd=c;
+		keys=Collections.singleton(k);
+		exp=e;
+		hasExp=true;
 	}
 
 	/**
@@ -89,13 +104,18 @@ abstract class BaseGetOpImpl extends OperationImpl {
 		if(readOffset == data.length && lookingFor == '\0') {
 			// The callback is most likely a get callback.  If it's not, then
 			// it's a gets callback.
-			try {
-				GetOperation.Callback gcb=(GetOperation.Callback)getCallback();
+			OperationCallback cb = getCallback();
+			if (cb instanceof GetOperation.Callback) {
+				GetOperation.Callback gcb=(GetOperation.Callback)cb;
 				gcb.gotData(currentKey, currentFlags, data);
-			} catch(ClassCastException e) {
-				GetsOperation.Callback gcb=(GetsOperation.Callback)
-					getCallback();
+			} else if (cb instanceof GetsOperation.Callback) {
+				GetsOperation.Callback gcb=(GetsOperation.Callback)cb;
 				gcb.gotData(currentKey, currentFlags, casValue, data);
+			} else if (cb instanceof GetlOperation.Callback) {
+				GetlOperation.Callback gcb=(GetlOperation.Callback)cb;
+				gcb.gotData(currentKey, currentFlags, casValue, data);
+			} else {
+				throw new ClassCastException("Couldn't convert " + cb + "to a relevent op");
 			}
 			lookingFor='\r';
 		}
@@ -134,11 +154,19 @@ abstract class BaseGetOpImpl extends OperationImpl {
 			size+=k.length;
 			size++;
 		}
+		byte[] e = String.valueOf(exp).getBytes();
+		if (hasExp) {
+			size+=e.length + 1;
+		}
 		ByteBuffer b=ByteBuffer.allocate(size);
 		b.put(cmd.getBytes());
 		for(byte[] k : keyBytes) {
 			b.put((byte)' ');
 			b.put(k);
+		}
+		if (hasExp) {
+			b.put((byte)' ');
+			b.put(e);
 		}
 		b.put(RN_BYTES);
 		b.flip();

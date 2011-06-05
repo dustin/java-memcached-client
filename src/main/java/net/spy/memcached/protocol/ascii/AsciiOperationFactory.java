@@ -13,6 +13,7 @@ import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetlOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.MultiGetOperationCallback;
@@ -48,6 +49,10 @@ public class AsciiOperationFactory extends BaseOperationFactory {
 
 	public GetOperation get(Collection<String> keys, GetOperation.Callback cb) {
 		return new GetOperationImpl(keys, cb);
+	}
+
+	public GetlOperation getl(String key, int exp, GetlOperation.Callback cb) {
+		return new GetlOperationImpl(key, exp, cb);
 	}
 
 	public GetsOperation gets(String key, GetsOperation.Callback cb) {
