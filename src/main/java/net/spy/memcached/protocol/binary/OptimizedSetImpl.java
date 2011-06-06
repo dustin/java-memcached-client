@@ -149,6 +149,9 @@ public class OptimizedSetImpl extends OperationImpl implements Operation {
 			case ERR_TEMP_FAIL:
 				rv=TEMP_FAIL;
 				break;
+			case ERR_NOT_MY_VBUCKET:
+				rv = NOT_MY_VBUCKET_STATUS;
+				break;
 		}
 		return rv;
 	}
