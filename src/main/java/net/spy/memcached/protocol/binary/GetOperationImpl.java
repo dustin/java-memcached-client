@@ -3,6 +3,7 @@ package net.spy.memcached.protocol.binary;
 import java.util.Collection;
 import java.util.Collections;
 
+import net.spy.memcached.ops.GetAndTouchOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetlOperation;
 import net.spy.memcached.ops.GetsOperation;
@@ -10,10 +11,12 @@ import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 
 class GetOperationImpl extends OperationImpl
-	implements GetOperation, GetsOperation, GetlOperation {
+	implements GetOperation, GetsOperation, GetlOperation,
+	GetAndTouchOperation {
 
 	static final int GET_CMD=0;
 	static final int GETL_CMD=0x94;
+	static final int GAT_CMD=0x1d;
 
 	/**
 	 * Length of the extra header stuff for a GET response.
@@ -22,33 +25,42 @@ class GetOperationImpl extends OperationImpl
 
 	private final String key;
 	private final int exp;
-	private final boolean hasExp;
+	private final int cmd;
 
 	public GetOperationImpl(String k, GetOperation.Callback cb) {
 		super(GET_CMD, generateOpaque(), cb);
 		key=k;
 		exp=0;
-		hasExp=false;
+		cmd=GET_CMD;
 	}
 
 	public GetOperationImpl(String k, GetsOperation.Callback cb) {
 		super(GET_CMD, generateOpaque(), cb);
 		key=k;
 		exp=0;
-		hasExp=false;
+		cmd=GET_CMD;
 	}
 
 	public GetOperationImpl(String k, int e, GetlOperation.Callback cb) {
 		super(GETL_CMD, generateOpaque(), cb);
 		key=k;
 		exp=e;
-		hasExp=true;
+		cmd=GETL_CMD;
+	}
+
+	public GetOperationImpl(String k, int e, GetAndTouchOperation.Callback cb) {
+		super(GAT_CMD, generateOpaque(), cb);
+		key=k;
+		exp=e;
+		cmd=GAT_CMD;
 	}
 
 	@Override
 	public void initialize() {
-		if (hasExp) {
+		if (cmd == GETL_CMD) {
 			prepareBuffer(key, 0, EMPTY_BYTES, 0, exp);
+		} else if (cmd == GAT_CMD) {
+			prepareBuffer(key, 0, EMPTY_BYTES, exp);
 		} else {
 			prepareBuffer(key, 0, EMPTY_BYTES);
 		}
@@ -73,6 +85,9 @@ class GetOperationImpl extends OperationImpl
 			System.arraycopy(data, key.length(), value, 0, data.length-key.length());
 			GetlOperation.Callback gcb=(GetlOperation.Callback)cb;
 			gcb.gotData(key, flags, responseCas, value);
+		} else if (cb instanceof GetAndTouchOperation.Callback) {
+			GetAndTouchOperation.Callback gcb=(GetAndTouchOperation.Callback)cb;
+			gcb.gotData(key, flags, responseCas, data);
 		} else {
 			throw new ClassCastException("Couldn't convert " + cb + "to a relevent op");
 		}

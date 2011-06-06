@@ -12,6 +12,7 @@ import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.FlushOperation;
+import net.spy.memcached.ops.GetAndTouchOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetlOperation;
 import net.spy.memcached.ops.GetsOperation;
@@ -41,6 +42,12 @@ public class AsciiOperationFactory extends BaseOperationFactory {
 
 	public FlushOperation flush(int delay, OperationCallback cb) {
 		return new FlushOperationImpl(delay, cb);
+	}
+
+	public GetAndTouchOperation getAndTouch(String key, int expiration,
+			GetAndTouchOperation.Callback cb) {
+		throw new UnsupportedOperationException("Get and Touch not supported " +
+				"with ascii protocol");
 	}
 
 	public GetOperation get(String key, GetOperation.Callback cb) {
