@@ -1,14 +1,16 @@
 package net.spy.memcached.vbucket.config;
 
 /**
+ * Config may have types.  These types are associated with the individual bucket
+ * types as discerned from the configuration for the bucket served up by the
+ * Membase server.
  *
- * @author ingenthr
  */
 public enum ConfigType {
 	/**
-	 * Cache bucket type.
+	 * Memcache bucket type.
 	 */
-	CACHE,
+	MEMCACHE,
 	/**
 	 * Membase bucket type.
 	 */

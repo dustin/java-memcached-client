@@ -112,7 +112,7 @@ public class CacheConfig implements Config {
     }
 
     public ConfigType getConfigType() {
-	return ConfigType.CACHE;
+	return ConfigType.MEMCACHE;
     }
 
 
