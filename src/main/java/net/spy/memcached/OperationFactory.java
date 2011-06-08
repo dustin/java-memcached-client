@@ -26,7 +26,10 @@ import net.spy.memcached.ops.SASLStepOperation;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
+import net.spy.memcached.ops.TapOperation;
 import net.spy.memcached.ops.VersionOperation;
+import net.spy.memcached.tapmessage.TapOpcode;
+import net.spy.memcached.tapmessage.RequestMessage;
 
 /**
  * Factory that builds operations for protocol handlers.
@@ -227,4 +230,58 @@ public interface OperationFactory {
 	 * @return a new operation for each key in the original operation
 	 */
 	Collection<Operation> clone(KeyedOperation op);
+
+	/**
+	 * Creates a tap backfill stream.
+	 *
+	 * See <a href="http://www.couchbase.org/wiki/display/membase/TAP+Protocol">
+	 * http://www.couchbase.org/wiki/display/membase/TAP+Protocol</a> for more
+	 * details on the tap protocol.
+	 *
+	 * TAP connection names are optional, but allow for momentary interruptions
+	 * in connection to automatically restart. TAP connection names also appear in
+	 * TAP stats from the given server.
+	 *
+	 * Note that according to the protocol, TAP backfill dates are advisory and the
+	 * protocol guarantees at least data from specified date forward, but earlier
+	 * mutations may be received.
+	 *
+	 * @param id The name for the TAP connection
+	 * @param date The date to start backfill from.
+	 * @param cb The status callback.
+	 * @return The tap operation used to create and handle the stream.
+	 */
+	TapOperation tapBackfill(String id, long date, OperationCallback cb);
+
+	/**
+	 * Creates a custom tap stream.
+	 *
+	 * See <a href="http://www.couchbase.org/wiki/display/membase/TAP+Protocol">
+	 * http://www.couchbase.org/wiki/display/membase/TAP+Protocol</a> for more
+	 * details on the tap protocol.
+	 *
+	 * TAP connection names are optional, but allow for momentary interruptions
+	 * in connection to automatically restart. TAP connection names also appear in
+	 * TAP stats from the given server.
+	 *
+	 * @param id The name for the TAP connection
+	 * @param message The tap message to send.
+	 * @param cb The status callback.
+	 * @return The tap operation used to create and handle the stream.
+	 */
+	TapOperation tapCustom(String id, RequestMessage message, OperationCallback cb);
+
+	/**
+	 * Sends a tap ack message to the server.
+	 *
+	 * See <a href="http://www.couchbase.org/wiki/display/membase/TAP+Protocol">
+	 * http://www.couchbase.org/wiki/display/membase/TAP+Protocol</a> for more
+	 * details on the tap protocol.
+	 *
+	 * @param opcode the opcode sent to the client by the server.
+	 * @param opaque the opaque value sent to the client by the server.
+	 * @param cb the callback for the tap stream.
+	 * @return a tap ack operation.
+	 */
+	TapOperation tapAck(TapOpcode opcode, int opaque, OperationCallback cb);
 }

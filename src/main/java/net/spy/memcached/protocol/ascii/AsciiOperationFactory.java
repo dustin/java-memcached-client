@@ -29,7 +29,10 @@ import net.spy.memcached.ops.SASLStepOperation;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
+import net.spy.memcached.ops.TapOperation;
 import net.spy.memcached.ops.VersionOperation;
+import net.spy.memcached.tapmessage.TapOpcode;
+import net.spy.memcached.tapmessage.RequestMessage;
 
 /**
  * Operation factory for the ascii protocol.
@@ -131,6 +134,25 @@ public class AsciiOperationFactory extends BaseOperationFactory {
 			Map<String, ?> props, CallbackHandler cbh, OperationCallback cb) {
 		throw new UnsupportedOperationException("SASL is not supported for " +
 				"ASCII protocol");
+	}
+
+	@Override
+	public TapOperation tapBackfill(String id, long date, OperationCallback cb) {
+		throw new UnsupportedOperationException("Tap is not supported for ASCII" +
+				" protocol");
+	}
+
+	@Override
+	public TapOperation tapCustom(String id, RequestMessage message,
+			OperationCallback cb) {
+		throw new UnsupportedOperationException("Tap is not supported for ASCII" +
+				" protocol");
+	}
+
+	@Override
+	public TapOperation tapAck(TapOpcode opcode, int opaque, OperationCallback cb) {
+		throw new UnsupportedOperationException("Tap is not supported for ASCII" +
+				" protocol");
 	}
 
 }
