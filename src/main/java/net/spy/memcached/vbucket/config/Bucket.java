@@ -15,7 +15,7 @@ public class Bucket {
     private final URI streamingURI;
 
     // nodes list
-    private List<Node> nodes;
+    private final List<Node> nodes;
 
 
     public Bucket(String name, Config configuration, URI streamingURI, List<Node> nodes) {
