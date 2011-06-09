@@ -421,10 +421,10 @@ public final class MemcachedConnection extends SpyObject implements Reconfigurab
 					assert !channel.isConnected() : "connected";
 				}
 			} else {
-				if(sk.isReadable()) {
+				if(sk.isValid() && sk.isReadable()) {
 					handleReads(sk, qa);
 				}
-				if(sk.isWritable()) {
+				if(sk.isValid() && sk.isWritable()) {
 					handleWrites(sk, qa);
 				}
 			}
