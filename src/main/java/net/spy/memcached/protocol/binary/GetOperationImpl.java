@@ -80,11 +80,8 @@ class GetOperationImpl extends OperationImpl
 			GetsOperation.Callback gcb=(GetsOperation.Callback)cb;
 			gcb.gotData(key, flags, responseCas, data);
 		} else if (cb instanceof GetlOperation.Callback) {
-			//getl return the key and value. So we need to strip off the key
-			byte[] value = new byte[data.length-key.length()];
-			System.arraycopy(data, key.length(), value, 0, data.length-key.length());
 			GetlOperation.Callback gcb=(GetlOperation.Callback)cb;
-			gcb.gotData(key, flags, responseCas, value);
+			gcb.gotData(key, flags, responseCas, data);
 		} else if (cb instanceof GetAndTouchOperation.Callback) {
 			GetAndTouchOperation.Callback gcb=(GetAndTouchOperation.Callback)cb;
 			gcb.gotData(key, flags, responseCas, data);
