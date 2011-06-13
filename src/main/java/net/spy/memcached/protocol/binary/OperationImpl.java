@@ -27,12 +27,12 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 	/**
 	 * Error code for items that were not found.
 	 */
-	protected static final int ERR_NOT_FOUND = 1;
-	protected static final int ERR_EXISTS = 2;
-	protected static final int ERR_EINVAL = 4;
-	protected static final int ERR_NOT_STORED = 5;
-	protected static final int ERR_NOT_MY_VBUCKET = 7;
-	protected static final int ERR_TEMP_FAIL = 134;
+	protected static final int ERR_NOT_FOUND = 0x01;
+	protected static final int ERR_EXISTS = 0x02;
+	protected static final int ERR_EINVAL = 0x04;
+	protected static final int ERR_NOT_STORED = 0x05;
+	protected static final int ERR_NOT_MY_VBUCKET = 0x07;
+	protected static final int ERR_TEMP_FAIL = 0x86;
 
 	protected static final OperationStatus NOT_FOUND_STATUS =
 		new CASOperationStatus(false, "Not Found", CASResponse.NOT_FOUND);

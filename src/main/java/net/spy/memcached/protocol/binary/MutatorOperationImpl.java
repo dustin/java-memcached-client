@@ -11,8 +11,8 @@ import net.spy.memcached.ops.OperationStatus;
 class MutatorOperationImpl extends OperationImpl implements
 		MutatorOperation {
 
-	private static final int CMD_INCR=5;
-	private static final int CMD_DECR=6;
+	private static final int CMD_INCR=0x05;
+	private static final int CMD_DECR=0x06;
 
 	private final Mutator mutator;
 	private final String key;

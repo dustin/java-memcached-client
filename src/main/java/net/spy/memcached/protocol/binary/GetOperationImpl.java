@@ -14,7 +14,7 @@ class GetOperationImpl extends OperationImpl
 	implements GetOperation, GetsOperation, GetlOperation,
 	GetAndTouchOperation {
 
-	static final int GET_CMD=0;
+	static final int GET_CMD=0x00;
 	static final int GETL_CMD=0x94;
 	static final int GAT_CMD=0x1d;
 

@@ -12,9 +12,9 @@ import net.spy.memcached.ops.StoreType;
 class StoreOperationImpl extends OperationImpl
 	implements StoreOperation, CASOperation {
 
-	private static final int SET=1;
-	private static final int ADD=2;
-	private static final int REPLACE=3;
+	private static final int SET=0x01;
+	private static final int ADD=0x02;
+	private static final int REPLACE=0x03;
 
 	static final int SETQ=0x11;
 	static final int ADDQ=0x12;

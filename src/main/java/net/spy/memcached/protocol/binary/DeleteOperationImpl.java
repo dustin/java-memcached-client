@@ -10,7 +10,7 @@ import net.spy.memcached.ops.OperationStatus;
 class DeleteOperationImpl extends OperationImpl implements
 		DeleteOperation {
 
-	private static final int CMD=4;
+	private static final int CMD=0x04;
 
 	private final String key;
 	private final long cas;

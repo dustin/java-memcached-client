@@ -13,7 +13,7 @@ import net.spy.memcached.ops.OperationStatus;
 public class TouchOperationImpl extends OperationImpl
 	implements KeyedOperation {
 
-	static final int CMD=28;
+	static final int CMD=0x1c;
 
 	private final String key;
 	private final int exp;
