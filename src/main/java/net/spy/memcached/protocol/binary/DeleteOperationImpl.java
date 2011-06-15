@@ -5,7 +5,6 @@ import java.util.Collections;
 
 import net.spy.memcached.ops.DeleteOperation;
 import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.OperationStatus;
 
 class DeleteOperationImpl extends OperationImpl implements
 		DeleteOperation {
@@ -28,15 +27,6 @@ class DeleteOperationImpl extends OperationImpl implements
 	@Override
 	public void initialize() {
 		prepareBuffer(key, cas, EMPTY_BYTES);
-	}
-
-	@Override
-	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
-        OperationStatus baseStatus = super.getStatusForErrorCode(errCode, errPl);
-        if (baseStatus != null) {
-            return baseStatus;
-        }
-		return errCode == ERR_NOT_FOUND ? NOT_FOUND_STATUS : null;
 	}
 
 	public Collection<String> getKeys() {

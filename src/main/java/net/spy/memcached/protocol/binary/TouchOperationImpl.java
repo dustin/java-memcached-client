@@ -5,7 +5,6 @@ import java.util.Collections;
 
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.OperationStatus;
 
 /**
  * Operation to reset a timeout in Membase server.
@@ -27,27 +26,6 @@ public class TouchOperationImpl extends OperationImpl
 	@Override
 	public Collection<String> getKeys() {
 		return Collections.singleton(key);
-	}
-
-	@Override
-	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
-        OperationStatus baseStatus = super.getStatusForErrorCode(errCode, errPl);
-        if (baseStatus != null) {
-            return baseStatus;
-        }
-		OperationStatus rv=null;
-		switch(errCode) {
-			case ERR_EXISTS:
-				rv=EXISTS_STATUS;
-				break;
-			case ERR_NOT_FOUND:
-				rv=NOT_FOUND_STATUS;
-				break;
-			case ERR_TEMP_FAIL:
-				rv=TEMP_FAIL;
-				break;
-		}
-		return rv;
 	}
 
 	@Override

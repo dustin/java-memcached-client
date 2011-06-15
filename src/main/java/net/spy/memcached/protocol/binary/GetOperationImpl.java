@@ -8,7 +8,6 @@ import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetlOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.OperationStatus;
 
 class GetOperationImpl extends OperationImpl
 	implements GetOperation, GetsOperation, GetlOperation,
@@ -82,15 +81,6 @@ class GetOperationImpl extends OperationImpl
 			throw new ClassCastException("Couldn't convert " + cb + "to a relevent op");
 		}
 		getCallback().receivedStatus(STATUS_OK);
-	}
-
-	@Override
-	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
-        OperationStatus baseStatus = super.getStatusForErrorCode(errCode, errPl);
-        if (baseStatus != null) {
-            return baseStatus;
-        }
-        return errCode == ERR_NOT_FOUND ? NOT_FOUND_STATUS : null;
 	}
 
 	public Collection<String> getKeys() {

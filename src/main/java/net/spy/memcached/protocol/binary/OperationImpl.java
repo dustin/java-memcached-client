@@ -25,25 +25,22 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 	protected static final int MIN_RECV_PACKET=24;
 
 	/**
-	 * Error code for items that were not found.
+	 * Error code for operations.
 	 */
+	protected static final int SUCCESS = 0x00;
 	protected static final int ERR_NOT_FOUND = 0x01;
 	protected static final int ERR_EXISTS = 0x02;
-	protected static final int ERR_EINVAL = 0x04;
+	protected static final int ERR_2BIG = 0x03;
+	protected static final int ERR_INVAL = 0x04;
 	protected static final int ERR_NOT_STORED = 0x05;
+	protected static final int ERR_DELTA_BADVAL = 0x06;
 	protected static final int ERR_NOT_MY_VBUCKET = 0x07;
+	protected static final int ERR_UNKNOWN_COMMAND = 0x81;
+	protected static final int ERR_NO_MEM = 0x82;
+	protected static final int ERR_NOT_SUPPORTED = 0x83;
+	protected static final int ERR_INTERNAL = 0x84;
+	protected static final int ERR_BUSY = 0x85;
 	protected static final int ERR_TEMP_FAIL = 0x86;
-
-	protected static final OperationStatus NOT_FOUND_STATUS =
-		new CASOperationStatus(false, "Not Found", CASResponse.NOT_FOUND);
-	protected static final OperationStatus EXISTS_STATUS =
-		new CASOperationStatus(false, "Object exists", CASResponse.EXISTS);
-	protected static final OperationStatus NOT_STORED_STATUS =
-		new CASOperationStatus(false, "Not Stored", CASResponse.NOT_FOUND);
-	protected static final OperationStatus NOT_MY_VBUCKET_STATUS =
-		new OperationStatus(false, "Not my vbucket");
-	protected static final OperationStatus TEMP_FAIL =
-		new OperationStatus(false, "Temporary Error");
 
 	protected static final byte[] EMPTY_BYTES = new byte[0];
 
@@ -148,19 +145,17 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 	}
 
 	protected void finishedPayload(byte[] pl) throws IOException {
-		if(errorCode != 0) {
-			OperationStatus status=getStatusForErrorCode(errorCode, pl);
-			if(status == null) {
-				handleError(OperationErrorType.SERVER, new String(pl));
-			} else if (status == NOT_MY_VBUCKET_STATUS && !getState().equals(OperationState.COMPLETE)) {
-                transitionState(OperationState.RETRY);
-                //errorCode = 0;
-			} else {
-				getCallback().receivedStatus(status);
-				transitionState(OperationState.COMPLETE);
-			}
-		} else {
+		OperationStatus status=getStatusForErrorCode(errorCode, pl);
+
+		if(status == null) {
+			handleError(OperationErrorType.SERVER, new String(pl));
+		} else if(errorCode == SUCCESS) {
 			decodePayload(pl);
+			transitionState(OperationState.COMPLETE);
+		} else if (errorCode == ERR_NOT_MY_VBUCKET && !getState().equals(OperationState.COMPLETE)) {
+            transitionState(OperationState.RETRY);
+		} else {
+			getCallback().receivedStatus(status);
 			transitionState(OperationState.COMPLETE);
 		}
 	}
@@ -172,11 +167,29 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 	 * @return the status to return, or null if this is an exceptional case
 	 */
 	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
-        if (errCode == ERR_NOT_MY_VBUCKET) {
-            getLogger().warn("Not_my_vbucket on operation " + this);
-            return NOT_MY_VBUCKET_STATUS;
-        }
-		return null;
+		switch (errCode) {
+			case SUCCESS:
+				return STATUS_OK;
+			case ERR_NOT_FOUND:
+				return new CASOperationStatus(false, new String(errPl), CASResponse.NOT_FOUND);
+			case ERR_EXISTS:
+				return new CASOperationStatus(false, new String(errPl), CASResponse.EXISTS);
+			case ERR_NOT_STORED:
+				return new CASOperationStatus(false, new String(errPl), CASResponse.NOT_FOUND);
+			case ERR_2BIG:
+			case ERR_INVAL:
+			case ERR_DELTA_BADVAL:
+			case ERR_NOT_MY_VBUCKET:
+			case ERR_UNKNOWN_COMMAND:
+			case ERR_NO_MEM:
+			case ERR_NOT_SUPPORTED:
+			case ERR_INTERNAL:
+			case ERR_BUSY:
+			case ERR_TEMP_FAIL:
+				return new OperationStatus(false, new String(errPl));
+			default:
+				return null;
+		}
 	}
 
 	/**

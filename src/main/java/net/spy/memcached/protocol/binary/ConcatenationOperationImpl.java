@@ -6,7 +6,6 @@ import java.util.Collections;
 import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.OperationStatus;
 
 class ConcatenationOperationImpl extends OperationImpl
 	implements ConcatenationOperation {
@@ -42,27 +41,6 @@ class ConcatenationOperationImpl extends OperationImpl
 	@Override
 	public void initialize() {
 		prepareBuffer(key, cas, data);
-	}
-
-	@Override
-	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
-        OperationStatus baseStatus = super.getStatusForErrorCode(errCode, errPl);
-        if (baseStatus != null) {
-            return baseStatus;
-        }
-		OperationStatus rv=null;
-		switch(errCode) {
-			case ERR_EXISTS:
-				rv=EXISTS_STATUS;
-				break;
-			case ERR_NOT_FOUND:
-				rv=NOT_FOUND_STATUS;
-				break;
-			case ERR_NOT_STORED:
-				rv=NOT_FOUND_STATUS;
-				break;
-		}
-		return rv;
 	}
 
 	public Collection<String> getKeys() {
