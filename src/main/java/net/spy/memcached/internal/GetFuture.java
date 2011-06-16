@@ -20,8 +20,8 @@ public class GetFuture<T> implements Future<T> {
 
 	private final OperationFuture<Future<T>> rv;
 
-	public GetFuture(CountDownLatch l, long opTimeout) {
-		this.rv = new OperationFuture<Future<T>>(l, opTimeout);
+	public GetFuture(CountDownLatch l, long opTimeout, String key) {
+		this.rv = new OperationFuture<Future<T>>(key, l, opTimeout);
 	}
 
 	public boolean cancel(boolean ign) {

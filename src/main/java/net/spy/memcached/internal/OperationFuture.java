@@ -26,18 +26,20 @@ public class OperationFuture<T> implements Future<T> {
 	protected OperationStatus status;
 	private final long timeout;
 	private Operation op;
+	private final String key;
 
-	public OperationFuture(CountDownLatch l, long opTimeout) {
-		this(l, new AtomicReference<T>(null), opTimeout);
+	public OperationFuture(String k, CountDownLatch l, long opTimeout) {
+		this(k, l, new AtomicReference<T>(null), opTimeout);
 	}
 
-	public OperationFuture(CountDownLatch l, AtomicReference<T> oref,
+	public OperationFuture(String k, CountDownLatch l, AtomicReference<T> oref,
 		long opTimeout) {
 		super();
 		latch=l;
 		objRef=oref;
 		status = null;
 		timeout = opTimeout;
+		key = k;
 	}
 
 	public boolean cancel(boolean ign) {
@@ -86,6 +88,10 @@ public class OperationFuture<T> implements Future<T> {
                 }
 
 		return objRef.get();
+	}
+
+	public String getKey() {
+		return key;
 	}
 
 	public OperationStatus getStatus() {

@@ -433,7 +433,7 @@ public class MemcachedClient extends SpyThread
 						   int exp, T value, Transcoder<T> tc) {
 		CachedData co=tc.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch,
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(key, latch,
 				operationTimeout);
 		Operation op=opFact.store(storeType, key, co.getFlags(),
 				exp, co.getData(), new OperationCallback() {
@@ -458,7 +458,7 @@ public class MemcachedClient extends SpyThread
 			T value, Transcoder<T> tc) {
 		CachedData co=tc.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch,
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(key, latch,
 				operationTimeout);
 		Operation op=opFact.cat(catType, cas, key, co.getData(),
 				new OperationCallback() {
@@ -502,7 +502,7 @@ public class MemcachedClient extends SpyThread
 	public <T> OperationFuture<Boolean> touch(final String key, final int exp,
 			final Transcoder<T> tc) {
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch,
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(key, latch,
 				operationTimeout);
 
 		Operation op=opFact.touch(key, exp, new OperationCallback() {
@@ -627,7 +627,7 @@ public class MemcachedClient extends SpyThread
 		CachedData co=tc.encode(value);
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASResponse> rv=new OperationFuture<CASResponse>(
-				latch, operationTimeout);
+				key, latch, operationTimeout);
 		Operation op=opFact.cas(StoreType.set, key, casId, co.getFlags(), exp,
 				co.getData(), new OperationCallback() {
 					public void receivedStatus(OperationStatus val) {
@@ -954,7 +954,7 @@ public class MemcachedClient extends SpyThread
 	public <T> GetFuture<T> asyncGet(final String key, final Transcoder<T> tc) {
 
 		final CountDownLatch latch=new CountDownLatch(1);
-		final GetFuture<T> rv=new GetFuture<T>(latch, operationTimeout);
+		final GetFuture<T> rv=new GetFuture<T>(latch, operationTimeout, key);
 
 		Operation op=opFact.get(key,
 				new GetOperation.Callback() {
@@ -1003,7 +1003,7 @@ public class MemcachedClient extends SpyThread
 
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASValue<T>> rv=
-			new OperationFuture<CASValue<T>>(latch, operationTimeout);
+			new OperationFuture<CASValue<T>>(key, latch, operationTimeout);
 
 		Operation op=opFact.gets(key,
 				new GetsOperation.Callback() {
@@ -1172,7 +1172,7 @@ public class MemcachedClient extends SpyThread
 			final Transcoder<T> tc) {
 		final CountDownLatch latch=new CountDownLatch(1);
 		final OperationFuture<CASValue<T>> rv=
-			new OperationFuture<CASValue<T>>(latch, operationTimeout);
+			new OperationFuture<CASValue<T>>(key, latch, operationTimeout);
 
 		Operation op=opFact.getl(key, exp,
 				new GetlOperation.Callback() {
@@ -1386,7 +1386,7 @@ public class MemcachedClient extends SpyThread
 	public <T> OperationFuture<CASValue<T>> asyncGetAndTouch(final String key, final int exp,
 			final Transcoder<T> tc) {
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<CASValue<T>> rv=new OperationFuture<CASValue<T>>(latch,
+		final OperationFuture<CASValue<T>> rv=new OperationFuture<CASValue<T>>(key, latch,
 				operationTimeout);
 
 		Operation op=opFact.getAndTouch(key, exp, new GetAndTouchOperation.Callback() {
@@ -1744,7 +1744,7 @@ public class MemcachedClient extends SpyThread
 	private OperationFuture<Long> asyncMutate(Mutator m, String key, int by, long def,
 			int exp) {
 		final CountDownLatch latch = new CountDownLatch(1);
-		final OperationFuture<Long> rv = new OperationFuture<Long>(
+		final OperationFuture<Long> rv = new OperationFuture<Long>(key,
 				latch, operationTimeout);
 		Operation op = addOp(key, opFact.mutate(m, key, by, def, exp,
 				new OperationCallback() {
@@ -1853,7 +1853,7 @@ public class MemcachedClient extends SpyThread
 	 */
 	public OperationFuture<Boolean> delete(String key) {
 		final CountDownLatch latch=new CountDownLatch(1);
-		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(latch,
+		final OperationFuture<Boolean> rv=new OperationFuture<Boolean>(key, latch,
 			operationTimeout);
 		DeleteOperation op=opFact.delete(key,
 				new OperationCallback() {
@@ -1894,7 +1894,7 @@ public class MemcachedClient extends SpyThread
 				return op;
 			}});
 
-		return new OperationFuture<Boolean>(blatch, flushResult,
+		return new OperationFuture<Boolean>(null, blatch, flushResult,
 				operationTimeout) {
 			@Override
 			public boolean cancel(boolean ign) {
