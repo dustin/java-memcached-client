@@ -4,6 +4,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import net.spy.memcached.ops.OperationStatus;
+
 /**
  * Additional flexibility for asyncGetBulk
  *
@@ -43,5 +45,12 @@ public interface BulkFuture<V> extends Future<V> {
      */
 	public V getSome(long timeout, TimeUnit unit)
 			throws InterruptedException, ExecutionException;
+
+	/**
+	 * Gets the status of the operation upon completion.
+	 *
+	 * @return the operation status.
+	 */
+	public OperationStatus getStatus();
 
 }

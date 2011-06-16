@@ -14,6 +14,7 @@ import net.spy.memcached.MemcachedConnection;
 import net.spy.memcached.compat.log.LoggerFactory;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
 
 /**
  * Future for handling results from bulk gets.
@@ -26,6 +27,7 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
 	private final Map<String, Future<T>> rvMap;
 	private final Collection<Operation> ops;
 	private final CountDownLatch latch;
+	private OperationStatus status;
 	private boolean cancelled=false;
 	private boolean timeout = false;
 
@@ -35,6 +37,7 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
 		rvMap = m;
 		ops = getOps;
 		latch=l;
+		status = null;
 	}
 
 	public boolean cancel(boolean ign) {
@@ -47,6 +50,7 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
 			v.cancel(ign);
 		}
 		cancelled=true;
+		status = new OperationStatus(false, "Cancelled");
 		return rv;
 	}
 
@@ -89,6 +93,7 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
         Map<String, T> ret = internalGet(to, unit, timedoutOps);
         if (timedoutOps.size() > 0) {
             this.timeout = true;
+            status = new OperationStatus(false, "Timed out");
             throw new CheckedOperationTimeoutException("Operation timed out.",
                     timedoutOps);
         }
@@ -121,9 +126,11 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
         }
         for (Operation op : ops) {
             if (op.isCancelled()) {
+		status = new OperationStatus(false, "Cancelled");
                 throw new ExecutionException(new RuntimeException("Cancelled"));
             }
             if (op.hasErrored()) {
+		status = new OperationStatus(false, op.getException().getMessage());
                 throw new ExecutionException(op.getException());
             }
         }
@@ -133,6 +140,24 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
         }
         return m;
     }
+
+	public OperationStatus getStatus() {
+		if (status == null) {
+			try {
+				get();
+			} catch (InterruptedException e) {
+				status = new OperationStatus(false, "Interrupted");
+				Thread.currentThread().interrupt();
+			} catch (ExecutionException e) {
+				return status;
+			}
+		}
+		return status;
+	}
+
+	public void setStatus(OperationStatus s) {
+		status = s;
+	}
 
 	public boolean isCancelled() {
 		return cancelled;
