@@ -19,6 +19,7 @@ import net.spy.memcached.ops.OperationStatus;
 abstract class BaseGetOpImpl extends OperationImpl {
 
 	private static final OperationStatus END = new OperationStatus(true, "END");
+	private static final OperationStatus NOT_FOUND = new OperationStatus(false, "NOT_FOUND");
 	private static final byte[] RN_BYTES = "\r\n".getBytes();
 	private final String cmd;
 	private final Collection<String> keys;
@@ -30,6 +31,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
 	private byte[] data = null;
 	private int readOffset = 0;
 	private byte lookingFor = '\0';
+	private boolean hasValue;
 
 	public BaseGetOpImpl(String c,
 			OperationCallback cb, Collection<String> k) {
@@ -38,6 +40,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
 		keys=k;
 		exp=0;
 		hasExp=false;
+		hasValue = false;
 	}
 
 	public BaseGetOpImpl(String c, int e, OperationCallback cb,
@@ -47,6 +50,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
 		keys=Collections.singleton(k);
 		exp=e;
 		hasExp=true;
+		hasValue = false;
 	}
 
 	/**
@@ -60,7 +64,11 @@ abstract class BaseGetOpImpl extends OperationImpl {
 	public final void handleLine(String line) {
 		if(line.equals("END")) {
 			getLogger().debug("Get complete!");
-			getCallback().receivedStatus(END);
+			if (hasValue) {
+				getCallback().receivedStatus(END);
+			} else {
+				getCallback().receivedStatus(NOT_FOUND);
+			}
 			transitionState(OperationState.COMPLETE);
 			data=null;
 		} else if(line.startsWith("VALUE ")) {
@@ -74,6 +82,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
 				casValue=Long.parseLong(stuff[4]);
 			}
 			readOffset=0;
+			hasValue = true;
 			getLogger().debug("Set read type to data");
 			setReadType(OperationReadType.DATA);
 		} else {
