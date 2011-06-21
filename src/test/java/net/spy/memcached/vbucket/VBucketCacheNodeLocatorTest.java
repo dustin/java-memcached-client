@@ -2,13 +2,9 @@ package net.spy.memcached.vbucket;
 
 
 import java.util.List;
-import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.vbucket.config.DefaultConfigFactory;
 import net.spy.memcached.vbucket.config.Config;
 import net.spy.memcached.vbucket.config.ConfigFactory;
-
-import java.net.InetSocketAddress;
-import java.util.Arrays;
 
 import junit.framework.TestCase;
 
