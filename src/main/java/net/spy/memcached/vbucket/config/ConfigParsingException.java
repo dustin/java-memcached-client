@@ -2,7 +2,9 @@ package net.spy.memcached.vbucket.config;
 
 public class ConfigParsingException extends RuntimeException {
 
-    public ConfigParsingException() {
+	private static final long serialVersionUID = -8393032485475738369L;
+
+	public ConfigParsingException() {
         super();
     }
 

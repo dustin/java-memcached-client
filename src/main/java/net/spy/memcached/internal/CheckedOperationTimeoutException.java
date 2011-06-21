@@ -12,6 +12,8 @@ import net.spy.memcached.ops.Operation;
  */
 public class CheckedOperationTimeoutException extends TimeoutException {
 
+	private static final long serialVersionUID = 139074906690883031L;
+
 	private final Collection<Operation> operations;
 
 	/**
