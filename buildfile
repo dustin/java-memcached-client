@@ -28,6 +28,7 @@ RELEASED_VERSIONS=compute_released_verions.sort.reverse
 repositories.release_to = 'sftp://ingenthr@cb-web01.couchbase.com/var/www/domains/membase.org/files/htdocs/maven2'
 repositories.remote << "http://www.ibiblio.org/maven2/"
 repositories.remote << "http://bleu.west.spy.net/~dustin/m2repo/"
+repositories.remote << "https://repository.jboss.org/nexus/content/repositories/releases/"
 
 require 'buildr/java/emma'
 
