@@ -1,25 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-  <classpathentry kind="src" path="src/main/java" excluding="**/.svn/|**/CVS/"/>
-  <classpathentry kind="src" path="target/generated-src" excluding="**/.svn/|**/CVS/"/>
-  <classpathentry kind="src" path="target/generated-rsrc" excluding="**/.svn/|**/CVS/" output="target/resources"/>
-  <classpathentry kind="src" path="src/test/java" excluding="**/.svn/|**/CVS/" output="target/test/classes"/>
-  <classpathentry kind="output" path="target/classes"/>
-  <classpathentry kind="var" path="M2_REPO/log4j/log4j/1.2.15/log4j-1.2.15.jar" sourcepath="M2_REPO/log4j/log4j/1.2.15/log4j-1.2.15-sources.jar" javadocpath="M2_REPO/log4j/log4j/1.2.15/log4j-1.2.15-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/jmock/jmock/1.2.0/jmock-1.2.0.jar" sourcepath="M2_REPO/jmock/jmock/1.2.0/jmock-1.2.0-sources.jar" javadocpath="M2_REPO/jmock/jmock/1.2.0/jmock-1.2.0-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/junit/junit/4.4/junit-4.4.jar" sourcepath="M2_REPO/junit/junit/4.4/junit-4.4-sources.jar" javadocpath="M2_REPO/junit/junit/4.4/junit-4.4-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/springframework/spring-beans/3.0.3.RELEASE/spring-beans-3.0.3.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-beans/3.0.3.RELEASE/spring-beans-3.0.3.RELEASE-sources.jar" javadocpath="M2_REPO/org/springframework/spring-beans/3.0.3.RELEASE/spring-beans-3.0.3.RELEASE-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar" sourcepath="M2_REPO/org/codehaus/jettison/jettison/1.1/jettison-1.1-sources.jar" javadocpath="M2_REPO/org/codehaus/jettison/jettison/1.1/jettison-1.1-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/junit/junit/4.7/junit-4.7.jar" sourcepath="M2_REPO/junit/junit/4.7/junit-4.7-sources.jar" javadocpath="M2_REPO/junit/junit/4.7/junit-4.7-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/jmock/jmock/2.5.1/jmock-2.5.1.jar" sourcepath="M2_REPO/org/jmock/jmock/2.5.1/jmock-2.5.1-sources.jar" javadocpath="M2_REPO/org/jmock/jmock/2.5.1/jmock-2.5.1-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/jmock/jmock-junit4/2.5.1/jmock-junit4-2.5.1.jar" sourcepath="M2_REPO/org/jmock/jmock-junit4/2.5.1/jmock-junit4-2.5.1-sources.jar" javadocpath="M2_REPO/org/jmock/jmock-junit4/2.5.1/jmock-junit4-2.5.1-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar" sourcepath="M2_REPO/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1-sources.jar" javadocpath="M2_REPO/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/hamcrest/hamcrest-library/1.1/hamcrest-library-1.1.jar" sourcepath="M2_REPO/org/hamcrest/hamcrest-library/1.1/hamcrest-library-1.1-sources.jar" javadocpath="M2_REPO/org/hamcrest/hamcrest-library/1.1/hamcrest-library-1.1-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/emma/emma_ant/2.0.5312/emma_ant-2.0.5312.jar" sourcepath="M2_REPO/emma/emma_ant/2.0.5312/emma_ant-2.0.5312-sources.jar" javadocpath="M2_REPO/emma/emma_ant/2.0.5312/emma_ant-2.0.5312-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/emma/emma/2.0.5312/emma-2.0.5312.jar" sourcepath="M2_REPO/emma/emma/2.0.5312/emma-2.0.5312-sources.jar" javadocpath="M2_REPO/emma/emma/2.0.5312/emma-2.0.5312-javadoc.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/jboss/netty/netty/3.1.5.GA/netty-3.1.5.GA.jar" sourcepath="M2_REPO/org/jboss/netty/netty/3.1.5.GA/netty-3.1.5.GA.jar" javadocpath="/org/jboss/netty/netty/3.1.5.GA/netty-3.1.5.GA.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/easymock/easymock/2.4/easymock-2.4.jar" sourcepath="M2_REPO/org/easymock/easymock/2.4/easymock-2.4.jar" javadocpath="M2_REPO/org/easymock/easymock/2.4/easymock-2.4.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/easymock/easymockclassextension/2.4/easymockclassextension-2.4.jar" sourcepath="M2_REPO/org/easymock/easymockclassextension/2.4/easymockclassextension-2.4.jar" javadocpath="M2_REPO/org/easymock/easymockclassextension/2.4/easymockclassextension-2.4.jar"/>
-  <classpathentry kind="var" path="M2_REPO/junit-addons/junit-addons/1.4/junit-addons-1.4.jar" sourcepath="M2_REPO/junit-addons/junit-addons/1.4/junit-addons-1.4.jar" javadocpath="M2_PATH/junit-addons/junit-addons/1.4/junit-addons-1.4.jar"/>
-  <classpathentry kind="var" path="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" sourcepath="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" javadocpath="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar"/>
-  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry excluding="**/.svn/|**/CVS/" kind="src" path="src/main/java"/>
+	<classpathentry excluding="**/.svn/|**/CVS/" kind="src" path="target/generated-src"/>
+	<classpathentry excluding="**/.svn/|**/CVS/" kind="src" output="target/resources" path="target/generated-rsrc"/>
+	<classpathentry excluding="**/.svn/|**/CVS/" kind="src" output="target/test/classes" path="src/test/java"/>
+	<classpathentry kind="src" path="src/test/manual"/>
+	<classpathentry javadocpath="M2_REPO/log4j/log4j/1.2.15/log4j-1.2.15-javadoc.jar" kind="var" path="M2_REPO/log4j/log4j/1.2.15/log4j-1.2.15.jar" sourcepath="M2_REPO/log4j/log4j/1.2.15/log4j-1.2.15-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/jmock/jmock/1.2.0/jmock-1.2.0-javadoc.jar" kind="var" path="M2_REPO/jmock/jmock/1.2.0/jmock-1.2.0.jar" sourcepath="M2_REPO/jmock/jmock/1.2.0/jmock-1.2.0-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/junit/junit/4.4/junit-4.4-javadoc.jar" kind="var" path="M2_REPO/junit/junit/4.4/junit-4.4.jar" sourcepath="M2_REPO/junit/junit/4.4/junit-4.4-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/org/springframework/spring-beans/3.0.3.RELEASE/spring-beans-3.0.3.RELEASE-javadoc.jar" kind="var" path="M2_REPO/org/springframework/spring-beans/3.0.3.RELEASE/spring-beans-3.0.3.RELEASE.jar" sourcepath="M2_REPO/org/springframework/spring-beans/3.0.3.RELEASE/spring-beans-3.0.3.RELEASE-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/org/codehaus/jettison/jettison/1.1/jettison-1.1-javadoc.jar" kind="var" path="M2_REPO/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar" sourcepath="M2_REPO/org/codehaus/jettison/jettison/1.1/jettison-1.1-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/junit/junit/4.7/junit-4.7-javadoc.jar" kind="var" path="M2_REPO/junit/junit/4.7/junit-4.7.jar" sourcepath="M2_REPO/junit/junit/4.7/junit-4.7-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/org/jmock/jmock/2.5.1/jmock-2.5.1-javadoc.jar" kind="var" path="M2_REPO/org/jmock/jmock/2.5.1/jmock-2.5.1.jar" sourcepath="M2_REPO/org/jmock/jmock/2.5.1/jmock-2.5.1-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/org/jmock/jmock-junit4/2.5.1/jmock-junit4-2.5.1-javadoc.jar" kind="var" path="M2_REPO/org/jmock/jmock-junit4/2.5.1/jmock-junit4-2.5.1.jar" sourcepath="M2_REPO/org/jmock/jmock-junit4/2.5.1/jmock-junit4-2.5.1-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1-javadoc.jar" kind="var" path="M2_REPO/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1.jar" sourcepath="M2_REPO/org/hamcrest/hamcrest-core/1.1/hamcrest-core-1.1-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/org/hamcrest/hamcrest-library/1.1/hamcrest-library-1.1-javadoc.jar" kind="var" path="M2_REPO/org/hamcrest/hamcrest-library/1.1/hamcrest-library-1.1.jar" sourcepath="M2_REPO/org/hamcrest/hamcrest-library/1.1/hamcrest-library-1.1-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/emma/emma_ant/2.0.5312/emma_ant-2.0.5312-javadoc.jar" kind="var" path="M2_REPO/emma/emma_ant/2.0.5312/emma_ant-2.0.5312.jar" sourcepath="M2_REPO/emma/emma_ant/2.0.5312/emma_ant-2.0.5312-sources.jar"/>
+	<classpathentry javadocpath="M2_REPO/emma/emma/2.0.5312/emma-2.0.5312-javadoc.jar" kind="var" path="M2_REPO/emma/emma/2.0.5312/emma-2.0.5312.jar" sourcepath="M2_REPO/emma/emma/2.0.5312/emma-2.0.5312-sources.jar"/>
+	<classpathentry javadocpath="/org/jboss/netty/netty/3.1.5.GA/netty-3.1.5.GA.jar" kind="var" path="M2_REPO/org/jboss/netty/netty/3.1.5.GA/netty-3.1.5.GA.jar" sourcepath="M2_REPO/org/jboss/netty/netty/3.1.5.GA/netty-3.1.5.GA.jar"/>
+	<classpathentry javadocpath="M2_REPO/org/easymock/easymock/2.4/easymock-2.4.jar" kind="var" path="M2_REPO/org/easymock/easymock/2.4/easymock-2.4.jar" sourcepath="M2_REPO/org/easymock/easymock/2.4/easymock-2.4.jar"/>
+	<classpathentry javadocpath="M2_REPO/org/easymock/easymockclassextension/2.4/easymockclassextension-2.4.jar" kind="var" path="M2_REPO/org/easymock/easymockclassextension/2.4/easymockclassextension-2.4.jar" sourcepath="M2_REPO/org/easymock/easymockclassextension/2.4/easymockclassextension-2.4.jar"/>
+	<classpathentry javadocpath="M2_PATH/junit-addons/junit-addons/1.4/junit-addons-1.4.jar" kind="var" path="M2_REPO/junit-addons/junit-addons/1.4/junit-addons-1.4.jar" sourcepath="M2_REPO/junit-addons/junit-addons/1.4/junit-addons-1.4.jar"/>
+	<classpathentry javadocpath="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" kind="var" path="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" sourcepath="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
