@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 
 <head>
-    <title>Changelog for SpyMemcached</title>
+    <title>Changelog</title>
     <style type="text/css">
         .pie {
             float: right;
@@ -17,9 +17,230 @@
 
 <body>
 
-<h1>Changelog for SpyMemcached</h1>
-<h2>Changes from release 2.4.2 to 2.5</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:dVFDCC&amp;chl=Dustin|Matt|Blair|Ahn|Greg|Kristian" alt="contributors"/><pre>Release of 2.5
+<h1>Changelog</h1>
+<h2>Changes from release 2.6 to 2.7</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:gTL&amp;chl=Matt%7cAlexander%7cMike" alt="contributors"/><pre>Release of 2.7
+
+Changes since the 2.6 series:
+
+The 2.7 series gains significant new capabilities when using
+binary protocol with Membase or forthcoming updates to
+memcached.
+
+Starting with the 2.7 release, it is now possible to
+instantiate a MemcachedClient from the REST interface
+supported by Membase.  What this means is that if you have
+one or more buckets in Membase, you can create
+MemcachedClient objects to work with the buckets.  Furthermore,
+if the cluster topology changes (i.e. a node is added or
+removed), the client will automatically adjust to the new
+topology.
+
+This updated client also has support for other new Membase
+operations, some of which will likely be in memcached
+as well in a future release:
+  touch - extend the expiration for a given item
+  get and touch (a.k.a. gat) - get and touch an item
+  getl - get and lock an item, with a lock expiration time
+
+See http://www.couchbase.org/documentation for further
+details.
+
+Many other minor changes were introduced in support of
+this work, like handling temporary failures.  Notably,
+this affects testing in that you now need a Membase
+server running locally with a specific username
+and password.  This is a limitation planned for removal
+in future releases.
+
+Some of these changes affected interfaces, which is why
+the version number has been raised to 2.7 even though
+2.6 was just recently released.
+
+To support this new functionality, there are a few new
+runtime dependencies:
+netty 3.1.5 GA
+jettison 1.1
+Apache commons-codec 1.4
+
+These are only required if you are using the new REST
+interface and topology changes from Membase.
+
+The majority of contributions to this release were
+funded by Couchbase, Inc.  Thanks to the contributors:
+
+Alexander Sokolovsky (9):
+      Integrated jvbucket
+      Added vbucket configuration parser from JSON.
+      Added bucket monitor with response handler.
+      Add a configuration provider for bucket updates.
+      Added VbucketNodeLocator, keyed operation handling.
+      Allow MemcachedClient and connections to be reconfigurable.
+      Bugfixing of NOT_MY_VBUCKET handling
+      Bugfixing not_my_vbucket occurs on optimized set
+      Unit test and javadoc additions.
+
+Matt Ingenthron (15):
+      Buildfile changes to support Maven 2 artifact upload.
+      If it is membase, do not test some things.
+      Set the status when receiving ERR_NOT_MY_VBUCKET.
+      Add both hostnames and IPs to the nodes map.
+      Assert the node must exist when finding primary.
+      Added check for moxi when testing.
+      Refactor: not a collection of vbuckets, more of a configuration.
+      Add a ConfigType via an enum.
+      Allow config to handle cache as well.
+      Change client ctor to detect vbucket usage from server.
+      Extracted HTTP auth header to common place.
+      Remove standard Authenticator and replace with simple auth header.
+      Added logging for manipulation of nodesMap in VBucketLocator.
+      Change ConfigType enum for clarity.
+      Change a Bucket instance variable to final.
+
+Mike Wiederhold (5):
+      Added TEMP_FAIL handling to set operations
+      Added touch operation
+      Added getl operation
+      Added Get And Touch Command
+      Fixed .classpath file to include all dependencies
+
+Bugs fixed/closed:
+http://code.google.com/p/spymemcached/issues/detail?id=153
+http://code.google.com/p/spymemcached/issues/detail?id=172
+http://code.google.com/p/spymemcached/issues/detail?id=165
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAk3vVV4ACgkQQM0/OE2fY9ovDQCfa5vI52rB5V55i2W4xmMaBjWk
+Du8An3MI92f4aNpDZwf8OcCVGW1QP/o7
+=NTH8
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.5 to 2.6</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:dOIFCCD&amp;chl=Matt%7cBlair%7cDustin%7cBoris%7cddlatham%7cEran%7cOther" alt="contributors"/><pre>Release of 2.6
+
+Changes since the 2.5 series:
+
+The main change in 2.6 is logic with respect to timeout handling.
+Timeout default is now 2500ms, rather than the old default of
+1000ms.  The reason for this change is that a single network
+retransmit could cause a longer than 1000ms wait, causing an
+exception in the client application.
+
+Additionally, some changes were integrated that help the client to
+recover faster when a network connection problem does occur.  These
+changes required interface changes, which is why the version has
+been bumped to 2.6.
+
+This change also allows client code to be able to tell if an
+operation has timed out after being sent over the network or if
+it has timed out before even being written to the network.
+
+See issue 136 for more discussions on this topic.
+
+Another feature relating to timeouts is that the continuous
+timeout feature introduced in 2.5 has been moved to the connection
+level, rather than for an entire client.  The default is that after
+1000 timeout operations, a connection will be dropped and
+reestablished if possible.  This addresses situations where a server
+may fail, but the connection is not reset.
+
+There are also performance improvements and new transcoder abilities
+with asyncGetBulk now included.
+
+One other significant bug fixed in this release was a problem with
+finding an active node when there is a failed node and the
+KetamaNodeLocator is in use.  With only two nodes, the previous
+implementation had a 25% chance of not finding a working node
+and failing with a timeout.  This has been changed such that now
+there is a less than 1% chance it will not find a working node.
+
+It should be noted that spy's algorithm here may be different
+than libketama.  This is tracked under issue 117.  This is not a
+new change however, and it's never been reported from running in
+production.
+
+Thanks much to all of the new contributors to this release!  Thanks
+in particular to Taso of Concur who spent much time writing tests
+to isolate issue 175.
+
+Andrey Kartashov (1):
+      Move continuous timeout counter to individual connections.
+
+Blair Zajac (9):
+      Use a private static final byte array for "\r\n" instead of always
+        converting the string into a byte array.
+      No need to call MessageDigest#reset() on a brand new MessageDigest.
+      Use a faster method to get a MD5 MessageDigest instance.
+      Delete a duplicate unit test.
+      Fix compilation with JDK 1.5.
+      Add an iterator that returns a single element forever.
+      Allow per-key transcoders to be used with asyncGetBulk().
+      Minor performance improvement for bulk gets.
+      Tiny performance improvement.
+
+Boris Partensky (3):
+      return partial data from timed out getBulk
+      plug potential file descriptor leak
+      support timeout based disconnects for bulk ops
+
+Dustin Sallings (5):
+      Some minor fixes to make eclipse happy with the code again.
+      Some import cleanups.
+      Avoid potential NPE as reported by eclipse.
+      Compilation fix after spring de-generification.
+      Removed a bit of dead test code.
+
+Eran Harel (1):
+      Spring FactoryBean support.
+
+Luke Lappin (1):
+      Do not use generics with Spring Factory Bean, be 2.5 compatible.
+
+Matt Ingenthron (19):
+      Changed ports in tests for non-listening to something higher.
+      Do not write timedout operations to the MemcachedNode.
+      Increased default timeout to 2500ms.
+      Test for timeout from operation epoch.
+      Test fixes after adding new timeout logic.
+      Fix for stats sizes test.
+      Recognize operation may be null at times.  e.g.: flush
+      Add a TIMEDOUT state to ops and make callbacks correct.
+      Fixes to testSyncGetTimeouts.
+      Catch RuntimeException instead.
+      Changed transcoder logging to more appropriate defaults.
+      Warn when redistribute cannot find another node.
+      Fixed small log typo.
+      Added ability to see if op unsent but timedout.
+      Fixed minor comment formatting.
+      Fixed cancellation issue.
+      Separate the KetamaIterator for future dynamic configuration.
+      Search more with the KetamaIterator.
+      Increase the maximum size allowed.  Issue 106.
+
+ddlatham (1):
+      Support daemon mode for TranscodeService threads.
+
+Bugs fixed/closed:
+http://code.google.com/p/spymemcached/issues/detail?id=106
+http://code.google.com/p/spymemcached/issues/detail?id=136
+http://code.google.com/p/spymemcached/issues/detail?id=150
+http://code.google.com/p/spymemcached/issues/detail?id=164
+http://code.google.com/p/spymemcached/issues/detail?id=175
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAk3MQXoACgkQQM0/OE2fY9oxYwCePLecOdyQrs3zebXBBWvpRcD/
+DmwAnRqlAkHaxH9AFlRmDzQCD66E7isv
+=Uljc
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.4.2 to 2.5</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:dVFDCC&amp;chl=Dustin%7cMatt%7cBlair%7cAhn%7cGreg%7cKristian" alt="contributors"/><pre>Release of 2.5
 
 Changes since the 2.4 series:
 
@@ -119,7 +340,7 @@ IFEAnArde+Jn1xkICom2MmQg6h3rFZdz
 =1oIc
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.4.1 to 2.4.2</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:jRJ&amp;chl=Dustin|Kevin|Matt" alt="contributors"/><pre>Release 2.4.2
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:jRJ&amp;chl=Dustin%7cKevin%7cMatt" alt="contributors"/><pre>Release 2.4.2
 
 Changes since 2.4.1:
 
@@ -153,7 +374,7 @@ ErYAn1iFb2oJzIXYagDftjRweLekwgHY
 =1DIS
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.4 to 2.4.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.4.1
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.4.1
 
 Changes since 2.4:
 
@@ -168,7 +389,7 @@ U4EAoKa8kOConX0SX5eFXJQQNioIk3bQ
 =dLTz
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.3.1 to 2.4</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:3BBBB&amp;chl=Dustin|Joseph|Lewis|Wang|ciaranj" alt="contributors"/><pre>Version 2.4
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:3BBBB&amp;chl=Dustin%7cJoseph%7cLewis%7cWang%7cciaranj" alt="contributors"/><pre>Version 2.4
 
 Changes since the 2.3 series.
 
@@ -250,7 +471,7 @@ GXsAoI/FFr8b3HN50IlPYFr/OBTtWc/8
 =T4x/
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.3 to 2.3.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.3.1
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.3.1
 
 Changes since 2.3:
 
@@ -284,7 +505,7 @@ SCYAmgM37FG/pVg3VqsREqEuR4z64Vgo
 =+IGM
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.2 to 2.3</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:5CBB&amp;chl=Dustin|raykrueger|Nick|Valeri" alt="contributors"/><pre>Release 2.3.
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:5CBB&amp;chl=Dustin%7craykrueger%7cNick%7cValeri" alt="contributors"/><pre>Release 2.3.
 
 Changes since 2.2:
 
@@ -320,7 +541,7 @@ iEYEABECAAYFAknBXjQACgkQeWDnv0PlnVQvogCgy6VzHZgtr/Q+J/y8dLR84CYb
 =+GSJ
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.1 to 2.2</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:rEEEEC&amp;chl=Dustin|Boris|Kristian|Nelz|Nick|Robey" alt="contributors"/><pre>Changes since 2.1:
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:rEEEEC&amp;chl=Dustin%7cBoris%7cKristian%7cNelz%7cNick%7cRobey" alt="contributors"/><pre>Changes since 2.1:
 
 * Data decoding occurs in caller threads instead of IO thread.
   This should greatly improve performance by spreading out the load to
@@ -351,7 +572,7 @@ pCYAn2BKDsOJw0q/8MzvUo/PqIRn7LkD
 =YTZN
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.0.2 to 2.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:0HB&amp;chl=Dustin|Ray|Nelz" alt="contributors"/><pre>2.1 release
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:0HB&amp;chl=Dustin%7cRay%7cNelz" alt="contributors"/><pre>2.1 release
 
 Main features since 2.0:
 
@@ -368,7 +589,7 @@ twIAn3ujjpt1bdVlJUhmyb847vIzEfOk
 =t9ek
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.0.1 to 2.0.2</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Binary protocol updates.
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Binary protocol updates.
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.8 (Darwin)
 
@@ -377,7 +598,7 @@ WxwAn2VcyPEjp8A4uh0vOZR1SkoJj+nx
 =wEoe
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.0 to 2.0.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Some minor post-2.0 fixes.
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Some minor post-2.0 fixes.
 
 * Binary protocol changes re alignment (as released in memcached 1.3.0)
 * More input validation when constructing a client.
@@ -391,7 +612,7 @@ g2UAn1dtsFf5fDuDplULfIWSBY2Rsfuu
 =Ycwi
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 1.4 to 2.0</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:3G&amp;chl=Dustin|Blair" alt="contributors"/><pre>2.0 has been a long time coming.
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:3G&amp;chl=Dustin%7cBlair" alt="contributors"/><pre>2.0 has been a long time coming.
 
 The initial reason for it to exist was protocol abstraction (specifically to
 implement the binary protocol).  The slowness of the binary protocol release
@@ -416,33 +637,33 @@ FnAAn1PeBUmqOr0eCpIVppsU14R1pbRm
 =2k6j
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 1.3.1 to 1.4</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.4
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.4
 </pre></div><h2>Changes from release 1.3 to 1.3.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.3.1
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.3.1
 </pre></div><h2>Changes from release 1.2 to 1.3</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.3
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.3
 </pre></div><h2>Changes from release 1.1 to 1.2</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.2
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.2
 </pre></div><h2>Changes from release 1.0.44 to 1.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.1
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.1
 </pre></div><h2>Changes from release 1.0.43 to 1.0.44</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.44
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.44
 </pre></div><h2>Changes from release 1.0.42 to 1.0.43</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.43
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.43
 </pre></div><h2>Changes from release 1.0.41 to 1.0.42</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.42
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.42
 </pre></div><h2>Changes from release 1.0.40 to 1.0.41</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.41
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.41
 </pre></div><h2>Changes from release 1.0.39 to 1.0.40</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.40
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.40
 </pre></div><h2>Changes from release 1.0.38 to 1.0.39</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.39
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.39
 </pre></div><h2>Changes from release 1.0.37 to 1.0.38</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.38
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.38
 </pre></div><h2>Changes from release 1.0.36 to 1.0.37</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.37
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.37
 </pre></div><h2>Changes from release 1.0.34 to 1.0.36</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.36
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.36
 </pre></div><h2>Release 1.0.34</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:" alt="contributors"/><pre>release 1.0.34
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:" alt="contributors"/><pre>release 1.0.34
 </pre></div></body></html>
