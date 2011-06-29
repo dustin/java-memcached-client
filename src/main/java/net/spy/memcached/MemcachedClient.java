@@ -1437,8 +1437,8 @@ public class MemcachedClient extends SpyThread
 			public void complete() {
 				latch.countDown();
 			}
-			public void gotData(String key, int flags, long cas, byte[] data) {
-				assert key.equals(key) : "Wrong key returned";
+			public void gotData(String k, int flags, long cas, byte[] data) {
+				assert k.equals(key) : "Wrong key returned";
 				assert cas > 0 : "CAS was less than zero:  " + cas;
 				val=new CASValue<T>(cas, tc.decode(
 					new CachedData(flags, data, tc.getMaxSize())));
