@@ -1,16 +1,16 @@
 package net.spy.memcached.vbucket;
 
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.NodeLocator;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.vbucket.config.Config;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.net.InetSocketAddress;
 
 /**
  * Implementation of the {@link NodeLocator} interface that contains vbucket hashing methods
@@ -74,9 +74,9 @@ public class VBucketNodeLocator extends SpyObject implements NodeLocator {
     public NodeLocator getReadonlyCopy() {
         return this;
     }
-    public void updateLocator(final List<MemcachedNode> nodes, final Config config) {
+    public void updateLocator(final List<MemcachedNode> nodes, final Config conf) {
         setNodes(nodes);
-        setConfig(config);
+        setConfig(conf);
     }
 
     /**

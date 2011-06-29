@@ -117,11 +117,11 @@ public class BucketMonitor extends Observable {
         assert(channel != null);
     }
 
-    protected HttpRequest prepareRequest(URI uri, String host) {
+    protected HttpRequest prepareRequest(URI uri, String h) {
         // Send the HTTP request.
         HttpRequest request = new DefaultHttpRequest(
                 HttpVersion.HTTP_1_1, HttpMethod.GET, uri.toASCIIString());
-        request.setHeader(HttpHeaders.Names.HOST, host);
+        request.setHeader(HttpHeaders.Names.HOST, h);
         if (getHttpUser() != null) {
             request.setHeader(HttpHeaders.Names.AUTHORIZATION, ConfigurationProviderHTTP.buildAuthHeader(getHttpUser(), getHttpPass()));
         }
