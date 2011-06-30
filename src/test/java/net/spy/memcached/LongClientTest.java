@@ -39,7 +39,7 @@ public class LongClientTest extends ClientBaseCase {
 			});
 
 		// Throw in some seed data.
-		byte data[]=new byte[32768];
+		byte data[]=new byte[2048];
 		Random r=new Random();
 		r.nextBytes(data);
 		final int hashcode=Arrays.hashCode(data);
