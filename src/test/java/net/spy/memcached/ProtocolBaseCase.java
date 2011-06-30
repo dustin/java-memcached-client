@@ -585,6 +585,15 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	public void testSyncGetTimeouts() throws Exception {
 		final String key="timeoutTestKey";
 		final String value="timeoutTestValue";
+
+		int j = 0;
+		boolean set = false;
+		do {
+			set = client.set(key, 0, value).get();
+			j++;
+		} while (!set && j < 10);
+		assert set == true;
+
 		// Shutting down the default client to get one with a short timeout.
 		assertTrue("Couldn't shut down within five seconds",
 			client.shutdown(5, TimeUnit.SECONDS));
@@ -602,14 +611,6 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		});
 
 		Thread.sleep(100); // allow connections to be established
-
-		int j = 0;
-		boolean set = false;
-		do {
-			set = client.set(key, 0, value).get();
-			j++;
-		} while (!set && j < 10);
-		assert set == true;
 
 		int i = 0;
 		GetFuture<Object> g = null;
