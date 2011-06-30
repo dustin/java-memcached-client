@@ -36,7 +36,7 @@ public class QueueOverflowTest extends ClientBaseCase {
 			}
 			@Override
 			public long getOperationTimeout() {
-				return 2500;
+				return 5000;
 			}
 			@Override
 			public BlockingQueue<Operation> createOperationQueue() {
