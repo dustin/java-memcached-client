@@ -5,7 +5,6 @@ import junit.framework.TestCase;
 import net.spy.memcached.vbucket.ConfigurationException;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Arrays;
@@ -32,7 +31,7 @@ public class VBucketMemcachedClientTest extends TestCase {
 
         Integer i;
         for (i = 0; i < 10000; i++) {
-            Future result = mc.set("test" + i, 0, i.toString());
+            mc.set("test" + i, 0, i.toString());
         }
         mc.set("hello", 0, "world");
         String result = (String) mc.get("hello");

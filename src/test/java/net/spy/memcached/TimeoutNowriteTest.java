@@ -65,7 +65,7 @@ public class TimeoutNowriteTest extends ClientBaseCase {
 	System.err.println(op);
 	System.err.println("Trying to get:");
 	try {
-		byte[] retVal = (byte[])client.get("x");
+		client.get("x");
 		String retValString = new String();
 		System.err.println(retValString);
 	}
