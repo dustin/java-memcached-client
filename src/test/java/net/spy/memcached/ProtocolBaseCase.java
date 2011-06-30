@@ -45,7 +45,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	}
 
 	public void testGetStatsSlabs() throws Exception {
-		if (isMembase() || isMoxi()) {
+		if (TestConfig.isMembase() || isMoxi()) {
 		    return;
 		}
 		// There needs to at least have been one value set or there may be
@@ -59,7 +59,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	}
 
 	public void testGetStatsSizes() throws Exception {
-		if (isMembase() || isMoxi()) {
+		if (TestConfig.isMembase() || isMoxi()) {
 			return;
 		}
 		// There needs to at least have been one value set or there may
@@ -77,7 +77,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	}
 
 	public void testGetStatsCacheDump() throws Exception {
-		if (isMembase() || isMoxi()) {
+		if (TestConfig.isMembase() || isMoxi()) {
 			return;
 		}
 		// There needs to at least have been one value set or there
@@ -672,7 +672,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 	}
 
 	public void testStupidlyLargeSetAndSizeOverride() throws Exception {
-		if (isMembase()) {
+		if (TestConfig.isMembase()) {
 		    return;
 		}
 		Random r=new Random();

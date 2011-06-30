@@ -63,34 +63,6 @@ public abstract class ClientBaseCase extends TestCase {
 		// nothing useful
 	}
 
-	/**
-	 * Some tests are invalid if being run against membase.
-	 *
-	 * @return true if tests are being run against membase, otherwise false
-	 */
-	protected boolean isMembase() {
-	    /*   This isn't the most brilliant approach, but allows us to continue with the current
-	     * combined integration/unit testing for a bit longer.
-	     */
-	    if (membase != null) {
-		    return membase.booleanValue();
-	    }
-
-		Map<SocketAddress, Map<String, String>> stats = client.getStats();
-		for (Map<String, String> node : stats.values()) {
-			if (node.get("ep_version") != null) {
-				membase = true;
-				   System.err.println("Found membase");
-				break;
-			} else {
-				membase = false;
-				   System.err.println("Found memcached");
-			}
-
-	    }
-	    return membase.booleanValue();
-	}
-
 	protected boolean isMoxi() {
 	    if (moxi != null) {
 		    return moxi.booleanValue();
