@@ -14,7 +14,8 @@ import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 
-class MultiGetOperationImpl extends OperationImpl implements GetOperation {
+class MultiGetOperationImpl extends MultiKeyOperationImpl
+		implements GetOperation {
 
 	private static final int CMD_GETQ=0x09;
 
@@ -41,6 +42,7 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 			keys.put(rv, k);
 			bkeys.put(rv, KeyUtil.getKeyBytes(k));
 			rkeys.put(k, rv);
+			vbmap.put(k, new Short((short)0));
 		}
 		return rv;
 	}
@@ -55,6 +57,7 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 		ByteBuffer bb=ByteBuffer.allocate(size);
 		for(Map.Entry<Integer, byte[]> me : bkeys.entrySet()) {
 			final byte[] keyBytes=me.getValue();
+			final String key = keys.get(me.getKey());
 
 			// Custom header
 			bb.put(REQ_MAGIC);
@@ -62,7 +65,7 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 			bb.putShort((short)keyBytes.length);
 			bb.put((byte)0); // extralen
 			bb.put((byte)0); // data type
-			bb.putShort((short)0); // reserved
+			bb.putShort(vbmap.get(key).shortValue()); // vbucket
 			bb.putInt(keyBytes.length);
 			bb.putInt(me.getKey());
 			bb.putLong(0); // cas
@@ -107,10 +110,6 @@ class MultiGetOperationImpl extends OperationImpl implements GetOperation {
 	protected boolean opaqueIsValid() {
 		return responseOpaque == terminalOpaque
 			|| keys.containsKey(responseOpaque);
-	}
-
-	public Collection<String> getKeys() {
-		return keys.values();
 	}
 
 }

@@ -1,17 +1,13 @@
 package net.spy.memcached.protocol.binary;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import net.spy.memcached.ops.GetAndTouchOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetlOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.OperationCallback;
 
-class GetOperationImpl extends OperationImpl
-	implements GetOperation, GetsOperation, GetlOperation,
-	GetAndTouchOperation {
+class GetOperationImpl extends SingleKeyOperationImpl
+	implements GetOperation, GetsOperation, GetlOperation, GetAndTouchOperation {
 
 	static final int GET_CMD=0x00;
 	static final int GETL_CMD=0x94;
@@ -22,30 +18,25 @@ class GetOperationImpl extends OperationImpl
 	 */
 	static final int EXTRA_HDR_LEN=4;
 
-	private final String key;
 	private final int exp;
 
 	public GetOperationImpl(String k, GetOperation.Callback cb) {
-		super(GET_CMD, generateOpaque(), cb);
-		key=k;
+		super(GET_CMD, generateOpaque(), k, cb);
 		exp=0;
 	}
 
 	public GetOperationImpl(String k, GetsOperation.Callback cb) {
-		super(GET_CMD, generateOpaque(), cb);
-		key=k;
+		super(GET_CMD, generateOpaque(), k, cb);
 		exp=0;
 	}
 
 	public GetOperationImpl(String k, int e, GetlOperation.Callback cb) {
-		super(GETL_CMD, generateOpaque(), cb);
-		key=k;
+		super(GETL_CMD, generateOpaque(), k, cb);
 		exp=e;
 	}
 
 	public GetOperationImpl(String k, int e, GetAndTouchOperation.Callback cb) {
-		super(GAT_CMD, generateOpaque(), cb);
-		key=k;
+		super(GAT_CMD, generateOpaque(), k, cb);
 		exp=e;
 	}
 
@@ -81,10 +72,6 @@ class GetOperationImpl extends OperationImpl
 			throw new ClassCastException("Couldn't convert " + cb + "to a relevent op");
 		}
 		getCallback().receivedStatus(STATUS_OK);
-	}
-
-	public Collection<String> getKeys() {
-		return Collections.singleton(key);
 	}
 
 }

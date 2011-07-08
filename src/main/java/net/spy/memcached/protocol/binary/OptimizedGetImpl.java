@@ -3,6 +3,7 @@ package net.spy.memcached.protocol.binary;
 import java.util.Collections;
 
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.VBucketAware;
 import net.spy.memcached.protocol.ProxyCallback;
 
 /**
@@ -28,6 +29,7 @@ final class OptimizedGetImpl extends MultiGetOperationImpl {
 		pcb.addCallbacks(o);
 		for(String k : o.getKeys()) {
 			addKey(k);
+			setVBucket(k, ((VBucketAware)o).getVBucket(k));
 		}
 	}
 

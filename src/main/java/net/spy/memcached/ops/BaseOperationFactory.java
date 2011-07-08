@@ -59,14 +59,17 @@ public abstract class BaseOperationFactory implements OperationFactory {
 		} else {
 			assert false : "Unhandled operation type: " + op.getClass();
 		}
-        if (!op.getNotMyVbucketNodes().isEmpty()) {
-            for (Operation operation : rv) {
-                if (operation instanceof KeyedOperation) {
-                    Collection<MemcachedNode> notMyVbucketNodes = op.getNotMyVbucketNodes();
-                    ((KeyedOperation) operation).setNotMyVbucketNodes(notMyVbucketNodes);
-                }
-            }
-        }
+		if (op instanceof VBucketAware) {
+			VBucketAware vop = (VBucketAware)op;
+			if (!vop.getNotMyVbucketNodes().isEmpty()) {
+				for (Operation operation : rv) {
+					if (operation instanceof VBucketAware) {
+						Collection<MemcachedNode> notMyVbucketNodes = vop.getNotMyVbucketNodes();
+						((VBucketAware) operation).setNotMyVbucketNodes(notMyVbucketNodes);
+					}
+				}
+			}
+		}
 		return rv;
 	}
 
