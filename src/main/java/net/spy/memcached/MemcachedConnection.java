@@ -753,7 +753,7 @@ public final class MemcachedConnection extends SpyObject implements Reconfigurab
 		getLogger().debug("Added %s to %s", o, node);
 	}
 
-	public void addOperation(final MemcachedNode node, final Operation o) {
+	private void addOperation(final MemcachedNode node, final Operation o) {
 		o.setHandlingNode(node);
 		o.initialize();
 		node.addOp(o);
