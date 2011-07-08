@@ -768,6 +768,18 @@ public final class MemcachedConnection extends SpyObject implements Reconfigurab
 		for(Map.Entry<MemcachedNode, Operation> me : ops.entrySet()) {
 			final MemcachedNode node=me.getKey();
 			Operation o=me.getValue();
+			// add the vbucketIndex to the operation
+			if (locator instanceof VBucketNodeLocator) {
+				if (o instanceof KeyedOperation && o instanceof VBucketAware) {
+					Collection<String> keys = ((KeyedOperation)o).getKeys();
+					VBucketNodeLocator vbucketLocator = (VBucketNodeLocator) locator;
+					for (String key : keys) {
+						short vbucketIndex = (short)vbucketLocator.getVBucketIndex(key);
+						VBucketAware vbucketAwareOp = (VBucketAware) o;
+						vbucketAwareOp.setVBucket(key, vbucketIndex);
+					}
+				}
+			}
 			o.setHandlingNode(node);
 			o.initialize();
 			node.addOp(o);
