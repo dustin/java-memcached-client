@@ -582,6 +582,20 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 	}
 
+	protected void syncGetTimeoutsInitClient() throws Exception {
+		initClient(new DefaultConnectionFactory() {
+			@Override
+			public long getOperationTimeout() {
+				return 2;
+			}
+
+			@Override
+			public int getTimeoutExceptionThreshold() {
+				return 1000000;
+			}
+		});
+	}
+
 	public void testSyncGetTimeouts() throws Exception {
 		final String key="timeoutTestKey";
 		final String value="timeoutTestValue";
@@ -598,18 +612,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		assertTrue("Couldn't shut down within five seconds",
 			client.shutdown(5, TimeUnit.SECONDS));
 
-		initClient(new DefaultConnectionFactory() {
-			@Override
-			public long getOperationTimeout() {
-				return 2;
-			}
-
-			@Override
-			public int getTimeoutExceptionThreshold() {
-				return 1000000;
-			}
-		});
-
+		syncGetTimeoutsInitClient();
 		Thread.sleep(100); // allow connections to be established
 
 		int i = 0;
@@ -637,7 +640,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 		}
 	}
 
-	private void debugNodeInfo(Collection<MemcachedNode> nodes) {
+	protected void debugNodeInfo(Collection<MemcachedNode> nodes) {
 	    System.err.println("Debug nodes:");
 	    for (MemcachedNode node : nodes) {
 		    System.err.println(node);

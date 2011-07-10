@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
-import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.MembaseClient;
 import net.spy.memcached.TapClient;
 import net.spy.memcached.tapmessage.ResponseMessage;
 
@@ -26,7 +26,7 @@ public class TapBucketTest {
 	public static void main(String[] args) throws Exception {
 		boolean failed = false;
 
-		MemcachedClient mc = new MemcachedClient(
+		MembaseClient mc = new MembaseClient(
 				Arrays.asList(new URI("http://localhost:8091/pools")),
 				"bucket", "bucket", "password");
 		TapClient tc = new TapClient(
