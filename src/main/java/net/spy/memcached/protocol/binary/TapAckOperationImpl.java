@@ -1,7 +1,6 @@
 package net.spy.memcached.protocol.binary;
 
 import java.nio.ByteBuffer;
-import java.util.Collection;
 
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
@@ -31,15 +30,6 @@ public class TapAckOperationImpl extends TapOperationImpl {
 	@Override
 	public void readFromBuffer(ByteBuffer data) {
 		// Do Nothing
-	}
-
-	/**
-	 * Since the tap ack doesn't specify any specific keys to get
-	 * this function always returns null;
-	 */
-	@Override
-	public Collection<String> getKeys() {
-		return null;
 	}
 
 	@Override

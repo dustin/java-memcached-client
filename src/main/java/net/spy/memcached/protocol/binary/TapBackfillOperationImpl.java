@@ -1,6 +1,5 @@
 package net.spy.memcached.protocol.binary;
 
-import java.util.Collection;
 import java.util.UUID;
 
 import net.spy.memcached.ops.OperationCallback;
@@ -36,15 +35,6 @@ public class TapBackfillOperationImpl extends TapOperationImpl implements TapOpe
 
 		message.setBackfill(date);
 		setBuffer(message.getBytes());
-	}
-
-	/**
-	 * Since the tap backfill doesn't specify any specific keys to get
-	 * this function always returns null;
-	 */
-	@Override
-	public Collection<String> getKeys() {
-		return null;
 	}
 
 	@Override
