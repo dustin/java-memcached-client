@@ -1,26 +1,27 @@
 package net.spy.memcached.protocol.binary;
 
-import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetlOperation;
 
-class GetOperationImpl extends SingleKeyOperationImpl
-	implements GetOperation {
+public class GetlOperationImpl extends SingleKeyOperationImpl
+		implements GetlOperation {
 
-	static final int GET_CMD=0x00;
 	static final int GETL_CMD=0x94;
-	static final int GAT_CMD=0x1d;
 
 	/**
 	 * Length of the extra header stuff for a GET response.
 	 */
 	static final int EXTRA_HDR_LEN=4;
 
-	public GetOperationImpl(String k, GetOperation.Callback cb) {
-		super(GET_CMD, generateOpaque(), k, cb);
+	private final int exp;
+
+	public GetlOperationImpl(String k, int e, GetlOperation.Callback cb) {
+		super(GETL_CMD, generateOpaque(), k, cb);
+		exp=e;
 	}
 
 	@Override
 	public void initialize() {
-		prepareBuffer(key, 0, EMPTY_BYTES);
+		prepareBuffer(key, 0, EMPTY_BYTES, exp);
 	}
 
 	@Override
@@ -28,9 +29,8 @@ class GetOperationImpl extends SingleKeyOperationImpl
 		final int flags=decodeInt(pl, 0);
 		final byte[] data=new byte[pl.length - EXTRA_HDR_LEN];
 		System.arraycopy(pl, EXTRA_HDR_LEN, data, 0, pl.length-EXTRA_HDR_LEN);
-		GetOperation.Callback gcb=(GetOperation.Callback)getCallback();
-		gcb.gotData(key, flags, data);
+		GetlOperation.Callback gcb=(GetlOperation.Callback)getCallback();
+		gcb.gotData(key, flags, responseCas, data);
 		getCallback().receivedStatus(STATUS_OK);
 	}
-
 }

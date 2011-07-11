@@ -52,7 +52,7 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 
 	public GetAndTouchOperation getAndTouch(String key, int expiration,
 			GetAndTouchOperation.Callback cb) {
-		return new GetOperationImpl(key, expiration, cb);
+		return new GetAndTouchOperationImpl(key, expiration, cb);
 	}
 
 	public GetOperation get(String key, Callback callback) {
@@ -64,11 +64,11 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 	}
 
 	public GetlOperation getl(String key, int exp, GetlOperation.Callback cb) {
-		return new GetOperationImpl(key, exp, cb);
+		return new GetlOperationImpl(key, exp, cb);
 	}
 
 	public GetsOperation gets(String key, GetsOperation.Callback cb) {
-		return new GetOperationImpl(key, cb);
+		return new GetsOperationImpl(key, cb);
 	}
 
 	public MutatorOperation mutate(Mutator m, String key, int by,

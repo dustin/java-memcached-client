@@ -1,20 +1,18 @@
 package net.spy.memcached.protocol.binary;
 
-import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.GetsOperation;
 
-class GetOperationImpl extends SingleKeyOperationImpl
-	implements GetOperation {
+public class GetsOperationImpl extends SingleKeyOperationImpl
+		implements GetsOperation {
 
 	static final int GET_CMD=0x00;
-	static final int GETL_CMD=0x94;
-	static final int GAT_CMD=0x1d;
 
 	/**
 	 * Length of the extra header stuff for a GET response.
 	 */
 	static final int EXTRA_HDR_LEN=4;
 
-	public GetOperationImpl(String k, GetOperation.Callback cb) {
+	public GetsOperationImpl(String k, GetsOperation.Callback cb) {
 		super(GET_CMD, generateOpaque(), k, cb);
 	}
 
@@ -28,8 +26,8 @@ class GetOperationImpl extends SingleKeyOperationImpl
 		final int flags=decodeInt(pl, 0);
 		final byte[] data=new byte[pl.length - EXTRA_HDR_LEN];
 		System.arraycopy(pl, EXTRA_HDR_LEN, data, 0, pl.length-EXTRA_HDR_LEN);
-		GetOperation.Callback gcb=(GetOperation.Callback)getCallback();
-		gcb.gotData(key, flags, data);
+		GetsOperation.Callback gcb=(GetsOperation.Callback)getCallback();
+		gcb.gotData(key, flags, responseCas, data);
 		getCallback().receivedStatus(STATUS_OK);
 	}
 
