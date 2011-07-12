@@ -284,4 +284,17 @@ public interface OperationFactory {
 	 * @return a tap ack operation.
 	 */
 	TapOperation tapAck(TapOpcode opcode, int opaque, OperationCallback cb);
+
+	/**
+	 * Sends a tap dump message to the server.
+	 *
+	 * See <a href="http://www.couchbase.org/wiki/display/membase/TAP+Protocol">
+	 * http://www.couchbase.org/wiki/display/membase/TAP+Protocol</a> for more
+	 * details on the tap protocol.
+	 *
+	 * @param id the name for the TAP connection
+	 * @param cb the callback for the tap stream.
+	 * @return a tap dump operation.
+	 */
+	TapOperation tapDump(String id, OperationCallback cb);
 }

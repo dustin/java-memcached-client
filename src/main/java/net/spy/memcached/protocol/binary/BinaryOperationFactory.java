@@ -155,4 +155,8 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 	public TapOperation tapAck(TapOpcode opcode, int opaque, OperationCallback cb) {
 		return new TapAckOperationImpl(opcode, opaque, cb);
 	}
+
+	public TapOperation tapDump(String id, OperationCallback cb) {
+		return new TapDumpOperationImpl(id, cb);
+	}
 }
