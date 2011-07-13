@@ -25,39 +25,43 @@ public class TapTest extends ClientBaseCase {
 	}
 
 	public void testBackfill() throws Exception {
-		TapClient tc = new TapClient(AddrUtil.getAddresses("127.0.0.1:11210"));
-		tc.tapBackfill(null, 5, TimeUnit.SECONDS);
+		if (TestConfig.isMembase()) {
+			TapClient tc = new TapClient(AddrUtil.getAddresses("127.0.0.1:11210"));
+			tc.tapBackfill(null, 5, TimeUnit.SECONDS);
 
-		HashMap<String, Boolean> items = new HashMap<String, Boolean>();
-		for (int i = 0; i < 25; i++) {
-			client.set("key" + i, 0, "value" + i);
-			items.put("key" + i + ",value" + i, new Boolean(false));
-		}
+			HashMap<String, Boolean> items = new HashMap<String, Boolean>();
+			for (int i = 0; i < 25; i++) {
+				client.set("key" + i, 0, "value" + i);
+				items.put("key" + i + ",value" + i, new Boolean(false));
+			}
 
-		while(tc.hasMoreMessages()) {
-			ResponseMessage m;
-			if ((m = tc.getNextMessage()) != null) {
-				String key = m.getKey() + "," + new String(m.getValue());
-				if (items.containsKey(key)) {
-					items.put(key, new Boolean(true));
-				} else {
-					fail();
+			while(tc.hasMoreMessages()) {
+				ResponseMessage m;
+				if ((m = tc.getNextMessage()) != null) {
+					String key = m.getKey() + "," + new String(m.getValue());
+					if (items.containsKey(key)) {
+						items.put(key, new Boolean(true));
+					} else {
+						fail();
+					}
 				}
 			}
+			checkTapKeys(items);
+			assertTrue(client.flush().get().booleanValue());
 		}
-		checkTapKeys(items);
-		assertTrue(client.flush().get().booleanValue());
 	}
 
 	public void testTapBucketDoesNotExist() throws Exception {
-		TapClient client = new TapClient(Arrays.asList(new URI("http://localhost:8091/pools")),
-					"abucket", "abucket", "apassword");
+		if (TestConfig.isMembase()) {
+			TapClient client = new TapClient(Arrays.asList(new URI("http://localhost:8091/pools")),
+						"abucket", "abucket", "apassword");
 
-		try {
-			client.tapBackfill(null, 5, TimeUnit.SECONDS);
-		} catch (RuntimeException e) {
-			System.err.println(e.getMessage());
-			return;
+			try {
+				client.tapBackfill(null, 5, TimeUnit.SECONDS);
+			} catch (RuntimeException e) {
+				System.err.println(e.getMessage());
+				return;
+			}
 		}
 	}
 
