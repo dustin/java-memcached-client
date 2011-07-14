@@ -11,6 +11,7 @@ import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
+import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.BaseOperationImpl;
@@ -167,7 +168,8 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 	 * @param errCode the error code
 	 * @return the status to return, or null if this is an exceptional case
 	 */
-	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl) {
+	protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl)
+			throws IOException {
 		switch (errCode) {
 			case SUCCESS:
 				return STATUS_OK;
@@ -178,13 +180,14 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 			case ERR_NOT_STORED:
 				return new CASOperationStatus(false, new String(errPl), CASResponse.NOT_FOUND);
 			case ERR_2BIG:
+			case ERR_INTERNAL:
+				handleError(OperationErrorType.SERVER, new String(errPl));
 			case ERR_INVAL:
 			case ERR_DELTA_BADVAL:
 			case ERR_NOT_MY_VBUCKET:
 			case ERR_UNKNOWN_COMMAND:
 			case ERR_NO_MEM:
 			case ERR_NOT_SUPPORTED:
-			case ERR_INTERNAL:
 			case ERR_BUSY:
 			case ERR_TEMP_FAIL:
 				return new OperationStatus(false, new String(errPl));
