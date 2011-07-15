@@ -30,7 +30,7 @@ public class TimeoutNowriteTest extends ClientBaseCase {
 			public FailureMode getFailureMode() {
 				return FailureMode.Retry;
 			}},
-			AddrUtil.getAddresses("127.0.0.1:11211"));
+			AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":11211"));
 	}
 
 	public void testTimeoutDontwrite() {

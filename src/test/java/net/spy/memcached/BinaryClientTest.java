@@ -1,8 +1,12 @@
 package net.spy.memcached;
 
+import java.net.InetSocketAddress;
+
 
 /**
- * This test assumes a binary server is running on localhost:11211.
+ * This test assumes a binary server is running on the host specified
+ * int the environment variable SPYMC_TEST_SERVER_V4 or
+ * localhost:11211 by default.
  */
 public class BinaryClientTest extends ProtocolBaseCase {
 
@@ -22,7 +26,8 @@ public class BinaryClientTest extends ProtocolBaseCase {
 
 	@Override
 	protected String getExpectedVersionSource() {
-		return "/127.0.0.1:11211";
+		return String.valueOf(
+				new InetSocketAddress(TestConfig.IPV4_ADDR, 11211));
 	}
 
 	@Override

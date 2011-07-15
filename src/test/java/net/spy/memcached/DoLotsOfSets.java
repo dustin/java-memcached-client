@@ -14,7 +14,7 @@ public class DoLotsOfSets {
 		// we're going to add.
 		MemcachedClient client=new MemcachedClient(
 			new DefaultConnectionFactory(350000, 32768),
-			AddrUtil.getAddresses("localhost:11211"));
+			AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":11211"));
 		long start=System.currentTimeMillis();
 		byte[] toStore=new byte[26];
 		Arrays.fill(toStore, (byte)'a');

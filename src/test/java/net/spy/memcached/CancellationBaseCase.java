@@ -22,7 +22,7 @@ public abstract class CancellationBaseCase extends ClientBaseCase {
 	@Override
 	protected void initClient(ConnectionFactory cf) throws Exception {
 		client=new MemcachedClient(cf,
-			AddrUtil.getAddresses("127.0.0.1:64213"));
+			AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":64213"));
 	}
 
 	private void tryCancellation(Future<?> f) throws Exception {
@@ -46,7 +46,7 @@ public abstract class CancellationBaseCase extends ClientBaseCase {
 	public void testUnavailableServers() {
 		client.asyncGet("x");
 		assertEquals(new ArrayList<String>(
-				Collections.singleton("/127.0.0.1:64213")),
+				Collections.singleton("/" + TestConfig.IPV4_ADDR + ":64213")),
 			stringify(client.getUnavailableServers()));
 	}
 

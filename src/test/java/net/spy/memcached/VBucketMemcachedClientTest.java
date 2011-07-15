@@ -19,7 +19,7 @@ public class VBucketMemcachedClientTest extends TestCase {
     public void testOps() throws Exception {
         MemcachedClient mc = null;
            try {
-            URI base = new URI("http://localhost:8091/pools");
+            URI base = new URI("http://" + TestConfig.IPV4_ADDR + ":8091/pools");
             mc = new MemcachedClient(Arrays.asList(base), "default", "Administrator", "password");
         } catch (IOException ex) {
             Logger.getLogger(VBucketMemcachedClientTest.class.getName()).log(Level.SEVERE, null, ex);

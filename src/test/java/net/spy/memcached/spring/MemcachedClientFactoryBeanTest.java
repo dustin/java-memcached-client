@@ -6,6 +6,7 @@ import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.FailureMode;
 import net.spy.memcached.HashAlgorithm;
 import net.spy.memcached.MemcachedClient;
+import net.spy.memcached.TestConfig;
 import net.spy.memcached.transcoders.SerializingTranscoder;
 import net.spy.memcached.transcoders.Transcoder;
 
@@ -25,7 +26,7 @@ public class MemcachedClientFactoryBeanTest extends TestCase {
     factory.setFailureMode(FailureMode.Cancel);
     factory.setHashAlg(HashAlgorithm.CRC32_HASH);
     factory.setProtocol(Protocol.BINARY);
-    factory.setServers("localhost:22211 localhost:22212");
+    factory.setServers(TestConfig.IPV4_ADDR + ":22211 " + TestConfig.IPV4_ADDR + ":22212");
     factory.setShouldOptimize(true);
     final Transcoder<Object> transcoder = new SerializingTranscoder();
     factory.setTranscoder(transcoder);

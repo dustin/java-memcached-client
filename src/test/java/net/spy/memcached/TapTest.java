@@ -26,7 +26,7 @@ public class TapTest extends ClientBaseCase {
 
 	public void testBackfill() throws Exception {
 		if (TestConfig.isMembase()) {
-			TapClient tc = new TapClient(AddrUtil.getAddresses("127.0.0.1:11210"));
+			TapClient tc = new TapClient(AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":11210"));
 			tc.tapBackfill(null, 5, TimeUnit.SECONDS);
 
 			HashMap<String, Boolean> items = new HashMap<String, Boolean>();
@@ -53,8 +53,9 @@ public class TapTest extends ClientBaseCase {
 
 	public void testTapBucketDoesNotExist() throws Exception {
 		if (TestConfig.isMembase()) {
-			TapClient client = new TapClient(Arrays.asList(new URI("http://localhost:8091/pools")),
-						"abucket", "abucket", "apassword");
+			TapClient client = new TapClient(Arrays.asList(
+					new URI("http://" + TestConfig.IPV4_ADDR + ":8091/pools")),
+					"abucket", "abucket", "apassword");
 
 			try {
 				client.tapBackfill(null, 5, TimeUnit.SECONDS);

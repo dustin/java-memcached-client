@@ -14,13 +14,13 @@ public class RedistributeFailureModeTest extends ClientBaseCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		serverList="127.0.0.1:11211 127.0.0.1:11311";
+		serverList= TestConfig.IPV4_ADDR + ":11211 " + TestConfig.IPV4_ADDR + ":11311";
 		super.setUp();
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
-		serverList="127.0.0.1:11211";
+		serverList= TestConfig.IPV4_ADDR + ":11211";
 		super.tearDown();
 	}
 
