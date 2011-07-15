@@ -5,8 +5,6 @@ package net.spy.memcached;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.CancelledKeyException;
-import java.nio.channels.ClosedSelectorException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.auth.AuthThreadMonitor;
-import net.spy.memcached.compat.SpyThread;
+import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.internal.BulkFuture;
 import net.spy.memcached.internal.BulkGetFuture;
 import net.spy.memcached.internal.GetFuture;
@@ -101,10 +99,9 @@ import net.spy.memcached.transcoders.Transcoder;
  *      }
  * </pre>
  */
-public class MemcachedClient extends SpyThread
+public class MemcachedClient extends SpyObject
 	implements MemcachedClientIF, ConnectionObserver {
 
-	protected volatile boolean running=true;
 	private volatile boolean shuttingDown=false;
 
 	protected final long operationTimeout;
@@ -151,12 +148,7 @@ public class MemcachedClient extends SpyThread
 	 * @throws IOException if connections cannot be established
 	 */
 	public MemcachedClient(ConnectionFactory cf, List<InetSocketAddress> addrs)
-		throws IOException {
-		this(cf, addrs, true);
-	}
-
-	protected MemcachedClient(ConnectionFactory cf, List<InetSocketAddress> addrs,
-			boolean startIOThread) throws IOException {
+			throws IOException {
 		if(cf == null) {
 			throw new NullPointerException("Connection factory required");
 		}
@@ -182,11 +174,6 @@ public class MemcachedClient extends SpyThread
 		authDescriptor = cf.getAuthDescriptor();
 		if(authDescriptor != null) {
 			addObserver(this);
-		}
-		setName("Memcached IO over " + mconn);
-		setDaemon(cf.isDaemon());
-		if (startIOThread) {
-			start();
 		}
 	}
 
@@ -269,13 +256,6 @@ public class MemcachedClient extends SpyThread
 		}
 	}
 
-	private void checkState() {
-		if(shuttingDown) {
-			throw new IllegalStateException("Shutting down");
-		}
-		assert isAlive() : "IO Thread is not running.";
-	}
-
 	/**
 	 * (internal use) Add a raw operation to a numbered connection.
 	 * This method is exposed for testing.
@@ -286,7 +266,7 @@ public class MemcachedClient extends SpyThread
 	 */
 	Operation addOp(final String key, final Operation op) {
 		validateKey(key);
-		checkState();
+		mconn.checkState();
 		mconn.addOperation(key, op);
 		return op;
 	}
@@ -1128,7 +1108,7 @@ public class MemcachedClient extends SpyThread
 			ops.add(op);
 		}
 		assert mops.size() == chunks.size();
-		checkState();
+		mconn.checkState();
 		mconn.addOperations(mops);
 		return rv;
 	}
@@ -1755,37 +1735,6 @@ public class MemcachedClient extends SpyThread
 		return rv.keySet();
 	}
 
-	protected void logRunException(Exception e) {
-		if(shuttingDown) {
-			// There are a couple types of errors that occur during the
-			// shutdown sequence that are considered OK.  Log at debug.
-			getLogger().debug("Exception occurred during shutdown", e);
-		} else {
-			getLogger().warn("Problem handling memcached IO", e);
-		}
-	}
-
-	/**
-	 * Infinitely loop processing IO.
-	 */
-	@Override
-	public void run() {
-		while(running) {
-            try {
-                mconn.handleIO();
-            } catch (IOException e) {
-                logRunException(e);
-            } catch (CancelledKeyException e) {
-                logRunException(e);
-            } catch (ClosedSelectorException e) {
-                logRunException(e);
-            } catch (IllegalStateException e) {
-                logRunException(e);
-            }
-		}
-		getLogger().info("Shut down memcached client");
-	}
-
 	/**
 	 * Shut down immediately.
 	 */
@@ -1807,22 +1756,21 @@ public class MemcachedClient extends SpyThread
 			return false;
 		}
 		shuttingDown=true;
-		String baseName=getName();
-		setName(baseName + " - SHUTTING DOWN");
+		String baseName=mconn.getName();
+		mconn.setName(baseName + " - SHUTTING DOWN");
 		boolean rv=false;
 		try {
 			// Conditionally wait
 			if(timeout > 0) {
-				setName(baseName + " - SHUTTING DOWN (waiting)");
+				mconn.setName(baseName + " - SHUTTING DOWN (waiting)");
 				rv=waitForQueues(timeout, unit);
 			}
 		} finally {
 			// But always begin the shutdown sequence
 			try {
-				setName(baseName + " - SHUTTING DOWN (telling client)");
-				running=false;
+				mconn.setName(baseName + " - SHUTTING DOWN (telling client)");
 				mconn.shutdown();
-				setName(baseName + " - SHUTTING DOWN (informed client)");
+				mconn.setName(baseName + " - SHUTTING DOWN (informed client)");
 				tcService.shutdown();
 			} catch (IOException e) {
 				getLogger().warn("exception while shutting down", e);
