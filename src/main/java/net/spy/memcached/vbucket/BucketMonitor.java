@@ -1,5 +1,6 @@
 package net.spy.memcached.vbucket;
 
+import java.io.UnsupportedEncodingException;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -123,7 +124,13 @@ public class BucketMonitor extends Observable {
                 HttpVersion.HTTP_1_1, HttpMethod.GET, uri.toASCIIString());
         request.setHeader(HttpHeaders.Names.HOST, h);
         if (getHttpUser() != null) {
-            request.setHeader(HttpHeaders.Names.AUTHORIZATION, ConfigurationProviderHTTP.buildAuthHeader(getHttpUser(), getHttpPass()));
+	    String basicAuthHeader;
+	    try {
+		basicAuthHeader = ConfigurationProviderHTTP.buildAuthHeader(getHttpUser(), getHttpPass());
+		request.setHeader(HttpHeaders.Names.AUTHORIZATION, basicAuthHeader);
+	    } catch (UnsupportedEncodingException ex) {
+		throw new RuntimeException("Could not encode specified credentials for HTTP request.", ex);
+	    }
         }
         request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);  // No keep-alives for this
         request.setHeader(HttpHeaders.Names.CACHE_CONTROL, HttpHeaders.Values.NO_CACHE);

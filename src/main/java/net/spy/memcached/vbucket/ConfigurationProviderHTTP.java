@@ -1,5 +1,6 @@
 package net.spy.memcached.vbucket;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -14,6 +15,8 @@ import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.text.ParseException;
+
+import org.apache.commons.codec.binary.Base64;
 
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.compat.SpyObject;
@@ -229,7 +232,11 @@ public class ConfigurationProviderHTTP extends SpyObject implements Configuratio
         connection.setRequestProperty("user-agent", "spymemcached vbucket client");
         connection.setRequestProperty("X-memcachekv-Store-Client-Specification-Version", CLIENT_SPEC_VER);
 	if (restUsr != null) {
-	    connection.setRequestProperty("Authorization", buildAuthHeader(restUsr, restPwd));
+	    try {
+		connection.setRequestProperty("Authorization", buildAuthHeader(restUsr, restPwd));
+	    } catch (UnsupportedEncodingException ex) {
+		throw new IOException("Could not encode specified credentials for HTTP request.", ex);
+	    }
 	}
 
         return connection;
@@ -279,20 +286,17 @@ public class ConfigurationProviderHTTP extends SpyObject implements Configuratio
      *
      * @return a value for an HTTP Basic Auth Header
      */
-    protected static String buildAuthHeader(String username, String password) {
+    protected static String buildAuthHeader(String username, String password) throws UnsupportedEncodingException {
         // apparently netty isn't familiar with HTTP Basic Auth
         StringBuilder clearText = new StringBuilder(username);
         clearText.append(':');
         if (password != null) {
             clearText.append(password);
         }
-        // and apache base64 codec has extra \n\l we have to strip off
-        String encodedText = org.apache.commons.codec.binary.Base64.encodeBase64String(clearText.toString().getBytes());
-        char[] encodedWoNewline = new char[encodedText.length() - 2];
-        encodedText.getChars(0, encodedText.length() - 2, encodedWoNewline, 0);
-        String authVal = "Basic " + new String(encodedWoNewline);
+        String headerResult;
+        headerResult = "Basic " + Base64.encodeBase64String(clearText.toString().getBytes("UTF-8"));
 
-        return authVal;
+        return headerResult;
     }
 
 }
