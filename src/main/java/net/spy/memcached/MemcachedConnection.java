@@ -142,10 +142,6 @@ public final class MemcachedConnection extends SpyObject implements Reconfigurab
 
 	public void reconfigure(Bucket bucket) {
 		try {
-			if (!(locator instanceof VBucketNodeLocator)) {
-				return;
-			}
-
 			// get a new collection of addresses from the received config
 			List<String> servers = bucket.getConfig().getServers();
 			HashSet<SocketAddress> newServerAddresses = new HashSet<SocketAddress>();
@@ -192,7 +188,7 @@ public final class MemcachedConnection extends SpyObject implements Reconfigurab
 			mergedNodes.addAll(newNodes);
 
 			// call update locator with new nodes list and vbucket config
-			((VBucketNodeLocator) locator).updateLocator(mergedNodes, bucket.getConfig());
+			locator.updateLocator(mergedNodes, bucket.getConfig());
 
 			// schedule shutdown for the oddNodes
 			nodesToShutdown.addAll(oddNodes);

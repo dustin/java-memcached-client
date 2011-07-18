@@ -1,7 +1,10 @@
 package net.spy.memcached;
 
+import net.spy.memcached.vbucket.config.Config;
+
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Interface for locating a node by hash value.
@@ -34,4 +37,12 @@ public interface NodeLocator {
 	 * Create a read-only copy of this NodeLocator.
 	 */
 	NodeLocator getReadonlyCopy();
+
+	/**
+	 * Update locator status.
+	 *
+	 * @param nodes New locator nodes.
+	 * @param conf Locator configuration.
+	 */
+	public void updateLocator(final List<MemcachedNode> nodes, final Config conf);
 }
