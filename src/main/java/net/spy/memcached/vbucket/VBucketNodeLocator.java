@@ -70,8 +70,7 @@ public class VBucketNodeLocator extends SpyObject implements NodeLocator {
      * {@inheritDoc}
      */
     public Iterator<MemcachedNode> getSequence(String k) {
-        Map<String, MemcachedNode> nodesMap = fullConfig.get().getNodesMap();
-        return nodesMap.values().iterator();
+        return new NullIterator<MemcachedNode>();
     }
 
     /**
@@ -163,5 +162,21 @@ public class VBucketNodeLocator extends SpyObject implements NodeLocator {
 	    return nodesMap;
         }
     }
+
+	class NullIterator<E> implements Iterator<MemcachedNode> {
+
+		public boolean hasNext() {
+			return false;
+		}
+
+		public MemcachedNode next() {
+			throw new NoSuchElementException("VBucketNodeLocators have no alternate nodes.");
+		}
+
+		public void remove() {
+			throw new UnsupportedOperationException("VBucketNodeLocators have no alternate nodes; cannot remove.");
+		}
+
+	}
 
 }
