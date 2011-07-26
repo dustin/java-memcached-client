@@ -898,7 +898,7 @@ public final class MemcachedConnection extends SpyThread implements Reconfigurab
         }
     }
 
-	public void checkState() {
+	protected void checkState() {
 		if (shutDown) {
 			throw new IllegalStateException("Shutting down");
 		}

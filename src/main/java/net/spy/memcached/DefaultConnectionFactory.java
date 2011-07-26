@@ -83,7 +83,7 @@ public class DefaultConnectionFactory extends SpyObject
      */
     public static final int DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD = 998;
 
-	private final int opQueueLen;
+	protected final int opQueueLen;
 	private final int readBufSize;
 	private final HashAlgorithm hashAlg;
 
