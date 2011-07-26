@@ -21,7 +21,7 @@
 	<classpathentry javadocpath="M2_REPO/org/easymock/easymock/2.4/easymock-2.4.jar" kind="var" path="M2_REPO/org/easymock/easymock/2.4/easymock-2.4.jar" sourcepath="M2_REPO/org/easymock/easymock/2.4/easymock-2.4.jar"/>
 	<classpathentry javadocpath="M2_REPO/org/easymock/easymockclassextension/2.4/easymockclassextension-2.4.jar" kind="var" path="M2_REPO/org/easymock/easymockclassextension/2.4/easymockclassextension-2.4.jar" sourcepath="M2_REPO/org/easymock/easymockclassextension/2.4/easymockclassextension-2.4.jar"/>
 	<classpathentry javadocpath="M2_PATH/junit-addons/junit-addons/1.4/junit-addons-1.4.jar" kind="var" path="M2_REPO/junit-addons/junit-addons/1.4/junit-addons-1.4.jar" sourcepath="M2_REPO/junit-addons/junit-addons/1.4/junit-addons-1.4.jar"/>
-	<classpathentry javadocpath="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" kind="var" path="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" sourcepath="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar"/>
+	<classpathentry kind="var" path="M2_REPO/commons-codec/commons-codec/1.5/commons-codec-1.5.jar" sourcepath="M2_REPO/commons-codec/commons-codec/1.4/commons-codec-1.4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/httpcomponents/httpcore/4.1.1/httpcore-4.1.1.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/apache/httpcomponents/httpcore-nio/4.1.1/httpcore-nio-4.1.1.jar"/>
