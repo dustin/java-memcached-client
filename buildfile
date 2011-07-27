@@ -62,7 +62,10 @@ define "spymemcached" do
   test.include "*Test"
   if SERVER_TYPE == 'memcached' then
     test.exclude '*VBucketMemcachedClientTest', '*BucketMonitorTest',
-              '*ConfigurationProviderHTTPTest'
+              '*ConfigurationProviderHTTPTest', '*CouchbaseClientTest'
+  end
+  if SERVER_TYPE == 'membase' then
+    test.exclude '*CouchbaseClientTest'
   end
   test.using :fork=>:each, :properties=>{ 'server.address_v4'=>TEST_SERVER_V4,
                'server.address_v6'=>TEST_SERVER_V6,

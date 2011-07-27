@@ -6,6 +6,7 @@ public class TestConfig {
 	public static final String TYPE_PROP = "server.type";
 	public static final String TYPE_MEMCACHED = "memcached";
 	public static final String TYPE_MEMBASE = "membase";
+	public static final String TYPE_COUCHBASE = "couchbase";
 
 	public static final String IPV4_ADDR = System.getProperty(IPV4_PROP, "127.0.0.1");
 	public static final String IPV6_ADDR = resolveIpv6Addr();
@@ -38,7 +39,10 @@ public class TestConfig {
 	}
 
 	public static final boolean isMembase() {
-		System.out.println(TYPE);
 		return TYPE.equals(TYPE_MEMBASE);
+	}
+
+	public static final boolean isCouchbase() {
+		return TYPE.equals(TYPE_COUCHBASE);
 	}
 }
