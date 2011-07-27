@@ -39,7 +39,7 @@ public interface BulkFuture<V> extends Future<V> {
      *
      * @param timeout
      * @param unit
-     * @return
+     * @return a partial get bulk result
      * @throws InterruptedException
      * @throws ExecutionException
      */

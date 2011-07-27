@@ -378,7 +378,7 @@ public class ConnectionFactoryBuilder {
 	 * @param baseList a list of URI's that will be used to connect to the cluster
 	 * @param bucketName the name of the bucket to connect to
 	 * @param usr the username for the bucket
-	 * @param pass the password for the bucket
+	 * @param pwd the password for the bucket
 	 * @return a MembaseConnectionFactory object
 	 * @throws IOException
 	 */

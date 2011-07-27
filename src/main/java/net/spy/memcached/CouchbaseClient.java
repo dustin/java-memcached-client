@@ -105,7 +105,6 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 	 * Gets a future with a list of views for a given design document from the cluster.
 	 *
 	 * @param designDocumentName the name of the design document.
-	 * @param viewName the name of the view to get.
 	 * @return a future containing a List of View objects from the cluster.
 	 */
 	public HttpFuture<List<View>> asyncGetViews(final String designDocumentName) {
@@ -157,7 +156,6 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 	 * Gets  a list of views for a given design document from the cluster.
 	 *
 	 * @param designDocumentName the name of the design document.
-	 * @param viewName the name of the view to get.
 	 * @return a list of View objects from the cluster.
 	 */
 	public List<View> getViews(final String designDocumentName) {
@@ -311,8 +309,8 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 	/**
 	 * Shut down this client gracefully.
 	 *
-	 * @param timeout the amount of time time for shutdown
-	 * @param unit the TimeUnit for the timeout
+	 * @param duration the amount of time time for shutdown
+	 * @param units the TimeUnit for the timeout
 	 * @return result of the shutdown request
 	 */
 	@Override
