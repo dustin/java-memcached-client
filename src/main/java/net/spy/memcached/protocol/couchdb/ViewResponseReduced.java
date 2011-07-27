@@ -5,10 +5,17 @@ import java.util.Iterator;
 
 public class ViewResponseReduced implements ViewResponse<RowReduced> {
 
-	Collection<RowReduced> rows;
+	final Collection<RowReduced> rows;
+	final Collection<RowError> errors;
 
-	public ViewResponseReduced(Collection<RowReduced> r) {
+	public ViewResponseReduced(final Collection<RowReduced> r,
+			final Collection<RowError> e) {
 		rows = r;
+		errors = e;
+	}
+
+	public Collection<RowError> getErrors() {
+		return errors;
 	}
 
 	public int size() {
