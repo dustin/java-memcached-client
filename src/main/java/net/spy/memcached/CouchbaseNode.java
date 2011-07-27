@@ -8,20 +8,18 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.couch.AsyncConnectionManager;
 import net.spy.memcached.couch.AsyncConnectionRequest;
 import net.spy.memcached.couch.RequestHandle;
-import net.spy.memcached.ops.OperationErrorType;
-import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.protocol.couchdb.HttpOperation;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.nio.NHttpClientConnection;
 import org.apache.http.nio.NHttpConnection;
 import org.apache.http.nio.entity.BufferingNHttpEntity;
@@ -31,7 +29,6 @@ import org.apache.http.nio.protocol.NHttpRequestExecutionHandler;
 import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.nio.util.HeapByteBufferAllocator;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
 
 public class CouchbaseNode extends SpyObject {
 
@@ -44,11 +41,11 @@ public class CouchbaseNode extends SpyObject {
 	private final BlockingQueue<HttpOperation> writeQ;
 
 	public CouchbaseNode(InetSocketAddress a, AsyncConnectionManager mgr,
-			BlockingQueue<HttpOperation> wQ, long maxBlockTime,
+			LinkedBlockingQueue<HttpOperation> linkedBlockingQueue, long maxBlockTime,
 			long operationTimeout) {
 		addr = a;
 		connMgr = mgr;
-		writeQ = wQ;
+		writeQ = linkedBlockingQueue;
 		opQueueMaxBlockTime = maxBlockTime;
 		defaultOpTimeout = operationTimeout;
 	}
@@ -65,7 +62,7 @@ public class CouchbaseNode extends SpyObject {
 					getLogger().error("I/O error: " + e.getMessage());
 					e.printStackTrace();
 				}
-				System.out.println("I/O reactor terminated");
+				getLogger().info("Couchbase I/O reactor terminated");
 			}
 		});
 		t.start();
@@ -165,18 +162,7 @@ public class CouchbaseNode extends SpyObject {
 			HttpOperation op = (HttpOperation) context.removeAttribute("operation");
 			if (handle != null) {
 				handle.completed();
-				if (!op.isTimedOut() && !op.hasErrored() && !op.isCancelled()) {
-					try {
-						String json = EntityUtils.toString(response.getEntity());
-						op.getCallback().complete(json);
-					} catch (ParseException e) {
-						op.setException(new OperationException(OperationErrorType.GENERAL, "Bad http headers"));
-					} catch (IOException e) {
-						op.setException(new OperationException(OperationErrorType.GENERAL, "Error reading response"));
-					} catch (IllegalArgumentException e) {
-						op.setException(new OperationException(OperationErrorType.GENERAL, "No entity"));
-					}
-				}
+				op.handleResponse(response);
 			}
 		}
 
@@ -186,7 +172,6 @@ public class CouchbaseNode extends SpyObject {
 			return new BufferingNHttpEntity(response.getEntity(),
 					new HeapByteBufferAllocator());
 		}
-
 	}
 
 	static class EventLogger extends SpyObject implements EventListener {
