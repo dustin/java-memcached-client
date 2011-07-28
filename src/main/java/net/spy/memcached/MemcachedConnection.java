@@ -21,7 +21,6 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -337,13 +336,9 @@ public final class MemcachedConnection extends SpyThread implements Reconfigurab
 			// Transfer the queue into a hashset.  There are very likely more
 			// additions than there are nodes.
 			Collection<MemcachedNode> todo=new HashSet<MemcachedNode>();
-			try {
-				MemcachedNode qa=null;
-				while((qa=addedQueue.remove()) != null) {
-					todo.add(qa);
-				}
-			} catch(NoSuchElementException e) {
-				// Found everything
+			MemcachedNode qaNode = null;
+			while ((qaNode = addedQueue.poll()) != null) {
+				todo.add(qaNode);
 			}
 
 			// Now process the queue.
