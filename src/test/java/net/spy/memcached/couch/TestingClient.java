@@ -9,7 +9,7 @@ import java.util.concurrent.CountDownLatch;
 import net.spy.memcached.CouchbaseClient;
 import net.spy.memcached.internal.HttpFuture;
 import net.spy.memcached.ops.OperationStatus;
-import net.spy.memcached.protocol.couchdb.HttpOperationImpl;
+import net.spy.memcached.protocol.couch.HttpOperationImpl;
 import net.spy.memcached.vbucket.ConfigurationException;
 import net.spy.memcached.couch.TestOperation.TestCallback;
 

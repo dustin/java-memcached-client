@@ -1,4 +1,4 @@
-package net.spy.memcached.protocol.couchdb;
+package net.spy.memcached.protocol.couch;
 
 import java.text.ParseException;
 import java.util.Collection;
@@ -14,10 +14,10 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-public class DocsOperationImpl extends HttpOperationImpl implements
-		DocsOperation {
+public class NoDocsOperationImpl extends HttpOperationImpl implements
+		NoDocsOperation {
 
-	public DocsOperationImpl(HttpRequest r, DocsCallback cb) {
+	public NoDocsOperationImpl(HttpRequest r, NoDocsCallback cb) {
 		super(r, cb);
 	}
 
@@ -27,9 +27,9 @@ public class DocsOperationImpl extends HttpOperationImpl implements
 		int errorcode = response.getStatusLine().getStatusCode();
 		try {
 			OperationStatus status = parseViewForStatus(json, errorcode);
-			ViewResponseWithDocs vr = parseDocsViewResult(json);
+			ViewResponseNoDocs vr = parseNoDocsViewResult(json);
 
-			((DocsCallback) callback).gotData(vr);
+			((NoDocsCallback) callback).gotData(vr);
 			callback.receivedStatus(status);
 		} catch (ParseException e) {
 			exception = new OperationException(OperationErrorType.GENERAL,
@@ -38,9 +38,9 @@ public class DocsOperationImpl extends HttpOperationImpl implements
 		callback.complete();
 	}
 
-	private ViewResponseWithDocs parseDocsViewResult(String json)
+	private ViewResponseNoDocs parseNoDocsViewResult(String json)
 			throws ParseException {
-		final Collection<RowWithDocs> rows = new LinkedList<RowWithDocs>();
+		final Collection<RowNoDocs> rows = new LinkedList<RowNoDocs>();
 		final Collection<RowError> errors = new LinkedList<RowError>();
 		if (json != null) {
 			try {
@@ -52,7 +52,7 @@ public class DocsOperationImpl extends HttpOperationImpl implements
 						String id = elem.getString("id");
 						String key = elem.getString("key");
 						String value = elem.getString("value");
-						rows.add(new RowWithDocs(id, key, value, null));
+						rows.add(new RowNoDocs(id, key, value));
 					}
 				}
 				if (base.has("errors")) {
@@ -68,6 +68,6 @@ public class DocsOperationImpl extends HttpOperationImpl implements
 				throw new ParseException("Cannot read json: " + json, 0);
 			}
 		}
-		return new ViewResponseWithDocs(rows, errors);
+		return new ViewResponseNoDocs(rows, errors);
 	}
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.spy.memcached.couch.AsyncConnectionManager;
-import net.spy.memcached.protocol.couchdb.HttpOperation;
+import net.spy.memcached.protocol.couch.HttpOperation;
 
 public class CouchbaseConnectionFactory extends MembaseConnectionFactory {
 

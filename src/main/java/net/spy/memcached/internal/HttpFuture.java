@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.spy.memcached.OperationTimeoutException;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.OperationStatus;
-import net.spy.memcached.protocol.couchdb.HttpOperation;
+import net.spy.memcached.protocol.couch.HttpOperation;
 
 public class HttpFuture<T> extends SpyObject implements Future<T>{
 	private final AtomicReference<T> objRef;

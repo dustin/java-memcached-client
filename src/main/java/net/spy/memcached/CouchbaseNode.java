@@ -17,7 +17,7 @@ import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.couch.AsyncConnectionManager;
 import net.spy.memcached.couch.AsyncConnectionRequest;
 import net.spy.memcached.couch.RequestHandle;
-import net.spy.memcached.protocol.couchdb.HttpOperation;
+import net.spy.memcached.protocol.couch.HttpOperation;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;

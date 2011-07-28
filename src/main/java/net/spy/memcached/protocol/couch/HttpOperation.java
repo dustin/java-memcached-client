@@ -1,4 +1,4 @@
-package net.spy.memcached.protocol.couchdb;
+package net.spy.memcached.protocol.couch;
 
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationException;

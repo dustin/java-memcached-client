@@ -1,4 +1,4 @@
-package net.spy.memcached.protocol.couchdb;
+package net.spy.memcached.protocol.couch;
 
 import java.net.HttpURLConnection;
 import java.text.ParseException;

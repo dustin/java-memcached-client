@@ -4,10 +4,10 @@ import java.util.List;
 
 import net.spy.memcached.internal.HttpFuture;
 import net.spy.memcached.internal.ViewFuture;
-import net.spy.memcached.protocol.couchdb.ViewResponseNoDocs;
-import net.spy.memcached.protocol.couchdb.Query;
-import net.spy.memcached.protocol.couchdb.ViewResponseReduced;
-import net.spy.memcached.protocol.couchdb.View;
+import net.spy.memcached.protocol.couch.ViewResponseNoDocs;
+import net.spy.memcached.protocol.couch.Query;
+import net.spy.memcached.protocol.couch.ViewResponseReduced;
+import net.spy.memcached.protocol.couch.View;
 
 public interface CouchbaseClientIF {
 

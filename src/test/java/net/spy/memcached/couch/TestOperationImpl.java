@@ -3,7 +3,7 @@ package net.spy.memcached.couch;
 import java.net.HttpURLConnection;
 
 import net.spy.memcached.ops.OperationStatus;
-import net.spy.memcached.protocol.couchdb.HttpOperationImpl;
+import net.spy.memcached.protocol.couch.HttpOperationImpl;
 
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;

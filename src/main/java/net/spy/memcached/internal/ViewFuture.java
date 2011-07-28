@@ -14,9 +14,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.spy.memcached.OperationTimeoutException;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.OperationStatus;
-import net.spy.memcached.protocol.couchdb.HttpOperation;
-import net.spy.memcached.protocol.couchdb.ViewResponseWithDocs;
-import net.spy.memcached.protocol.couchdb.RowWithDocs;
+import net.spy.memcached.protocol.couch.HttpOperation;
+import net.spy.memcached.protocol.couch.ViewResponseWithDocs;
+import net.spy.memcached.protocol.couch.RowWithDocs;
 
 public class ViewFuture extends SpyObject implements
 		Future<ViewResponseWithDocs> {
