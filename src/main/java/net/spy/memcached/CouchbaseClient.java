@@ -1,5 +1,6 @@
 package net.spy.memcached;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -7,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -43,8 +45,46 @@ import net.spy.memcached.vbucket.config.Bucket;
 
 public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF {
 
+	private static final String MODE_PRODUCTION = "production";
+	private static final String MODE_DEVELOPMENT = "development";
+	private static final String DEV_PREFIX = "dev_";
+	private static final String PROD_PREFIX = "";
+	public static final String MODE_PREFIX;
+	private static final String MODE_ERROR;
+
 	private CouchbaseConnection cconn;
 	private final String bucketName;
+
+	static {
+		String viewmode = null;
+		boolean propsFileExists;
+		try {
+			Properties properties = new Properties();
+		    properties.load(new FileInputStream("config.properties"));
+		    viewmode = properties.getProperty("viewmode");
+		    propsFileExists = true;
+		} catch (IOException e) {
+			propsFileExists = false;
+		}
+		if (!propsFileExists) {
+			MODE_ERROR = "Can't find config.properties. Setting viewmode " +
+					"to development mode";
+			MODE_PREFIX = DEV_PREFIX;
+		} else if (viewmode == null) {
+			MODE_ERROR = "viewmode doesn't exist in config.properties. " +
+	    			"Setting viewmode to development mode";
+	    	MODE_PREFIX = DEV_PREFIX;
+	    } else if (viewmode.equals(MODE_PRODUCTION)) {
+	    	MODE_ERROR = "viewmode set to production mode";
+	    	MODE_PREFIX = PROD_PREFIX;
+	    } else if (viewmode.equals(MODE_DEVELOPMENT)){
+	    	MODE_ERROR = "viewmode set to development mode";
+	    	MODE_PREFIX = DEV_PREFIX;
+	    } else {
+	    	MODE_ERROR = "unknown value \"" + viewmode + "\" for property viewmode";
+	    	MODE_PREFIX = DEV_PREFIX;
+	    }
+	}
 
 	public CouchbaseClient(List<URI> baseList, String bucketName, String pwd)
 			throws IOException, ConfigurationException {
@@ -62,6 +102,7 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 		while (!addrs.isEmpty()) { conv.add(addrs.remove(0)); }
 		while (!conv.isEmpty()) { addrs.add(new InetSocketAddress(conv.remove(0).getHostName(), 5984)); }
 
+		getLogger().info(MODE_ERROR);
 		cconn = cf.createCouchDBConnection(addrs);
 		cf.getConfigurationProvider().subscribe(cf.getBucket(), this);
 	}
@@ -75,7 +116,8 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 	 * @throws InterruptedException if the operation is interrupted while in flight
 	 * @throws ExecutionException if an error occurs during execution
 	 */
-	public HttpFuture<View> asyncGetView(final String designDocumentName, final String viewName) {
+	public HttpFuture<View> asyncGetView(String designDocumentName, final String viewName) {
+		designDocumentName = MODE_PREFIX + designDocumentName;
 		String uri = "/" + bucketName + "/_design/" + designDocumentName;
 		final CountDownLatch couchLatch = new CountDownLatch(1);
 		final HttpFuture<View> crv =
@@ -109,7 +151,8 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 	 * @param designDocumentName the name of the design document.
 	 * @return a future containing a List of View objects from the cluster.
 	 */
-	public HttpFuture<List<View>> asyncGetViews(final String designDocumentName) {
+	public HttpFuture<List<View>> asyncGetViews(String designDocumentName) {
+		designDocumentName = MODE_PREFIX + designDocumentName;
 		String uri = "/" + bucketName + "/_design/" + designDocumentName;
 		final CountDownLatch couchLatch = new CountDownLatch(1);
 		final HttpFuture<List<View>> crv =
