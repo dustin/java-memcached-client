@@ -121,7 +121,7 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 		String uri = "/" + bucketName + "/_design/" + designDocumentName;
 		final CountDownLatch couchLatch = new CountDownLatch(1);
 		final HttpFuture<View> crv =
-			new HttpFuture<View>(couchLatch, operationTimeout);
+			new HttpFuture<View>(couchLatch, 60000);
 
 		final HttpRequest request = new BasicHttpRequest("GET", uri, HttpVersion.HTTP_1_1);
 		final HttpOperation op = new ViewOperationImpl(request, bucketName,
@@ -156,7 +156,7 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 		String uri = "/" + bucketName + "/_design/" + designDocumentName;
 		final CountDownLatch couchLatch = new CountDownLatch(1);
 		final HttpFuture<List<View>> crv =
-			new HttpFuture<List<View>>(couchLatch, operationTimeout);
+			new HttpFuture<List<View>>(couchLatch, 60000);
 
 		final HttpRequest request = new BasicHttpRequest("GET", uri, HttpVersion.HTTP_1_1);
 		final HttpOperation op = new ViewsOperationImpl(request, bucketName,
@@ -228,7 +228,7 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 
 		String uri = view.getURI() + queryString + params;
 		final CountDownLatch couchLatch = new CountDownLatch(1);
-		final ViewFuture crv = new ViewFuture(couchLatch, operationTimeout);
+		final ViewFuture crv = new ViewFuture(couchLatch, 60000);
 
 		final HttpRequest request = new BasicHttpRequest("GET", uri, HttpVersion.HTTP_1_1);
 		final HttpOperation op = new DocsOperationImpl(request, new DocsCallback() {
@@ -273,7 +273,7 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 		String uri = view.getURI() + queryString + params;
 		final CountDownLatch couchLatch = new CountDownLatch(1);
 		final HttpFuture<ViewResponseNoDocs> crv =
-			new HttpFuture<ViewResponseNoDocs>(couchLatch, operationTimeout);
+			new HttpFuture<ViewResponseNoDocs>(couchLatch, 60000);
 
 		final HttpRequest request = new BasicHttpRequest("GET", uri, HttpVersion.HTTP_1_1);
 		final HttpOperation op = new NoDocsOperationImpl(request, new NoDocsOperation.NoDocsCallback() {
@@ -311,7 +311,7 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 		String uri = view.getURI() + query.toString();
 		final CountDownLatch couchLatch = new CountDownLatch(1);
 		final HttpFuture<ViewResponseReduced> crv =
-			new HttpFuture<ViewResponseReduced>(couchLatch, operationTimeout);
+			new HttpFuture<ViewResponseReduced>(couchLatch, 60000);
 
 		final HttpRequest request = new BasicHttpRequest("GET", uri, HttpVersion.HTTP_1_1);
 		final HttpOperation op = new ReducedOperationImpl(request, new ReducedCallback() {
