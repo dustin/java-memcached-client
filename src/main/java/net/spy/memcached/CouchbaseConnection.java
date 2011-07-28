@@ -2,9 +2,13 @@ package net.spy.memcached;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequestInterceptor;
@@ -40,6 +44,9 @@ public final class CouchbaseConnection extends SpyThread implements
 	protected volatile boolean running = true;
 
 	private final CouchbaseConnectionFactory connFactory;
+	private final ConcurrentLinkedQueue<CouchbaseNode> nodesToShutdown;
+	private final Collection<ConnectionObserver> connObservers =
+		new ConcurrentLinkedQueue<ConnectionObserver>();
 	private List<CouchbaseNode> nodes;
 	private int nextNode;
 
@@ -48,6 +55,8 @@ public final class CouchbaseConnection extends SpyThread implements
 			throws IOException {
 		shutDown = false;
 		connFactory = cf;
+		nodesToShutdown = new ConcurrentLinkedQueue<CouchbaseNode>();
+		connObservers.addAll(obs);
 		nodes = createConnections(addrs);
 		nextNode = 0;
 		start();
@@ -98,6 +107,30 @@ public final class CouchbaseConnection extends SpyThread implements
 		for (CouchbaseNode node : nodes) {
 			node.doWrites();
 		}
+
+		for (CouchbaseNode qa : nodesToShutdown) {
+			nodesToShutdown.remove(qa);
+			Collection<HttpOperation> notCompletedOperations = qa
+					.destroyWriteQueue();
+			try {
+				qa.shutdown();
+			} catch (IOException e) {
+				getLogger().error(
+						"Error shutting down connection to "
+								+ qa.getSocketAddress());
+			}
+			redistributeOperations(notCompletedOperations);
+		}
+	}
+
+	private void redistributeOperations(Collection<HttpOperation> ops) {
+		int added = 0;
+		for(HttpOperation op : ops) {
+			addOp(op);
+			added++;
+		}
+		assert added > 0
+			: "Didn't add any new operations when redistributing";
 	}
 
 	private int getNextNode() {
@@ -132,8 +165,64 @@ public final class CouchbaseConnection extends SpyThread implements
 
 	@Override
 	public void reconfigure(Bucket bucket) {
-		// TODO Auto-generated method stub
+		reconfiguring = true;
+		try {
+			// get a new collection of addresses from the received config
+			List<String> servers = bucket.getConfig().getServers();
+			HashSet<SocketAddress> newServerAddresses = new HashSet<SocketAddress>();
+			ArrayList<InetSocketAddress> newServers = new ArrayList<InetSocketAddress>();
+			for (String server : servers) {
+				int finalColon = server.lastIndexOf(':');
+				if (finalColon < 1) {
+					throw new IllegalArgumentException("Invalid server ``"
+							+ server + "'' in vbucket's server list");
+				}
+				String hostPart = server.substring(0, finalColon);
+				// String portNum = server.substring(finalColon + 1);
 
+				InetSocketAddress address = new InetSocketAddress(hostPart,
+						Integer.parseInt("5984"));
+				// add parsed address to our collections
+				newServerAddresses.add(address);
+				newServers.add(address);
+
+			}
+
+			// split current nodes to "odd nodes" and "stay nodes"
+			ArrayList<CouchbaseNode> oddNodes = new ArrayList<CouchbaseNode>();
+			ArrayList<CouchbaseNode> stayNodes = new ArrayList<CouchbaseNode>();
+			ArrayList<InetSocketAddress> stayServers = new ArrayList<InetSocketAddress>();
+			for (CouchbaseNode current : nodes) {
+				if (newServerAddresses.contains(current.getSocketAddress())) {
+					stayNodes.add(current);
+					stayServers.add((InetSocketAddress) current
+							.getSocketAddress());
+				} else {
+					oddNodes.add(current);
+				}
+			}
+
+			// prepare a collection of addresses for new nodes
+			newServers.removeAll(stayServers);
+
+			// create a collection of new nodes
+			List<CouchbaseNode> newNodes = createConnections(newServers);
+
+			// merge stay nodes with new nodes
+			List<CouchbaseNode> mergedNodes = new ArrayList<CouchbaseNode>();
+			mergedNodes.addAll(stayNodes);
+			mergedNodes.addAll(newNodes);
+
+			// call update locator with new nodes list and vbucket config
+			nodes = mergedNodes;
+
+			// schedule shutdown for the oddNodes
+			nodesToShutdown.addAll(oddNodes);
+		} catch (IOException e) {
+			getLogger().error("Connection reconfiguration failed", e);
+		} finally {
+			reconfiguring = false;
+		}
 	}
 
 	@Override

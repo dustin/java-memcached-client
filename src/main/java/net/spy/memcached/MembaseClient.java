@@ -91,7 +91,42 @@ public class MembaseClient extends MemcachedClient implements MembaseClientIF, R
 	 *         server has issues or is not compatible
 	 */
 	public MembaseClient(MembaseConnectionFactory cf) throws IOException, ConfigurationException {
+		this(cf, true);
+	}
+
+	/**
+	 * Get a MembaseClient based on the REST response from a Membase server
+	 * where the username is different than the bucket name.
+	 *
+	 * Note that when specifying a ConnectionFactory you must specify a
+	 * BinaryConnectionFactory. Also the ConnectionFactory's protocol
+	 * and locator values are always overwritten. The protocol will always
+	 * be binary and the locator will be chosen based on the bucket type you
+	 * are connecting to.
+	 *
+	 * To connect to the "default" special bucket for a given cluster, use an
+	 * empty string as the password.
+	 *
+	 * If a password has not been assigned to the bucket, it is typically an
+	 * empty string.
+	 *
+	 * The subscribe variable is determines whether or not we will subscribe
+	 * to the configuration changes feed. This constructor should be used
+	 * when calling super from subclasses of MembaseClient since the subclass
+	 * might want to start the changes feed later.
+	 *
+	 * @param cf the ConnectionFactory to use to create connections
+	 * @param subscribe whether or not to subscribe to config changes
+	 * @throws IOException if connections could not be made
+	 * @throws ConfigurationException if the configuration provided by the
+	 *         server has issues or is not compatible
+	 */
+	protected MembaseClient(MembaseConnectionFactory cf, boolean subscribe)
+			throws IOException, ConfigurationException {
 		super(cf, AddrUtil.getAddresses(cf.getVBucketConfig().getServers()));
+		if (subscribe) {
+			cf.getConfigurationProvider().subscribe(cf.getBucket(), this);
+		}
 	}
 
 	/**
