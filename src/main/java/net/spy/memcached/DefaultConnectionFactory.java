@@ -46,7 +46,7 @@ public class DefaultConnectionFactory extends SpyObject
 	/**
 	 * Default hash algorithm.
 	 */
-	public static final HashAlgorithm DEFAULT_HASH = HashAlgorithm.NATIVE_HASH;
+	public static final HashAlgorithm DEFAULT_HASH = DefaultHashAlgorithm.NATIVE_HASH;
 
 	/**
 	 * Maximum length of the operation queue returned by this connection
@@ -110,12 +110,19 @@ public class DefaultConnectionFactory extends SpyObject
 	}
 
 	/**
+     * Create a DefaultConnectionFactory with the given HashAlgorithm
+     * and default parameters
+     */
+    public DefaultConnectionFactory(HashAlgorithm hash) {
+        this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE, hash);
+    }
+	/**
 	 * Create a DefaultConnectionFactory with the default parameters.
 	 */
 	public DefaultConnectionFactory() {
 		this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE);
 	}
-
+	
 	public MemcachedNode createMemcachedNode(SocketAddress sa,
 			SocketChannel c, int bufSize) {
 

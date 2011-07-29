@@ -24,7 +24,7 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
 
 	@Override
 	protected void setupNodes(int n) {
-		setupNodes(HashAlgorithm.KETAMA_HASH, n);
+		setupNodes(DefaultHashAlgorithm.KETAMA_HASH, n);
 	}
 
 	public void testAll() throws Exception {
@@ -116,7 +116,7 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
 	}
 
 	public void testFNV1A_32() {
-		HashAlgorithm alg=HashAlgorithm.FNV1A_32_HASH;
+		HashAlgorithm alg=DefaultHashAlgorithm.FNV1A_32_HASH;
 		setupNodes(alg, 5);
 		assertSequence("noelani", 1, 2, 2, 2, 3, 4, 2);
 
@@ -150,7 +150,7 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
 				"10.0.1.7:11211",
 				"10.0.1.8:11211"};
 		locator=new KetamaNodeLocator(Arrays.asList(mockNodes(servers)),
-				HashAlgorithm.KETAMA_HASH);
+				DefaultHashAlgorithm.KETAMA_HASH);
 
 		String[][] exp = {
 				{"0", "10.0.1.1:11211"},
