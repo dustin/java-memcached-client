@@ -62,7 +62,8 @@ define "spymemcached" do
   test.include "*Test"
   if SERVER_TYPE == 'memcached' then
     test.exclude '*VBucketMemcachedClientTest', '*BucketMonitorTest',
-              '*ConfigurationProviderHTTPTest', '*CouchbaseClientTest'
+              '*ConfigurationProviderHTTPTest', '*CouchbaseClientTest',
+              '*MembaseClientTest'
   end
   if SERVER_TYPE == 'membase' then
     test.exclude '*CouchbaseClientTest'
