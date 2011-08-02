@@ -214,15 +214,15 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 	}
 
 	/**
-	 * Queries a Couchbase view by calling its map function. This type
-	 * of query will return the view result along with all of the
-	 * documents for each row in the query.
+	 * Asynchronously queries a Couchbase view by calling its map
+	 * function. This type of query will return the view result
+	 * along with all of the documents for each row in the query.
 	 *
 	 * @param view the view to run the query against.
 	 * @param query the type of query to run against the view.
 	 * @return a Future containing the results of the query.
 	 */
-	public ViewFuture query(View view, Query query) {
+	public ViewFuture asyncQuery(View view, Query query) {
 		String queryString = query.toString();
 		String params = (queryString.length() > 0) ? "&reduce=false" : "?reduce=false";
 
@@ -261,15 +261,15 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 	}
 
 	/**
-	 * Queries a Couchbase view by calling it's map function. This type
-	 * of query will return the view result but will not get the
-	 * documents associated with each row of the query.
+	 * Asynchronously queries a Couchbase view by calling it's map
+	 * function. This type of query will return the view result but
+	 * will not get the documents associated with each row of the query.
 	 *
 	 * @param view the view to run the query against.
 	 * @param query the type of query to run against the view.
 	 * @return a Future containing the results of the query.
 	 */
-	public HttpFuture<ViewResponseNoDocs> queryAndExcludeDocs(View view, Query query) {
+	public HttpFuture<ViewResponseNoDocs> asyncQueryAndExcludeDocs(View view, Query query) {
 		String queryString = query.toString();
 		String params = (queryString.length() > 0) ? "&reduce=false" : "?reduce=false";
 		params += "&include_docs=false";
@@ -301,14 +301,14 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 	}
 
 	/**
-	 * Queries a Couchbase view by calling it's map function and then
-	 * the views reduce function.
+	 * Asynchronously queries a Couchbase view by calling it's map
+	 * function and then the views reduce function.
 	 *
 	 * @param view the view to run the query against.
 	 * @param query the type of query to run against the view.
 	 * @return a Future containing the results of the query.
 	 */
-	public HttpFuture<ViewResponseReduced> queryAndReduce(final View view, final Query query){
+	public HttpFuture<ViewResponseReduced> asyncQueryAndReduce(final View view, final Query query){
 		if (!view.hasReduce()) {
 			throw new RuntimeException("This view doesn't contain a reduce function");
 		}
@@ -336,6 +336,62 @@ public class CouchbaseClient extends MembaseClient implements CouchbaseClientIF 
 		crv.setOperation(op);
 		addOp(op);
 		return crv;
+	}
+
+	/**
+	 * Queries a Couchbase view by calling its map function. This
+	 * type of query will return the view result along with all of
+	 * the documents for each row in the query.
+	 *
+	 * @param view the view to run the query against.
+	 * @param query the type of query to run against the view.
+	 * @return a ViewResponseWithDocs containing the results of the query.
+	 */
+	public ViewResponseWithDocs query(View view, Query query) {
+		try {
+			return asyncQuery(view, query).get();
+		}catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted while accessing the view", e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException("Failed to access the view", e);
+		}
+	}
+
+	/**
+	 * Queries a Couchbase view by calling it's map function. This type
+	 * of query will return the view result but will not get the documents
+	 * associated with each row of the query.
+	 *
+	 * @param view the view to run the query against.
+	 * @param query the type of query to run against the view.
+	 * @return a ViewResponseNoDocs containing the results of the query.
+	 */
+	public ViewResponseNoDocs queryAndExcludeDocs(View view, Query query) {
+		try {
+			return asyncQueryAndExcludeDocs(view, query).get();
+		}catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted while accessing the view", e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException("Failed to access the view", e);
+		}
+	}
+
+	/**
+	 * Queries a Couchbase view by calling it's map function and then
+	 * the views reduce function.
+	 *
+	 * @param view the view to run the query against.
+	 * @param query the type of query to run against the view.
+	 * @return a Future containing the results of the query.
+	 */
+	public ViewResponseReduced queryAndReduce(View view, Query query) {
+		try {
+			return asyncQueryAndReduce(view, query).get();
+		}catch (InterruptedException e) {
+			throw new RuntimeException("Interrupted while accessing the view", e);
+		} catch (ExecutionException e) {
+			throw new RuntimeException("Failed to access the view", e);
+		}
 	}
 
 	/**
