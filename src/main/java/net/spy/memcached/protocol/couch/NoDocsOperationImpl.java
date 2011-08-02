@@ -27,7 +27,10 @@ public class NoDocsOperationImpl extends HttpOperationImpl implements
 		int errorcode = response.getStatusLine().getStatusCode();
 		try {
 			OperationStatus status = parseViewForStatus(json, errorcode);
-			ViewResponseNoDocs vr = parseNoDocsViewResult(json);
+			ViewResponseNoDocs vr = null;
+			if (status.isSuccess()) {
+				vr = parseNoDocsViewResult(json);
+			}
 
 			((NoDocsCallback) callback).gotData(vr);
 			callback.receivedStatus(status);

@@ -81,6 +81,10 @@ public class ViewFuture extends SpyObject implements
 					"Operation timed out."));
 		}
 
+		if (multigetRef.get() == null) {
+			return null;
+		}
+
 		Map<String, Object> docMap = multigetRef.get().get();
 		final ViewResponseWithDocs view = (ViewResponseWithDocs) viewRef.get();
 		Collection<RowWithDocs> rows = new LinkedList<RowWithDocs>();

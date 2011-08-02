@@ -27,7 +27,10 @@ public class ReducedOperationImpl extends HttpOperationImpl implements
 		int errorcode = response.getStatusLine().getStatusCode();
 		try {
 			OperationStatus status = parseViewForStatus(json, errorcode);
-			ViewResponseReduced vr = parseReducedViewResult(json);
+			ViewResponseReduced vr = null;
+			if (status.isSuccess()) {
+				vr = parseReducedViewResult(json);
+			}
 
 			((ReducedCallback) callback).gotData(vr);
 			callback.receivedStatus(status);
