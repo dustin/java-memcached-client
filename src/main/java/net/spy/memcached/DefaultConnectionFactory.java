@@ -1,3 +1,26 @@
+/**
+ * Copyright (C) 2006-2009 Dustin Sallings
+ * Copyright (C) 2009-2011 Couchbase, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALING
+ * IN THE SOFTWARE.
+ */
+
 package net.spy.memcached;
 
 import java.io.IOException;
@@ -28,264 +51,296 @@ import net.spy.memcached.transcoders.Transcoder;
  * <p>
  * This implementation creates connections where the operation queue is an
  * ArrayBlockingQueue and the read and write queues are unbounded
- * LinkedBlockingQueues.  The <code>Redistribute</code> FailureMode is always
- * used.  If other FailureModes are needed, look at the
- * ConnectionFactoryBuilder.
+ * LinkedBlockingQueues. The <code>Redistribute</code> FailureMode is always
+ * used. If other FailureModes are needed, look at the ConnectionFactoryBuilder.
  *
  * </p>
  */
-public class DefaultConnectionFactory extends SpyObject
-	implements ConnectionFactory {
+public class DefaultConnectionFactory extends SpyObject implements
+    ConnectionFactory {
 
-	/**
-	 * Default failure mode.
-	 */
-	public static final FailureMode DEFAULT_FAILURE_MODE =
-		FailureMode.Redistribute;
+  /**
+   * Default failure mode.
+   */
+  public static final FailureMode DEFAULT_FAILURE_MODE =
+      FailureMode.Redistribute;
 
-	/**
-	 * Default hash algorithm.
-	 */
-	public static final HashAlgorithm DEFAULT_HASH = HashAlgorithm.NATIVE_HASH;
+  /**
+   * Default hash algorithm.
+   */
+  public static final HashAlgorithm DEFAULT_HASH = HashAlgorithm.NATIVE_HASH;
 
-	/**
-	 * Maximum length of the operation queue returned by this connection
-	 * factory.
-	 */
-	public static final int DEFAULT_OP_QUEUE_LEN=16384;
+  /**
+   * Maximum length of the operation queue returned by this connection factory.
+   */
+  public static final int DEFAULT_OP_QUEUE_LEN = 16384;
 
-	/**
-	 * The maximum time to block waiting for op queue operations to complete,
-	 * in milliseconds. The default has been set with the expectation that
-	 * most requests are interactive and waiting for more than a few seconds
-	 * is thus more undesirable than failing the request.
-	 */
-	public static final long DEFAULT_OP_QUEUE_MAX_BLOCK_TIME =
-		TimeUnit.SECONDS.toMillis(10);
+  /**
+   * The maximum time to block waiting for op queue operations to complete, in
+   * milliseconds. The default has been set with the expectation that most
+   * requests are interactive and waiting for more than a few seconds is thus
+   * more undesirable than failing the request.
+   */
+  public static final long DEFAULT_OP_QUEUE_MAX_BLOCK_TIME =
+      TimeUnit.SECONDS.toMillis(10);
 
-	/**
-	 * The read buffer size for each server connection from this factory.
-	 */
-	public static final int DEFAULT_READ_BUFFER_SIZE=16384;
+  /**
+   * The read buffer size for each server connection from this factory.
+   */
+  public static final int DEFAULT_READ_BUFFER_SIZE = 16384;
 
-    /**
-     * Default operation timeout in milliseconds.
-     */
-    public static final long DEFAULT_OPERATION_TIMEOUT = 2500;
+  /**
+   * Default operation timeout in milliseconds.
+   */
+  public static final long DEFAULT_OPERATION_TIMEOUT = 2500;
 
-    /**
-     * Maximum amount of time (in seconds) to wait between reconnect attempts.
-     */
-    public static final long DEFAULT_MAX_RECONNECT_DELAY = 30;
+  /**
+   * Maximum amount of time (in seconds) to wait between reconnect attempts.
+   */
+  public static final long DEFAULT_MAX_RECONNECT_DELAY = 30;
 
-    /**
-     * Maximum number + 2 of timeout exception for shutdown connection
-     */
-    public static final int DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD = 998;
+  /**
+   * Maximum number + 2 of timeout exception for shutdown connection.
+   */
+  public static final int DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD = 998;
 
-	protected final int opQueueLen;
-	private final int readBufSize;
-	private final HashAlgorithm hashAlg;
+  protected final int opQueueLen;
+  private final int readBufSize;
+  private final HashAlgorithm hashAlg;
 
-	/**
-	 * Construct a DefaultConnectionFactory with the given parameters.
-	 *
-	 * @param qLen the queue length.
-	 * @param bufSize the buffer size
-	 * @param hash the algorithm to use for hashing
-	 */
-	public DefaultConnectionFactory(int qLen, int bufSize, HashAlgorithm hash) {
-		super();
-		opQueueLen=qLen;
-		readBufSize=bufSize;
-		hashAlg=hash;
-	}
+  /**
+   * Construct a DefaultConnectionFactory with the given parameters.
+   *
+   * @param qLen the queue length.
+   * @param bufSize the buffer size
+   * @param hash the algorithm to use for hashing
+   */
+  public DefaultConnectionFactory(int qLen, int bufSize, HashAlgorithm hash) {
+    super();
+    opQueueLen = qLen;
+    readBufSize = bufSize;
+    hashAlg = hash;
+  }
 
-	/**
-	 * Create a DefaultConnectionFactory with the given maximum operation
-	 * queue length, and the given read buffer size.
-	 */
-	public DefaultConnectionFactory(int qLen, int bufSize) {
-		this(qLen, bufSize, DEFAULT_HASH);
-	}
+  /**
+   * Create a DefaultConnectionFactory with the given maximum operation queue
+   * length, and the given read buffer size.
+   */
+  public DefaultConnectionFactory(int qLen, int bufSize) {
+    this(qLen, bufSize, DEFAULT_HASH);
+  }
 
-	/**
-	 * Create a DefaultConnectionFactory with the default parameters.
-	 */
-	public DefaultConnectionFactory() {
-		this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE);
-	}
+  /**
+   * Create a DefaultConnectionFactory with the default parameters.
+   */
+  public DefaultConnectionFactory() {
+    this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE);
+  }
 
-	public MemcachedNode createMemcachedNode(SocketAddress sa,
-			SocketChannel c, int bufSize) {
+  public MemcachedNode createMemcachedNode(SocketAddress sa, SocketChannel c,
+      int bufSize) {
 
-		OperationFactory of = getOperationFactory();
-		if(of instanceof AsciiOperationFactory) {
-			return new AsciiMemcachedNodeImpl(sa, c, bufSize,
-				createReadOperationQueue(),
-				createWriteOperationQueue(),
-				createOperationQueue(),
-				getOpQueueMaxBlockTime(),
-				getOperationTimeout());
-		} else if(of instanceof BinaryOperationFactory) {
-			boolean doAuth = false;
-			if (getAuthDescriptor() != null) {
-			    doAuth = true;
-			}
-			return new BinaryMemcachedNodeImpl(sa, c, bufSize,
-					createReadOperationQueue(),
-					createWriteOperationQueue(),
-					createOperationQueue(),
-					getOpQueueMaxBlockTime(),
-					doAuth,
-					getOperationTimeout());
-		} else {
-			throw new IllegalStateException(
-				"Unhandled operation factory type " + of);
-		}
-	}
+    OperationFactory of = getOperationFactory();
+    if (of instanceof AsciiOperationFactory) {
+      return new AsciiMemcachedNodeImpl(sa, c, bufSize,
+          createReadOperationQueue(),
+          createWriteOperationQueue(),
+          createOperationQueue(),
+          getOpQueueMaxBlockTime(),
+          getOperationTimeout());
+    } else if (of instanceof BinaryOperationFactory) {
+      boolean doAuth = false;
+      if (getAuthDescriptor() != null) {
+        doAuth = true;
+      }
+      return new BinaryMemcachedNodeImpl(sa, c, bufSize,
+          createReadOperationQueue(),
+          createWriteOperationQueue(),
+          createOperationQueue(),
+          getOpQueueMaxBlockTime(),
+          doAuth,
+          getOperationTimeout());
+    } else {
+      throw new IllegalStateException("Unhandled operation factory type " + of);
+    }
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#createConnection(java.util.List)
-	 */
-	public MemcachedConnection createConnection(List<InetSocketAddress> addrs)
-		throws IOException {
-		return new MemcachedConnection(getReadBufSize(), this, addrs,
-			getInitialObservers(), getFailureMode(), getOperationFactory());
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#createConnection(java.util.List)
+   */
+  public MemcachedConnection createConnection(List<InetSocketAddress> addrs)
+    throws IOException {
+    return new MemcachedConnection(getReadBufSize(), this, addrs,
+        getInitialObservers(), getFailureMode(), getOperationFactory());
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#getFailureMode()
-	 */
-	public FailureMode getFailureMode() {
-		return DEFAULT_FAILURE_MODE;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getFailureMode()
+   */
+  public FailureMode getFailureMode() {
+    return DEFAULT_FAILURE_MODE;
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#createOperationQueue()
-	 */
-	public BlockingQueue<Operation> createOperationQueue() {
-		return new ArrayBlockingQueue<Operation>(getOpQueueLen());
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#createOperationQueue()
+   */
+  public BlockingQueue<Operation> createOperationQueue() {
+    return new ArrayBlockingQueue<Operation>(getOpQueueLen());
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#createReadOperationQueue()
-	 */
-	public BlockingQueue<Operation> createReadOperationQueue() {
-		return new LinkedBlockingQueue<Operation>();
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#createReadOperationQueue()
+   */
+  public BlockingQueue<Operation> createReadOperationQueue() {
+    return new LinkedBlockingQueue<Operation>();
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#createWriteOperationQueue()
-	 */
-	public BlockingQueue<Operation> createWriteOperationQueue() {
-		return new LinkedBlockingQueue<Operation>();
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#createWriteOperationQueue()
+   */
+  public BlockingQueue<Operation> createWriteOperationQueue() {
+    return new LinkedBlockingQueue<Operation>();
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#createLocator(java.util.List)
-	 */
-	public NodeLocator createLocator(List<MemcachedNode> nodes) {
-		return new ArrayModNodeLocator(nodes, getHashAlg());
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#createLocator(java.util.List)
+   */
+  public NodeLocator createLocator(List<MemcachedNode> nodes) {
+    return new ArrayModNodeLocator(nodes, getHashAlg());
+  }
 
-	/**
-	 * Get the op queue length set at construct time.
-	 */
-	public int getOpQueueLen() {
-		return opQueueLen;
-	}
+  /**
+   * Get the op queue length set at construct time.
+   */
+  public int getOpQueueLen() {
+    return opQueueLen;
+  }
 
-	/**
-	 * @return the maximum time to block waiting for op queue operations to
-	 *         complete, in milliseconds, or null for no waiting.
-	 */
-	public long getOpQueueMaxBlockTime() {
-		return DEFAULT_OP_QUEUE_MAX_BLOCK_TIME;
-	}
+  /**
+   * @return the maximum time to block waiting for op queue operations to
+   *         complete, in milliseconds, or null for no waiting.
+   */
+  public long getOpQueueMaxBlockTime() {
+    return DEFAULT_OP_QUEUE_MAX_BLOCK_TIME;
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#getReadBufSize()
-	 */
-	public int getReadBufSize() {
-		return readBufSize;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getReadBufSize()
+   */
+  public int getReadBufSize() {
+    return readBufSize;
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#getHashAlg()
-	 */
-	public HashAlgorithm getHashAlg() {
-		return hashAlg;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getHashAlg()
+   */
+  public HashAlgorithm getHashAlg() {
+    return hashAlg;
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#getOperationFactory()
-	 */
-	public OperationFactory getOperationFactory() {
-		return new AsciiOperationFactory();
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getOperationFactory()
+   */
+  public OperationFactory getOperationFactory() {
+    return new AsciiOperationFactory();
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#getOperationTimeout()
-	 */
-	public long getOperationTimeout() {
-		return DEFAULT_OPERATION_TIMEOUT;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getOperationTimeout()
+   */
+  public long getOperationTimeout() {
+    return DEFAULT_OPERATION_TIMEOUT;
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#isDaemon()
-	 */
-	public boolean isDaemon() {
-		return false;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#isDaemon()
+   */
+  public boolean isDaemon() {
+    return false;
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#getInitialObservers()
-	 */
-	public Collection<ConnectionObserver> getInitialObservers() {
-		return Collections.emptyList();
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getInitialObservers()
+   */
+  public Collection<ConnectionObserver> getInitialObservers() {
+    return Collections.emptyList();
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#getDefaultTranscoder()
-	 */
-	public Transcoder<Object> getDefaultTranscoder() {
-		return new SerializingTranscoder();
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getDefaultTranscoder()
+   */
+  public Transcoder<Object> getDefaultTranscoder() {
+    return new SerializingTranscoder();
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#useNagleAlgorithm()
-	 */
-	public boolean useNagleAlgorithm() {
-		return false;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#useNagleAlgorithm()
+   */
+  public boolean useNagleAlgorithm() {
+    return false;
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#shouldOptimize()
-	 */
-	public boolean shouldOptimize() {
-		return true;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#shouldOptimize()
+   */
+  public boolean shouldOptimize() {
+    return true;
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#getMaxReconnectDelay()
-	 */
-	public long getMaxReconnectDelay() {
-		return DEFAULT_MAX_RECONNECT_DELAY;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getMaxReconnectDelay()
+   */
+  public long getMaxReconnectDelay() {
+    return DEFAULT_MAX_RECONNECT_DELAY;
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#getAuthDescriptor()
-	 */
-	public AuthDescriptor getAuthDescriptor() {
-		return null;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getAuthDescriptor()
+   */
+  public AuthDescriptor getAuthDescriptor() {
+    return null;
+  }
 
-	/* (non-Javadoc)
-	 * @see net.spy.memcached.ConnectionFactory#getTimeoutExceptionThreshold()
-	 */
-	public int getTimeoutExceptionThreshold() {
-		return DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
-	}
-
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getTimeoutExceptionThreshold()
+   */
+  public int getTimeoutExceptionThreshold() {
+    return DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
+  }
 }

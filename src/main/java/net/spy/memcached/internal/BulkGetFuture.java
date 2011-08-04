@@ -1,3 +1,26 @@
+/**
+ * Copyright (C) 2006-2009 Dustin Sallings
+ * Copyright (C) 2009-2011 Couchbase, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALING
+ * IN THE SOFTWARE.
+ */
+
 package net.spy.memcached.internal;
 
 import java.util.Collection;
@@ -24,154 +47,156 @@ import net.spy.memcached.ops.OperationStatus;
  * @param <T> types of objects returned from the GET
  */
 public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
-	private final Map<String, Future<T>> rvMap;
-	private final Collection<Operation> ops;
-	private final CountDownLatch latch;
-	private OperationStatus status;
-	private boolean cancelled=false;
-	private boolean timeout = false;
+  private final Map<String, Future<T>> rvMap;
+  private final Collection<Operation> ops;
+  private final CountDownLatch latch;
+  private OperationStatus status;
+  private boolean cancelled = false;
+  private boolean timeout = false;
 
-	public BulkGetFuture(Map<String, Future<T>> m,
-			Collection<Operation> getOps, CountDownLatch l) {
-		super();
-		rvMap = m;
-		ops = getOps;
-		latch=l;
-		status = null;
-	}
+  public BulkGetFuture(Map<String, Future<T>> m, Collection<Operation> getOps,
+      CountDownLatch l) {
+    super();
+    rvMap = m;
+    ops = getOps;
+    latch = l;
+    status = null;
+  }
 
-	public boolean cancel(boolean ign) {
-		boolean rv=false;
-		for(Operation op : ops) {
-			rv |= op.getState() == OperationState.WRITING;
-			op.cancel();
-		}
-		for (Future<T> v : rvMap.values()) {
-			v.cancel(ign);
-		}
-		cancelled=true;
-		status = new OperationStatus(false, "Cancelled");
-		return rv;
-	}
-
-	public Map<String, T> get()
-		throws InterruptedException, ExecutionException {
-		try {
-			return get(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-		} catch (TimeoutException e) {
-			throw new RuntimeException("Timed out waiting forever", e);
-		}
-	}
-
-    /* (non-Javadoc)
-     * @see net.spy.memcached.internal.BulkFuture#getSome(long, java.util.concurrent.TimeUnit)
-     */
-    public Map<String, T> getSome(long to, TimeUnit unit)
-            throws InterruptedException, ExecutionException {
-        Collection<Operation> timedoutOps = new HashSet<Operation>();
-        Map<String, T> ret = internalGet(to, unit, timedoutOps);
-        if (timedoutOps.size() > 0) {
-            timeout = true;
-            LoggerFactory.getLogger(getClass()).warn(
-                    new CheckedOperationTimeoutException(
-                            "Operation timed out: ", timedoutOps).getMessage());
-        }
-        return ret;
-
+  public boolean cancel(boolean ign) {
+    boolean rv = false;
+    for (Operation op : ops) {
+      rv |= op.getState() == OperationState.WRITING;
+      op.cancel();
     }
-
-    /*
-     * get all or nothing: timeout exception is thrown if
-     * all the data could not be retrieved
-     *
-     * @see java.util.concurrent.Future#get(long,
-     * java.util.concurrent.TimeUnit)
-     */
-    public Map<String, T> get(long to, TimeUnit unit)
-            throws InterruptedException, ExecutionException, TimeoutException {
-        Collection<Operation> timedoutOps = new HashSet<Operation>();
-        Map<String, T> ret = internalGet(to, unit, timedoutOps);
-        if (timedoutOps.size() > 0) {
-            this.timeout = true;
-            status = new OperationStatus(false, "Timed out");
-            throw new CheckedOperationTimeoutException("Operation timed out.",
-                    timedoutOps);
-        }
-        return ret;
+    for (Future<T> v : rvMap.values()) {
+      v.cancel(ign);
     }
+    cancelled = true;
+    status = new OperationStatus(false, "Cancelled");
+    return rv;
+  }
 
-    /**
-     * refactored code common to both get(long, TimeUnit)
-     * and getSome(long, TimeUnit)
-     *
-     * @param to
-     * @param unit
-     * @param timedoutOps
-     * @return
-     * @throws InterruptedException
-     * @throws ExecutionException
-     */
-    private Map<String, T> internalGet(long to, TimeUnit unit,
-            Collection<Operation> timedoutOps) throws InterruptedException,
-            ExecutionException {
-        if (!latch.await(to, unit)) {
-            for (Operation op : ops) {
-                if (op.getState() != OperationState.COMPLETE) {
-                    MemcachedConnection.opTimedOut(op);
-                    timedoutOps.add(op);
-                } else {
-                    MemcachedConnection.opSucceeded(op);
-                }
-            }
-        }
-        for (Operation op : ops) {
-            if (op.isCancelled()) {
-		status = new OperationStatus(false, "Cancelled");
-                throw new ExecutionException(new RuntimeException("Cancelled"));
-            }
-            if (op.hasErrored()) {
-		status = new OperationStatus(false, op.getException().getMessage());
-                throw new ExecutionException(op.getException());
-            }
-        }
-        Map<String, T> m = new HashMap<String, T>();
-        for (Map.Entry<String, Future<T>> me : rvMap.entrySet()) {
-            m.put(me.getKey(), me.getValue().get());
-        }
-        return m;
+  public Map<String, T> get() throws InterruptedException, ExecutionException {
+    try {
+      return get(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    } catch (TimeoutException e) {
+      throw new RuntimeException("Timed out waiting forever", e);
     }
+  }
 
-	public OperationStatus getStatus() {
-		if (status == null) {
-			try {
-				get();
-			} catch (InterruptedException e) {
-				status = new OperationStatus(false, "Interrupted");
-				Thread.currentThread().interrupt();
-			} catch (ExecutionException e) {
-				return status;
-			}
-		}
-		return status;
-	}
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.internal.BulkFuture#getSome(long,
+   * java.util.concurrent.TimeUnit)
+   */
+  public Map<String, T> getSome(long to, TimeUnit unit)
+    throws InterruptedException, ExecutionException {
+    Collection<Operation> timedoutOps = new HashSet<Operation>();
+    Map<String, T> ret = internalGet(to, unit, timedoutOps);
+    if (timedoutOps.size() > 0) {
+      timeout = true;
+      LoggerFactory.getLogger(getClass()).warn(
+          new CheckedOperationTimeoutException("Operation timed out: ",
+              timedoutOps).getMessage());
+    }
+    return ret;
 
-	public void setStatus(OperationStatus s) {
-		status = s;
-	}
+  }
 
-	public boolean isCancelled() {
-		return cancelled;
-	}
+  /*
+   * get all or nothing: timeout exception is thrown if all the data could not
+   * be retrieved
+   *
+   * @see java.util.concurrent.Future#get(long, java.util.concurrent.TimeUnit)
+   */
+  public Map<String, T> get(long to, TimeUnit unit)
+    throws InterruptedException, ExecutionException, TimeoutException {
+    Collection<Operation> timedoutOps = new HashSet<Operation>();
+    Map<String, T> ret = internalGet(to, unit, timedoutOps);
+    if (timedoutOps.size() > 0) {
+      this.timeout = true;
+      status = new OperationStatus(false, "Timed out");
+      throw new CheckedOperationTimeoutException("Operation timed out.",
+          timedoutOps);
+    }
+    return ret;
+  }
 
-	public boolean isDone() {
-		return latch.getCount() == 0;
-	}
+  /**
+   * refactored code common to both get(long, TimeUnit) and getSome(long,
+   * TimeUnit).
+   *
+   * @param to
+   * @param unit
+   * @param timedoutOps
+   * @return
+   * @throws InterruptedException
+   * @throws ExecutionException
+   */
+  private Map<String, T> internalGet(long to, TimeUnit unit,
+      Collection<Operation> timedoutOps) throws InterruptedException,
+      ExecutionException {
+    if (!latch.await(to, unit)) {
+      for (Operation op : ops) {
+        if (op.getState() != OperationState.COMPLETE) {
+          MemcachedConnection.opTimedOut(op);
+          timedoutOps.add(op);
+        } else {
+          MemcachedConnection.opSucceeded(op);
+        }
+      }
+    }
+    for (Operation op : ops) {
+      if (op.isCancelled()) {
+        status = new OperationStatus(false, "Cancelled");
+        throw new ExecutionException(new RuntimeException("Cancelled"));
+      }
+      if (op.hasErrored()) {
+        status = new OperationStatus(false, op.getException().getMessage());
+        throw new ExecutionException(op.getException());
+      }
+    }
+    Map<String, T> m = new HashMap<String, T>();
+    for (Map.Entry<String, Future<T>> me : rvMap.entrySet()) {
+      m.put(me.getKey(), me.getValue().get());
+    }
+    return m;
+  }
 
-	/* set to true if timeout was reached.
-	 *
-	 * @see net.spy.memcached.internal.BulkFuture#isTimeout()
-	 */
-	public boolean isTimeout() {
-		return timeout;
-	}
+  public OperationStatus getStatus() {
+    if (status == null) {
+      try {
+        get();
+      } catch (InterruptedException e) {
+        status = new OperationStatus(false, "Interrupted");
+        Thread.currentThread().interrupt();
+      } catch (ExecutionException e) {
+        return status;
+      }
+    }
+    return status;
+  }
+
+  public void setStatus(OperationStatus s) {
+    status = s;
+  }
+
+  public boolean isCancelled() {
+    return cancelled;
+  }
+
+  public boolean isDone() {
+    return latch.getCount() == 0;
+  }
+
+  /*
+   * set to true if timeout was reached.
+   *
+   * @see net.spy.memcached.internal.BulkFuture#isTimeout()
+   */
+  public boolean isTimeout() {
+    return timeout;
+  }
 }

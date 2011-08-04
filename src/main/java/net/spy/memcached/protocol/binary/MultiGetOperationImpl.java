@@ -1,6 +1,27 @@
-package net.spy.memcached.protocol.binary;
+/**
+ * Copyright (C) 2006-2009 Dustin Sallings
+ * Copyright (C) 2009-2011 Couchbase, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALING
+ * IN THE SOFTWARE.
+ */
 
-import static net.spy.memcached.protocol.binary.GetOperationImpl.EXTRA_HDR_LEN;
+package net.spy.memcached.protocol.binary;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -14,102 +35,101 @@ import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 
-class MultiGetOperationImpl extends MultiKeyOperationImpl
-		implements GetOperation {
+import static net.spy.memcached.protocol.binary.GetOperationImpl.EXTRA_HDR_LEN;
 
-	private static final int CMD_GETQ=0x09;
+class MultiGetOperationImpl extends MultiKeyOperationImpl implements
+    GetOperation {
 
-	private final Map<Integer, String> keys=new HashMap<Integer, String>();
-	private final Map<Integer, byte[]> bkeys=new HashMap<Integer, byte[]>();
-	private final Map<String, Integer> rkeys=new HashMap<String, Integer>();
+  private static final int CMD_GETQ = 0x09;
 
-	private final int terminalOpaque=generateOpaque();
+  private final Map<Integer, String> keys = new HashMap<Integer, String>();
+  private final Map<Integer, byte[]> bkeys = new HashMap<Integer, byte[]>();
+  private final Map<String, Integer> rkeys = new HashMap<String, Integer>();
 
-	public MultiGetOperationImpl(Collection<String> k, OperationCallback cb) {
-		super(-1, -1, cb);
-		for(String s : new HashSet<String>(k)) {
-			addKey(s);
-		}
-	}
+  private final int terminalOpaque = generateOpaque();
 
-	/**
-	 * Add a key (and return its new opaque value).
-	 */
-	protected int addKey(String k) {
-		Integer rv=rkeys.get(k);
-		if(rv == null) {
-			rv=generateOpaque();
-			keys.put(rv, k);
-			bkeys.put(rv, KeyUtil.getKeyBytes(k));
-			rkeys.put(k, rv);
-			vbmap.put(k, new Short((short)0));
-		}
-		return rv;
-	}
+  public MultiGetOperationImpl(Collection<String> k, OperationCallback cb) {
+    super(-1, -1, cb);
+    for (String s : new HashSet<String>(k)) {
+      addKey(s);
+    }
+  }
 
-	@Override
-	public void initialize() {
-		int size=(1+keys.size()) * MIN_RECV_PACKET;
-		for(byte[] b : bkeys.values()) {
-			size += b.length;
-		}
-		// set up the initial header stuff
-		ByteBuffer bb=ByteBuffer.allocate(size);
-		for(Map.Entry<Integer, byte[]> me : bkeys.entrySet()) {
-			final byte[] keyBytes=me.getValue();
-			final String key = keys.get(me.getKey());
+  /**
+   * Add a key (and return its new opaque value).
+   */
+  protected int addKey(String k) {
+    Integer rv = rkeys.get(k);
+    if (rv == null) {
+      rv = generateOpaque();
+      keys.put(rv, k);
+      bkeys.put(rv, KeyUtil.getKeyBytes(k));
+      rkeys.put(k, rv);
+      vbmap.put(k, Short.valueOf((short) 0));
+    }
+    return rv;
+  }
 
-			// Custom header
-			bb.put(REQ_MAGIC);
-			bb.put((byte)CMD_GETQ);
-			bb.putShort((short)keyBytes.length);
-			bb.put((byte)0); // extralen
-			bb.put((byte)0); // data type
-			bb.putShort(vbmap.get(key).shortValue()); // vbucket
-			bb.putInt(keyBytes.length);
-			bb.putInt(me.getKey());
-			bb.putLong(0); // cas
-			// the actual key
-			bb.put(keyBytes);
-		}
-		// Add the noop
-		bb.put(REQ_MAGIC);
-		bb.put((byte)NoopOperationImpl.CMD);
-		bb.putShort((short)0);
-		bb.put((byte)0); // extralen
-		bb.put((byte)0); // data type
-		bb.putShort((short)0); // reserved
-		bb.putInt(0);
-		bb.putInt(terminalOpaque);
-		bb.putLong(0); // cas
+  @Override
+  public void initialize() {
+    int size = (1 + keys.size()) * MIN_RECV_PACKET;
+    for (byte[] b : bkeys.values()) {
+      size += b.length;
+    }
+    // set up the initial header stuff
+    ByteBuffer bb = ByteBuffer.allocate(size);
+    for (Map.Entry<Integer, byte[]> me : bkeys.entrySet()) {
+      final byte[] keyBytes = me.getValue();
+      final String key = keys.get(me.getKey());
 
-		bb.flip();
-		setBuffer(bb);
-	}
+      // Custom header
+      bb.put(REQ_MAGIC);
+      bb.put((byte) CMD_GETQ);
+      bb.putShort((short) keyBytes.length);
+      bb.put((byte) 0); // extralen
+      bb.put((byte) 0); // data type
+      bb.putShort(vbmap.get(key).shortValue()); // vbucket
+      bb.putInt(keyBytes.length);
+      bb.putInt(me.getKey());
+      bb.putLong(0); // cas
+      // the actual key
+      bb.put(keyBytes);
+    }
+    // Add the noop
+    bb.put(REQ_MAGIC);
+    bb.put((byte) NoopOperationImpl.CMD);
+    bb.putShort((short) 0);
+    bb.put((byte) 0); // extralen
+    bb.put((byte) 0); // data type
+    bb.putShort((short) 0); // reserved
+    bb.putInt(0);
+    bb.putInt(terminalOpaque);
+    bb.putLong(0); // cas
 
-	@Override
-	protected void finishedPayload(byte[] pl) throws IOException {
-		if(responseOpaque == terminalOpaque) {
-			getCallback().receivedStatus(STATUS_OK);
-			transitionState(OperationState.COMPLETE);
-		} else if(errorCode != 0) {
-			getLogger().warn("Error on key %s:  %s (%d)",
-				keys.get(responseOpaque), new String(pl), errorCode);
-		} else {
-			final int flags=decodeInt(pl, 0);
-			final byte[] data=new byte[pl.length - EXTRA_HDR_LEN];
-			System.arraycopy(pl, EXTRA_HDR_LEN, data,
-					0, pl.length-EXTRA_HDR_LEN);
-			Callback cb=(Callback)getCallback();
-			cb.gotData(keys.get(responseOpaque), flags, data);
-		}
-		resetInput();
-	}
+    bb.flip();
+    setBuffer(bb);
+  }
 
-	@Override
-	protected boolean opaqueIsValid() {
-		return responseOpaque == terminalOpaque
-			|| keys.containsKey(responseOpaque);
-	}
+  @Override
+  protected void finishedPayload(byte[] pl) throws IOException {
+    if (responseOpaque == terminalOpaque) {
+      getCallback().receivedStatus(STATUS_OK);
+      transitionState(OperationState.COMPLETE);
+    } else if (errorCode != 0) {
+      getLogger().warn("Error on key %s:  %s (%d)", keys.get(responseOpaque),
+          new String(pl), errorCode);
+    } else {
+      final int flags = decodeInt(pl, 0);
+      final byte[] data = new byte[pl.length - EXTRA_HDR_LEN];
+      System.arraycopy(pl, EXTRA_HDR_LEN, data, 0, pl.length - EXTRA_HDR_LEN);
+      Callback cb = (Callback) getCallback();
+      cb.gotData(keys.get(responseOpaque), flags, data);
+    }
+    resetInput();
+  }
 
+  @Override
+  protected boolean opaqueIsValid() {
+    return responseOpaque == terminalOpaque || keys.containsKey(responseOpaque);
+  }
 }

@@ -1,5 +1,23 @@
 /**
- * Based upon http://hc.apache.org/httpcomponents-core-ga/httpcore-nio/examples/org/apache/http/examples/nio/NHttpClientConnManagement.java
+ * Copyright (C) 2009-2011 Couchbase, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALING
+ * IN THE SOFTWARE.
  */
 
 package net.spy.memcached;
@@ -32,184 +50,184 @@ import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.nio.util.HeapByteBufferAllocator;
 import org.apache.http.protocol.HttpContext;
 
+/**
+ * Establishes a connection to a single Couchbase node.
+ *
+ * Based upon http://hc.apache.org/httpcomponents-core-ga/httpcore-nio/
+ * examples/org/apache/http/examples/nio/NHttpClientConnManagement.java
+ */
 public class CouchbaseNode extends SpyObject {
 
-	private final InetSocketAddress addr;
-	private final AsyncConnectionManager connMgr;
+  private final InetSocketAddress addr;
+  private final AsyncConnectionManager connMgr;
+  private final long opQueueMaxBlockTime;
+  private final long defaultOpTimeout;
+  private final BlockingQueue<HttpOperation> writeQ;
 
-	private final long opQueueMaxBlockTime;
-	private final long defaultOpTimeout;
+  public CouchbaseNode(InetSocketAddress a, AsyncConnectionManager mgr,
+      LinkedBlockingQueue<HttpOperation> linkedBlockingQueue,
+      long maxBlockTime, long operationTimeout) {
+    addr = a;
+    connMgr = mgr;
+    writeQ = linkedBlockingQueue;
+    opQueueMaxBlockTime = maxBlockTime;
+    defaultOpTimeout = operationTimeout;
+  }
 
-	private final BlockingQueue<HttpOperation> writeQ;
+  public void init() throws IOReactorException {
+    // Start the I/O reactor in a separate thread
+    Thread t = new Thread(new Runnable() {
+      public void run() {
+        try {
+          connMgr.execute();
+        } catch (InterruptedIOException ex) {
+          getLogger().error("I/O reactor Interrupted");
+        } catch (IOException e) {
+          getLogger().error("I/O error: " + e.getMessage());
+          e.printStackTrace();
+        }
+        getLogger().info("Couchbase I/O reactor terminated");
+      }
+    });
+    t.start();
+  }
 
-	public CouchbaseNode(InetSocketAddress a, AsyncConnectionManager mgr,
-			LinkedBlockingQueue<HttpOperation> linkedBlockingQueue, long maxBlockTime,
-			long operationTimeout) {
-		addr = a;
-		connMgr = mgr;
-		writeQ = linkedBlockingQueue;
-		opQueueMaxBlockTime = maxBlockTime;
-		defaultOpTimeout = operationTimeout;
-	}
+  public void doWrites() {
+    HttpOperation op;
+    while ((op = writeQ.poll()) != null) {
+      if (!op.isTimedOut() && !op.isCancelled()) {
+        AsyncConnectionRequest connRequest = connMgr.requestConnection();
+        try {
+          connRequest.waitFor();
+        } catch (InterruptedException e) {
+          getLogger().warn(
+              "Interrupted while trying to get a connection."
+                  + " Cancelling op");
+          op.cancel();
+          return;
+        }
 
-	public void init() throws IOReactorException {
-		// Start the I/O reactor in a separate thread
-		Thread t = new Thread(new Runnable() {
-			public void run() {
-				try {
-					connMgr.execute();
-				} catch (InterruptedIOException ex) {
-					getLogger().error("I/O reactor Interrupted");
-				} catch (IOException e) {
-					getLogger().error("I/O error: " + e.getMessage());
-					e.printStackTrace();
-				}
-				getLogger().info("Couchbase I/O reactor terminated");
-			}
-		});
-		t.start();
-	}
+        NHttpClientConnection conn = connRequest.getConnection();
+        if (conn == null) {
+          getLogger().error("Failed to obtain connection. Cancelling op");
+          op.cancel();
+        } else {
+          HttpContext context = conn.getContext();
+          RequestHandle handle = new RequestHandle(connMgr, conn);
+          context.setAttribute("request-handle", handle);
+          context.setAttribute("operation", op);
+          conn.requestOutput();
+        }
+      }
+    }
+  }
 
-	public void doWrites() {
-		HttpOperation op;
-		while ((op = writeQ.poll()) != null) {
-			if (!op.isTimedOut() && !op.isCancelled()) {
-				AsyncConnectionRequest connRequest = connMgr
-						.requestConnection();
-				try {
-					connRequest.waitFor();
-				} catch (InterruptedException e) {
-					getLogger().warn(
-							"Interrupted while trying to get a connection."
-									+ " Cancelling op");
-					op.cancel();
-					return;
-				}
+  public Collection<HttpOperation> destroyWriteQueue() {
+    Collection<HttpOperation> rv = new ArrayList<HttpOperation>();
+    writeQ.drainTo(rv);
+    return rv;
+  }
 
-				NHttpClientConnection conn = connRequest.getConnection();
-				if (conn == null) {
-					getLogger().error("Failed to obtain connection. " +
-							"Cancelling op");
-					op.cancel();
-				} else {
-					HttpContext context = conn.getContext();
-					RequestHandle handle = new RequestHandle(connMgr, conn);
-					context.setAttribute("request-handle", handle);
-					context.setAttribute("operation", op);
-					conn.requestOutput();
-				}
-			}
-		}
-	}
+  public boolean hasWriteOps() {
+    return !writeQ.isEmpty();
+  }
 
-	public Collection<HttpOperation> destroyWriteQueue() {
-		Collection<HttpOperation> rv=new ArrayList<HttpOperation>();
-		writeQ.drainTo(rv);
-		return rv;
-	}
+  public void addOp(HttpOperation op) {
+    try {
+      if (!writeQ.offer(op, opQueueMaxBlockTime, TimeUnit.MILLISECONDS)) {
+        throw new IllegalStateException("Timed out waiting to add " + op
+            + "(max wait=" + opQueueMaxBlockTime + "ms)");
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException("Interrupted while waiting to add " + op);
+    }
+  }
 
-	public boolean hasWriteOps() {
-		return !writeQ.isEmpty();
-	}
+  public InetSocketAddress getSocketAddress() {
+    return addr;
+  }
 
-	public void addOp(HttpOperation op) {
-		try {
-			if (!writeQ.offer(op, opQueueMaxBlockTime, TimeUnit.MILLISECONDS)) {
-				throw new IllegalStateException("Timed out waiting to add "
-						+ op + "(max wait=" + opQueueMaxBlockTime + "ms)");
-			}
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new IllegalStateException("Interrupted while waiting to add "
-					+ op);
-		}
-	}
+  public void shutdown() throws IOException {
+    shutdown(0, TimeUnit.MILLISECONDS);
+  }
 
-	public InetSocketAddress getSocketAddress() {
-		return addr;
-	}
+  public void shutdown(long time, TimeUnit unit) throws IOException {
+    if (unit != TimeUnit.MILLISECONDS) {
+      connMgr.shutdown(TimeUnit.MILLISECONDS.convert(time, unit));
+    } else {
+      connMgr.shutdown(time);
+    }
+  }
 
-	public void shutdown() throws IOException {
-		shutdown(0, TimeUnit.MILLISECONDS);
-	}
+  static class MyHttpRequestExecutionHandler implements
+      NHttpRequestExecutionHandler {
 
-	public void shutdown(long time, TimeUnit unit) throws IOException {
-		if (unit != TimeUnit.MILLISECONDS) {
-			connMgr.shutdown(TimeUnit.MILLISECONDS.convert(time, unit));
-		} else {
-			connMgr.shutdown(time);
-		}
-	}
+    public MyHttpRequestExecutionHandler() {
+      super();
+    }
 
-	static class MyHttpRequestExecutionHandler implements
-			NHttpRequestExecutionHandler {
+    public void initalizeContext(final HttpContext context,
+        final Object attachment) {
+    }
 
-		public MyHttpRequestExecutionHandler() {
-			super();
-		}
+    public void finalizeContext(final HttpContext context) {
+      RequestHandle handle =
+          (RequestHandle) context.removeAttribute("request-handle");
+      if (handle != null) {
+        handle.cancel();
+      }
+    }
 
-		public void initalizeContext(final HttpContext context,
-				final Object attachment) {
-		}
+    public HttpRequest submitRequest(final HttpContext context) {
+      HttpOperation op = (HttpOperation) context.getAttribute("operation");
+      if (op == null) {
+        return null;
+      }
+      return op.getRequest();
+    }
 
-		public void finalizeContext(final HttpContext context) {
-			RequestHandle handle = (RequestHandle) context
-					.removeAttribute("request-handle");
-			if (handle != null) {
-				handle.cancel();
-			}
-		}
+    public void handleResponse(final HttpResponse response,
+        final HttpContext context) {
+      RequestHandle handle =
+          (RequestHandle) context.removeAttribute("request-handle");
+      HttpOperation op = (HttpOperation) context.removeAttribute("operation");
+      if (handle != null) {
+        handle.completed();
+        op.handleResponse(response);
+      }
+    }
 
-		public HttpRequest submitRequest(final HttpContext context) {
-			HttpOperation op = (HttpOperation) context.getAttribute("operation");
-			if (op == null) {
-				return null;
-			}
-			return op.getRequest();
-		}
+    @Override
+    public ConsumingNHttpEntity responseEntity(HttpResponse response,
+        HttpContext context) throws IOException {
+      return new BufferingNHttpEntity(response.getEntity(),
+          new HeapByteBufferAllocator());
+    }
+  }
 
-		public void handleResponse(final HttpResponse response,
-				final HttpContext context) {
-			RequestHandle handle = (RequestHandle) context.removeAttribute("request-handle");
-			HttpOperation op = (HttpOperation) context.removeAttribute("operation");
-			if (handle != null) {
-				handle.completed();
-				op.handleResponse(response);
-			}
-		}
+  static class EventLogger extends SpyObject implements EventListener {
 
-		@Override
-		public ConsumingNHttpEntity responseEntity(HttpResponse response,
-				HttpContext context) throws IOException {
-			return new BufferingNHttpEntity(response.getEntity(),
-					new HeapByteBufferAllocator());
-		}
-	}
+    public void connectionOpen(final NHttpConnection conn) {
+      getLogger().debug("Connection open: " + conn);
+    }
 
-	static class EventLogger extends SpyObject implements EventListener {
+    public void connectionTimeout(final NHttpConnection conn) {
+      getLogger().error("Connection timed out: " + conn);
+    }
 
-		public void connectionOpen(final NHttpConnection conn) {
-			getLogger().debug("Connection open: " + conn);
-		}
+    public void connectionClosed(final NHttpConnection conn) {
+      getLogger().debug("Connection closed: " + conn);
+    }
 
-		public void connectionTimeout(final NHttpConnection conn) {
-			getLogger().error("Connection timed out: " + conn);
-		}
+    public void fatalIOException(final IOException ex,
+        final NHttpConnection conn) {
+      getLogger().error("I/O error: " + ex.getMessage());
+    }
 
-		public void connectionClosed(final NHttpConnection conn) {
-			getLogger().debug("Connection closed: " + conn);
-		}
-
-		public void fatalIOException(final IOException ex,
-				final NHttpConnection conn) {
-			getLogger().error("I/O error: " + ex.getMessage());
-		}
-
-		public void fatalProtocolException(final HttpException ex,
-				final NHttpConnection conn) {
-			getLogger().error("HTTP error: " + ex.getMessage());
-		}
-
-	}
-
+    public void fatalProtocolException(final HttpException ex,
+        final NHttpConnection conn) {
+      getLogger().error("HTTP error: " + ex.getMessage());
+    }
+  }
 }
