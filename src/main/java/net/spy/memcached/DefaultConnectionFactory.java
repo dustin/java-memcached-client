@@ -68,7 +68,8 @@ public class DefaultConnectionFactory extends SpyObject implements
   /**
    * Default hash algorithm.
    */
-  public static final HashAlgorithm DEFAULT_HASH = HashAlgorithm.NATIVE_HASH;
+  public static final HashAlgorithm DEFAULT_HASH =
+    DefaultHashAlgorithm.NATIVE_HASH;
 
   /**
    * Maximum length of the operation queue returned by this connection factory.

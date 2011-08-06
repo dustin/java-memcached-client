@@ -59,7 +59,8 @@ public class MembaseConnectionFactory extends BinaryConnectionFactory {
   /**
    * Default hash algorithm.
    */
-  public static final HashAlgorithm DEFAULT_HASH = HashAlgorithm.KETAMA_HASH;
+  public static final HashAlgorithm DEFAULT_HASH =
+    DefaultHashAlgorithm.KETAMA_HASH;
 
   /**
    * Maximum length of the operation queue returned by this connection factory.

@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.spy.memcached.HashAlgorithm;
+import net.spy.memcached.DefaultHashAlgorithm;
 
 /**
  * A ConfigurationParserMock.
@@ -44,8 +44,8 @@ public class ConfigurationParserMock implements ConfigurationParser {
   private String poolUri = "/pools/default";
   private String poolStreamingUri = "/poolsStreaming/default";
   private String bucketName = "Administrator";
-  private DefaultConfig vbuckets = new DefaultConfig(HashAlgorithm.NATIVE_HASH,
-      1, 1, 1, null, null);
+  private DefaultConfig vbuckets =
+    new DefaultConfig(DefaultHashAlgorithm.NATIVE_HASH, 1, 1, 1, null, null);
   private String bucketsUri = "/pools/default/buckets";
   private String bucketStreamingUri =
       "/pools/default/bucketsStreaming/Administrator";

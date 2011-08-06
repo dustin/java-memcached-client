@@ -34,7 +34,7 @@ public class ArrayModNodeLocatorTest extends AbstractNodeLocationCase {
   protected void setupNodes(int n) {
     super.setupNodes(n);
     locator = new ArrayModNodeLocator(Arrays.asList(nodes),
-        HashAlgorithm.NATIVE_HASH);
+        DefaultHashAlgorithm.NATIVE_HASH);
   }
 
   public void testPrimary() throws Exception {

@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.spy.memcached.DefaultHashAlgorithm;
 import net.spy.memcached.HashAlgorithm;
 
 import org.codehaus.jettison.json.JSONArray;
@@ -83,19 +84,19 @@ public class DefaultConfigFactory implements ConfigFactory {
   }
 
   private HashAlgorithm lookupHashAlgorithm(String algorithm) {
-    HashAlgorithm ha = HashAlgorithm.NATIVE_HASH;
+    HashAlgorithm ha = DefaultHashAlgorithm.NATIVE_HASH;
     if ("crc".equalsIgnoreCase(algorithm)) {
-      ha = HashAlgorithm.CRC32_HASH;
+      ha = DefaultHashAlgorithm.CRC32_HASH;
     } else if ("fnv1_32".equalsIgnoreCase(algorithm)) {
-      ha = HashAlgorithm.FNV1_32_HASH;
+      ha = DefaultHashAlgorithm.FNV1_32_HASH;
     } else if ("fnv1_64".equalsIgnoreCase(algorithm)) {
-      ha = HashAlgorithm.FNV1_64_HASH;
+      ha = DefaultHashAlgorithm.FNV1_64_HASH;
     } else if ("fnv1a_32".equalsIgnoreCase(algorithm)) {
-      ha = HashAlgorithm.FNV1A_32_HASH;
+      ha = DefaultHashAlgorithm.FNV1A_32_HASH;
     } else if ("fnv1a_64".equalsIgnoreCase(algorithm)) {
-      ha = HashAlgorithm.FNV1A_64_HASH;
+      ha = DefaultHashAlgorithm.FNV1A_64_HASH;
     } else if ("md5".equalsIgnoreCase(algorithm)) {
-      ha = HashAlgorithm.KETAMA_HASH;
+      ha = DefaultHashAlgorithm.KETAMA_HASH;
     } else {
       throw new IllegalArgumentException("Unhandled algorithm type: "
         + algorithm);
