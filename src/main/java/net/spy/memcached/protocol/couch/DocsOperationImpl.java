@@ -80,7 +80,7 @@ public class DocsOperationImpl extends HttpOperationImpl implements
             String id = elem.getString("id");
             String key = elem.getString("key");
             String value = elem.getString("value");
-            rows.add(new RowWithDocs(id, key, value, null));
+            rows.add(new ViewRowWithDocs(id, key, value, null));
           }
         }
         if (base.has("errors")) {

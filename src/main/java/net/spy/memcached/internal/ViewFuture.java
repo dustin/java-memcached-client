@@ -34,9 +34,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.memcached.OperationTimeoutException;
 import net.spy.memcached.ops.OperationStatus;
-import net.spy.memcached.protocol.couch.RowWithDocs;
 import net.spy.memcached.protocol.couch.ViewResponseWithDocs;
 import net.spy.memcached.protocol.couch.ViewRow;
+import net.spy.memcached.protocol.couch.ViewRowWithDocs;
 
 /**
  * A ViewFuture.
@@ -89,10 +89,9 @@ public class ViewFuture extends HttpFuture<ViewResponseWithDocs> {
 
     while (itr.hasNext()) {
       ViewRow r = itr.next();
-      rows.add(new RowWithDocs(r.getId(), r.getKey(), r.getValue(),
+      rows.add(new ViewRowWithDocs(r.getId(), r.getKey(), r.getValue(),
           docMap.get(r.getId())));
     }
-
     return new ViewResponseWithDocs(rows, view.getErrors());
   }
 

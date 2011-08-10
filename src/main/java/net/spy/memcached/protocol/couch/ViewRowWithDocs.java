@@ -24,15 +24,19 @@ package net.spy.memcached.protocol.couch;
 
 /**
  * Holds a row in a view result that contains the fields
- * key and value.
+ * id, key, value, and doc.
  */
-public class RowReduced implements ViewRow {
-  private String key;
-  private String value;
+public class ViewRowWithDocs implements ViewRow {
+  private final String id;
+  private final String key;
+  private final String value;
+  private final Object doc;
 
-  public RowReduced(String key, String value) {
+  public ViewRowWithDocs(String id, String key, String value, Object doc) {
+    this.id = parseField(id);
     this.key = parseField(key);
     this.value = parseField(value);
+    this.doc = parseField((String)doc);
   }
 
   private String parseField(String field) {
@@ -45,8 +49,7 @@ public class RowReduced implements ViewRow {
 
   @Override
   public String getId() {
-    throw new UnsupportedOperationException("Reduced views don't contain "
-        + "document ids");
+    return id;
   }
 
   @Override
@@ -54,13 +57,13 @@ public class RowReduced implements ViewRow {
     return key;
   }
 
+  @Override
   public String getValue() {
     return value;
   }
 
   @Override
-  public String getDocument() {
-    throw new UnsupportedOperationException("Reduced views don't contain "
-        + "documents");
+  public Object getDocument() {
+    return doc;
   }
 }

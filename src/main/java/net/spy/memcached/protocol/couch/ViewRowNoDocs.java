@@ -24,19 +24,17 @@ package net.spy.memcached.protocol.couch;
 
 /**
  * Holds a row in a view result that contains the fields
- * id, key, value, and doc.
+ * id, key, and value.
  */
-public class RowWithDocs implements ViewRow {
+public class ViewRowNoDocs implements ViewRow {
   private final String id;
   private final String key;
   private final String value;
-  private final Object doc;
 
-  public RowWithDocs(String id, String key, String value, Object doc) {
+  public ViewRowNoDocs(String id, String key, String value) {
     this.id = parseField(id);
     this.key = parseField(key);
     this.value = parseField(value);
-    this.doc = parseField((String)doc);
   }
 
   private String parseField(String field) {
@@ -64,6 +62,7 @@ public class RowWithDocs implements ViewRow {
 
   @Override
   public Object getDocument() {
-    return doc;
+    throw new UnsupportedOperationException("This view result doesn't contain "
+        + "documents");
   }
 }
