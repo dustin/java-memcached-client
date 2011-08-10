@@ -69,8 +69,14 @@ public class ViewResponseWithDocs implements ViewResponse,
   public String toString() {
     StringBuilder s = new StringBuilder();
     for (ViewRow r : rows) {
-      s.append(r.getId() + " : " + r.getKey() + " : " + r.getValue() + " : "
-          + r.getDocument() + "\n");
+      s.append(r.getId());
+      s.append(" : ");
+      s.append(r.getKey());
+      s.append(" : ");
+      s.append(r.getValue());
+      s.append(" : ");
+      s.append(r.getDocument());
+      s.append("\n");
     }
     return s.toString();
   }

@@ -57,7 +57,10 @@ public class ViewResponseReduced implements ViewResponse {
   public String toString() {
     StringBuilder s = new StringBuilder();
     for (ViewRow r : rows) {
-      s.append(r.getKey() + " : " + r.getValue() + "\n");
+      s.append(r.getKey());
+      s.append(" : ");
+      s.append(r.getValue());
+      s.append("\n");
     }
     return s.toString();
   }
