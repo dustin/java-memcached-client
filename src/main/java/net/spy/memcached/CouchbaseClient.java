@@ -262,7 +262,7 @@ public class CouchbaseClient extends MembaseClient
    * @param query the type of query to run against the view.
    * @return a Future containing the results of the query.
    */
-  public ViewFuture asyncQuery(View view, Query query) {
+  public HttpFuture<ViewResponseWithDocs> asyncQuery(View view, Query query) {
     String queryString = query.toString();
     String params = (queryString.length() > 0) ? "&reduce=false"
         : "?reduce=false";
