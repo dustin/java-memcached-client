@@ -69,7 +69,7 @@ public class NoDocsOperationImpl extends HttpOperationImpl implements
 
   private ViewResponseNoDocs parseNoDocsViewResult(String json)
     throws ParseException {
-    final Collection<RowNoDocs> rows = new LinkedList<RowNoDocs>();
+    final Collection<ViewRow> rows = new LinkedList<ViewRow>();
     final Collection<RowError> errors = new LinkedList<RowError>();
     if (json != null) {
       try {

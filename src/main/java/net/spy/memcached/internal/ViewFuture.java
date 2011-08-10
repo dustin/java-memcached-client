@@ -39,7 +39,7 @@ import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.couch.HttpOperation;
 import net.spy.memcached.protocol.couch.RowWithDocs;
 import net.spy.memcached.protocol.couch.ViewResponseWithDocs;
-
+import net.spy.memcached.protocol.couch.ViewRow;
 
 /**
  * A ViewFuture.
@@ -114,11 +114,11 @@ public class ViewFuture extends SpyObject implements
 
     Map<String, Object> docMap = multigetRef.get().get();
     final ViewResponseWithDocs view = (ViewResponseWithDocs) viewRef.get();
-    Collection<RowWithDocs> rows = new LinkedList<RowWithDocs>();
-    Iterator<RowWithDocs> itr = view.iterator();
+    Collection<ViewRow> rows = new LinkedList<ViewRow>();
+    Iterator<ViewRow> itr = view.iterator();
 
     while (itr.hasNext()) {
-      RowWithDocs r = itr.next();
+      ViewRow r = itr.next();
       rows.add(new RowWithDocs(r.getId(), r.getKey(), r.getValue(),
           docMap.get(r.getId())));
     }

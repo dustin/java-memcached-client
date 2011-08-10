@@ -69,7 +69,7 @@ public class ReducedOperationImpl extends HttpOperationImpl implements
 
   private ViewResponseReduced parseReducedViewResult(String json)
     throws ParseException {
-    final Collection<RowReduced> rows = new LinkedList<RowReduced>();
+    final Collection<ViewRow> rows = new LinkedList<ViewRow>();
     final Collection<RowError> errors = new LinkedList<RowError>();
     if (json != null) {
       try {

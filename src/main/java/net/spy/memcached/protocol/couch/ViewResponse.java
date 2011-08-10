@@ -27,7 +27,7 @@ import java.util.Collection;
 /**
  * Holds the response of a queried view.
  */
-public interface ViewResponse<T> extends Iterable<T> {
+public interface ViewResponse extends Iterable<ViewRow> {
   Collection<RowError> getErrors();
 
   int size();

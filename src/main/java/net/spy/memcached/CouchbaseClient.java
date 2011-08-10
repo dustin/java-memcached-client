@@ -46,13 +46,13 @@ import net.spy.memcached.protocol.couch.NoDocsOperationImpl;
 import net.spy.memcached.protocol.couch.Query;
 import net.spy.memcached.protocol.couch.ReducedOperation.ReducedCallback;
 import net.spy.memcached.protocol.couch.ReducedOperationImpl;
-import net.spy.memcached.protocol.couch.RowWithDocs;
 import net.spy.memcached.protocol.couch.View;
 import net.spy.memcached.protocol.couch.ViewOperation.ViewCallback;
 import net.spy.memcached.protocol.couch.ViewOperationImpl;
 import net.spy.memcached.protocol.couch.ViewResponseNoDocs;
 import net.spy.memcached.protocol.couch.ViewResponseReduced;
 import net.spy.memcached.protocol.couch.ViewResponseWithDocs;
+import net.spy.memcached.protocol.couch.ViewRow;
 import net.spy.memcached.protocol.couch.ViewsOperation.ViewsCallback;
 import net.spy.memcached.protocol.couch.ViewsOperationImpl;
 import net.spy.memcached.vbucket.config.Bucket;
@@ -280,7 +280,7 @@ public class CouchbaseClient extends MembaseClient
       public void receivedStatus(OperationStatus status) {
         if (vr != null) {
           Collection<String> ids = new LinkedList<String>();
-          Iterator<RowWithDocs> itr = vr.iterator();
+          Iterator<ViewRow> itr = vr.iterator();
           while (itr.hasNext()) {
             ids.add(itr.next().getId());
           }

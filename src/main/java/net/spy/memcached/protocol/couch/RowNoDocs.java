@@ -26,20 +26,43 @@ package net.spy.memcached.protocol.couch;
  * Holds a row in a view result that contains the fields
  * id, key, and value.
  */
-public class RowNoDocs extends RowReduced {
-  private String id;
+public class RowNoDocs implements ViewRow {
+  private final String id;
+  private final String key;
+  private final String value;
 
   public RowNoDocs(String id, String key, String value) {
-    super(key, value);
-    // The id can be the string "null" so convert it to null
-    if (id != null && id.equals("null")) {
-      this.id = null;
+    this.id = parseField(id);
+    this.key = parseField(key);
+    this.value = parseField(value);
+  }
+
+  private String parseField(String field) {
+    if (field != null && field.equals("null")) {
+      return null;
     } else {
-      this.id = id;
+      return field;
     }
   }
 
+  @Override
   public String getId() {
     return id;
+  }
+
+  @Override
+  public String getKey() {
+    return key;
+  }
+
+  @Override
+  public String getValue() {
+    return value;
+  }
+
+  @Override
+  public Object getDocument() {
+    throw new UnsupportedOperationException("This view result doesn't contain "
+        + "documents");
   }
 }

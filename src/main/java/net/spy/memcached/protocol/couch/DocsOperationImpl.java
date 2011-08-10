@@ -68,7 +68,7 @@ public class DocsOperationImpl extends HttpOperationImpl implements
 
   private ViewResponseWithDocs parseDocsViewResult(String json)
     throws ParseException {
-    final Collection<RowWithDocs> rows = new LinkedList<RowWithDocs>();
+    final Collection<ViewRow> rows = new LinkedList<ViewRow>();
     final Collection<RowError> errors = new LinkedList<RowError>();
     if (json != null) {
       try {
