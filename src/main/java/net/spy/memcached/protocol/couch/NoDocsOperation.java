@@ -34,6 +34,6 @@ public interface NoDocsOperation {
    * Callback for the result of the NoDocsOperation.
    */
   interface NoDocsCallback extends OperationCallback {
-    void gotData(ViewResponseNoDocs response);
+    void gotData(ViewResponse response);
   }
 }

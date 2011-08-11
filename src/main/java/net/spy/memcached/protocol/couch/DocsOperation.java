@@ -34,6 +34,6 @@ public interface DocsOperation {
    * Callback for the result of the DocsOperation.
    */
   interface DocsCallback extends OperationCallback {
-    void gotData(ViewResponseWithDocs response);
+    void gotData(ViewResponse response);
   }
 }

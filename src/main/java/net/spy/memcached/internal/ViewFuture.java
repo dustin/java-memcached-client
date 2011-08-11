@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.spy.memcached.OperationTimeoutException;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.protocol.couch.ViewResponse;
 import net.spy.memcached.protocol.couch.ViewResponseWithDocs;
 import net.spy.memcached.protocol.couch.ViewRow;
 import net.spy.memcached.protocol.couch.ViewRowWithDocs;
@@ -41,7 +42,7 @@ import net.spy.memcached.protocol.couch.ViewRowWithDocs;
 /**
  * A ViewFuture.
  */
-public class ViewFuture extends HttpFuture<ViewResponseWithDocs> {
+public class ViewFuture extends HttpFuture<ViewResponse> {
   private final AtomicReference<BulkFuture<Map<String, Object>>> multigetRef;
 
   public ViewFuture(CountDownLatch latch, long timeout) {
@@ -51,7 +52,7 @@ public class ViewFuture extends HttpFuture<ViewResponseWithDocs> {
   }
 
   @Override
-  public ViewResponseWithDocs get(long duration, TimeUnit units)
+  public ViewResponse get(long duration, TimeUnit units)
     throws InterruptedException, ExecutionException, TimeoutException {
 
     if (!latch.await(duration, units)) {
@@ -95,7 +96,7 @@ public class ViewFuture extends HttpFuture<ViewResponseWithDocs> {
     return new ViewResponseWithDocs(rows, view.getErrors());
   }
 
-  public void set(ViewResponseWithDocs viewResponse,
+  public void set(ViewResponse viewResponse,
       BulkFuture<Map<String, Object>> oper, OperationStatus s) {
     objRef.set(viewResponse);
     multigetRef.set(oper);

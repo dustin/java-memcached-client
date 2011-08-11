@@ -23,28 +23,22 @@
 package net.spy.memcached.protocol.couch;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Holds the response of a view query where the map function was
  * called and the documents are included.
  */
-public class ViewResponseWithDocs implements ViewResponse,
-    Map<String, Object> {
+public class ViewResponseWithDocs implements ViewResponse {
 
-  private final Map<String, Object> map;
+  private Map<String, Object> map;
   private final Collection<ViewRow> rows;
   private final Collection<RowError> errors;
 
   public ViewResponseWithDocs(final Collection<ViewRow> r,
       final Collection<RowError> e) {
-    map = new HashMap<String, Object>();
+    map = null;
     rows = r;
     errors = e;
     for (ViewRow row : rows) {
@@ -66,6 +60,16 @@ public class ViewResponseWithDocs implements ViewResponse,
   }
 
   @Override
+  public int size() {
+    return rows.size();
+  }
+
+  public Map<String, Object> getMap() {
+    throw new UnsupportedOperationException("This view doesn't contain "
+        + "documents");
+  }
+
+  @Override
   public String toString() {
     StringBuilder s = new StringBuilder();
     for (ViewRow r : rows) {
@@ -80,106 +84,5 @@ public class ViewResponseWithDocs implements ViewResponse,
     }
     return s.toString();
   }
-
-  @Override
-  public void clear() {
-    throw new UnsupportedOperationException("clear() is not supported");
-  }
-
-  @Override
-  public boolean containsKey(Object key) {
-    return map.containsKey(key);
-  }
-
-  @Override
-  public boolean containsValue(Object value) {
-    return map.containsValue(value);
-  }
-
-  @Override
-  public Set<Entry<String, Object>> entrySet() {
-    Set<Entry<String, Object>> set = new HashSet<Entry<String, Object>>();
-    for (ViewRow r : rows) {
-      set.add(new ViewResponseEntry<String, Object>(r.getId(),
-          map.get(r.getId())));
-    }
-    return null;
-  }
-
-  @Override
-  public Object get(Object key) {
-    return map.get(key);
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return map.isEmpty();
-  }
-
-  @Override
-  public Set<String> keySet() {
-    Set<String> set = new TreeSet<String>();
-    for (ViewRow r : rows) {
-      set.add(r.getId());
-    }
-    return null;
-  }
-
-  @Override
-  public Object put(String key, Object value) {
-    throw new UnsupportedOperationException("put() is not supported");
-  }
-
-  @Override
-  public void putAll(Map<? extends String, ? extends Object> m) {
-    throw new UnsupportedOperationException("putAll() is not supported");
-
-  }
-
-  @Override
-  public Object remove(Object key) {
-    throw new UnsupportedOperationException("remove() is not supported");
-  }
-
-  @Override
-  public int size() {
-    assert rows.size() == map.size();
-    return rows.size();
-  }
-
-  @Override
-  public Collection<Object> values() {
-    Collection<Object> values = new LinkedList<Object>();
-    for (ViewRow r : rows) {
-      values.add(r.getDocument());
-    }
-    return values;
-  }
-
-  final class ViewResponseEntry<K, V> implements Map.Entry<K, V> {
-    private final K key;
-    private V value;
-
-    public ViewResponseEntry(K key, V value) {
-      this.key = key;
-      this.value = value;
-    }
-
-    @Override
-    public K getKey() {
-      return key;
-    }
-
-    @Override
-    public V getValue() {
-      return value;
-    }
-
-    @Override
-    public V setValue(V newValue) {
-      V old = this.value;
-      this.value = newValue;
-      return old;
-    }
-  }
 }
+
