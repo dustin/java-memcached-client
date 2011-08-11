@@ -22,17 +22,19 @@
 
 package net.spy.memcached.protocol.couch;
 
+import java.util.List;
+
 import net.spy.memcached.ops.OperationCallback;
 
 /**
- * A ViewOperation.
+ * A ViewsOperation.
  */
-public interface ViewOperation {
+public interface ViewsFetcherOperation {
 
   /**
-   * A ViewCallback.
+   * A ViewsCallback.
    */
-  public interface ViewCallback extends OperationCallback {
-    void gotData(View view);
+  interface ViewsFetcherCallback extends OperationCallback {
+    void gotData(List<View> views);
   }
 }

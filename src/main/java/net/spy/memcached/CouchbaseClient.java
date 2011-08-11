@@ -40,6 +40,10 @@ import net.spy.memcached.internal.ViewFuture;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.couch.DocsOperation.DocsCallback;
 import net.spy.memcached.protocol.couch.DocsOperationImpl;
+import net.spy.memcached.protocol.couch.ViewFetcherOperation;
+import net.spy.memcached.protocol.couch.ViewFetcherOperationImpl;
+import net.spy.memcached.protocol.couch.ViewsFetcherOperation;
+import net.spy.memcached.protocol.couch.ViewsFetcherOperationImpl;
 import net.spy.memcached.protocol.couch.HttpOperation;
 import net.spy.memcached.protocol.couch.NoDocsOperation.NoDocsCallback;
 import net.spy.memcached.protocol.couch.NoDocsOperationImpl;
@@ -47,12 +51,8 @@ import net.spy.memcached.protocol.couch.Query;
 import net.spy.memcached.protocol.couch.ReducedOperation.ReducedCallback;
 import net.spy.memcached.protocol.couch.ReducedOperationImpl;
 import net.spy.memcached.protocol.couch.View;
-import net.spy.memcached.protocol.couch.ViewOperation.ViewCallback;
-import net.spy.memcached.protocol.couch.ViewOperationImpl;
 import net.spy.memcached.protocol.couch.ViewResponse;
 import net.spy.memcached.protocol.couch.ViewRow;
-import net.spy.memcached.protocol.couch.ViewsOperation.ViewsCallback;
-import net.spy.memcached.protocol.couch.ViewsOperationImpl;
 import net.spy.memcached.vbucket.config.Bucket;
 
 import org.apache.http.HttpRequest;
@@ -154,8 +154,8 @@ public class CouchbaseClient extends MembaseClient
     final HttpRequest request =
         new BasicHttpRequest("GET", uri, HttpVersion.HTTP_1_1);
     final HttpOperation op =
-        new ViewOperationImpl(request, bucketName, designDocumentName,
-            viewName, new ViewCallback() {
+        new ViewFetcherOperationImpl(request, bucketName, designDocumentName,
+            viewName, new ViewFetcherOperation.ViewFetcherCallback() {
               private View view = null;
 
               @Override
@@ -194,8 +194,8 @@ public class CouchbaseClient extends MembaseClient
 
     final HttpRequest request =
         new BasicHttpRequest("GET", uri, HttpVersion.HTTP_1_1);
-    final HttpOperation op = new ViewsOperationImpl(request, bucketName,
-        designDocumentName, new ViewsCallback() {
+    final HttpOperation op = new ViewsFetcherOperationImpl(request, bucketName,
+        designDocumentName, new ViewsFetcherOperation.ViewsFetcherCallback() {
           private List<View> views = null;
 
           @Override
