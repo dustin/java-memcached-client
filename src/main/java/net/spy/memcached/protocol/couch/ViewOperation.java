@@ -25,15 +25,14 @@ package net.spy.memcached.protocol.couch;
 import net.spy.memcached.ops.OperationCallback;
 
 /**
- * An operation that represents a view that calls the map
- * function and includes the documents in the result.
+ * A ViewOperation.
  */
-public interface DocsOperation {
+public interface ViewOperation {
 
   /**
-   * Callback for the result of the DocsOperation.
+   * A ViewCallback.
    */
-  interface DocsCallback extends OperationCallback {
+  interface ViewCallback extends OperationCallback {
     void gotData(ViewResponse response);
   }
 }

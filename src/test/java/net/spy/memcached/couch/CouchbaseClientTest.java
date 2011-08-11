@@ -33,17 +33,15 @@ import java.util.Map.Entry;
 import net.spy.memcached.TestConfig;
 import net.spy.memcached.internal.HttpFuture;
 import net.spy.memcached.ops.OperationStatus;
-import net.spy.memcached.protocol.couch.DocsOperation.DocsCallback;
 import net.spy.memcached.protocol.couch.DocsOperationImpl;
 import net.spy.memcached.protocol.couch.HttpOperation;
-import net.spy.memcached.protocol.couch.NoDocsOperation.NoDocsCallback;
 import net.spy.memcached.protocol.couch.NoDocsOperationImpl;
 import net.spy.memcached.protocol.couch.Query;
-import net.spy.memcached.protocol.couch.ReducedOperation.ReducedCallback;
 import net.spy.memcached.protocol.couch.ReducedOperationImpl;
 import net.spy.memcached.protocol.couch.RowError;
 import net.spy.memcached.protocol.couch.Stale;
 import net.spy.memcached.protocol.couch.View;
+import net.spy.memcached.protocol.couch.ViewOperation.ViewCallback;
 import net.spy.memcached.protocol.couch.ViewResponse;
 import net.spy.memcached.protocol.couch.ViewRow;
 
@@ -378,7 +376,7 @@ public class CouchbaseClientTest {
 
   @Test
   public void testViewDocsWithErrors() throws Exception {
-    HttpOperation op = new DocsOperationImpl(null, new DocsCallback() {
+    HttpOperation op = new DocsOperationImpl(null, new ViewCallback() {
       @Override
       public void receivedStatus(OperationStatus status) {
         assert status.isSuccess();
@@ -411,7 +409,7 @@ public class CouchbaseClientTest {
 
   @Test
   public void testViewNoDocsWithErrors() throws Exception {
-    HttpOperation op = new NoDocsOperationImpl(null, new NoDocsCallback() {
+    HttpOperation op = new NoDocsOperationImpl(null, new ViewCallback() {
       @Override
       public void receivedStatus(OperationStatus status) {
         assert status.isSuccess();
@@ -444,7 +442,7 @@ public class CouchbaseClientTest {
 
   @Test
   public void testViewReducedWithErrors() throws Exception {
-    HttpOperation op = new ReducedOperationImpl(null, new ReducedCallback() {
+    HttpOperation op = new ReducedOperationImpl(null, new ViewCallback() {
       @Override
       public void receivedStatus(OperationStatus status) {
         assert status.isSuccess();

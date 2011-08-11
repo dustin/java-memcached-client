@@ -23,6 +23,7 @@
 package net.spy.memcached.protocol.couch;
 
 import java.io.IOException;
+import java.text.ParseException;
 
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
@@ -31,7 +32,6 @@ import net.spy.memcached.ops.OperationStatus;
 
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -95,7 +95,7 @@ public abstract class HttpOperationImpl implements HttpOperation {
     if (!isTimedOut() && !hasErrored() && !isCancelled()) {
       try {
         return EntityUtils.toString(response.getEntity());
-      } catch (ParseException e) {
+      } catch (org.apache.http.ParseException e) {
         exception = new OperationException(OperationErrorType.GENERAL,
           "Bad http headers");
         errored = true;
@@ -112,7 +112,8 @@ public abstract class HttpOperationImpl implements HttpOperation {
     return null;
   }
 
-  protected OperationStatus parseViewForStatus(String json, int errorcode) {
+  protected OperationStatus parseViewForStatus(String json, int errorcode)
+    throws ParseException {
     if (json != null) {
       try {
         JSONObject base = new JSONObject(json);
@@ -127,7 +128,7 @@ public abstract class HttpOperationImpl implements HttpOperation {
           return new OperationStatus(true, "Error Code: " + errorcode);
         }
       } catch (JSONException e) {
-        throw new ParseException("Cannot read json: " + json);
+        throw new ParseException("Cannot read json: " + json, 0);
       }
     }
     return new OperationStatus(false, "Error Code: " + errorcode
