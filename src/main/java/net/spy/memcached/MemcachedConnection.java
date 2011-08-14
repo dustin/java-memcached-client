@@ -511,7 +511,7 @@ public final class MemcachedConnection extends SpyObject implements Reconfigurab
 					: "Expected to pop " + currentOp + " got " + op;
 					currentOp=qa.getCurrentReadOp();
 				} else if (currentOp.getState() == OperationState.RETRY) {
-                    getLogger().debug(
+                    getLogger().warn(
                             "Reschedule read op due to NOT_MY_VBUCKET error: %s ",
                             currentOp);
                     ((VBucketAware) currentOp).addNotMyVbucketNode(currentOp.getHandlingNode());
