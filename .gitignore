@@ -1,7 +1,11 @@
 .settings
+.classpath
+.project
 cobertura.ser
+lib/ivy*
 target/
 reports/
+build/
 junit*
 *.iml
 *~
