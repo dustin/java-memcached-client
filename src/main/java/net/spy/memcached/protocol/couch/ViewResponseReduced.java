@@ -23,35 +23,17 @@
 package net.spy.memcached.protocol.couch;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
  * Holds the response of a view query where the map and reduce
  * function were called.
  */
-public class ViewResponseReduced implements ViewResponse {
+public class ViewResponseReduced extends ViewResponse {
 
-  private final Collection<ViewRow> rows;
-  private final Collection<RowError> errors;
-
-  public ViewResponseReduced(final Collection<ViewRow> r,
-      final Collection<RowError> e) {
-    rows = r;
-    errors = e;
-  }
-
-  public Collection<RowError> getErrors() {
-    return errors;
-  }
-
-  public int size() {
-    return rows.size();
-  }
-
-  @Override
-  public Iterator<ViewRow> iterator() {
-    return rows.iterator();
+  public ViewResponseReduced(final Collection<ViewRow> rows,
+      final Collection<RowError> errors) {
+    super(rows, errors);
   }
 
   @Override
