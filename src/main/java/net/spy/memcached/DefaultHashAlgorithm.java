@@ -39,11 +39,11 @@ public enum DefaultHashAlgorithm implements HashAlgorithm {
    */
   NATIVE_HASH,
   /**
-   * CRC32_HASH as used by the perl API. This will be more consistent both
+   * CRC_HASH as used by the perl API. This will be more consistent both
    * across multiple API users as well as java versions, but is mostly likely
    * significantly slower.
    */
-  CRC32_HASH,
+  CRC_HASH,
   /**
    * FNV hashes are designed to be fast while maintaining a low collision rate.
    * The FNV speed allows one to quickly hash lots of data while maintaining a
@@ -100,7 +100,7 @@ public enum DefaultHashAlgorithm implements HashAlgorithm {
     case NATIVE_HASH:
       rv = k.hashCode();
       break;
-    case CRC32_HASH:
+    case CRC_HASH:
       // return (crc32(shift) >> 16) & 0x7fff;
       CRC32 crc32 = new CRC32();
       crc32.update(KeyUtil.getKeyBytes(k));

@@ -59,7 +59,7 @@ public class DefaultHashAlgorithmTest extends TestCase {
     exp.put("UDATA:edevil@sapo.pt", 558L);
 
     for (Map.Entry<String, Long> me : exp.entrySet()) {
-      assertHash(DefaultHashAlgorithm.CRC32_HASH, me.getKey(), me.getValue());
+      assertHash(DefaultHashAlgorithm.CRC_HASH, me.getKey(), me.getValue());
     }
   }
 

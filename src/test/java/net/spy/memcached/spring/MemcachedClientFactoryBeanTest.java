@@ -47,7 +47,7 @@ public class MemcachedClientFactoryBeanTest extends TestCase {
     final MemcachedClientFactoryBean factory = new MemcachedClientFactoryBean();
     factory.setDaemon(true);
     factory.setFailureMode(FailureMode.Cancel);
-    factory.setHashAlg(DefaultHashAlgorithm.CRC32_HASH);
+    factory.setHashAlg(DefaultHashAlgorithm.CRC_HASH);
     factory.setProtocol(Protocol.BINARY);
     factory.setServers(TestConfig.IPV4_ADDR + ":22211 " + TestConfig.IPV4_ADDR
         + ":22212");

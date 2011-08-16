@@ -152,13 +152,13 @@ public class TapConnectionProvider extends SpyObject implements
     if (config.getConfigType() == ConfigType.MEMBASE) {
       cfb.setFailureMode(FailureMode.Retry)
           .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
-          .setHashAlg(DefaultHashAlgorithm.KETAMA_HASH)
+          .setHashAlg(config.getHashAlgorithm())
           .setLocatorType(ConnectionFactoryBuilder.Locator.VBUCKET)
           .setVBucketConfig(bucket.getConfig());
     } else if (config.getConfigType() == ConfigType.MEMCACHE) {
       cfb.setFailureMode(FailureMode.Redistribute)
           .setProtocol(ConnectionFactoryBuilder.Protocol.BINARY)
-          .setHashAlg(DefaultHashAlgorithm.KETAMA_HASH)
+          .setHashAlg(config.getHashAlgorithm())
           .setLocatorType(ConnectionFactoryBuilder.Locator.CONSISTENT)
           .setShouldOptimize(false);
     } else {
