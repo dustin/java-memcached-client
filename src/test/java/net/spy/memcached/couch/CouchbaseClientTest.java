@@ -36,6 +36,7 @@ import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.couch.DocsOperationImpl;
 import net.spy.memcached.protocol.couch.HttpOperation;
 import net.spy.memcached.protocol.couch.NoDocsOperationImpl;
+import net.spy.memcached.protocol.couch.Paginator;
 import net.spy.memcached.protocol.couch.Query;
 import net.spy.memcached.protocol.couch.ReducedOperationImpl;
 import net.spy.memcached.protocol.couch.RowError;
@@ -74,10 +75,10 @@ public class CouchbaseClientTest {
   static {
     ITEMS = new HashMap<String, Object>();
     int d = 0;
-    for (int i = 0; i < 3; i++) {
-      for (int j = 0; j < 2; j++) {
-        for (int k = 0; k < 2; k++, d++) {
-          String type = new String(new char[] { 'a' + 26 });
+    for (int i = 0; i < 5; i++) {
+      for (int j = 0; j < 5; j++) {
+        for (int k = 0; k < 5; k++, d++) {
+          String type = new String(new char[] { (char) ('f' + i) });
           String small = (new Integer(j)).toString();
           String large = (new Integer(k)).toString();
           String doc = generateDoc(type, small, large);
@@ -103,13 +104,13 @@ public class CouchbaseClientTest {
         + DESIGN_DOC_W_REDUCE;
     String view = "{\"language\":\"javascript\",\"views\":{\""
         + VIEW_NAME_W_REDUCE + "\":{\"map\":\"function (doc) {  "
-        + "emit(doc._id, 1)}\",\"reduce\":\"_sum\" }}}";
+        + "emit(doc.type, 1)}\",\"reduce\":\"_sum\" }}}";
     c.asyncHttpPut(docUri, view);
 
     docUri = "/default/_design/" + TestingClient.MODE_PREFIX
         + DESIGN_DOC_WO_REDUCE;
     view = "{\"language\":\"javascript\",\"views\":{\"" + VIEW_NAME_WO_REDUCE
-        + "\":{\"map\":\"function (doc) {  " + "emit(doc._id, 1)}\"}}}";
+        + "\":{\"map\":\"function (doc) {  " + "emit(doc.type, 1)}\"}}}";
     for (Entry<String, Object> item : ITEMS.entrySet()) {
       assert c.set(item.getKey(), 0,
           (String) item.getValue()).get().booleanValue();
@@ -153,7 +154,7 @@ public class CouchbaseClientTest {
   }
 
   private static String generateDoc(String type, String small, String large) {
-    return "{\"type\":\"" + type + "\"" + "\"small range\":\"" + small + "\""
+    return "{\"type\":\"" + type + "\"" + ",\"small range\":\"" + small + "\","
         + "\"large range\":\"" + large + "\"}";
   }
 
@@ -490,5 +491,84 @@ public class CouchbaseClientTest {
     StringEntity entity = new StringEntity(entityString);
     response.setEntity(entity);
     op.handleResponse(response);
+  }
+
+  @Test
+  public void testPaginationItemsModPageSizeNotZero() throws Exception {
+    View view = client.getView(DESIGN_DOC_W_REDUCE, VIEW_NAME_W_REDUCE);
+    Query query = new Query();
+    query.setReduce(false);
+    Paginator op = client.paginatedQuery(view, query, 10);
+
+    int count = 0;
+    while (op.hasNext()) {
+      ViewRow row = op.next();
+      if (!ITEMS.containsKey(row.getId())) {
+        assert false : "Got bad key: " + row.getId() + " during pagination";
+      }
+      count++;
+    }
+    assert count == ITEMS.size() : "Got " + count + " items, wanted "
+        + ITEMS.size();
+  }
+
+  @Test
+  public void testPaginationItemsModPageSizeIsZero() throws Exception {
+    View view = client.getView(DESIGN_DOC_W_REDUCE, VIEW_NAME_W_REDUCE);
+    Query query = new Query();
+    query.setReduce(false);
+    Paginator op = client.paginatedQuery(view, query, 10);
+
+    assert client.set("key125", 0,
+        generateDoc("a", "b", "c")).get().booleanValue()
+        : "Setting key key125 failed";
+    assert client.set("key126", 0,
+        generateDoc("a", "b", "c")).get().booleanValue()
+        : "Setting key key126 failed";
+    assert client.set("key127", 0,
+        generateDoc("a", "b", "c")).get().booleanValue()
+        : "Setting key key127 failed";
+
+    int count = 0;
+    while (op.hasNext()) {
+      String key = op.next().getId();
+      if (!ITEMS.containsKey(key)) {
+        assert false : "Got bad key: " + key + " during pagination";
+      }
+      count++;
+    }
+    assert count == ITEMS.size() : "Got " + count + " items, wanted "
+        + ITEMS.size();
+    assert client.delete("key125").get().booleanValue()
+        : "Deleteing key 125 failed";
+    assert client.delete("key126").get().booleanValue()
+        : "Deleteing key 125 failed";
+    assert client.delete("key127").get().booleanValue()
+        : "Deleteing key 125 failed";
+    Thread.sleep(1000);
+  }
+
+  @Test
+  public void testPaginationAndDeleteStartKey() throws Exception {
+    View view = client.getView(DESIGN_DOC_W_REDUCE, VIEW_NAME_W_REDUCE);
+    Query query = new Query();
+    query.setReduce(false);
+    Paginator op = client.paginatedQuery(view, query, 10);
+
+    int count = 0;
+    while (op.hasNext()) {
+      op.next();
+      if (count == 5) {
+        assert client.delete("key112").get().booleanValue()
+            : "Deleteing key key112 failed";
+        Thread.sleep(1000);
+      }
+      count++;
+    }
+    assert count == ITEMS.size() - 1 : "Got " + count + " items, wanted "
+        + (ITEMS.size() - 1);
+    assert client.set("key112", 0,
+        generateDoc("a", "b", "c")).get().booleanValue()
+        : "Adding key key112 failed";
   }
 }

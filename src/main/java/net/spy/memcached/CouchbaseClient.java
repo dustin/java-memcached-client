@@ -39,18 +39,19 @@ import net.spy.memcached.internal.HttpFuture;
 import net.spy.memcached.internal.ViewFuture;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.couch.DocsOperationImpl;
-import net.spy.memcached.protocol.couch.ViewFetcherOperation;
-import net.spy.memcached.protocol.couch.ViewFetcherOperationImpl;
-import net.spy.memcached.protocol.couch.ViewsFetcherOperation;
-import net.spy.memcached.protocol.couch.ViewsFetcherOperationImpl;
 import net.spy.memcached.protocol.couch.HttpOperation;
 import net.spy.memcached.protocol.couch.NoDocsOperationImpl;
+import net.spy.memcached.protocol.couch.Paginator;
 import net.spy.memcached.protocol.couch.Query;
 import net.spy.memcached.protocol.couch.ReducedOperationImpl;
 import net.spy.memcached.protocol.couch.View;
+import net.spy.memcached.protocol.couch.ViewFetcherOperation;
+import net.spy.memcached.protocol.couch.ViewFetcherOperationImpl;
 import net.spy.memcached.protocol.couch.ViewOperation.ViewCallback;
 import net.spy.memcached.protocol.couch.ViewResponse;
 import net.spy.memcached.protocol.couch.ViewRow;
+import net.spy.memcached.protocol.couch.ViewsFetcherOperation;
+import net.spy.memcached.protocol.couch.ViewsFetcherOperationImpl;
 import net.spy.memcached.vbucket.config.Bucket;
 
 import org.apache.http.HttpRequest;
@@ -411,6 +412,22 @@ public class CouchbaseClient extends MembaseClient
     } catch (ExecutionException e) {
       throw new RuntimeException("Failed to access the view", e);
     }
+  }
+
+  /**
+   * A paginated query allows the user to get the results of a large query in
+   * small chunks allowing for better performance. The result allows you
+   * to iterate through the results of the query and when you get to the end
+   * of the current result set the client will automatically fetch the next set
+   * of results.
+   *
+   * @param view the view to query against.
+   * @param query the query for this request.
+   * @param docsPerPage the amount of documents per page.
+   * @return A Paginator (iterator) to use for reading the results of the query.
+   */
+  public Paginator paginatedQuery(View view, Query query, int docsPerPage) {
+    return new Paginator(this, view, query, 10);
   }
 
   /**
