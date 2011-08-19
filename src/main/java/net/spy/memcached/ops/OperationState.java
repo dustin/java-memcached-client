@@ -21,10 +21,6 @@ public enum OperationState {
 	 */
 	COMPLETE,
 	/**
-	 * State indicating this operation timed out without completing.
-	 */
-	TIMEDOUT,
-	/**
 	 * State indicating this operation needs to be resent.  Typically
 	 * this means vbucket hashing and there is a topology change.
 	 */
