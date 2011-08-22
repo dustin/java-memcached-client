@@ -62,7 +62,6 @@
   <!-- maven -->
   <property name="mvn.build.dir" value="${build.dir}/m2" />
   <property name="spymemcached.pom" value="${mvn.build.dir}/spymemcached.pom" />
-  <property name="spymemcached.pom" value="${mvn.build.dir}/spymemcached-test.pom" />
 
   <!-- compilation -->
   <property name="javac.deprecation" value="off"/>
@@ -483,6 +482,10 @@
   <target name="mvn-prep" depends="init, ivy-init"
       description="Creates maven files">
     <!-- prepare for mvn tasks. -->
+    <exec executable="git" outputproperty="version">
+      <arg value="describe" />
+      <arg value="--abbrev=0" />
+    </exec>
 
     <!-- Download maven -->
     <mkdir dir="${build.dir}" />
@@ -510,6 +513,20 @@
         <include name="*.pom" />
       </fileset>
     </replaceregexp>
+  </target>
+
+  <target name="mvn-install" depends="init,mvn-prep,jar,srcjars"
+      description="Install Spymemcached in local m2 repository">
+    <exec executable="git" outputproperty="version">
+      <arg value="describe" />
+      <arg value="--abbrev=0" />
+    </exec>
+    <artifact:pom id="spymemcached" file="${spymemcached.pom}" />
+    <artifact:install file="${build.dir}/${name}-${version}.jar">
+      <pom refid="spymemcached" />
+      <attach file="${build.dir}/${name}-${version}-sources.jar"
+          classifier="sources" />
+    </artifact:install>
   </target>
 
   <!-- ======================================
