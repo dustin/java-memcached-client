@@ -61,8 +61,12 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject
 		assert iq != null : "No input queue";
 		socketAddress=sa;
 		setChannel(c);
-		rbuf=ByteBuffer.allocate(bufSize);
-		wbuf=ByteBuffer.allocate(bufSize);
+		// Since these buffers are allocated rarely (only on client creation
+		// or reconfigure), and are passed to Channel.read() and Channel.write(),
+		// use direct buffers to avoid
+		//   http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6214569
+		rbuf = ByteBuffer.allocateDirect(bufSize);
+		wbuf = ByteBuffer.allocateDirect(bufSize);
 		getWbuf().clear();
 		readQ=rq;
 		writeQ=wq;
