@@ -1941,7 +1941,7 @@ public class MemcachedClient extends SpyThread
 				boolean rv=false;
 				for(Operation op : ops) {
 					op.cancel();
-					rv |= op.getState() == OperationState.WRITING;
+					rv |= op.getState() == OperationState.WRITE_QUEUED;
 				}
 				return rv;
 			}

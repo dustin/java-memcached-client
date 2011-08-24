@@ -5,6 +5,10 @@ package net.spy.memcached.ops;
  */
 public enum OperationState {
 	/**
+	 * State indicating this operation is waiting to be written to the server.
+	 */
+	WRITE_QUEUED,
+	/**
 	 * State indicating this operation is writing data to the server.
 	 */
 	WRITING,
