@@ -137,19 +137,35 @@ public interface MemcachedClientIF {
 
   Map<SocketAddress, Map<String, String>> getStats(String prefix);
 
+  long incr(String key, long by);
+
   long incr(String key, int by);
+
+  long decr(String key, long by);
 
   long decr(String key, int by);
 
+  long incr(String key, long by, long def, int exp);
+
   long incr(String key, int by, long def, int exp);
+
+  long decr(String key, long by, long def, int exp);
 
   long decr(String key, int by, long def, int exp);
 
+  Future<Long> asyncIncr(String key, long by);
+
   Future<Long> asyncIncr(String key, int by);
+
+  Future<Long> asyncDecr(String key, long by);
 
   Future<Long> asyncDecr(String key, int by);
 
+  long incr(String key, long by, long def);
+
   long incr(String key, int by, long def);
+
+  long decr(String key, long by, long def);
 
   long decr(String key, int by, long def);
 

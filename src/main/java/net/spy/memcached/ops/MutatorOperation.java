@@ -35,7 +35,7 @@ public interface MutatorOperation extends KeyedOperation {
   /**
    * Get the amount we're mutating by.
    */
-  int getBy();
+  long getBy();
 
   /**
    * Get the default value (for when there's no value to mutate).

@@ -93,7 +93,7 @@ public class AsciiOperationFactory extends BaseOperationFactory {
     return new GetsOperationImpl(key, cb);
   }
 
-  public MutatorOperation mutate(Mutator m, String key, int by, long exp,
+  public MutatorOperation mutate(Mutator m, String key, long by, long exp,
       int def, OperationCallback cb) {
     return new MutatorOperationImpl(m, key, by, cb);
   }

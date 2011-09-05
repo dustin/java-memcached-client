@@ -146,7 +146,7 @@ public interface OperationFactory {
    * @param cb the status callback
    * @return the new mutator operation
    */
-  MutatorOperation mutate(Mutator m, String key, int by, long def, int exp,
+  MutatorOperation mutate(Mutator m, String key, long by, long def, int exp,
       OperationCallback cb);
 
   /**

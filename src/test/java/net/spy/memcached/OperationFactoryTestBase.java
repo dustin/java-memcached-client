@@ -103,7 +103,7 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
   public void testMutatorOperationIncrCloning() {
     int exp = 823862;
     long def = 28775;
-    int by = 7735;
+    long by = 7735;
     MutatorOperation op = ofact.mutate(Mutator.incr, TEST_KEY, by, def, exp,
         genericCallback);
 
@@ -119,7 +119,7 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
   public void testMutatorOperationDecrCloning() {
     int exp = 823862;
     long def = 28775;
-    int by = 7735;
+    long by = 7735;
     MutatorOperation op = ofact.mutate(Mutator.decr, TEST_KEY, by, def, exp,
         genericCallback);
 

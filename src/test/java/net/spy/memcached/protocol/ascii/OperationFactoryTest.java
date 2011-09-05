@@ -41,7 +41,7 @@ public class OperationFactoryTest extends OperationFactoryTestBase {
   public void testMutatorOperationIncrCloning() {
     int exp = 823862;
     long def = 28775;
-    int by = 7735;
+    long by = 7735;
     MutatorOperation op = ofact.mutate(Mutator.incr, TEST_KEY, by, def, exp,
         genericCallback);
 
@@ -58,7 +58,7 @@ public class OperationFactoryTest extends OperationFactoryTestBase {
   public void testMutatorOperationDecrCloning() {
     int exp = 823862;
     long def = 28775;
-    int by = 7735;
+    long by = 7735;
     MutatorOperation op = ofact.mutate(Mutator.decr, TEST_KEY, by, def, exp,
         genericCallback);
 
