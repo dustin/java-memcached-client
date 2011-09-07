@@ -157,7 +157,6 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
 
         @Override
         public synchronized void timeOut() {
-	    assert (state != OperationState.READING || state != OperationState.COMPLETE);
             timedout = true;
             callback.complete();
         }
@@ -172,7 +171,6 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
 		long elapsed = System.nanoTime();
 		long ttlNanos = ttlMillis * 1000 * 1000;
 		if (elapsed - creationTime > ttlNanos) {
-			assert (state != OperationState.READING || state != OperationState.COMPLETE);
 			timedOutUnsent = true;
 			timedout = true;
 			callback.complete();
