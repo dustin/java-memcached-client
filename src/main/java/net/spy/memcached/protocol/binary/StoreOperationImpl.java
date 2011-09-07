@@ -52,10 +52,6 @@ class StoreOperationImpl extends SingleKeyOperationImpl
 		prepareBuffer(key, cas, data, flags, exp);
 	}
 
-	public byte[] getBytes() {
-		return data;
-	}
-
 	public long getCasValue() {
 		return cas;
 	}
@@ -75,5 +71,4 @@ class StoreOperationImpl extends SingleKeyOperationImpl
 	public StoreType getStoreType() {
 		return storeType;
 	}
-
 }

@@ -76,7 +76,7 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
 		return Collections.singleton(key);
 	}
 
-	public byte[] getBytes() {
+	public byte[] getData() {
 		return data;
 	}
 
@@ -95,5 +95,4 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
 	public StoreType getStoreType() {
 		return StoreType.set;
 	}
-
 }
