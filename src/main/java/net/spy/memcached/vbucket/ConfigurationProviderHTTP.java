@@ -296,6 +296,10 @@ public class ConfigurationProviderHTTP extends SpyObject implements Configuratio
         String headerResult;
         headerResult = "Basic " + Base64.encodeBase64String(clearText.toString().getBytes("UTF-8"));
 
+        if (headerResult.endsWith("\r\n")) {
+            headerResult = headerResult.substring(0, headerResult.length() - 2);
+        }
+
         return headerResult;
     }
 
