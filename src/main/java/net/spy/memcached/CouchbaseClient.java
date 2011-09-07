@@ -22,10 +22,12 @@
 
 package net.spy.memcached;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -74,24 +76,32 @@ public class CouchbaseClient extends MembaseClient
   private CouchbaseConnection cconn;
   private final String bucketName;
 
+  /**
+   * Properties priority from highest to lowest:
+   *
+   * 1. Property defined in user code.
+   * 2. Property defined on command line.
+   * 3. Property defined in cbclient.properties.
+   */
   static {
-    String viewmode = null;
-    boolean propsFileExists;
-    try {
-      Properties properties = new Properties();
-      properties.load(new FileInputStream("config.properties"));
-      viewmode = properties.getProperty("viewmode");
-      propsFileExists = true;
-    } catch (IOException e) {
-      propsFileExists = false;
+    Properties properties = new Properties(System.getProperties());
+    String viewmode = properties.getProperty("viewmode", null);
+
+    if (viewmode == null) {
+      try {
+        URL url =  ClassLoader.getSystemResource("cbclient.properties");
+        if (url != null) {
+          properties.load(new FileInputStream(new File(url.getFile())));
+        }
+        viewmode = properties.getProperty("viewmode");
+      } catch (IOException e) {
+        // Properties file doesn't exist. Error logged later.
+      }
     }
-    if (!propsFileExists) {
-      MODE_ERROR = "Can't find config.properties. Setting viewmode "
-          + "to production mode";
-      MODE_PREFIX = PROD_PREFIX;
-    } else if (viewmode == null) {
-      MODE_ERROR = "viewmode doesn't exist in config.properties. "
-              + "Setting viewmode to production mode";
+
+    if (viewmode == null) {
+      MODE_ERROR = "viewmode property isn't defined. Setting viewmode to"
+        + " production mode";
       MODE_PREFIX = PROD_PREFIX;
     } else if (viewmode.equals(MODE_PRODUCTION)) {
       MODE_ERROR = "viewmode set to production mode";
