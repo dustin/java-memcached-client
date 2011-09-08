@@ -6,7 +6,7 @@ import net.spy.memcached.ops.OperationCallback;
 class DeleteOperationImpl extends SingleKeyOperationImpl implements
 		DeleteOperation {
 
-	private static final int CMD=0x04;
+	private static final byte CMD=0x04;
 
 	private final long cas;
 

@@ -8,7 +8,7 @@ import net.spy.memcached.ops.OperationCallback;
  */
 class NoopOperationImpl extends OperationImpl implements NoopOperation {
 
-	static final int CMD=0x0a;
+	static final byte CMD=0x0a;
 
 	public NoopOperationImpl(OperationCallback cb) {
 		super(CMD, generateOpaque(), cb);

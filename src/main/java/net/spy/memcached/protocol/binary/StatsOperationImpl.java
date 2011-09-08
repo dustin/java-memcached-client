@@ -8,7 +8,7 @@ import net.spy.memcached.ops.StatsOperation;
 public class StatsOperationImpl extends OperationImpl
 	implements StatsOperation {
 
-	private static final int CMD = 0x10;
+	private static final byte CMD = 0x10;
 	private final String key;
 
 	public StatsOperationImpl(String arg, StatsOperation.Callback c) {

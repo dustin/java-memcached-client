@@ -17,7 +17,7 @@ abstract class SingleKeyOperationImpl extends OperationImpl
 
 	protected final String key;
 
-	protected SingleKeyOperationImpl(int c, int o, String k, OperationCallback cb) {
+	protected SingleKeyOperationImpl(byte c, int o, String k, OperationCallback cb) {
 		super(c, o, cb);
 		key = k;
 	}

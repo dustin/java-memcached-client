@@ -11,14 +11,14 @@ import net.spy.memcached.tapmessage.ResponseMessage;
 import net.spy.memcached.tapmessage.Util;
 
 public abstract class TapOperationImpl extends OperationImpl implements TapOperation {
-	private static final int TAP_FLAG_ACK = 0x1;
+	private static final byte TAP_FLAG_ACK = 0x1;
 
 	private int bytesProcessed;
 	private int bodylen;
 	private byte[] header;
 	private byte[] message;
 
-	static final int CMD=0;
+	static final byte CMD=0;
 
 	protected TapOperationImpl(OperationCallback cb) {
 		super(CMD, generateOpaque(), cb);

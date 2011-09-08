@@ -22,6 +22,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 
 	protected static final byte REQ_MAGIC = (byte)0x80;
 	protected static final byte RES_MAGIC = (byte)0x81;
+	protected static final byte DUMMY_OPCODE = (byte)0xff;
 	protected static final int MIN_RECV_PACKET=24;
 
 	/**
@@ -50,7 +51,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 	private static final AtomicInteger seqNumber=new AtomicInteger(0);
 
 	// request header fields
-	private final int cmd;
+	private final byte cmd;
 	protected short vbucket=0;
 	protected final int opaque;
 
@@ -60,7 +61,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 
 	// Response header fields
 	protected int keyLen;
-	protected int responseCmd;
+	protected byte responseCmd;
 	protected int errorCode;
 	protected int responseOpaque;
 	protected long responseCas;
@@ -73,7 +74,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 	 * @param o the opaque value.
 	 * @param cb
 	 */
-	protected OperationImpl(int c, int o, OperationCallback cb) {
+	protected OperationImpl(byte c, int o, OperationCallback cb) {
 		super();
 		cmd=c;
 		opaque=o;
@@ -109,7 +110,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 				int magic=header[0];
 				assert magic == RES_MAGIC : "Invalid magic:  " + magic;
 				responseCmd=header[1];
-				assert cmd == -1 || responseCmd == cmd
+				assert cmd == DUMMY_OPCODE || responseCmd == cmd
 					: "Unexpected response command value";
 				keyLen=decodeShort(header, 2);
 				// TODO:  Examine extralen and datatype
@@ -281,7 +282,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 		ByteBuffer bb=ByteBuffer.allocate(bufSize + extraLen);
 		assert bb.order() == ByteOrder.BIG_ENDIAN;
 		bb.put(REQ_MAGIC);
-		bb.put((byte)cmd);
+		bb.put(cmd);
 		bb.putShort((short)keyBytes.length);
 		bb.put((byte)extraLen);
 		bb.put((byte)0); // data type

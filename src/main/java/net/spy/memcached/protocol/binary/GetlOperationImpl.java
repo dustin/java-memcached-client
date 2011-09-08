@@ -5,7 +5,7 @@ import net.spy.memcached.ops.GetlOperation;
 public class GetlOperationImpl extends SingleKeyOperationImpl
 		implements GetlOperation {
 
-	static final int GETL_CMD=0x94;
+	static final byte GETL_CMD=(byte) 0x94;
 
 	/**
 	 * Length of the extra header stuff for a GET response.

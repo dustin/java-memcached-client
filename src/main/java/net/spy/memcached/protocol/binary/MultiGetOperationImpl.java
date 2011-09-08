@@ -17,7 +17,7 @@ import net.spy.memcached.ops.OperationState;
 class MultiGetOperationImpl extends MultiKeyOperationImpl
 		implements GetOperation {
 
-	private static final int CMD_GETQ=0x09;
+	private static final byte CMD_GETQ=0x09;
 
 	private final Map<Integer, String> keys=new HashMap<Integer, String>();
 	private final Map<Integer, byte[]> bkeys=new HashMap<Integer, byte[]>();
@@ -26,7 +26,7 @@ class MultiGetOperationImpl extends MultiKeyOperationImpl
 	private final int terminalOpaque=generateOpaque();
 
 	public MultiGetOperationImpl(Collection<String> k, OperationCallback cb) {
-		super(-1, -1, cb);
+		super(DUMMY_OPCODE, -1, cb);
 		for(String s : new HashSet<String>(k)) {
 			addKey(s);
 		}
@@ -61,7 +61,7 @@ class MultiGetOperationImpl extends MultiKeyOperationImpl
 
 			// Custom header
 			bb.put(REQ_MAGIC);
-			bb.put((byte)CMD_GETQ);
+			bb.put(CMD_GETQ);
 			bb.putShort((short)keyBytes.length);
 			bb.put((byte)0); // extralen
 			bb.put((byte)0); // data type
