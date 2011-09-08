@@ -22,4 +22,8 @@ class FlushOperationImpl extends OperationImpl implements FlushOperation {
 		prepareBuffer("", 0, EMPTY_BYTES, delay);
 	}
 
+	@Override
+	public String toString() {
+		return super.toString() + " Delay: " + delay;
+	}
 }

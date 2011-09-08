@@ -24,4 +24,9 @@ public class SASLStepOperationImpl extends SASLBaseOperationImpl
 		return sc.evaluateChallenge(challenge);
 
 	}
+
+	@Override
+	public String toString() {
+		return "SASL steps operation";
+	}
 }

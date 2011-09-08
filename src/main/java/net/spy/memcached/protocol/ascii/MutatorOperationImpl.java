@@ -84,4 +84,8 @@ final class MutatorOperationImpl extends OperationImpl
 		return mutator;
 	}
 
+	@Override
+	public String toString() {
+		return "Cmd: " + mutator.name() + " Key: " + key + " Amount: " + amount;
+	}
 }

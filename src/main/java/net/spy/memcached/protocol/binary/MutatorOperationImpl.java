@@ -63,4 +63,9 @@ class MutatorOperationImpl extends SingleKeyOperationImpl implements
 		return mutator;
 	}
 
+	@Override
+	public String toString() {
+		return super.toString() + " Amount: " + by + " Default: " + def + " Exp: "
+			+ exp;
+	}
 }

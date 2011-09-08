@@ -24,4 +24,8 @@ class DeleteOperationImpl extends SingleKeyOperationImpl implements
 		prepareBuffer(key, cas, EMPTY_BYTES);
 	}
 
+	@Override
+	public String toString() {
+		return super.toString() + " Cas: " + cas;
+	}
 }

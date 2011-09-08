@@ -26,4 +26,9 @@ public class SASLAuthOperationImpl extends SASLBaseOperationImpl
 					: EMPTY_BYTES;
 
 	}
+
+	@Override
+	public String toString() {
+		return "SASL auth operation";
+	}
 }

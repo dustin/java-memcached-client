@@ -50,4 +50,8 @@ class ConcatenationOperationImpl extends SingleKeyOperationImpl
 		return catType;
 	}
 
+	@Override
+	public String toString() {
+		return super.toString() + " Cas: " + cas + " Data Length: " + data.length;
+	}
 }

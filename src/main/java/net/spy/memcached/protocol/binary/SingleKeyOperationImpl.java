@@ -47,4 +47,9 @@ abstract class SingleKeyOperationImpl extends OperationImpl
 		assert k.equals(key) : (k + " doesn't match the key " + key + " for this operation");
 		return vbucket;
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " Key: " + key;
+	}
 }

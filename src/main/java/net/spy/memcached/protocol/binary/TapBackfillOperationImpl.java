@@ -41,4 +41,9 @@ public class TapBackfillOperationImpl extends TapOperationImpl implements TapOpe
 	public void streamClosed(OperationState state) {
 		transitionState(state);
 	}
+
+	@Override
+	public String toString() {
+		return "Cmd: tap dump Flags: backfill,ack";
+	}
 }

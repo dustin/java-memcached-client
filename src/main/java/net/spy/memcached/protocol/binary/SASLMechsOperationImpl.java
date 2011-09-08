@@ -24,4 +24,8 @@ class SASLMechsOperationImpl extends OperationImpl implements
 				new OperationStatus(true, new String(pl)));
 	}
 
+	@Override
+	public String toString() {
+		return "SASL mechs operation";
+	}
 }
