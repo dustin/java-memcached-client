@@ -48,7 +48,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
    */
   public static final OperationStatus CANCELLED =
       new CancelledOperationStatus();
-  private OperationState state = OperationState.WRITING;
+  private OperationState state = OperationState.WRITE_QUEUED;
   private ByteBuffer cmd = null;
   private boolean cancelled = false;
   private OperationException exception = null;
@@ -79,7 +79,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
     callback = to;
   }
 
-  public final boolean isCancelled() {
+  public final synchronized boolean isCancelled() {
     return cancelled;
   }
 
@@ -91,7 +91,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
     return exception;
   }
 
-  public final void cancel() {
+  public final synchronized void cancel() {
     cancelled = true;
     wasCancelled();
     callback.complete();
@@ -104,18 +104,18 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
     getLogger().debug("was cancelled.");
   }
 
-  public final OperationState getState() {
+  public final synchronized OperationState getState() {
     return state;
   }
 
-  public final ByteBuffer getBuffer() {
+  public final synchronized ByteBuffer getBuffer() {
     return cmd;
   }
 
   /**
    * Set the write buffer for this operation.
    */
-  protected final void setBuffer(ByteBuffer to) {
+  protected final synchronized void setBuffer(ByteBuffer to) {
     assert to != null : "Trying to set buffer to null";
     cmd = to;
     cmd.mark();
@@ -124,20 +124,21 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
   /**
    * Transition the state of this operation to the given state.
    */
-  protected final void transitionState(OperationState newState) {
+  protected final synchronized void transitionState(OperationState newState) {
     getLogger().debug("Transitioned state from %s to %s", state, newState);
     state = newState;
     // Discard our buffer when we no longer need it.
-    if (state != OperationState.WRITING) {
+    if(state != OperationState.WRITE_QUEUED
+        && state != OperationState.WRITING) {
       cmd = null;
     }
     if (state == OperationState.COMPLETE) {
       callback.complete();
     }
-    if (state == OperationState.TIMEDOUT) {
-      cmd = null;
-      callback.complete();
-    }
+  }
+
+  public final void writing() {
+    transitionState(OperationState.WRITING);
   }
 
   public final void writeComplete() {
@@ -181,28 +182,24 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
   }
 
   @Override
-  public void timeOut() {
-    assert (state != OperationState.READING || state
-        != OperationState.COMPLETE);
-    this.transitionState(OperationState.TIMEDOUT);
+  public synchronized void timeOut() {
     timedout = true;
+    callback.complete();
   }
 
   @Override
-  public boolean isTimedOut() {
+  public synchronized boolean isTimedOut() {
     return timedout;
   }
 
   @Override
-  public boolean isTimedOut(long ttlMillis) {
+  public synchronized boolean isTimedOut(long ttlMillis) {
     long elapsed = System.nanoTime();
     long ttlNanos = ttlMillis * 1000 * 1000;
     if (elapsed - creationTime > ttlNanos) {
-      assert (state != OperationState.READING || state
-          != OperationState.COMPLETE);
-      this.transitionState(OperationState.TIMEDOUT);
       timedOutUnsent = true;
       timedout = true;
+      callback.complete();
     } else {
       // timedout would be false, but we cannot allow you to untimeout an
       // operation

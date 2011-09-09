@@ -28,6 +28,10 @@ package net.spy.memcached.ops;
  */
 public enum OperationState {
   /**
+   * State indicating this operation is waiting to be written to the server.
+   */
+  WRITE_QUEUED,
+  /**
    * State indicating this operation is writing data to the server.
    */
   WRITING,
@@ -40,12 +44,8 @@ public enum OperationState {
    */
   COMPLETE,
   /**
-   * State indicating this operation timed out without completing.
-   */
-  TIMEDOUT,
-  /**
-   * State indicating this operation needs to be resent. Typically this means
-   * vbucket hashing and there is a topology change.
+   * State indicating this operation needs to be resent.  Typically
+   * this means vbucket hashing and there is a topology change.
    */
   RETRY
 }

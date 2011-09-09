@@ -44,7 +44,7 @@ public abstract class BaseOperationFactory implements OperationFactory {
   }
 
   public Collection<Operation> clone(KeyedOperation op) {
-    assert (op.getState() == OperationState.WRITING || op.getState()
+    assert (op.getState() == OperationState.WRITE_QUEUED || op.getState()
         == OperationState.RETRY) : "Who passed me an operation in the "
         + op.getState() + "state?";
     assert !op.isCancelled() : "Attempted to clone a canceled op";

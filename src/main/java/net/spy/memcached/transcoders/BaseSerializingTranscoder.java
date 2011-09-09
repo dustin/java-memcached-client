@@ -96,16 +96,21 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
     if (o == null) {
       throw new NullPointerException("Can't serialize null");
     }
-    byte[] rv = null;
+    byte[] rv=null;
+    ByteArrayOutputStream bos = null;
+    ObjectOutputStream os = null;
     try {
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      ObjectOutputStream os = new ObjectOutputStream(bos);
+      bos = new ByteArrayOutputStream();
+      os = new ObjectOutputStream(bos);
       os.writeObject(o);
       os.close();
       bos.close();
       rv = bos.toByteArray();
     } catch (IOException e) {
       throw new IllegalArgumentException("Non-serializable object", e);
+    } finally {
+      CloseUtil.close(os);
+      CloseUtil.close(bos);
     }
     return rv;
   }
@@ -114,12 +119,14 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
    * Get the object represented by the given serialized bytes.
    */
   protected Object deserialize(byte[] in) {
-    Object rv = null;
+    Object rv=null;
+    ByteArrayInputStream bis = null;
+    ObjectInputStream is = null;
     try {
-      if (in != null) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(in);
-        ObjectInputStream is = new ObjectInputStream(bis);
-        rv = is.readObject();
+      if(in != null) {
+        bis=new ByteArrayInputStream(in);
+        is=new ObjectInputStream(bis);
+        rv=is.readObject();
         is.close();
         bis.close();
       }
@@ -129,6 +136,9 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
     } catch (ClassNotFoundException e) {
       getLogger().warn("Caught CNFE decoding %d bytes of data",
           in == null ? 0 : in.length, e);
+    } finally {
+      CloseUtil.close(is);
+      CloseUtil.close(bis);
     }
     return rv;
   }
@@ -163,10 +173,10 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
    */
   protected byte[] decompress(byte[] in) {
     ByteArrayOutputStream bos = null;
-    if (in != null) {
+    if(in != null) {
       ByteArrayInputStream bis = new ByteArrayInputStream(in);
       bos = new ByteArrayOutputStream();
-      GZIPInputStream gis;
+      GZIPInputStream gis = null;
       try {
         gis = new GZIPInputStream(bis);
 
@@ -178,6 +188,10 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
       } catch (IOException e) {
         getLogger().warn("Failed to decompress data", e);
         bos = null;
+      } finally {
+        CloseUtil.close(gis);
+        CloseUtil.close(bis);
+        CloseUtil.close(bos);
       }
     }
     return bos == null ? null : bos.toByteArray();

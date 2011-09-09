@@ -348,8 +348,12 @@ public class ConfigurationProviderHTTP extends SpyObject implements
       clearText.append(password);
     }
     String headerResult;
-    headerResult = "Basic "
+    headerResult ="Basic "
       + Base64.encodeBase64String(clearText.toString().getBytes("UTF-8"));
+
+    if (headerResult.endsWith("\r\n")) {
+      headerResult = headerResult.substring(0, headerResult.length() - 2);
+    }
     return headerResult;
   }
 }

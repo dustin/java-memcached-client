@@ -525,25 +525,26 @@ public final class MemcachedConnection extends SpyThread implements
         if (currentOp == null) {
           throw new IllegalStateException("No read operation.");
         }
-        currentOp.readFromBuffer(rbuf);
-        if (currentOp.getState() == OperationState.COMPLETE) {
-          getLogger().debug("Completed read op: %s and giving the next %d "
-              + "bytes", currentOp, rbuf.remaining());
-          Operation op = qa.removeCurrentReadOp();
-          assert op == currentOp : "Expected to pop " + currentOp + " got "
-              + op;
-          currentOp = qa.getCurrentReadOp();
-        } else if (currentOp.getState() == OperationState.RETRY) {
-          getLogger().warn("Reschedule read op due to NOT_MY_VBUCKET error: "
-              + "%s ", currentOp);
-          ((VBucketAware) currentOp).addNotMyVbucketNode(
-              currentOp.getHandlingNode());
-          Operation op = qa.removeCurrentReadOp();
-          assert op == currentOp : "Expected to pop " + currentOp + " got "
-              + op;
-          retryOps.add(currentOp);
-          currentOp = qa.getCurrentReadOp();
+        synchronized(currentOp) {
+          currentOp.readFromBuffer(rbuf);
+          if (currentOp.getState() == OperationState.COMPLETE) {
+            getLogger().debug("Completed read op: %s and giving the next %d "
+                + "bytes", currentOp, rbuf.remaining());
+            Operation op = qa.removeCurrentReadOp();
+            assert op == currentOp : "Expected to pop " + currentOp + " got "
+                + op;
+          } else if (currentOp.getState() == OperationState.RETRY) {
+            getLogger().warn("Reschedule read op due to NOT_MY_VBUCKET error: "
+                + "%s ", currentOp);
+            ((VBucketAware) currentOp).addNotMyVbucketNode(
+                currentOp.getHandlingNode());
+            Operation op = qa.removeCurrentReadOp();
+            assert op == currentOp : "Expected to pop " + currentOp + " got "
+                + op;
+            retryOps.add(currentOp);
+          }
         }
+        currentOp=qa.getCurrentReadOp();
       }
       rbuf.clear();
       read = channel.read(rbuf);
@@ -618,6 +619,9 @@ public final class MemcachedConnection extends SpyThread implements
 
   private void redistributeOperations(Collection<Operation> ops) {
     for (Operation op : ops) {
+      if (op.isCancelled() || op.isTimedOut()) {
+        continue;
+      }
       if (op instanceof KeyedOperation) {
         KeyedOperation ko = (KeyedOperation) op;
         int added = 0;

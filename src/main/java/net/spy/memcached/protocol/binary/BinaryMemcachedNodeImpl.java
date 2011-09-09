@@ -79,7 +79,7 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 
       // Initialize the new mega get
       optimizedOp.initialize();
-      assert optimizedOp.getState() == OperationState.WRITING;
+      assert optimizedOp.getState() == OperationState.WRITE_QUEUED;
       ProxyCallback pcb = (ProxyCallback) og.getCallback();
       getLogger().debug("Set up %s with %s keys and %s callbacks", this,
           pcb.numKeys(), pcb.numCallbacks());
@@ -105,7 +105,7 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 
       // Initialize the new mega set
       optimizedOp.initialize();
-      assert optimizedOp.getState() == OperationState.WRITING;
+      assert optimizedOp.getState() == OperationState.WRITE_QUEUED;
     }
   }
 }
