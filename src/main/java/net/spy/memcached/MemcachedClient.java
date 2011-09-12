@@ -1317,9 +1317,6 @@ public class MemcachedClient extends SpyThread
 				@SuppressWarnings("synthetic-access")
 				public void receivedStatus(OperationStatus status) {
 					rv.setStatus(status);
-					if(!status.isSuccess()) {
-						getLogger().warn("Unsuccessful get:  %s", status);
-					}
 				}
 				public void gotData(String k, int flags, byte[] data) {
 					Transcoder<T> tc = tc_map.get(k);
