@@ -270,6 +270,17 @@ public class MembaseClient extends MemcachedClient implements MembaseClientIF,
     return getAndLock(key, exp, transcoder);
   }
 
+  /**
+   * Gets the number of vBuckets that are contained in the cluster. This
+   * function is for internal use only and should rarely be since there
+   * are few use cases in which it is necessary.
+   */
+  @Override
+  public int getNumVBuckets() {
+    return ((MembaseConnectionFactory)connFactory).getVBucketConfig()
+      .getVbucketsCount();
+  }
+
   @Override
   public boolean shutdown(long timeout, TimeUnit unit) {
     boolean shutdownResult = super.shutdown(timeout, unit);

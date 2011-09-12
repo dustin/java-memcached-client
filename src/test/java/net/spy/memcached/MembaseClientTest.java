@@ -61,6 +61,12 @@ public class MembaseClientTest extends BinaryClientTest {
     assert client.getAvailableServers().size() == 2;
   }
 
+  public void testNumVBuckets() throws Exception {
+    if (TestConfig.isMembase()) {
+      assert ((MembaseClient)client).getNumVBuckets() == 1024;
+    }
+  }
+
   protected void syncGetTimeoutsInitClient() throws Exception {
     initClient(new MembaseConnectionFactory(Arrays.asList(URI
         .create("http://localhost:8091/pools")), "default", "default", "") {
