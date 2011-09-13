@@ -73,4 +73,9 @@ abstract class SingleKeyOperationImpl extends OperationImpl implements
         + " for this operation");
     return vbucket;
   }
+
+  @Override
+  public String toString() {
+    return super.toString() + " Key: " + key;
+  }
 }

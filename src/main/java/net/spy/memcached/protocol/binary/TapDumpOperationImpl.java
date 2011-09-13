@@ -64,4 +64,9 @@ public class TapDumpOperationImpl extends TapOperationImpl implements
   public void streamClosed(OperationState state) {
     transitionState(state);
   }
+
+  @Override
+  public String toString() {
+    return "Cmd: tap dump Flags: dump,ack";
+  }
 }

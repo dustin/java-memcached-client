@@ -1,5 +1,4 @@
 /**
- * Copyright (C) 2006-2009 Dustin Sallings
  * Copyright (C) 2009-2011 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,37 +20,25 @@
  * IN THE SOFTWARE.
  */
 
-package net.spy.memcached.protocol.binary;
+package net.spy.memcached.util;
 
-import java.util.Map;
-
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.sasl.SaslClient;
-import javax.security.sasl.SaslException;
-
-import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.SASLStepOperation;
+import java.util.Collection;
 
 /**
- * A SASLStepOperationImpl.
+ * Some String utilities.
  */
-public class SASLStepOperationImpl extends SASLBaseOperationImpl implements
-    SASLStepOperation {
+public final class StringUtils {
 
-  private static final int CMD = 0x22;
-
-  public SASLStepOperationImpl(String[] m, byte[] ch, String s,
-      Map<String, ?> p, CallbackHandler h, OperationCallback c) {
-    super(CMD, m, ch, s, p, h, c);
+  private StringUtils() {
+    // Empty
   }
 
-  @Override
-  protected byte[] buildResponse(SaslClient sc) throws SaslException {
-    return sc.evaluateChallenge(challenge);
-  }
-
-  @Override
-  public String toString() {
-    return "SASL steps operation";
+  public static String join(Collection<String> keys, String delimiter) {
+    StringBuilder sb = new StringBuilder();
+    for (String key : keys) {
+      sb.append(key);
+      sb.append(delimiter);
+    }
+    return sb.toString();
   }
 }
