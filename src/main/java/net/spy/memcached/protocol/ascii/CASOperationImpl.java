@@ -86,12 +86,6 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
     setBuffer(bb);
   }
 
-  @Override
-  protected void wasCancelled() {
-    // XXX: Replace this comment with why I did this
-    getCallback().receivedStatus(CANCELLED);
-  }
-
   public Collection<String> getKeys() {
     return Collections.singleton(key);
   }

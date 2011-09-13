@@ -117,7 +117,6 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
     Map<String, T> ret = internalGet(to, unit, timedoutOps);
     if (timedoutOps.size() > 0) {
       this.timeout = true;
-      status = new OperationStatus(false, "Timed out");
       throw new CheckedOperationTimeoutException("Operation timed out.",
           timedoutOps);
     }
@@ -150,11 +149,9 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
     }
     for (Operation op : ops) {
       if (op.isCancelled()) {
-        status = new OperationStatus(false, "Cancelled");
         throw new ExecutionException(new RuntimeException("Cancelled"));
       }
       if (op.hasErrored()) {
-        status = new OperationStatus(false, op.getException().getMessage());
         throw new ExecutionException(op.getException());
       }
     }

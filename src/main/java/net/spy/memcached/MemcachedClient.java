@@ -67,6 +67,7 @@ import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreType;
+import net.spy.memcached.ops.TimedOutOperationStatus;
 import net.spy.memcached.transcoders.TranscodeService;
 import net.spy.memcached.transcoders.Transcoder;
 
@@ -523,6 +524,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
                 rv.set(((CASOperationStatus) val).getCASResponse(), val);
               } else if (val instanceof CancelledOperationStatus) {
                 getLogger().debug("CAS operation cancelled");
+              } else if (val instanceof TimedOutOperationStatus) {
+                getLogger().debug("CAS operation timed out");
               } else {
                 throw new RuntimeException("Unhandled state: " + val);
               }
