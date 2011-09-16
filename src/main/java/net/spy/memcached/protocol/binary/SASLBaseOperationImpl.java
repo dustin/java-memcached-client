@@ -93,4 +93,9 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
       super.finishedPayload(pl);
     }
   }
+
+  @Override
+  public String toString() {
+    return "SASL base operation";
+  }
 }

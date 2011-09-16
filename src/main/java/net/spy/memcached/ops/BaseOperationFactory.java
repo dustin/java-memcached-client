@@ -62,9 +62,9 @@ public abstract class BaseOperationFactory implements OperationFactory {
     } else if (op instanceof CASOperation) {
       CASOperation cop = (CASOperation) op;
       rv.add(cas(cop.getStoreType(), first(op.getKeys()), cop.getCasValue(),
-          cop.getFlags(), cop.getExpiration(), cop.getBytes(),
+          cop.getFlags(), cop.getExpiration(), cop.getData(),
           cop.getCallback()));
-    } else if (op instanceof DeleteOperation) {
+    } else if(op instanceof DeleteOperation) {
       rv.add(delete(first(op.getKeys()), op.getCallback()));
     } else if (op instanceof MutatorOperation) {
       MutatorOperation mo = (MutatorOperation) op;

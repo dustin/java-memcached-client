@@ -1,5 +1,4 @@
 /**
- * Copyright (C) 2006-2009 Dustin Sallings
  * Copyright (C) 2009-2011 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,37 +20,28 @@
  * IN THE SOFTWARE.
  */
 
-package net.spy.memcached.protocol.binary;
+package net.spy.memcached;
 
-import java.util.Map;
-
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.sasl.SaslClient;
-import javax.security.sasl.SaslException;
-
-import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.SASLStepOperation;
+import junit.framework.TestCase;
 
 /**
- * A SASLStepOperationImpl.
+ * These tests test to make sure that we don't get null pointer
+ * exceptions when calling toString methods on classes that have
+ * custom toString() functions.
  */
-public class SASLStepOperationImpl extends SASLBaseOperationImpl implements
-    SASLStepOperation {
+public class ToStringTest extends TestCase {
 
-  private static final int CMD = 0x22;
-
-  public SASLStepOperationImpl(String[] m, byte[] ch, String s,
-      Map<String, ?> p, CallbackHandler h, OperationCallback c) {
-    super(CMD, m, ch, s, p, h, c);
+  public void testDefaultConnectionFactory() {
+    (new DefaultConnectionFactory()).toString();
+    (new DefaultConnectionFactory(10, 1000)).toString();
+    (new DefaultConnectionFactory(100, 100,
+        DefaultHashAlgorithm.KETAMA_HASH)).toString();
   }
 
-  @Override
-  protected byte[] buildResponse(SaslClient sc) throws SaslException {
-    return sc.evaluateChallenge(challenge);
-  }
-
-  @Override
-  public String toString() {
-    return "SASL steps operation";
+  public void testBinaryConnectionFactory() {
+    (new BinaryConnectionFactory()).toString();
+    (new BinaryConnectionFactory(10, 1000)).toString();
+    (new BinaryConnectionFactory(100, 1000,
+        DefaultHashAlgorithm.KETAMA_HASH)).toString();
   }
 }

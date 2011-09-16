@@ -78,4 +78,9 @@ class ConcatenationOperationImpl extends SingleKeyOperationImpl implements
   public ConcatenationType getStoreType() {
     return catType;
   }
+
+  @Override
+  public String toString() {
+    return super.toString() + " Cas: " + cas + " Data Length: " + data.length;
+  }
 }

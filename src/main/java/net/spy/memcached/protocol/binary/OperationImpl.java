@@ -348,4 +348,9 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
     }
     return rv;
   }
+
+  @Override
+  public String toString() {
+    return "Cmd: " + cmd + " Opaque: " + opaque;
+  }
 }

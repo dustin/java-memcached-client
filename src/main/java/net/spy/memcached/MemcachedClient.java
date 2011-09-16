@@ -1114,9 +1114,6 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       @SuppressWarnings("synthetic-access")
       public void receivedStatus(OperationStatus status) {
         rv.setStatus(status);
-        if (!status.isSuccess()) {
-          getLogger().warn("Unsuccessful get:  %s", status);
-        }
       }
 
       public void gotData(String k, int flags, byte[] data) {
@@ -1917,5 +1914,10 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
 
   public void connectionLost(SocketAddress sa) {
     // Don't care.
+  }
+
+  @Override
+  public String toString() {
+    return connFactory.toString();
   }
 }

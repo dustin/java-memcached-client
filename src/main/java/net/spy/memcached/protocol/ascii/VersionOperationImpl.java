@@ -54,4 +54,9 @@ final class VersionOperationImpl extends OperationImpl implements
   public void initialize() {
     setBuffer(ByteBuffer.wrap(REQUEST));
   }
+
+  @Override
+  public String toString() {
+    return "Cmd: version";
+  }
 }
