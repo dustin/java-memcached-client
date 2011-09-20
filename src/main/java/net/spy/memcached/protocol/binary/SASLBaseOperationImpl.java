@@ -40,7 +40,7 @@ import net.spy.memcached.ops.OperationStatus;
  */
 public abstract class SASLBaseOperationImpl extends OperationImpl {
 
-  private static final int SASL_CONTINUE = 0x21;
+  private static final byte SASL_CONTINUE = 0x21;
 
   protected final String[] mech;
   protected final byte[] challenge;
@@ -48,7 +48,7 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
   protected final Map<String, ?> props;
   protected final CallbackHandler cbh;
 
-  public SASLBaseOperationImpl(int c, String[] m, byte[] ch, String s,
+  public SASLBaseOperationImpl(byte c, String[] m, byte[] ch, String s,
       Map<String, ?> p, CallbackHandler h, OperationCallback cb) {
     super(c, generateOpaque(), cb);
     mech = m;

@@ -41,7 +41,7 @@ abstract class MultiKeyOperationImpl extends OperationImpl implements
     VBucketAware, KeyedOperation {
   protected final Map<String, Short> vbmap = new HashMap<String, Short>();
 
-  protected MultiKeyOperationImpl(int c, int o, OperationCallback cb) {
+  protected MultiKeyOperationImpl(byte c, int o, OperationCallback cb) {
     super(c, o, cb);
   }
 

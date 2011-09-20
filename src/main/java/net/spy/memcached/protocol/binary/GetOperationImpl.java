@@ -30,7 +30,7 @@ import net.spy.memcached.ops.GetOperation;
  */
 class GetOperationImpl extends SingleKeyOperationImpl implements GetOperation {
 
-  static final int GET_CMD = 0x00;
+  static final byte GET_CMD = 0x00;
 
   /**
    * Length of the extra header stuff for a GET response.
