@@ -45,6 +45,8 @@ abstract class BaseGetOpImpl extends OperationImpl {
   private static final OperationStatus END = new OperationStatus(true, "END");
   private static final OperationStatus NOT_FOUND = new OperationStatus(false,
       "NOT_FOUND");
+  private static final OperationStatus LOCK_ERROR = new OperationStatus(false,
+      "LOCK_ERROR");
   private static final byte[] RN_BYTES = "\r\n".getBytes();
   private final String cmd;
   private final Collection<String> keys;
@@ -108,6 +110,9 @@ abstract class BaseGetOpImpl extends OperationImpl {
       hasValue = true;
       getLogger().debug("Set read type to data");
       setReadType(OperationReadType.DATA);
+    } else if (line.equals("LOCK_ERROR")) {
+      getCallback().receivedStatus(LOCK_ERROR);
+      transitionState(OperationState.COMPLETE);
     } else {
       assert false : "Unknown line type: " + line;
     }
