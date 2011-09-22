@@ -18,7 +18,7 @@ public class MessageBuilder {
 		message.setFlags(TapFlag.DUMP);
 	}
 
-	public void specifyVbuckets(int[] vbucketlist) {
+	public void specifyVbuckets(short[] vbucketlist) {
 		message.setVbucketlist(vbucketlist);
 		message.setFlags(TapFlag.LIST_VBUCKETS);
 	}
@@ -31,7 +31,7 @@ public class MessageBuilder {
 		message.setFlags(TapFlag.KEYS_ONLY);
 	}
 
-	public void takeoverVbuckets(int[] vbucketlist) {
+	public void takeoverVbuckets(short[] vbucketlist) {
 		message.setVbucketlist(vbucketlist);
 		message.setFlags(TapFlag.TAKEOVER_VBUCKETS);
 	}
