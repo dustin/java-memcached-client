@@ -486,7 +486,6 @@ public final class MemcachedConnection extends SpyObject implements Reconfigurab
 						currentOp, rbuf.remaining());
 				Operation op=qa.removeCurrentReadOp();
 				assert op == currentOp : "Expected to pop " + currentOp + " got " + op;
-				queueReconnect(qa);
 				currentOp=qa.getCurrentReadOp();
 			} else {
 			    // our model is to keep the connection alive for future ops
