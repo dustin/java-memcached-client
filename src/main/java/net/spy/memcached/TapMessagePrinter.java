@@ -26,5 +26,6 @@ public class TapMessagePrinter {
 			p.printf("%5x", field);
 		}
 		p.print("\n\n");
+		p.flush();
 	}
 }
