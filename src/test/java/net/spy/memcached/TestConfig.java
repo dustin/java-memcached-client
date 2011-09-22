@@ -38,7 +38,6 @@ public class TestConfig {
 	}
 
 	public static final boolean isMembase() {
-		System.out.println(TYPE);
 		return TYPE.equals(TYPE_MEMBASE);
 	}
 }
