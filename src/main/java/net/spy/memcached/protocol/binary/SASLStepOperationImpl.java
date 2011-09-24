@@ -38,7 +38,7 @@ import net.spy.memcached.ops.SASLStepOperation;
 public class SASLStepOperationImpl extends SASLBaseOperationImpl implements
     SASLStepOperation {
 
-  private static final int CMD = 0x22;
+  private static final byte CMD = 0x22;
 
   public SASLStepOperationImpl(String[] m, byte[] ch, String s,
       Map<String, ?> p, CallbackHandler h, OperationCallback c) {

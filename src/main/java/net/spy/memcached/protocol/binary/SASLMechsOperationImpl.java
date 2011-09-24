@@ -29,7 +29,7 @@ import net.spy.memcached.ops.SASLMechsOperation;
 class SASLMechsOperationImpl extends OperationImpl implements
     SASLMechsOperation {
 
-  private static final int CMD = 0x20;
+  private static final byte CMD = 0x20;
 
   public SASLMechsOperationImpl(OperationCallback cb) {
     super(CMD, generateOpaque(), cb);

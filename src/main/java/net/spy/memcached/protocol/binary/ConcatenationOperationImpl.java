@@ -37,8 +37,8 @@ class ConcatenationOperationImpl extends SingleKeyOperationImpl implements
   private final ConcatenationType catType;
   private final byte[] data;
 
-  private static int cmdMap(ConcatenationType t) {
-    int rv;
+  private static byte cmdMap(ConcatenationType t) {
+    byte rv;
     switch (t) {
     case append:
       rv = APPEND;
@@ -47,10 +47,10 @@ class ConcatenationOperationImpl extends SingleKeyOperationImpl implements
       rv = PREPEND;
       break;
     default:
-      rv = -1;
+      rv = DUMMY_OPCODE;
     }
     // Check fall-through.
-    assert rv != -1 : "Unhandled store type:  " + t;
+    assert rv != DUMMY_OPCODE : "Unhandled store type:  " + t;
     return rv;
   }
 

@@ -38,7 +38,7 @@ import net.spy.memcached.ops.SASLAuthOperation;
 public class SASLAuthOperationImpl extends SASLBaseOperationImpl implements
     SASLAuthOperation {
 
-  private static final int CMD = 0x21;
+  private static final byte CMD = 0x21;
 
   public SASLAuthOperationImpl(String[] m, String s, Map<String, ?> p,
       CallbackHandler h, OperationCallback c) {

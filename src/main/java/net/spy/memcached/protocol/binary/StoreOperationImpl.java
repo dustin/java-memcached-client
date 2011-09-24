@@ -31,13 +31,13 @@ import net.spy.memcached.ops.StoreType;
 class StoreOperationImpl extends SingleKeyOperationImpl implements
     StoreOperation, CASOperation {
 
-  private static final int SET = 0x01;
-  private static final int ADD = 0x02;
-  private static final int REPLACE = 0x03;
+  private static final byte SET = 0x01;
+  private static final byte ADD = 0x02;
+  private static final byte REPLACE = 0x03;
 
-  static final int SETQ = 0x11;
-  static final int ADDQ = 0x12;
-  static final int REPLACEQ = 0x13;
+  static final byte SETQ = 0x11;
+  static final byte ADDQ = 0x12;
+  static final byte REPLACEQ = 0x13;
 
   // 4-byte flags, 4-byte expiration
   static final int EXTRA_LEN = 8;
@@ -48,8 +48,8 @@ class StoreOperationImpl extends SingleKeyOperationImpl implements
   private final long cas;
   private final byte[] data;
 
-  private static int cmdMap(StoreType t) {
-    int rv;
+  private static byte cmdMap(StoreType t) {
+    byte rv;
     switch (t) {
     case set:
       rv = SET;
@@ -61,10 +61,10 @@ class StoreOperationImpl extends SingleKeyOperationImpl implements
       rv = REPLACE;
       break;
     default:
-      rv = -1;
+      rv = DUMMY_OPCODE;
     }
     // Check fall-through.
-    assert rv != -1 : "Unhandled store type:  " + t;
+    assert rv != DUMMY_OPCODE : "Unhandled store type:  " + t;
     return rv;
   }
 

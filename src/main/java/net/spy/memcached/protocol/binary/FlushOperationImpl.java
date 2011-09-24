@@ -28,7 +28,7 @@ import net.spy.memcached.ops.OperationCallback;
 
 class FlushOperationImpl extends OperationImpl implements FlushOperation {
 
-  private static final int CMD = 0x08;
+  private static final byte CMD = 0x08;
   private final int delay;
 
   public FlushOperationImpl(OperationCallback cb) {
