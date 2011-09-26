@@ -438,7 +438,7 @@
     </jar>
   </target>
 
-  <target name="jar" depends="compile" description="Creates a jar file for the plugin">
+  <target name="jar" depends="compile,compile-test" description="Creates a jar file for the plugin">
     <exec executable="git" outputproperty="version">
       <arg value="describe" />
       <arg value="--abbrev=0" />
@@ -452,6 +452,7 @@
         <attribute name="Main-Class" value="net.spy.memcached.BuildInfo" />
       </manifest>
     </jar>
+    <jar jarfile="${build.dir}/${name}-${version}-test.jar" basedir="${build.test.classes}"/>
   </target>
 
   <target name="package" depends="jar,srcjar,docsjar"
