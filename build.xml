@@ -20,7 +20,7 @@
   SOFTWARE.
 -->
 
-<project name="spymemcached" default="jar"
+<project name="spymemcached" default="package"
     xmlns:artifact="urn:maven-artifact-ant"
     xmlns:ivy="antlib:org.apache.ivy.ant">
 
@@ -422,7 +422,7 @@
         tofile="${build.classes}/net/spy/memcached/changelog.txt" />
   </target>
 
-  <target name="srcjars" depends="init,jar"
+  <target name="srcjar" depends="init,jar"
       description="Create source jars">
     <exec executable="git" outputproperty="version">
       <arg value="describe" />
@@ -454,10 +454,8 @@
     </jar>
   </target>
 
-  <target name="package" depends="jar" description="Packages files for distribution">
-    <mkdir dir="${dist.dir}" />
-    <zip destfile="${name}-${version}.zip" basedir="${build.javadoc}" />
-  </target>
+  <target name="package" depends="jar,srcjar,docsjar"
+      description="Packages files for distribution"/>
 
   <!-- ======================================
         Section: Checkstyle Integration
@@ -521,7 +519,7 @@
     </replaceregexp>
   </target>
 
-  <target name="mvn-install" depends="init,mvn-prep,jar,srcjars"
+  <target name="mvn-install" depends="jar,srcjar,mvn-prep"
       description="Install Spymemcached in local m2 repository">
     <exec executable="git" outputproperty="version">
       <arg value="describe" />
