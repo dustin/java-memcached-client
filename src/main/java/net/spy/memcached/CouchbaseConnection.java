@@ -194,24 +194,12 @@ public final class CouchbaseConnection extends SpyThread implements
     reconfiguring = true;
     try {
       // get a new collection of addresses from the received config
-      List<String> servers = bucket.getConfig().getServers();
       HashSet<SocketAddress> newServerAddresses = new HashSet<SocketAddress>();
-      ArrayList<InetSocketAddress> newServers =
-          new ArrayList<InetSocketAddress>();
-      for (String server : servers) {
-        int finalColon = server.lastIndexOf(':');
-        if (finalColon < 1) {
-          throw new IllegalArgumentException("Invalid server ``" + server
-              + "'' in vbucket's server list");
-        }
-        String hostPart = server.substring(0, finalColon);
-        // String portNum = server.substring(finalColon + 1);
-
-        InetSocketAddress address =
-            new InetSocketAddress(hostPart, Integer.parseInt("5984"));
+      List<InetSocketAddress> newServers =
+        AddrUtil.getAddressesFromURL(bucket.getConfig().getCouchServers());
+      for (InetSocketAddress server : newServers) {
         // add parsed address to our collections
-        newServerAddresses.add(address);
-        newServers.add(address);
+        newServerAddresses.add(server);
       }
 
       // split current nodes to "odd nodes" and "stay nodes"

@@ -27,11 +27,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.spy.memcached.HashAlgorithm;
 import net.spy.memcached.HashAlgorithmRegistry;
+import net.spy.memcached.compat.SpyObject;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -40,7 +43,7 @@ import org.codehaus.jettison.json.JSONObject;
 /**
  * A DefaultConfigFactory.
  */
-public class DefaultConfigFactory implements ConfigFactory {
+public class DefaultConfigFactory extends SpyObject implements ConfigFactory {
 
   @Override
   public Config create(File filename) {
@@ -89,7 +92,7 @@ public class DefaultConfigFactory implements ConfigFactory {
     if (!jsonObject.has("vBucketServerMap")) {
       return parseCacheJSON(jsonObject);
     }
-    return parseEpJSON(jsonObject.getJSONObject("vBucketServerMap"));
+    return parseEpJSON(jsonObject);
   }
 
   private Config parseCacheJSON(JSONObject jsonObject) throws JSONException {
@@ -108,24 +111,25 @@ public class DefaultConfigFactory implements ConfigFactory {
 
   /* ep is for ep-engine, a.k.a. membase */
   private Config parseEpJSON(JSONObject jsonObject) throws JSONException {
-    String algorithm = jsonObject.getString("hashAlgorithm");
+    JSONObject vbMap = jsonObject.getJSONObject("vBucketServerMap");
+    String algorithm = vbMap.getString("hashAlgorithm");
     HashAlgorithm hashAlgorithm =
         HashAlgorithmRegistry.lookupHashAlgorithm(algorithm);
     if (hashAlgorithm == null) {
       throw new IllegalArgumentException("Unhandled hash algorithm type: "
           + algorithm);
     }
-    int replicasCount = jsonObject.getInt("numReplicas");
+    int replicasCount = vbMap.getInt("numReplicas");
     if (replicasCount > VBucket.MAX_REPLICAS) {
       throw new ConfigParsingException("Expected number <= "
           + VBucket.MAX_REPLICAS + " for replicas.");
     }
-    JSONArray servers = jsonObject.getJSONArray("serverList");
+    JSONArray servers = vbMap.getJSONArray("serverList");
     if (servers.length() <= 0) {
       throw new ConfigParsingException("Empty servers list.");
     }
     int serversCount = servers.length();
-    JSONArray vbuckets = jsonObject.getJSONArray("vBucketMap");
+    JSONArray vbuckets = vbMap.getJSONArray("vBucketMap");
     int vbucketsCount = vbuckets.length();
     if (vbucketsCount == 0 || (vbucketsCount & (vbucketsCount - 1)) != 0) {
       throw new ConfigParsingException("Number of buckets must be a power of "
@@ -134,10 +138,29 @@ public class DefaultConfigFactory implements ConfigFactory {
     List<String> populateServers = populateServers(servers);
     List<VBucket> populateVbuckets = populateVbuckets(vbuckets);
 
+    List<URL> couchServers =
+      populateCouchServers(jsonObject.getJSONArray("nodes"));
+
     DefaultConfig config = new DefaultConfig(hashAlgorithm, serversCount,
-      replicasCount, vbucketsCount, populateServers, populateVbuckets);
+      replicasCount, vbucketsCount, populateServers, populateVbuckets,
+      couchServers);
 
     return config;
+  }
+
+  private List<URL> populateCouchServers(JSONArray nodes) throws JSONException{
+    List<URL> nodeNames = new ArrayList<URL>();
+    for (int i = 0; i < nodes.length(); i++) {
+      JSONObject node = nodes.getJSONObject(i);
+      if (node.has("couchApiBase")) {
+        try {
+          nodeNames.add(new URL(node.getString("couchApiBase")));
+        } catch (MalformedURLException e) {
+          throw new JSONException("Got bad couchApiBase URL from config");
+        }
+      }
+    }
+    return nodeNames;
   }
 
   private List<String> populateServers(JSONArray servers) throws JSONException {

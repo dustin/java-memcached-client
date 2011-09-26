@@ -128,15 +128,7 @@ public class CouchbaseClient extends MembaseClient
     this.bucketName = bucketName;
     CouchbaseConnectionFactory cf = (CouchbaseConnectionFactory) connFactory;
     List<InetSocketAddress> addrs =
-        AddrUtil.getAddresses(cf.getVBucketConfig().getServers());
-
-    List<InetSocketAddress> conv = new LinkedList<InetSocketAddress>();
-    while (!addrs.isEmpty()) {
-      conv.add(addrs.remove(0));
-    }
-    while (!conv.isEmpty()) {
-      addrs.add(new InetSocketAddress(conv.remove(0).getHostName(), 5984));
-    }
+      AddrUtil.getAddressesFromURL(cf.getVBucketConfig().getCouchServers());
 
     getLogger().info(MODE_ERROR);
     cconn = cf.createCouchDBConnection(addrs);

@@ -24,6 +24,7 @@
 package net.spy.memcached;
 
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,6 +90,16 @@ public final class AddrUtil {
     if (addrs.isEmpty()) {
       // servers was passed in empty, and shouldn't have been
       throw new IllegalArgumentException("servers cannot be empty");
+    }
+    return addrs;
+  }
+
+  public static List<InetSocketAddress>
+      getAddressesFromURL(List<URL> servers) {
+    ArrayList<InetSocketAddress> addrs =
+      new ArrayList<InetSocketAddress>(servers.size());
+    for (URL server : servers) {
+      addrs.add(new InetSocketAddress(server.getHost(), server.getPort()));
     }
     return addrs;
   }
