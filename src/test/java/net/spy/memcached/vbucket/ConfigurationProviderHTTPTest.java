@@ -52,7 +52,6 @@ public class ConfigurationProviderHTTPTest extends TestCase {
     public void testBuildAuthHeaderUTF8() throws UnsupportedEncodingException {
 	String result  = ConfigurationProviderHTTP.buildAuthHeader("blahblah", "bla@@h");
 	// string inspired by https://github.com/trondn/libcouchbase/issues/3
-	System.err.println("Authorization header for matt:this@here is " + result);
 	assertEquals("Basic YmxhaGJsYWg6YmxhQEBo", result);
     }
 }
