@@ -602,11 +602,11 @@ public final class MemcachedConnection extends SpyObject implements Reconfigurab
 			if(op instanceof KeyedOperation) {
 				KeyedOperation ko = (KeyedOperation)op;
 				int added = 0;
-				for(Operation newop : opFact.clone(ko)) {
-					List<String> keys = (List<String>)((KeyedOperation)newop).getKeys();
-					assert keys.size() == 1;
-					addOperation(keys.get(0), newop);
-					added++;
+				for(String k : ko.getKeys()) {
+					for(Operation newop : opFact.clone(ko)) {
+						addOperation(k, newop);
+						added++;
+					}
 				}
 				assert added > 0
 					: "Didn't add any new operations when redistributing";
