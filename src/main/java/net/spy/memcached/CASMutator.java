@@ -94,11 +94,27 @@ public class CASMutator<T> extends SpyObject {
    *
    * @param key the key to be CASed
    * @param initial the value to use when the object is not cached
-   * @param initialExp the expiration time to use when initializing
    * @param m the mutation to perform on an object if a value exists for the key
    * @return the new value that was set
    */
-  public T cas(final String key, final T initial, int initialExp,
+  public T cas(final String key, final T initial,
+      final CASMutation<T> m) throws Exception {
+        return cas(key, initial, 0, m);
+  }
+  /**
+   * CAS a new value in for a key.
+   *
+   * <p>
+   * Note that if initial is null, this method will only update existing values.
+   * </p>
+   *
+   * @param key the key to be CASed
+   * @param initial the value to use when the object is not cached
+   * @param exp the expiration time to use
+   * @param m the mutation to perform on an object if a value exists for the key
+   * @return the new value that was set
+   */
+  public T cas(final String key, final T initial, int exp,
       final CASMutation<T> m) throws Exception {
     T rv = initial;
 
@@ -126,7 +142,7 @@ public class CASMutator<T> extends SpyObject {
         // behavior will be fine in this code -- we'll do another gets
         // and follow it up with either an add or another cas depending
         // on whether it exists the next time.
-        if (client.cas(key, casval.getCas(), rv, transcoder)
+        if (client.cas(key, casval.getCas(), exp, rv, transcoder)
             == CASResponse.OK) {
           done = true;
         }
@@ -135,7 +151,7 @@ public class CASMutator<T> extends SpyObject {
         if (initial == null) {
           done = true;
           rv = null;
-        } else if (client.add(key, initialExp, initial, transcoder).get()) {
+        } else if (client.add(key, exp, initial, transcoder).get()) {
           done = true;
           rv = initial;
         }
