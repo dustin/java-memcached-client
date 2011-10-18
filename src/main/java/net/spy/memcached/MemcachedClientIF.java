@@ -63,9 +63,15 @@ public interface MemcachedClientIF {
   <T> Future<CASResponse> asyncCAS(String key, long casId, T value,
       Transcoder<T> tc);
 
+  <T> Future<CASResponse> asyncCAS(String key, long casId, int exp, T value,
+    Transcoder<T> tc) {
+
   Future<CASResponse> asyncCAS(String key, long casId, Object value);
 
   <T> CASResponse cas(String key, long casId, T value, Transcoder<T> tc);
+  
+  <T> CASResponse cas(String key, long casId, int exp, T value,
+    Transcoder<T> tc) {
 
   CASResponse cas(String key, long casId, Object value);
 
