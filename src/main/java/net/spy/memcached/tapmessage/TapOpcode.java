@@ -76,7 +76,7 @@ public enum TapOpcode {
   /**
    * The opcode value.
    */
-  private byte opcode;
+  public byte opcode;
 
   /**
    * Defines the magic value.

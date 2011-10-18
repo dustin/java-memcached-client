@@ -22,6 +22,9 @@
 
 package net.spy.memcached.tapmessage;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * The Flag enum contains a list all of the different flags that can be passed
  * in a tap message in the flag field.
@@ -65,7 +68,7 @@ public enum TapFlag {
   /**
    * The flag value.
    */
-  private byte flag;
+  public byte flag;
 
   /**
    * Defines the flag value.
@@ -76,18 +79,31 @@ public enum TapFlag {
     this.flag = flag;
   }
 
-  /**
-   * Checks to see if a flag is contained in a flag field. The flag field must
-   * be converted to an integer before calling this function.
-   *
-   * @param f The integer value of the flag field in a tap packet
-   * @return Returns true if the flag is contained in the flag field
-   */
-  boolean hasFlag(int f) {
-    if ((f & (int) flag) > 0) {
-      return true;
+  public static List<TapFlag> getFlags(short f) {
+    List<TapFlag> flags = new LinkedList<TapFlag>();
+    if ((f & TapFlag.BACKFILL.flag) == 1) {
+      flags.add(TapFlag.BACKFILL);
     }
-    return false;
+    if ((f & TapFlag.DUMP.flag) == 1) {
+      flags.add(TapFlag.DUMP);
+    }
+    if ((f & TapFlag.LIST_VBUCKETS.flag) == 1) {
+      flags.add(TapFlag.LIST_VBUCKETS);
+    }
+    if ((f & TapFlag.TAKEOVER_VBUCKETS.flag) == 1) {
+      flags.add(TapFlag.TAKEOVER_VBUCKETS);
+    }
+    if ((f & TapFlag.SUPPORT_ACK.flag) == 1) {
+      flags.add(TapFlag.SUPPORT_ACK);
+    }
+    if ((f & TapFlag.KEYS_ONLY.flag) == 1) {
+      flags.add(TapFlag.KEYS_ONLY);
+    }
+    if ((f & TapFlag.CHECKPOINT.flag) == 1) {
+      flags.add(TapFlag.CHECKPOINT);
+    }
+
+    return flags;
   }
 
   public byte getFlag() {

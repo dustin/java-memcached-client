@@ -23,6 +23,7 @@
 package net.spy.memcached.vbucket;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.text.ParseException;
@@ -62,6 +63,7 @@ public class BucketMonitor extends Observable {
   private final int port;
   private ConfigurationParser configParser;
   private BucketUpdateResponseHandler handler;
+  private final HttpMessageHeaders headers;
   /**
    * The specification version which this client meets. This will be included in
    * requests to the server.
@@ -96,8 +98,60 @@ public class BucketMonitor extends Observable {
     this.configParser = configParser;
     this.host = cometStreamURI.getHost();
     this.port = cometStreamURI.getPort() == -1 ? 80 : cometStreamURI.getPort();
-    factory = new NioClientSocketChannelFactory(
-      Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
+    factory = new NioClientSocketChannelFactory(Executors.newCachedThreadPool(),
+      Executors.newCachedThreadPool());
+    this.headers = new HttpMessageHeaders();
+  }
+
+  /**
+   * A strategy that selects and invokes the appropriate setHeader method on
+   * the netty HttpHeader class, either setHeader(String, Object) or
+   * setHeader(String, String). This indirection is needed as with netty 3.2.0
+   * setHeader(String, String) was changed to setHeader(String, Object) and
+   * spymemcached users shall be saved from incompatibilities due to an
+   * upgrade to the newer netty version. Once netty is upgraded to 3.2.0+ this
+   * may strategy can be replaced with a direct invocation of setHeader.
+   */
+  private static final class HttpMessageHeaders {
+
+    private final Method m;
+
+    private HttpMessageHeaders() {
+      this(getHttpMessageHeaderStrategy());
+    }
+
+    private HttpMessageHeaders(final Method m) {
+      this.m = m;
+    }
+
+    private static Method getHttpMessageHeaderStrategy() {
+      try {
+        return HttpRequest.class.getMethod("setHeader", String.class,
+          Object.class);
+      } catch (final SecurityException e) {
+        throw new RuntimeException(
+          "Cannot check method due to security restrictions.", e);
+      } catch (final NoSuchMethodException e) {
+        try {
+          return HttpRequest.class.getMethod("setHeader", String.class,
+            String.class);
+        } catch (final Exception e1) {
+          throw new RuntimeException(
+            "No suitable setHeader method found on netty HttpRequest, the "
+            + "signature seems to have changed.", e1);
+        }
+      }
+    }
+
+    void setHeader(HttpRequest obj, String name, String value) {
+      try {
+        m.invoke(obj, name, value);
+      } catch (final Exception e) {
+        throw new RuntimeException("Could not invoke method " + m
+          + " with args '" + name + "' and '" + value + "'.", e);
+      }
+    }
+
   }
 
   public void startMonitor() {
@@ -150,28 +204,29 @@ public class BucketMonitor extends Observable {
     // Send the HTTP request.
     HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1,
       HttpMethod.GET, uri.toASCIIString());
-    request.setHeader(HttpHeaders.Names.HOST, h);
+    headers.setHeader(request, HttpHeaders.Names.HOST, h);
     if (getHttpUser() != null) {
       String basicAuthHeader;
       try {
         basicAuthHeader =
-            ConfigurationProviderHTTP.buildAuthHeader(getHttpUser(),
+          ConfigurationProviderHTTP.buildAuthHeader(getHttpUser(),
             getHttpPass());
-        request.setHeader(HttpHeaders.Names.AUTHORIZATION, basicAuthHeader);
+        headers.setHeader(request, HttpHeaders.Names.AUTHORIZATION,
+          basicAuthHeader);
       } catch (UnsupportedEncodingException ex) {
         throw new RuntimeException("Could not encode specified credentials"
             + " for HTTP request.", ex);
       }
     }
-    // No keep-alives for this
-    request.setHeader(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.CLOSE);
-    request.setHeader(HttpHeaders.Names.CACHE_CONTROL,
-        HttpHeaders.Values.NO_CACHE);
-    request.setHeader(HttpHeaders.Names.ACCEPT, "application/json");
-    request.setHeader(HttpHeaders.Names.USER_AGENT,
-        "spymemcached vbucket client");
-    request.setHeader("X-memcachekv-Store-Client-Specification-Version",
-        CLIENT_SPEC_VER);
+    headers.setHeader(request, HttpHeaders.Names.CONNECTION,
+      HttpHeaders.Values.CLOSE);  // No keep-alives for this
+    headers.setHeader(request, HttpHeaders.Names.CACHE_CONTROL,
+      HttpHeaders.Values.NO_CACHE);
+    headers.setHeader(request, HttpHeaders.Names.ACCEPT, "application/json");
+    headers.setHeader(request, HttpHeaders.Names.USER_AGENT,
+      "spymemcached vbucket client");
+    headers.setHeader(request,
+      "X-memcachekv-Store-Client-Specification-Version", CLIENT_SPEC_VER);
     return request;
   }
 

@@ -22,9 +22,8 @@
 
 package net.spy.memcached.vbucket;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -32,55 +31,32 @@ import junit.framework.TestCase;
 import net.spy.memcached.TestConfig;
 import net.spy.memcached.vbucket.config.Bucket;
 
+
 /**
- * A ConfigurationHTTPTest.
+ * Test to ensure a down node in the URI list specified won't stop us from
+ * finding an up node.
  */
-public class ConfigurationProviderHTTPTest extends TestCase {
+public class ConfigurationProviderHTTPDownNodeTest extends TestCase {
   private static final String REST_USER = "Administrator";
-  private static final String REST_PWD = "password";
-  private static final String DEFAULT_BUCKET_NAME = "default";
+  private static final String REST_PASSWORD = "password";
   private ConfigurationProviderHTTP configProvider;
-  private ReconfigurableMock reconfigurable = new ReconfigurableMock();
+  private static final String DEFAULT_BUCKET_NAME = "default";
 
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-    List<URI> baseList = Arrays.asList(new URI("http://"
-        + TestConfig.IPV4_ADDR + ":8091/pools"));
+    List<URI> baseList = new ArrayList<URI>();
+    baseList.add(new URI("http://bogus:8091/pools"));
+    baseList.add(new URI("http://bogustoo:8091/pools"));
+    baseList.add(new URI("http://" + TestConfig.IPV4_ADDR + ":8091/pools"));
+    baseList.add(new URI("http://morebogus:8091/pools"));
     configProvider = new ConfigurationProviderHTTP(baseList, REST_USER,
-        REST_PWD);
+      REST_PASSWORD);
     assertNotNull(configProvider);
   }
 
   public void testGetBucketConfiguration() throws Exception {
     Bucket bucket = configProvider.getBucketConfiguration(DEFAULT_BUCKET_NAME);
     assertNotNull(bucket);
-  }
-
-  public void testSubscribe() throws Exception {
-    configProvider.subscribe(DEFAULT_BUCKET_NAME, reconfigurable);
-  }
-
-  public void testUnsubscribe() throws Exception {
-    configProvider.unsubscribe(DEFAULT_BUCKET_NAME, reconfigurable);
-  }
-
-  public void testShutdown() throws Exception {
-    configProvider.shutdown();
-  }
-
-  public void testGetAnonymousAuthBucket() throws Exception {
-    assertEquals("default", configProvider.getAnonymousAuthBucket());
-  }
-
-  public void testBuildAuthHeader() throws UnsupportedEncodingException {
-    ConfigurationProviderHTTP.buildAuthHeader("foo", "bar");
-  }
-
-  public void testBuildAuthHeaderUTF8() throws UnsupportedEncodingException {
-    String result = ConfigurationProviderHTTP.buildAuthHeader("blahblah",
-        "bla@@h");
-    // string inspired by https://github.com/trondn/libcouchbase/issues/3
-    assertEquals("Basic YmxhaGJsYWg6YmxhQEBo", result);
   }
 }
