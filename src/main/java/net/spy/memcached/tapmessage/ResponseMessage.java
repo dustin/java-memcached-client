@@ -231,8 +231,8 @@ public class ResponseMessage extends BaseMessage {
 
   public ByteBuffer getBytes() {
     ByteBuffer bb = ByteBuffer.allocate(HEADER_LENGTH + getTotalbody());
-    bb.put(magic.magic);
-    bb.put(opcode.opcode);
+    bb.put(magic.getMagic());
+    bb.put(opcode.getOpcode());
     bb.putShort(keylength);
     bb.put(extralength);
     bb.put(datatype);
@@ -249,7 +249,7 @@ public class ResponseMessage extends BaseMessage {
 
     short flag = 0;
     for (int i = 0; i < flags.size(); i++) {
-      flag |= flags.get(i).flag;
+      flag |= flags.get(i).getFlag();
     }
 
     bb.putShort(flag);

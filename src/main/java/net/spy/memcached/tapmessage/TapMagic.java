@@ -40,7 +40,7 @@ public enum TapMagic {
   /**
    * The magic value.
    */
-  public byte magic;
+  private byte magic;
 
   /**
    * Defines the magic value.
@@ -59,5 +59,9 @@ public enum TapMagic {
     } else {
       throw new IllegalArgumentException("Bad magic value");
     }
+  }
+
+  public byte getMagic() {
+    return magic;
   }
 }

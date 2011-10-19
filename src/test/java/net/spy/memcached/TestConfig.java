@@ -65,7 +65,7 @@ public final class TestConfig {
     return TYPE.equals(TYPE_MEMCACHED);
   }
 
-  public static final boolean isMembase() {
+  public static boolean isMembase() {
     return TYPE.equals(TYPE_MEMBASE);
   }
 

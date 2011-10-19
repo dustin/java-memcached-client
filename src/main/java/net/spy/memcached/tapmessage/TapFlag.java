@@ -68,7 +68,7 @@ public enum TapFlag {
   /**
    * The flag value.
    */
-  public byte flag;
+  private byte flag;
 
   /**
    * Defines the flag value.
