@@ -52,6 +52,18 @@ public class WhalinTranscoderTest extends BaseTranscoderCase {
     }
   }
 
+  public void testJsonObject() {
+    String json = "{\"aaaaaaaaaaaaaaaaaaaaaaaaa\":"
+        + "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}";
+    tc.setCompressionThreshold(8);
+    CachedData cd = tc.encode(json);
+    assertFalse("Flags shows JSON was compressed",
+        (cd.getFlags() & (1L << WhalinTranscoder.COMPRESSED)) != 0);
+    assertTrue("JSON was incorrectly encoded",
+        Arrays.equals(json.getBytes(), cd.getData()));
+    assertEquals("JSON was harmed, should not have been", json, tc.decode(cd));
+  }
+
   public void testCompressedStringNotSmaller() throws Exception {
     String s1 = "This is a test simple string that will not be compressed.";
     // Reduce the compression threshold so it'll attempt to compress it.

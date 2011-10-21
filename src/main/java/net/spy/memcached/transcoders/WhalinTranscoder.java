@@ -25,6 +25,7 @@ package net.spy.memcached.transcoders;
 import java.util.Date;
 
 import net.spy.memcached.CachedData;
+import net.spy.memcached.util.StringUtils;
 
 /**
  * Transcoder that provides compatibility with Greg Whalin's memcached client.
@@ -122,6 +123,9 @@ public class WhalinTranscoder extends BaseSerializingTranscoder implements
     if (o instanceof String) {
       b = encodeString((String) o);
       flags |= SPECIAL_STRING;
+      if (StringUtils.isJsonObject((String) o)) {
+        return new CachedData(flags, b, getMaxSize());
+      }
     } else if (o instanceof StringBuffer) {
       flags |= SPECIAL_STRINGBUFFER;
       b = encodeString(String.valueOf(o));
