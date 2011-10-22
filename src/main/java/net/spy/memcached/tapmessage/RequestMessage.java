@@ -104,7 +104,7 @@ public class RequestMessage extends BaseMessage{
   public void setVbucketlist(short[] vbs) {
     int oldSize = (vblist.length + 1) * 2;
     int newSize = (vbs.length + 1) * 2;
-    totalbody = +newSize - oldSize;
+    totalbody += newSize - oldSize;
     vblist = vbs;
   }
 
