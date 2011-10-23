@@ -46,6 +46,8 @@
 
   <!-- ivy properties used -->
   <property name="ivy.settings.dir" value="${basedir}/ivy" />
+  <property name="ivy.pom.url"
+      value="http://www.couchbase.org/code/couchbase/java" />
 
   <path id="test.classpath">
     <pathelement location="${build.classes}" />
@@ -508,6 +510,11 @@
         settingsRef="${name}.ivy.settings">
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
+      <dependency group="org.jboss.netty" artifact="netty" version="3.2.0.Final" />
+      <dependency group="org.codehaus.jettison" artifact="jettison" version="1.1" />
+      <dependency group="commons-codec" artifact="commons-codec" version="1.5" />
+      <dependency group="org.apache.httpcomponents" artifact="httpcore" version="4.1.1" />
+      <dependency group="org.apache.httpcomponents" artifact="httpcore-nio" version="4.1.1" />
     </ivy:makepom>
 
     <!-- Change the version in the pom file to reflect our claimed version. -->
