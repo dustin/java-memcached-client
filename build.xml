@@ -242,7 +242,7 @@
               <include name="**/*Test.java"/>
               <exclude name="**/VBucketMembaseClientTest.java"/>
               <exclude name="**/BucketMonitorTest.java"/>
-              <exclude name="**/ConfigurationProviderHTTPTest.java"/>
+              <exclude name="**/ConfigurationProviderHTTP*Test.java"/>
               <exclude name="**/CouchbaseClientTest.java"/>
               <exclude name="**/MembaseClientTest.java"/>
             </fileset>
