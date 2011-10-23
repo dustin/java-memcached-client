@@ -47,7 +47,7 @@
     <dependency org="log4j" name="log4j" rev="1.2.15" conf="common->master" />
     <dependency org="jmock" name="jmock" rev="1.2.0" conf="common->master" />
     <dependency org="junit" name="junit" rev="4.4" conf="common->master" />
-    <dependency org="org.jboss.netty" name="netty" rev="3.1.5.GA" conf="common->master" />
+    <dependency org="org.jboss.netty" name="netty" rev="3.2.0.Final" conf="common->master" />
     <dependency org="org.springframework" name="spring-beans" rev="3.0.3.RELEASE" conf="common->master" />
     <dependency org="org.codehaus.jettison" name="jettison" rev="1.1" conf="common->master" />
     <dependency org="commons-codec" name="commons-codec" rev="1.5" conf="common->master" />
