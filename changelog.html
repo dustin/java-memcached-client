@@ -18,7 +18,395 @@
 <body>
 
 <h1>Changelog</h1>
-<h2>Changes from release 2.6 to 2.7</h2>
+<h2>Changes from release 2.7.2 to 2.7.3</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Matt" alt="contributors"/><pre>Release of 2.7.3
+
+The 2.7.3 release is a patch update, covering just one issue
+which was intended to be in 2.7.2.
+
+It's issue 181 (also SPY-60) and has to do with continuing
+to search for another server in the list provided if one
+server appears to be down.
+
+Summary of changes since the 2.6 series:
+(see previous 2.7 release notes for more details)
+
+The 2.7 series gains significant new capabilities when using
+binary protocol with Membase or forthcoming updates to
+memcached.
+
+Starting with the 2.7 release, it is now possible to
+instantiate a MemcachedClient from the REST interface
+supported by Membase.  What this means is that if you have
+one or more buckets in Membase, you can create
+MemcachedClient objects to work with the buckets.  Furthermore,
+if the cluster topology changes (i.e. a node is added or
+removed), the client will automatically adjust to the new
+topology.
+
+This updated client also has support for other new Membase
+operations, some of which will likely be in memcached
+as well in a future release:
+  touch - extend the expiration for a given item
+  get and touch (a.k.a. gat) - get and touch an item
+  getl - get and lock an item, with a lock expiration time
+
+Bugs fixed/closed in 2.7.3:
+http://code.google.com/p/spymemcached/issues/detail?id=181
+ (a.k.a. http://www.couchbase.org/issues/browse/SPY-60)
+
+Bugs fixed/closed in 2.7.2:
+http://code.google.com/p/spymemcached/issues/detail?id=125
+http://code.google.com/p/spymemcached/issues/detail?id=166
+http://code.google.com/p/spymemcached/issues/detail?id=190
+http://code.google.com/p/spymemcached/issues/detail?id=193 (post release)
+http://code.google.com/p/spymemcached/issues/detail?id=195
+http://code.google.com/p/spymemcached/issues/detail?id=196
+http://code.google.com/p/spymemcached/issues/detail?id=201
+http://code.google.com/p/spymemcached/issues/detail?id=202
+
+Bugs fixed/closed in 2.7.1:
+http://code.google.com/p/spymemcached/issues/detail?id=96
+http://code.google.com/p/spymemcached/issues/detail?id=134
+http://code.google.com/p/spymemcached/issues/detail?id=152
+http://code.google.com/p/spymemcached/issues/detail?id=171
+http://code.google.com/p/spymemcached/issues/detail?id=187
+
+Bugs fixed/closed in 2.7:
+http://code.google.com/p/spymemcached/issues/detail?id=153
+http://code.google.com/p/spymemcached/issues/detail?id=172
+http://code.google.com/p/spymemcached/issues/detail?id=165
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+
+Note that Couchbase also tracks issues here:
+http://www.couchbase.org/issues/browse/SPY
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAk6YmOgACgkQQM0/OE2fY9quowCfcKOeei7vEKWqu8H3tK0fOHWV
+X2UAoJwatM6/Ww4BI6PHHzEIT1iKrHrA
+=dL3t
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.7.1 to 2.7.2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:vFFCC&amp;chl=Mike%7cDaniel%7cMatt%7cMartin%7csanada0670" alt="contributors"/><pre>Release of 2.7.2
+
+The 2.7.2 release is a patch update, including a number of new
+features.
+
+The 2.7.1 release introduced a required dependency update of
+Apache commons codec.  A more elegant solution has been added
+to this release so we can now use commons-code 1.3, 1.4 or 1.5.
+There is also a more elegant solution to the unfortunate
+incompatibility introduced in Netty, where 3.2 changed the
+signature of one method.  Thanks to Martin Grotzke for this fix.
+
+Some notable bugs fixed in this release include:
+* BaseSerializingTranscode resource leak (issue 190)
+* Operation class is used in un-threadsafe, unsynchronized manner
+  (issue 195)
+* decodeLong() would decode incorrectly and prematurely wrap
+  (issue 202)
+
+The development time experience is better starting in 2.7.1.  Classic
+"buildr test" will work just as expected, but it will run only the
+subset of tests that are appropriate for memcached.  Using some
+environment variables, tests can be run against Membase either locally
+or remotely or against a remote memcached.
+
+Examples:
+
+Run tests against a Membase instance on the localhost:
+
+  buildr test SPYMC_SERVER_TYPE="membase"
+
+Run memcached IPv4 tests and try to run IPv6 tests against the specified server:
+
+  buildr test SPYMC_TEST_SERVER_V4="10.2.1.58"
+
+Run a test against the specified IPv4 and IPv6 servers:
+
+  buildr test SPYMC_TEST_SERVER_V4="10.2.1.58" SPYMC_TEST_SERVER_V6=
+    "some_ipv6_addr"
+
+Summary of changes since the 2.6 series:
+(see the 2.7 release notes for more details)
+
+The 2.7 series gains significant new capabilities when using
+binary protocol with Membase or forthcoming updates to
+memcached.
+
+Starting with the 2.7 release, it is now possible to
+instantiate a MemcachedClient from the REST interface
+supported by Membase.  What this means is that if you have
+one or more buckets in Membase, you can create
+MemcachedClient objects to work with the buckets.  Furthermore,
+if the cluster topology changes (i.e. a node is added or
+removed), the client will automatically adjust to the new
+topology.
+
+This updated client also has support for other new Membase
+operations, some of which will likely be in memcached
+as well in a future release:
+  touch - extend the expiration for a given item
+  get and touch (a.k.a. gat) - get and touch an item
+  getl - get and lock an item, with a lock expiration time
+
+The majority of contributions to this release were
+funded by Couchbase, Inc.  Thanks to the 2.7.2 contributors:
+
+Daniel Martin (2):
+      Fix concurrent access to operations objects, especially near timeouts
+      Use direct buffers in TCPMemcachedNodeImpl
+
+Martin Grotzke (1):
+      Add compatibility with netty 3.2.0+.
+
+Matt Ingenthron (2):
+      No need for old debugging string in test.
+      Revert "SPY-37 & SPY-38: Fixed redistribution performance issue"
+
+Mike Wiederhold (21):
+      Operations can't timeout when writing to the write buffer.
+      SPY-125: Significant performance issue large number of sets
+      Improved performance of write queue processing during timeouts
+      Add support for commons-codec 1.3, 1.4, and 1.5
+      Remove assertions that assert a completed op isn't timed out
+      SPY-49: BaseSerializingTranscoder does not close resources.
+      Removed unused variables in GetOperationImpl
+      Change getBytes() to getData() in CASOperation
+      SPY-39: Added toString() to operation heirarchy
+      Added toString() functions to ConnectionFactory classes.
+      SPY-47: Client object should have toString().
+      SPY-54: getBulk() shouldn't log a warning when a key is not found
+      Send an ack for all tap opaque messages
+      Made cmd variable a byte for binary operations
+      Removed a print line statement from TestConfig
+      Removed extra variables in tapCustom header
+      Flush the PrintWriter in TapMessagePrinter
+      Don't reconnect when a tap connection finishes.
+      Made vbmap in MultiKey operation synchronized
+      SPY-37 & SPY-38: Fixed redistribution performance issue
+      Refactored tap message classes.
+
+sanada0670 (1):
+      SPY-51: Bug in OperationImpl's decodeLong(2)
+
+Bugs fixed/closed in 2.7.2:
+http://code.google.com/p/spymemcached/issues/detail?id=125
+http://code.google.com/p/spymemcached/issues/detail?id=166
+http://code.google.com/p/spymemcached/issues/detail?id=190
+http://code.google.com/p/spymemcached/issues/detail?id=193 (post release)
+http://code.google.com/p/spymemcached/issues/detail?id=195
+http://code.google.com/p/spymemcached/issues/detail?id=196
+http://code.google.com/p/spymemcached/issues/detail?id=201
+http://code.google.com/p/spymemcached/issues/detail?id=202
+
+Bugs fixed/closed in 2.7.1:
+http://code.google.com/p/spymemcached/issues/detail?id=96
+http://code.google.com/p/spymemcached/issues/detail?id=134
+http://code.google.com/p/spymemcached/issues/detail?id=152
+http://code.google.com/p/spymemcached/issues/detail?id=171
+http://code.google.com/p/spymemcached/issues/detail?id=187
+
+Bugs fixed/closed in 2.7:
+http://code.google.com/p/spymemcached/issues/detail?id=153
+http://code.google.com/p/spymemcached/issues/detail?id=172
+http://code.google.com/p/spymemcached/issues/detail?id=165
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+
+Note that Couchbase also tracks some issues here:
+http://www.couchbase.org/issues/browse/SPY
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAk6X1lAACgkQQM0/OE2fY9p+RQCfcSuZe25JcJJEUFxN6PBtRjGQ
+NrQAoNMPqEjZEwQZoAjomiNg004Jx19G
+=jPt9
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.7 to 2.7.1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:uIDBBB&amp;chl=Mike%7cMatt%7cDustin%7cNelz%7cPaul%7cVitaly" alt="contributors"/><pre>Release of 2.7.1
+
+The 2.7.1 release is a patch update, including a number of new
+features.  It should be compatible with all 2.7 deployments, with one
+dependency update required if deployed as a Membase 'smart client'.
+
+There are also a number of new features in this release: operation
+status visibility, a built in TAP client, and new configuration
+options when using Membase.
+
+In the past, when an async operation completed, success or failure
+could be determined but the reason for a success or failure wasn't
+clear.  Now many of these methods return an OperationFuture instead of
+simply a Future and have a new method called getStatus().  The
+OperationStatus can then offer more insight as to what happened with
+the operation.
+
+This release also sports a new TAP client.  TAP is a method of either
+streaming changed items or 'dumping' all items from a Membase cluster.
+This allows for new ways to get information on changes occurring to, or
+analyze the data from a Membase cluster.  Notably, this technique is
+used in the Hadoop Sqoop integration with Membase.  You may read more
+about TAP here:
+http://docs.couchbase.org/membase-manual-1.7.1/membase-architecture.html
+http://docs.couchbase.org/couchbase-manual-2.0/couchbase-faq.html
+
+Another minor new feature, one can now specify a ConnectionFactory
+when connecting to a Membase cluster (for either memcached or Membase
+bucket types).  This allows for more specific configuration of things
+like default timeout, reconnect delay, use of optimization, etc.
+
+Some notable bugs fixed in this release include:
+* ClassCastException (spymemcached issue 96)
+* Bulk operations with Membase (VbucketNodeLocator)
+* Made client more stable under Membase topology changes
+* ASCII operations now return a false operation status on failure
+
+The aforementioned dependency update is to bring Apache Commons Codec
+up to 1.5, owing to a bug introduced in 1.4.  We had worked around
+that bug, but the project decided to go back to what had been
+implemented in commons-codec 1.3.  This meant we were dependent on a
+very specific version of commons-codec.  We've now rolled forward
+following the recommendations from Apache Commons Codec.  This
+requires a dependency update.
+
+The development time experience is better in this update.  Classic
+"buildr test" will work just as expected, but it will run only the
+subset of tests that are appropriate for memcached.  Using some
+environment variables, tests can be run against Membase either locally
+or remotely or against a remote memcached.
+
+Examples:
+
+Run tests against a Membase instance on the localhost:
+
+  buildr test SPYMC_SERVER_TYPE="membase"
+
+Run memcached IPv4 tests and try to run IPv6 tests against the specified server:
+
+  buildr test SPYMC_TEST_SERVER_V4="10.2.1.58"
+
+Run a test against the specified IPv4 and IPv6 servers:
+
+  buildr test SPYMC_TEST_SERVER_V4="10.2.1.58" SPYMC_TEST_SERVER_V6=
+    "some_ipv6_addr"
+
+Summary of changes since the 2.6 series:
+(see the 2.7 release notes for more details)
+
+The 2.7 series gains significant new capabilities when using
+binary protocol with Membase or forthcoming updates to
+memcached.
+
+Starting with the 2.7 release, it is now possible to
+instantiate a MemcachedClient from the REST interface
+supported by Membase.  What this means is that if you have
+one or more buckets in Membase, you can create
+MemcachedClient objects to work with the buckets.  Furthermore,
+if the cluster topology changes (i.e. a node is added or
+removed), the client will automatically adjust to the new
+topology.
+
+This updated client also has support for other new Membase
+operations, some of which will likely be in memcached
+as well in a future release:
+  touch - extend the expiration for a given item
+  get and touch (a.k.a. gat) - get and touch an item
+  getl - get and lock an item, with a lock expiration time
+
+The majority of contributions to this release were
+funded by Couchbase, Inc.  Thanks to the 2.7.1 contributors:
+
+Mike Wiederhold (40):
+      Ascii unsupported ops give error message
+      Added unit tests for get and touch
+      Make sure a selector isn't canceled before reading it
+      Changed all binary command opcode values to hexadecimal.
+      Getl no longer removes the key from binary message.
+      Getl no longer users flags field for request messages
+      Removed unused import from GetAndTouchOperationImpl
+      Added unit tests for touch
+      Add touch, get and touch, and get and lock to MemcachedClientIF
+      Fixed broken get and touch test
+      ASCII get operations now return a false operation status on failure
+      Add visibility into operations (status).
+      Add visibility into operations (key)
+      Added all memcached error codes to spymemcached.
+      Removed unused import from ConfigurationProviderHTTP
+      Added serial ID's to exceptions.
+      Fixed issue regarding connecting to a non-existent bucket
+      Removed unused imports in VBucketCacheNodeLocatorTest
+      Added constructor to MemcachedClient that takes a ConnectionFactory
+      Added generic to SingleElementFiniteIterator in MemcachedClient.
+      Added source folder for manuel tests to Eclipse config file
+      Made SyncGetTest failures less sporadic
+      Changed the value size of items used in LongClientTest
+      Made operation timeout longer for QueueOverflowTest
+      Added tap client
+      Removed unused variables in testcases.
+      Refactored Operations to improve correctness of vbucket aware ops
+      Made an addOperation function private in MemcachedConnection
+      Fixed a bug where multi-gets didn't work with vb aware constructor
+      Added a command line parameter for specifying server type
+      Issue 96: ClassPathException fix
+      Excluded Non-memcached tests when testing memcached
+      TapOperation's shouldn't be KeyedOperations.
+      Made TapTest only run against Membase.
+      Made EINTERNAL and ERR2BIG errors throw an exception
+      Added the ability to specify the ip address of the testing server
+      Fixed issue with flags not being added properly to tap messages
+      Added README.markdown.
+      Added ability to do tap dump
+      Tap streams now pause every 10,000 messages.
+
+Matt Ingenthron (7):
+      Adding a warmup state for nodes.
+      Also check for RETRY during clone.
+      Encode with commons codec more correctly.
+      Ensure nodesMap updates are safe when topology changes.
+      VBucketNodeLocator should not implement getSequence()
+      Log warnings when retrying due to not my vbucket.
+      Update commons-codec to 1.5 in .classpath for Eclipse.
+
+Dustin Sallings (3):
+      Fix dumb thing compiler warning was pointing out
+      Fixed some shadowing parameter warnings.
+      Compiler pointed out ignored exception. :(
+
+Nelz Carpentier (1):
+      Adding the repository needed to download netty.
+
+Paul Burnstein (1):
+      Spymemcached Issue 134: Performance fix
+
+Vitaly Rudenya (1):
+      All NodeLocator's can be reconfigured.
+
+Bugs fixed/closed in 2.7.1:
+http://code.google.com/p/spymemcached/issues/detail?id=96
+http://code.google.com/p/spymemcached/issues/detail?id=134
+http://code.google.com/p/spymemcached/issues/detail?id=152
+http://code.google.com/p/spymemcached/issues/detail?id=171
+http://code.google.com/p/spymemcached/issues/detail?id=187
+
+Bugs fixed/closed in 2.7:
+http://code.google.com/p/spymemcached/issues/detail?id=153
+http://code.google.com/p/spymemcached/issues/detail?id=172
+http://code.google.com/p/spymemcached/issues/detail?id=165
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAk5TzBQACgkQQM0/OE2fY9orXgCgjndXOzGYyIWh7jcNuK8yDFCY
+VNAAniTc/ItkjlbTOBnhlK4e/FMpeOZC
+=ejy9
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.6 to 2.7</h2>
 <div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:gTL&amp;chl=Matt%7cAlexander%7cMike" alt="contributors"/><pre>Release of 2.7
 
 Changes since the 2.6 series:
