@@ -240,7 +240,7 @@
           <batchtest todir="${junit.dir}/data" fork="yes">
             <fileset dir="${test.dir}">
               <include name="**/*Test.java"/>
-              <exclude name="**/VBucketMemcachedClientTest.java"/>
+              <exclude name="**/VBucketMembaseClientTest.java"/>
               <exclude name="**/BucketMonitorTest.java"/>
               <exclude name="**/ConfigurationProviderHTTPTest.java"/>
               <exclude name="**/CouchbaseClientTest.java"/>
