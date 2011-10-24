@@ -512,11 +512,11 @@
         settingsRef="${name}.ivy.settings">
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
-      <dependency group="org.jboss.netty" artifact="netty" version="3.2.0.Final" />
-      <dependency group="org.codehaus.jettison" artifact="jettison" version="1.1" />
-      <dependency group="commons-codec" artifact="commons-codec" version="1.5" />
-      <dependency group="org.apache.httpcomponents" artifact="httpcore" version="4.1.1" />
-      <dependency group="org.apache.httpcomponents" artifact="httpcore-nio" version="4.1.1" />
+      <dependency group="org.jboss.netty" artifact="netty" version="{netty.version}" />
+      <dependency group="org.codehaus.jettison" artifact="jettison" version="{jettison.version}" />
+      <dependency group="commons-codec" artifact="commons-codec" version="{commons-codec.version}" />
+      <dependency group="org.apache.httpcomponents" artifact="httpcore" version="{httpcore.version}" />
+      <dependency group="org.apache.httpcomponents" artifact="httpcore-nio" version="httpcore-nio.version" />
     </ivy:makepom>
 
     <!-- Change the version in the pom file to reflect our claimed version. -->
