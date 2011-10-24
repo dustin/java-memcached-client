@@ -35,7 +35,7 @@ public interface ConfigurationProvider {
 
     /**
      * Retrieves a default bucket name i.e. 'default'
-     * @return
+     * @return the default bucket name.
      */
     String getAnonymousAuthBucket();
 }

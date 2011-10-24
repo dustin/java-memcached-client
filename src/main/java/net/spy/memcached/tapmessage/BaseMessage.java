@@ -88,7 +88,7 @@ public abstract class BaseMessage extends SpyObject {
 
 	/**
 	 * Sets the value of the tap messages data type field.
-	 * @param b The new value for the data type field.
+	 * @param d The new value for the data type field.
 	 */
 	public final void setDatatype(byte d) {
 		datatype = d;
@@ -104,7 +104,7 @@ public abstract class BaseMessage extends SpyObject {
 
 	/**
 	 * Sets the value of the tap messages extra length field.
-	 * @param i The new value for the extra length field.
+	 * @param e The new value for the extra length field.
 	 */
 	public final void setExtralength(byte e) {
 		extralength = e;
@@ -136,7 +136,7 @@ public abstract class BaseMessage extends SpyObject {
 
 	/**
 	 * Sets the value of the tap messages total body field.
-	 * @param l The new value for the total body field.
+	 * @param t The new value for the total body field.
 	 */
 	public final void setTotalbody(int t) {
 		totalbody = t;
@@ -168,7 +168,7 @@ public abstract class BaseMessage extends SpyObject {
 
 	/**
 	 * Sets the value of the tap messages cas field.
-	 * @param cas The new value for the cas field.
+	 * @param c The new value for the cas field.
 	 */
 	public final void setCas(long c) {
 		cas = c;

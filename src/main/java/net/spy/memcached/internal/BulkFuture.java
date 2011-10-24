@@ -37,9 +37,9 @@ public interface BulkFuture<V> extends Future<V> {
      * behavior is identical to {@link #get(long, TimeUnit)}
      *
      *
-     * @param timeout
-     * @param unit
-     * @return
+     * @param timeout time to wait for the operation to complete.
+     * @param unit specifies the unit of time for the timeout.
+     * @return returns the result or partial result of the operation.
      * @throws InterruptedException
      * @throws ExecutionException
      */
