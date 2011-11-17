@@ -24,6 +24,13 @@
     xmlns:artifact="urn:maven-artifact-ant"
     xmlns:ivy="antlib:org.apache.ivy.ant">
 
+  <!-- load ant-contrib tasks to get the "if" task. -->
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    <classpath>
+      <pathelement location="${basedir}/lib/ant-contrib-1.0b3.jar"/>
+    </classpath>
+  </taskdef>
+
   <property name="name" value="spymemcached"/>
   <property name="copyright" value="2006-2011 Dustin Sallings, Matt Ingenthron" />
   <property name="group" value="spy" />
@@ -43,6 +50,7 @@
   <property name="build.classes" location="${build.dir}/classes"/>
 
   <property name="git.hash" value="" />
+  <var name="version" value="no-version"/>
 
   <!-- ivy properties used -->
   <property name="ivy.settings.dir" value="${basedir}/ivy" />
@@ -117,13 +125,6 @@
     <path refid="lib.path.id" />
     <path location="${build.dir}" />
   </path>
-
-  <!-- load ant-contrib tasks to get the "if" task. -->
-  <taskdef resource="net/sf/antcontrib/antcontrib.properties">
-    <classpath>
-      <pathelement location="${basedir}/lib/ant-contrib-1.0b3.jar"/>
-    </classpath>
-  </taskdef>
 
   <!-- The classpath for compiling and running Spymemcached -->
 
@@ -233,74 +234,24 @@
 
   <target name="test" depends="compile, compile-test"
       description="Run Spymemcached unit tests">
-    <echo>Testing against ${server.type}</echo>
     <echo>IPV4 address ${server.address_v4}</echo>
     <echo>IPV6 address ${server.address_v6}</echo>
     <delete dir="${junit.dir}"/>
     <mkdir  dir="${junit.dir}/data"/>
-    <if>
-      <equals arg1="${server.type}" arg2="memcached"/>
-      <then>
-        <junit fork="yes" timeout="60000" failureproperty="junit.failure">
-          <batchtest todir="${junit.dir}/data" fork="yes">
-            <fileset dir="${test.dir}">
-              <include name="**/*Test.java"/>
-              <exclude name="**/VBucketMembaseClientTest.java"/>
-              <exclude name="**/BucketMonitorTest.java"/>
-              <exclude name="**/ConfigurationProviderHTTP*Test.java"/>
-              <exclude name="**/CouchbaseClientTest.java"/>
-              <exclude name="**/MembaseClientTest.java"/>
-            </fileset>
-          <formatter type="xml"/>
-          </batchtest>
-          <jvmarg value="-ea" />
-          <sysproperty key="server.address_v4" value="${server.address_v4}"/>
-          <sysproperty key="server.address_v6" value="${server.address_v6}"/>
-          <sysproperty key="server.type" value="${server.type}"/>
-          <formatter type="plain" usefile="false" />
-          <classpath refid="test.classpath" />
-        </junit>
-      </then>
-    </if>
-    <if>
-      <equals arg1="${server.type}" arg2="membase"/>
-        <then>
-          <junit fork="yes" timeout="60000" failureproperty="junit.failure">
-            <batchtest todir="${junit.dir}/data" fork="yes">
-              <fileset dir="${test.dir}">
-              <include name="**/*Test.java"/>
-              <exclude name="**/CouchbaseClientTest.java"/>
-            </fileset>
-          <formatter type="xml"/>
-          </batchtest>
-          <jvmarg value="-ea" />
-          <sysproperty key="server.address_v4" value="${server.address_v4}"/>
-          <sysproperty key="server.address_v6" value="${server.address_v6}"/>
-          <sysproperty key="server.type" value="${server.type}"/>
-          <formatter type="plain" usefile="false" />
-          <classpath refid="test.classpath" />
-        </junit>
-      </then>
-    </if>
-    <if>
-      <equals arg1="${server.type}" arg2="couchbase"/>
-        <then>
-          <junit fork="yes" timeout="60000" failureproperty="junit.failure">
-            <batchtest todir="${junit.dir}/data" fork="yes">
-              <fileset dir="${test.dir}">
-              <include name="**/*Test.java"/>
-            </fileset>
-          <formatter type="xml"/>
-          </batchtest>
-          <jvmarg value="-ea" />
-          <sysproperty key="server.address_v4" value="${server.address_v4}"/>
-          <sysproperty key="server.address_v6" value="${server.address_v6}"/>
-          <sysproperty key="server.type" value="${server.type}"/>
-          <formatter type="plain" usefile="false" />
-          <classpath refid="test.classpath" />
-        </junit>
-      </then>
-    </if>
+    <junit fork="yes" timeout="60000" failureproperty="junit.failure">
+      <batchtest todir="${junit.dir}/data" fork="yes">
+        <fileset dir="${test.dir}">
+          <include name="**/*Test.java"/>
+        </fileset>
+      <formatter type="xml"/>
+      </batchtest>
+      <jvmarg value="-ea" />
+      <sysproperty key="server.address_v4" value="${server.address_v4}"/>
+      <sysproperty key="server.address_v6" value="${server.address_v6}"/>
+      <sysproperty key="server.type" value="${server.type}"/>
+      <formatter type="plain" usefile="false" />
+      <classpath refid="test.classpath" />
+    </junit>
     <mkdir  dir="${junit.dir}/tmp"/>
     <junitreport todir="${junit.dir}/tmp">
       <fileset dir="${junit.dir}/data"/>
@@ -351,10 +302,6 @@
 
   <target name="docs" description="Build javadoc"
       depends="init,javadoc-uptodate,compile" unless="javadoc.is.uptodate">
-    <exec executable="git" outputproperty="version">
-      <arg value="describe" />
-      <arg value="--abbrev=0" />
-    </exec>
     <mkdir dir="${build.javadoc}" />
     <exec executable="date" outputproperty="year">
       <arg value="+%Y" />
@@ -389,10 +336,16 @@
        ======================================= -->
 
   <target name="gen-version" depends="init">
-    <exec executable="git" outputproperty="version">
+    <exec executable="git" resultproperty="err" outputproperty="result">
       <arg value="describe" />
       <arg value="--abbrev=0" />
     </exec>
+    <if>
+      <equals arg1="${err}" arg2="0"/>
+      <then>
+        <var name="version" value="${result}"/>
+      </then>
+    </if>
     <exec executable="${script.src.dir}/write-version-info.sh"
         dir="${basedir}" failonerror="true">
       <arg value="${build.dir}" />
@@ -429,10 +382,6 @@
 
   <target name="srcjar" depends="init,jar"
       description="Create source jars">
-    <exec executable="git" outputproperty="version">
-      <arg value="describe" />
-      <arg value="--abbrev=0" />
-    </exec>
     <mkdir dir="${build.dir}" />
     <jar jarfile="${build.dir}/${name}-${version}-sources.jar">
       <fileset dir="${src.dir}" />
@@ -444,10 +393,6 @@
   </target>
 
   <target name="jar" depends="compile,compile-test" description="Creates a jar file for the plugin">
-    <exec executable="git" outputproperty="version">
-      <arg value="describe" />
-      <arg value="--abbrev=0" />
-    </exec>
     <jar jarfile="${build.dir}/${name}-${version}.jar" basedir="${build.classes}">
       <manifest>
         <attribute name="Implementation-Title" value="java memcached client" />
@@ -489,13 +434,9 @@
         Section: Maven Support
        ====================================== -->
 
-  <target name="mvn-prep" depends="init, ivy-init"
+  <target name="mvn-prep" depends="ivy-init, gen-version"
       description="Creates maven files">
     <!-- prepare for mvn tasks. -->
-    <exec executable="git" outputproperty="version">
-      <arg value="describe" />
-      <arg value="--abbrev=0" />
-    </exec>
 
     <!-- Download maven -->
     <mkdir dir="${build.dir}" />
@@ -533,10 +474,6 @@
 
   <target name="mvn-install" depends="jar,srcjar,package,mvn-prep"
       description="Install Spymemcached in local m2 repository">
-    <exec executable="git" outputproperty="version">
-      <arg value="describe" />
-      <arg value="--abbrev=0" />
-    </exec>
     <artifact:pom id="spymemcached" file="${spymemcached.pom}" />
     <artifact:install file="${build.dir}/${name}-${version}.jar">
       <pom refid="spymemcached" />
