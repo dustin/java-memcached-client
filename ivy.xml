@@ -43,28 +43,8 @@ SOFTWARE.
         conf="common->master" />
     <dependency org="junit" name="junit" rev="${junit.version}"
         conf="common->master" />
-    <dependency org="org.jboss.netty" name="netty" rev="${netty.version}"
-        conf="common->master" />
     <dependency org="org.springframework" name="spring-beans"
         rev="${spring-beans.version}" conf="common->master" />
-    <dependency org="org.codehaus.jettison" name="jettison"
-        rev="${jettison.version}" conf="common->master" />
-    <dependency org="commons-codec" name="commons-codec"
-        rev="${commons-codec.version}" conf="common->master" />
-    <dependency org="org.easymock" name="easymock" rev="${easymock.version}"
-        conf="common->master" />
-    <dependency org="org.easymock" name="easymockclassextension"
-        rev="${easymock-extension.version}" conf="common->master" />
-    <dependency org="junit-addons" name="junit-addons"
-        rev="${junit-addons.version}" conf="common->master" />
-    <dependency org="cglib" name="cglib" rev="${cglib.version}"
-        conf="common->master" />
-    <dependency org="asm" name="asm" rev="${asm.version}"
-        conf="common->master" />
-    <dependency org="org.apache.httpcomponents" name="httpcore"
-        rev="${httpcore.version}" conf="common->master"/>
-    <dependency org="org.apache.httpcomponents" name="httpcore-nio"
-        rev="${httpcore-nio.version}" conf="common->master"/>
     <dependency org="checkstyle" name="checkstyle" rev="${checkstyle.version}"
         conf="checkstyle->default" />
     <dependency org="com.google.code.findbugs" name="findbugs"

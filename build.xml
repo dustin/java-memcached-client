@@ -513,11 +513,6 @@
         settingsRef="${name}.ivy.settings">
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
-      <dependency group="org.jboss.netty" artifact="netty" version="{netty.version}" />
-      <dependency group="org.codehaus.jettison" artifact="jettison" version="{jettison.version}" />
-      <dependency group="commons-codec" artifact="commons-codec" version="{commons-codec.version}" />
-      <dependency group="org.apache.httpcomponents" artifact="httpcore" version="{httpcore.version}" />
-      <dependency group="org.apache.httpcomponents" artifact="httpcore-nio" version="httpcore-nio.version" />
     </ivy:makepom>
 
     <ivy:makepom ivyfile="ivy/spymemcached-test.xml" pomfile="${spymemcached-test.pom}"
