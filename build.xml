@@ -387,7 +387,7 @@
       <fileset dir="${src.dir}" />
       <fileset dir="${build.src.dir}" />
     </jar>
-    <jar jarfile="${build.dir}/${name}-${version}-test-sources.jar">
+    <jar jarfile="${build.dir}/${name}-test-${version}-sources.jar">
       <fileset dir="${test.dir}" />
     </jar>
   </target>
@@ -402,7 +402,7 @@
         <attribute name="Main-Class" value="net.spy.memcached.BuildInfo" />
       </manifest>
     </jar>
-    <jar jarfile="${build.dir}/${name}-${version}-test.jar" basedir="${build.test.classes}"/>
+    <jar jarfile="${build.dir}/${name}-test-${version}.jar" basedir="${build.test.classes}"/>
   </target>
 
   <target name="package" depends="jar,srcjar,docsjar"
@@ -483,9 +483,9 @@
           classifier="javadocs" />
     </artifact:install>
     <artifact:pom id="spymemcached-test" file="${spymemcached-test.pom}" />
-      <artifact:install file="${build.dir}/${name}-${version}-test.jar">
+      <artifact:install file="${build.dir}/${name}-test-${version}.jar">
         <pom refid="${name}-test" />
-        <attach file="${build.dir}/${name}-${version}-test-sources.jar"
+        <attach file="${build.dir}/${name}-test-${version}-sources.jar"
           classifier="sources" />
     </artifact:install>
   </target>
