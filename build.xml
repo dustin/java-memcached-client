@@ -66,6 +66,7 @@
   <!-- maven -->
   <property name="mvn.build.dir" value="${build.dir}/m2" />
   <property name="spymemcached.pom" value="${mvn.build.dir}/spymemcached.pom" />
+  <property name="spymemcached-test.pom" value="${mvn.build.dir}/spymemcached-test.pom" />
 
   <!-- compilation -->
   <property name="javac.deprecation" value="off"/>
@@ -519,6 +520,12 @@
       <dependency group="org.apache.httpcomponents" artifact="httpcore-nio" version="httpcore-nio.version" />
     </ivy:makepom>
 
+    <ivy:makepom ivyfile="ivy/spymemcached-test.xml" pomfile="${spymemcached-test.pom}"
+        settingsRef="${name}.ivy.settings">
+     <mapping conf="default" scope="compile" />
+     <mapping conf="runtime" scope="runtime" />
+   </ivy:makepom>
+
     <!-- Change the version in the pom file to reflect our claimed version. -->
     <replaceregexp>
       <regexp pattern="&lt;version&gt;.*&lt;/version&gt;" />
@@ -542,6 +549,12 @@
           classifier="sources" />
       <attach file="${build.dir}/${name}-${version}-javadoc.jar"
           classifier="javadocs" />
+    </artifact:install>
+    <artifact:pom id="spymemcached-test" file="${spymemcached-test.pom}" />
+      <artifact:install file="${build.dir}/${name}-${version}-test.jar">
+        <pom refid="spymemcached-test" />
+        <attach file="${build.dir}/${name}-${version}-test-sources.jar"
+          classifier="sources" />
     </artifact:install>
   </target>
 
