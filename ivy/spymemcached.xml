@@ -44,21 +44,21 @@
     <artifact conf="master"/>
   </publications>
   <dependencies>
-    <dependency org="log4j" name="log4j" rev="1.2.15" conf="common->master" />
-    <dependency org="jmock" name="jmock" rev="1.2.0" conf="common->master" />
-    <dependency org="junit" name="junit" rev="4.4" conf="common->master" />
-    <dependency org="org.jboss.netty" name="netty" rev="3.2.0.Final" conf="common->master" />
-    <dependency org="org.springframework" name="spring-beans" rev="3.0.3.RELEASE" conf="common->master" />
-    <dependency org="org.codehaus.jettison" name="jettison" rev="1.1" conf="common->master" />
-    <dependency org="commons-codec" name="commons-codec" rev="1.5" conf="common->master" />
-    <dependency org="org.easymock" name="easymock" rev="2.4" conf="common->master" />
-    <dependency org="org.easymock" name="easymockclassextension" rev="2.4" conf="common->master" />
-    <dependency org="junit-addons" name="junit-addons" rev="1.4" conf="common->master" />
-    <dependency org="cglib" name="cglib" rev="2.2.2" conf="common->master" />
-    <dependency org="asm" name="asm" rev="3.3.1" conf="common->master" />
-    <dependency org="org.apache.httpcomponents" name="httpcore" rev="4.1.1" conf="common->master"/>
-    <dependency org="org.apache.httpcomponents" name="httpcore-nio" rev="4.1.1" conf="common->master"/>
-    <dependency org="checkstyle" name="checkstyle" rev="5.0" conf="checkstyle->default" />
-    <dependency org="com.google.code.findbugs" name="findbugs" rev="1.3.9" conf="findbugs->master"/>
+    <dependency org="log4j" name="log4j" rev="${log4j.version}" conf="common->master" />
+    <dependency org="jmock" name="jmock" rev="${jmock.version}" conf="common->master" />
+    <dependency org="junit" name="junit" rev="${junit.version" conf="common->master" />
+    <dependency org="org.jboss.netty" name="netty" rev="${netty.version}" conf="common->master" />
+    <dependency org="org.springframework" name="spring-beans" rev="${spring-beans.version}" conf="common->master" />
+    <dependency org="org.codehaus.jettison" name="jettison" rev="${jettison.version}" conf="common->master" />
+    <dependency org="commons-codec" name="commons-codec" rev="commons-codec.version}" conf="common->master" />
+    <dependency org="org.easymock" name="easymock" rev="${easymock.version}" conf="common->master" />
+    <dependency org="org.easymock" name="easymockclassextension" rev="${easymock-entension.version}" conf="common->master" />
+    <dependency org="junit-addons" name="junit-addons" rev="${junit-addons.version}" conf="common->master" />
+    <dependency org="cglib" name="cglib" rev="${cglib.version}" conf="common->master" />
+    <dependency org="asm" name="asm" rev="${asm.version}" conf="common->master" />
+    <dependency org="org.apache.httpcomponents" name="httpcore" rev="${httpcore.version}" conf="common->master"/>
+    <dependency org="org.apache.httpcomponents" name="httpcore-nio" rev="${httpcore-nio.version}" conf="common->master"/>
+    <dependency org="checkstyle" name="checkstyle" rev="${checkstyle.version}" conf="checkstyle->default" />
+    <dependency org="com.google.code.findbugs" name="findbugs" rev="${findbugs.version}" conf="findbugs->master"/>
   </dependencies>
 </ivy-module>
