@@ -23,8 +23,6 @@
 
 package net.spy.memcached;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -36,43 +34,40 @@ import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.transcoders.Transcoder;
-import net.spy.memcached.vbucket.VBucketNodeLocator;
-import net.spy.memcached.vbucket.config.Config;
 
 /**
  * Builder for more easily configuring a ConnectionFactory.
  */
 public class ConnectionFactoryBuilder {
 
-  private OperationQueueFactory opQueueFactory;
-  private OperationQueueFactory readQueueFactory;
-  private OperationQueueFactory writeQueueFactory;
+  protected OperationQueueFactory opQueueFactory;
+  protected OperationQueueFactory readQueueFactory;
+  protected OperationQueueFactory writeQueueFactory;
 
-  private Transcoder<Object> transcoder;
+  protected Transcoder<Object> transcoder;
 
-  private FailureMode failureMode;
+  protected FailureMode failureMode;
 
-  private Collection<ConnectionObserver> initialObservers =
+  protected Collection<ConnectionObserver> initialObservers =
       Collections.emptyList();
 
-  private OperationFactory opFact;
+  protected OperationFactory opFact;
 
-  private Locator locator = Locator.ARRAY_MOD;
-  private long opTimeout = -1;
-  private boolean isDaemon = false;
-  private boolean shouldOptimize = true;
-  private boolean useNagle = false;
-  private long maxReconnectDelay =
+  protected Locator locator = Locator.ARRAY_MOD;
+  protected long opTimeout = -1;
+  protected boolean isDaemon = false;
+  protected boolean shouldOptimize = true;
+  protected boolean useNagle = false;
+  protected long maxReconnectDelay =
       DefaultConnectionFactory.DEFAULT_MAX_RECONNECT_DELAY;
 
-  private int readBufSize = -1;
-  private HashAlgorithm hashAlg;
-  private AuthDescriptor authDescriptor = null;
-  private long opQueueMaxBlockTime = -1;
+  protected int readBufSize = -1;
+  protected HashAlgorithm hashAlg;
+  protected AuthDescriptor authDescriptor = null;
+  protected long opQueueMaxBlockTime = -1;
 
-  private int timeoutExceptionThreshold =
+  protected int timeoutExceptionThreshold =
       DefaultConnectionFactory.DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
-  private Config vBucketConfig;
 
   /**
    * Set the operation queue factory.
@@ -269,14 +264,6 @@ public class ConnectionFactoryBuilder {
     return this;
   }
 
-  public Config getVBucketConfig() {
-    return vBucketConfig;
-  }
-
-  public void setVBucketConfig(Config config) {
-    this.vBucketConfig = config;
-  }
-
   /**
    * Get the ConnectionFactory set up with the provided parameters.
    */
@@ -308,8 +295,6 @@ public class ConnectionFactoryBuilder {
           return new ArrayModNodeLocator(nodes, getHashAlg());
         case CONSISTENT:
           return new KetamaNodeLocator(nodes, getHashAlg());
-        case VBUCKET:
-          return new VBucketNodeLocator(nodes, getVBucketConfig());
         default:
           throw new IllegalStateException("Unhandled locator type: " + locator);
         }
@@ -330,130 +315,6 @@ public class ConnectionFactoryBuilder {
         return hashAlg == null ? super.getHashAlg() : hashAlg;
       }
 
-      public Collection<ConnectionObserver> getInitialObservers() {
-        return initialObservers;
-      }
-
-      @Override
-      public OperationFactory getOperationFactory() {
-        return opFact == null ? super.getOperationFactory() : opFact;
-      }
-
-      @Override
-      public long getOperationTimeout() {
-        return opTimeout == -1 ? super.getOperationTimeout() : opTimeout;
-      }
-
-      @Override
-      public int getReadBufSize() {
-        return readBufSize == -1 ? super.getReadBufSize() : readBufSize;
-      }
-
-      @Override
-      public boolean isDaemon() {
-        return isDaemon;
-      }
-
-      @Override
-      public boolean shouldOptimize() {
-        return shouldOptimize;
-      }
-
-      @Override
-      public boolean useNagleAlgorithm() {
-        return useNagle;
-      }
-
-      @Override
-      public long getMaxReconnectDelay() {
-        return maxReconnectDelay;
-      }
-
-      @Override
-      public AuthDescriptor getAuthDescriptor() {
-        return authDescriptor;
-      }
-
-      @Override
-      public long getOpQueueMaxBlockTime() {
-        return opQueueMaxBlockTime > -1 ? opQueueMaxBlockTime
-            : super.getOpQueueMaxBlockTime();
-      }
-
-      @Override
-      public int getTimeoutExceptionThreshold() {
-        return timeoutExceptionThreshold;
-      }
-
-    };
-
-  }
-
-  /**
-   * Get the MembaseConnectionFactory set up with the provided parameters. Note
-   * that a MembaseConnectionFactory requires the failure mode is set to retry,
-   * and the locator type is discovered dynamically based on the cluster you are
-   * connecting to. As a result, these values will be overridden upon calling
-   * this function.
-   *
-   * @param baseList a list of URI's that will be used to connect to the cluster
-   * @param bucketName the name of the bucket to connect to
-   * @param usr the username for the bucket
-   * @param pwd the password for the bucket
-   * @return a MembaseConnectionFactory object
-   * @throws IOException
-   */
-  public MembaseConnectionFactory buildMembaseConnection(
-      final List<URI> baseList, final String bucketName, final String usr,
-      final String pwd) throws IOException {
-    return new MembaseConnectionFactory(baseList, bucketName, usr, pwd) {
-
-      @Override
-      public BlockingQueue<Operation> createOperationQueue() {
-        return opQueueFactory == null ? super.createOperationQueue()
-            : opQueueFactory.create();
-      }
-
-      @Override
-      public BlockingQueue<Operation> createReadOperationQueue() {
-        return readQueueFactory == null ? super.createReadOperationQueue()
-            : readQueueFactory.create();
-      }
-
-      @Override
-      public BlockingQueue<Operation> createWriteOperationQueue() {
-        return writeQueueFactory == null ? super.createReadOperationQueue()
-            : writeQueueFactory.create();
-      }
-
-      @Override
-      public NodeLocator createLocator(List<MemcachedNode> nodes) {
-        switch (getLocator()) {
-        case CONSISTENT:
-          return new KetamaNodeLocator(nodes, getHashAlg());
-        case VBUCKET:
-          return new VBucketNodeLocator(nodes, getVBucketConfig());
-        default:
-          throw new IllegalStateException("Unhandled locator type: " + locator);
-        }
-      }
-
-      @Override
-      public Transcoder<Object> getDefaultTranscoder() {
-        return transcoder == null ? super.getDefaultTranscoder() : transcoder;
-      }
-
-      @Override
-      public FailureMode getFailureMode() {
-        return failureMode;
-      }
-
-      @Override
-      public HashAlgorithm getHashAlg() {
-        return hashAlg;
-      }
-
-      @Override
       public Collection<ConnectionObserver> getInitialObservers() {
         return initialObservers;
       }

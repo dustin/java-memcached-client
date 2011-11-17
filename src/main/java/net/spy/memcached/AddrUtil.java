@@ -95,7 +95,7 @@ public final class AddrUtil {
   }
 
   public static List<InetSocketAddress>
-      getAddressesFromURL(List<URL> servers) {
+  getAddressesFromURL(List<URL> servers) {
     ArrayList<InetSocketAddress> addrs =
       new ArrayList<InetSocketAddress>(servers.size());
     for (URL server : servers) {
