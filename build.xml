@@ -476,7 +476,7 @@
       description="Install Spymemcached in local m2 repository">
     <artifact:pom id="spymemcached" file="${spymemcached.pom}" />
     <artifact:install file="${build.dir}/${name}-${version}.jar">
-      <pom refid="spymemcached" />
+      <pom refid="${name}" />
       <attach file="${build.dir}/${name}-${version}-sources.jar"
           classifier="sources" />
       <attach file="${build.dir}/${name}-${version}-javadoc.jar"
@@ -484,7 +484,7 @@
     </artifact:install>
     <artifact:pom id="spymemcached-test" file="${spymemcached-test.pom}" />
       <artifact:install file="${build.dir}/${name}-${version}-test.jar">
-        <pom refid="spymemcached-test" />
+        <pom refid="${name}-test" />
         <attach file="${build.dir}/${name}-${version}-test-sources.jar"
           classifier="sources" />
     </artifact:install>
