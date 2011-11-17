@@ -540,9 +540,6 @@
       <pom refid="spymemcached" />
       <attach file="${build.dir}/${name}-${version}-sources.jar"
           classifier="sources" />
-    </artifact:install>
-    <artifact:install file="${build.dir}/${name}-${version}.jar">
-      <pom refid="spymemcached" />
       <attach file="${build.dir}/${name}-${version}-javadoc.jar"
           classifier="javadocs" />
     </artifact:install>
