@@ -58,7 +58,7 @@
       value="http://www.couchbase.org/code/couchbase/java" />
   <property name="ivy.pom.groupId" value="spy" />
   <property name="ivy.pom.description"
-   value = "A client library for Couchbase Server, Membase Server and memcached.  This client includes functionality for accessing Couchbase Views in Couchbase Server 2.0 or later as well as backwards compatibility with Membase Server and memcached." />
+   value = "A client library for memcached."/>
   <path id="test.classpath">
     <pathelement location="${build.classes}" />
     <fileset dir="${lib.dir}">
