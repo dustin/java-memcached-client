@@ -126,7 +126,7 @@ public class CASMutator<T> extends SpyObject {
         // behavior will be fine in this code -- we'll do another gets
         // and follow it up with either an add or another cas depending
         // on whether it exists the next time.
-        if (client.cas(key, casval.getCas(), rv, transcoder)
+        if (client.cas(key, casval.getCas(), initialExp, rv, transcoder)
             == CASResponse.OK) {
           done = true;
         }
