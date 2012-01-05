@@ -249,6 +249,7 @@
       <sysproperty key="server.address_v4" value="${server.address_v4}"/>
       <sysproperty key="server.address_v6" value="${server.address_v6}"/>
       <sysproperty key="server.type" value="${server.type}"/>
+      <sysproperty key="test.type" value="${test.type}"/>
       <formatter type="plain" usefile="false" />
       <classpath refid="test.classpath" />
     </junit>
