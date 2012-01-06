@@ -111,7 +111,6 @@
   <!--test related properties -->
   <property name="server.address_v4" value="127.0.0.1"/>
   <property name="server.address_v6" value="::1"/>
-  <property name="server.type" value="memcached"/>
   <property name="server.port_number" value="11211"/>
   <property name="test.type" value="unit"/>
 
@@ -253,7 +252,6 @@
       <sysproperty key="server.address_v4" value="${server.address_v4}"/>
       <sysproperty key="server.address_v6" value="${server.address_v6}"/>
       <sysproperty key="server.port_number" value="${server.port_number}"/>
-      <sysproperty key="server.type" value="${server.type}"/>
       <sysproperty key="test.type" value="${test.type}"/>
       <formatter type="plain" usefile="false" />
       <classpath refid="test.classpath" />
