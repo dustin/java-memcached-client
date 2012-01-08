@@ -85,7 +85,7 @@ public class TimeoutNowriteTest extends ClientBaseCase {
       System.err.println("Interrupted when sleeping for timeout nowrite");
     }
 
-    client.addOp("x", op);
+    client.mconn.enqueueOperation("x", op);
     System.err.println("Operation attempted:");
     System.err.println(op);
     System.err.println("Trying to get:");
