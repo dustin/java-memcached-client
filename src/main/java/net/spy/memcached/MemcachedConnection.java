@@ -629,7 +629,7 @@ public class MemcachedConnection extends SpyThread {
   /**
    * Get the node locator used by this connection.
    */
-  NodeLocator getLocator() {
+  public NodeLocator getLocator() {
     return locator;
   }
 
