@@ -113,6 +113,7 @@
   <property name="server.address_v6" value="::1"/>
   <property name="server.type" value="memcached"/>
   <property name="server.port_number" value="11211"/>
+  <property name="test.type" value="unit"/>
 
   <!--this is the naming policy for artifacts we want pulled down-->
   <property name="ivy.artifact.retrieve.pattern"
@@ -238,6 +239,7 @@
     <echo>IPV4 address ${server.address_v4}</echo>
     <echo>IPV6 address ${server.address_v6}</echo>
     <echo>Port Number ${server.port_number}</echo>
+    <echo>Test Type(unit|ci) ${test.type}</echo>
     <delete dir="${junit.dir}"/>
     <mkdir  dir="${junit.dir}/data"/>
     <junit fork="yes" timeout="60000" failureproperty="junit.failure">
