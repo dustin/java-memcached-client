@@ -48,7 +48,8 @@ public class BinaryClientTest extends ProtocolBaseCase {
 
   @Override
   protected String getExpectedVersionSource() {
-    return String.valueOf(new InetSocketAddress(TestConfig.IPV4_ADDR, 11211));
+    return String.valueOf(new InetSocketAddress(TestConfig.IPV4_ADDR,
+        TestConfig.PORT_NUMBER));
   }
 
   @Override

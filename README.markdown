@@ -43,6 +43,11 @@ This argument is used to set the ipv6 address of your testing server.
 By default it is set to ::1. If an ipv6 address is specified then an
 ipv4 address must be specified otherwise there may be test failures.
 
+    -Dserver.port_number=port_number_of_memcached
+
+This argument is used when memcahched is started on a port other than
+11211
+
     -Dtest.type=ci
 
 This argument is used for CI testing where certain unit tests might

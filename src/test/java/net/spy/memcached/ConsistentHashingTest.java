@@ -110,7 +110,7 @@ public class ConsistentHashingTest extends TestCase {
 
     int second = (int) (((now / 250) % 250) + 3);
 
-    String port = ":11211 ";
+    String port = ":" + TestConfig.PORT_NUMBER + " ";
     int last = (int) ((now % 100) + 3);
 
     StringBuffer prefix = new StringBuffer();

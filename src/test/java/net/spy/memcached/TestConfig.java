@@ -30,6 +30,7 @@ public final class TestConfig {
   public static final String IPV6_PROP = "server.address_v6";
   public static final String TYPE_PROP = "server.type";
   public static final String TEST_PROP = "test.type";
+  public static final String PORT_PROP = "server.port_number";
   public static final String TYPE_MEMCACHED = "memcached";
   public static final String TYPE_MEMBASE = "membase";
   public static final String TYPE_COUCHBASE = "couchbase";
@@ -39,6 +40,8 @@ public final class TestConfig {
   public static final String IPV4_ADDR = System.getProperty(IPV4_PROP,
       "127.0.0.1");
   public static final String IPV6_ADDR = resolveIpv6Addr();
+  public static final int PORT_NUMBER =
+      Integer.parseInt(System.getProperty(PORT_PROP, "11211"));
   public static final String TYPE = System.getProperty(TYPE_PROP,
       TYPE_MEMCACHED).toLowerCase();
   public static final String TEST_TYPE = System.getProperty(TEST_PROP,

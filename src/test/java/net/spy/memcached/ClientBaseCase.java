@@ -55,7 +55,7 @@ public abstract class ClientBaseCase extends TestCase {
 
   protected void initClient(ConnectionFactory cf) throws Exception {
     client = new MemcachedClient(cf, AddrUtil.getAddresses(TestConfig.IPV4_ADDR
-        + ":11211"));
+        + ":" + TestConfig.PORT_NUMBER));
   }
 
   protected Collection<String> stringify(Collection<?> c) {

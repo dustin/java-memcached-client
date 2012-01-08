@@ -41,9 +41,10 @@ import net.spy.memcached.protocol.BaseOperationImpl;
 public class CheckedOperationTimeoutExceptionTest extends TestCase {
 
   public void testSingleOperation() {
-    Operation op = buildOp(11211);
+    Operation op = buildOp(TestConfig.PORT_NUMBER);
     assertEquals(CheckedOperationTimeoutException.class.getName()
-        + ": test - failing node: " + TestConfig.IPV4_ADDR + ":11211",
+        + ": test - failing node: " + TestConfig.IPV4_ADDR + ":"
+            + TestConfig.PORT_NUMBER,
         new CheckedOperationTimeoutException("test", op).toString());
   }
 
@@ -63,11 +64,12 @@ public class CheckedOperationTimeoutExceptionTest extends TestCase {
 
   public void testMultipleOperation() {
     Collection<Operation> ops = new ArrayList<Operation>();
-    ops.add(buildOp(11211));
+    ops.add(buildOp(TestConfig.PORT_NUMBER));
     ops.add(buildOp(64212));
     assertEquals(CheckedOperationTimeoutException.class.getName()
-        + ": test - failing nodes: " + TestConfig.IPV4_ADDR + ":11211, "
-        + TestConfig.IPV4_ADDR + ":64212",
+        + ": test - failing nodes: " + TestConfig.IPV4_ADDR + ":"
+            + TestConfig.PORT_NUMBER + ", " + TestConfig.IPV4_ADDR
+            + ":64212",
         new CheckedOperationTimeoutException("test", ops).toString());
   }
 

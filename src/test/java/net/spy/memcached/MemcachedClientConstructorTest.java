@@ -60,7 +60,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 
   private void assertWorking() throws Exception {
     Map<SocketAddress, String> versions = client.getVersions();
-    assertEquals("/" + TestConfig.IPV4_ADDR + ":11211",
+    assertEquals("/" + TestConfig.IPV4_ADDR + ":" + TestConfig.PORT_NUMBER,
         versions.keySet().iterator().next().toString());
   }
 
@@ -72,7 +72,8 @@ public class MemcachedClientConstructorTest extends TestCase {
   public void testVarargConstructor() throws Exception {
     client =
         new MemcachedClient(new InetSocketAddress(
-            InetAddress.getByName(TestConfig.IPV4_ADDR), 11211));
+            InetAddress.getByName(TestConfig.IPV4_ADDR),
+                TestConfig.PORT_NUMBER));
     assertWorking();
   }
 
@@ -108,7 +109,7 @@ public class MemcachedClientConstructorTest extends TestCase {
     try {
       client =
           new MemcachedClient(null, AddrUtil.getAddresses(TestConfig.IPV4_ADDR
-              + ":11211"));
+              + ":" + TestConfig.PORT_NUMBER));
       fail("Expected null pointer exception, got " + client);
     } catch (NullPointerException e) {
       assertEquals("Connection factory required", e.getMessage());
@@ -122,7 +123,8 @@ public class MemcachedClientConstructorTest extends TestCase {
         public long getOperationTimeout() {
           return -1;
         }
-      }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":11211"));
+      }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR
+              +":" + TestConfig.PORT_NUMBER));
       fail("Expected null pointer exception, got " + client);
     } catch (IllegalArgumentException e) {
       assertEquals("Operation timeout must be positive.", e.getMessage());
@@ -136,7 +138,8 @@ public class MemcachedClientConstructorTest extends TestCase {
         public long getOperationTimeout() {
           return 0;
         }
-      }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":11211"));
+      }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR
+              + ":" + TestConfig.PORT_NUMBER));
       fail("Expected null pointer exception, got " + client);
     } catch (IllegalArgumentException e) {
       assertEquals("Operation timeout must be positive.", e.getMessage());
@@ -150,7 +153,8 @@ public class MemcachedClientConstructorTest extends TestCase {
         public OperationFactory getOperationFactory() {
           return null;
         }
-      }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":11211"));
+      }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":"
+              + TestConfig.PORT_NUMBER));
     } catch (AssertionError e) {
       assertEquals("Connection factory failed to make op factory",
           e.getMessage());
@@ -165,7 +169,8 @@ public class MemcachedClientConstructorTest extends TestCase {
             List<InetSocketAddress> addrs) throws IOException {
           return null;
         }
-      }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":11211"));
+      }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":"
+              + TestConfig.PORT_NUMBER));
     } catch (AssertionError e) {
       assertEquals("Connection factory failed to make a connection",
           e.getMessage());
@@ -175,7 +180,7 @@ public class MemcachedClientConstructorTest extends TestCase {
   public void testArraymodNodeLocatorAccessor() throws Exception {
     client =
         new MemcachedClient(AddrUtil.getAddresses(TestConfig.IPV4_ADDR
-            + ":11211"));
+            + ":" + TestConfig.PORT_NUMBER));
     assertTrue(client.getNodeLocator() instanceof ArrayModNodeLocator);
     assertTrue(client.getNodeLocator().getPrimary("x")
         instanceof MemcachedNodeROImpl);
@@ -184,7 +189,8 @@ public class MemcachedClientConstructorTest extends TestCase {
   public void testKetamaNodeLocatorAccessor() throws Exception {
     client =
         new MemcachedClient(new KetamaConnectionFactory(),
-            AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":11211"));
+            AddrUtil.getAddresses(TestConfig.IPV4_ADDR
+            + ":" + TestConfig.PORT_NUMBER));
     assertTrue(client.getNodeLocator() instanceof KetamaNodeLocator);
     assertTrue(client.getNodeLocator().getPrimary("x")
         instanceof MemcachedNodeROImpl);

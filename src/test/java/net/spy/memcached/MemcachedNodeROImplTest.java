@@ -40,7 +40,7 @@ import org.jmock.MockObjectTestCase;
 public class MemcachedNodeROImplTest extends MockObjectTestCase {
 
   public void testReadOnliness() throws Exception {
-    SocketAddress sa = new InetSocketAddress(11211);
+    SocketAddress sa = new InetSocketAddress(TestConfig.PORT_NUMBER);
     Mock m = mock(MemcachedNode.class, "node");
     MemcachedNodeROImpl node =
         new MemcachedNodeROImpl((MemcachedNode) m.proxy());
