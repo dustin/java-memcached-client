@@ -636,8 +636,9 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     boolean set = false;
 
     // Do not execute this for CI
-    if (TestConfig.isCITest())
-        return;
+    if (TestConfig.isCITest()) {
+      return;
+    }
 
     do {
       set = client.set(key, 0, value).get();
