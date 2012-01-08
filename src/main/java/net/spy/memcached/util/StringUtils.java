@@ -24,6 +24,9 @@ package net.spy.memcached.util;
 
 import java.util.Collection;
 
+import net.spy.memcached.KeyUtil;
+import net.spy.memcached.MemcachedClientIF;
+
 /**
  * Some String utilities.
  */
@@ -52,6 +55,25 @@ public final class StringUtils {
       return true;
     } catch (NumberFormatException e) {
       return false;
+    }
+  }
+
+  public static void validateKey(String key) {
+    byte[] keyBytes = KeyUtil.getKeyBytes(key);
+    if (keyBytes.length > MemcachedClientIF.MAX_KEY_LENGTH) {
+      throw new IllegalArgumentException("Key is too long (maxlen = "
+          + MemcachedClientIF.MAX_KEY_LENGTH + ")");
+    }
+    if (keyBytes.length == 0) {
+      throw new IllegalArgumentException(
+          "Key must contain at least one character.");
+    }
+    // Validate the key
+    for (byte b : keyBytes) {
+      if (b == ' ' || b == '\n' || b == '\r' || b == 0) {
+        throw new IllegalArgumentException(
+            "Key contains invalid characters:  ``" + key + "''");
+      }
     }
   }
 }

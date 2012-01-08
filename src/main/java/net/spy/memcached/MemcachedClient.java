@@ -70,6 +70,7 @@ import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.ops.TimedOutOperationStatus;
 import net.spy.memcached.transcoders.TranscodeService;
 import net.spy.memcached.transcoders.Transcoder;
+import net.spy.memcached.util.StringUtils;
 
 /**
  * Client to a memcached server.
@@ -258,25 +259,6 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     return transcoder;
   }
 
-  private void validateKey(String key) {
-    byte[] keyBytes = KeyUtil.getKeyBytes(key);
-    if (keyBytes.length > MAX_KEY_LENGTH) {
-      throw new IllegalArgumentException("Key is too long (maxlen = "
-          + MAX_KEY_LENGTH + ")");
-    }
-    if (keyBytes.length == 0) {
-      throw new IllegalArgumentException(
-          "Key must contain at least one character.");
-    }
-    // Validate the key
-    for (byte b : keyBytes) {
-      if (b == ' ' || b == '\n' || b == '\r' || b == 0) {
-        throw new IllegalArgumentException(
-            "Key contains invalid characters:  ``" + key + "''");
-      }
-    }
-  }
-
   /**
    * (internal use) Add a raw operation to a numbered connection. This method is
    * exposed for testing.
@@ -286,7 +268,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @return the Operation
    */
   Operation addOp(final String key, final Operation op) {
-    validateKey(key);
+    StringUtils.validateKey(key);
     mconn.checkState();
     mconn.addOperation(key, op);
     return op;
@@ -1083,7 +1065,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     while (keyIter.hasNext() && tcIter.hasNext()) {
       String key = keyIter.next();
       tcMap.put(key, tcIter.next());
-      validateKey(key);
+      StringUtils.validateKey(key);
       final MemcachedNode primaryNode = locator.getPrimary(key);
       MemcachedNode node = null;
       if (primaryNode.isActive()) {
