@@ -63,7 +63,6 @@ public interface NodeLocator {
    * Update locator status.
    *
    * @param nodes New locator nodes.
-   * @param conf Locator configuration.
    */
   void updateLocator(final List<MemcachedNode> nodes);
 }

@@ -57,7 +57,7 @@ public class ResponseMessage extends BaseMessage {
   /**
    * Creates a ResponseMessage from binary data.
    *
-   * @param buffer The binary data sent from the tap stream server.
+   * @param b The binary data sent from the tap stream server.
    */
   public ResponseMessage(byte[] b) {
     // TODO: This isn't the best way of doing this. In the future

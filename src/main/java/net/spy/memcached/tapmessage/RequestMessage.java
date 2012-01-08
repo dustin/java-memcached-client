@@ -112,7 +112,7 @@ public class RequestMessage extends BaseMessage{
    * Sets a name for this tap stream. If the tap stream fails this name can be
    * used to try to restart the tap stream from where it last left off.
    *
-   * @param s The name for the tap stream.
+   * @param n The name for the tap stream.
    */
   public void setName(String n) {
     if (n.length() > 65535) {
