@@ -49,6 +49,7 @@ public final class CachedData {
    * @param d the data
    * @param maxSize the maximum allowable size.
    */
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="EI_EXPOSE_REP", justification="efficiency")
   public CachedData(int f, byte[] d, int maxSize) {
     super();
     if (d.length > maxSize) {
@@ -63,6 +64,7 @@ public final class CachedData {
   /**
    * Get the stored data.
    */
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="EI_EXPOSE_REP", justification="efficiency")
   public byte[] getData() {
     return data;
   }

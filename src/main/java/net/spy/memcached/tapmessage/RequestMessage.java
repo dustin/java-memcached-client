@@ -101,6 +101,7 @@ public class RequestMessage extends BaseMessage{
    *
    * @param vbs - A list of vbuckets.
    */
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="EI_EXPOSE_REP", justification="efficiency")
   public void setVbucketlist(short[] vbs) {
     int oldSize = (vblist.length + 1) * 2;
     int newSize = (vbs.length + 1) * 2;

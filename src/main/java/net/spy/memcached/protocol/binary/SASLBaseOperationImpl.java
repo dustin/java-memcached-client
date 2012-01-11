@@ -48,6 +48,7 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
   protected final Map<String, ?> props;
   protected final CallbackHandler cbh;
 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="EI_EXPOSE_REP", justification="efficiency")
   public SASLBaseOperationImpl(byte c, String[] m, byte[] ch, String s,
       Map<String, ?> p, CallbackHandler h, OperationCallback cb) {
     super(c, generateOpaque(), cb);

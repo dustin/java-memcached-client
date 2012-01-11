@@ -215,6 +215,7 @@ public class ResponseMessage extends BaseMessage {
    *
    * @return The value data.
    */
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="EI_EXPOSE_REP", justification="efficiency")
   public byte[] getValue() {
     return value;
   }
@@ -225,6 +226,7 @@ public class ResponseMessage extends BaseMessage {
    *
    * @return The revid of the document.
    */
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="EI_EXPOSE_REP", justification="efficiency")
   public byte[] getRevID() {
     return revid;
   }
