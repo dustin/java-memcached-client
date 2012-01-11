@@ -23,7 +23,6 @@
 package net.spy.memcached.internal;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 /**
  * An iterator that returns a single element for as many elements as are needed

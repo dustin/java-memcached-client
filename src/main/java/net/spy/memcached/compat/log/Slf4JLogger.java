@@ -27,10 +27,8 @@ public class Slf4JLogger implements Logger
     Throwable getThrowable(final Object[] args)
     {
         Throwable rv = null;
-        if (args != null && args.length > 0) {
-            if (args[args.length - 1] instanceof Throwable) {
-                rv = Throwable.class.cast(args[args.length - 1]);
-            }
+        if (args != null && args.length > 0 && args[args.length - 1] instanceof Throwable) {
+          rv = Throwable.class.cast(args[args.length - 1]);
         }
         return rv;
     }

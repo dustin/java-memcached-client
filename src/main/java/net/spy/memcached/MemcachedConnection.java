@@ -308,7 +308,7 @@ public final class MemcachedConnection extends SpyThread {
         if (readyForIO) {
           try {
             if (qa.getWbuf().hasRemaining()) {
-              handleWrites(qa.getSk(), qa);
+              handleWrites(qa);
             }
           } catch (IOException e) {
             getLogger().warn("Exception handling write", e);
@@ -370,17 +370,17 @@ public final class MemcachedConnection extends SpyThread {
           connected(qa);
           addedQueue.offer(qa);
           if (qa.getWbuf().hasRemaining()) {
-            handleWrites(sk, qa);
+            handleWrites(qa);
           }
         } else {
           assert !channel.isConnected() : "connected";
         }
       } else {
         if (sk.isValid() && sk.isReadable()) {
-          handleReads(sk, qa);
+          handleReads(qa);
         }
         if (sk.isValid() && sk.isWritable()) {
-          handleWrites(sk, qa);
+          handleWrites(qa);
         }
       }
     } catch (ClosedChannelException e) {
@@ -414,7 +414,7 @@ public final class MemcachedConnection extends SpyThread {
     qa.fixupOps();
   }
 
-  private void handleWrites(SelectionKey sk, MemcachedNode qa)
+  private void handleWrites(MemcachedNode qa)
     throws IOException {
     qa.fillWriteBuffer(shouldOptimize);
     boolean canWriteMore = qa.getBytesRemainingToWrite() > 0;
@@ -425,7 +425,7 @@ public final class MemcachedConnection extends SpyThread {
     }
   }
 
-  private void handleReads(SelectionKey sk, MemcachedNode qa)
+  private void handleReads(MemcachedNode qa)
     throws IOException {
     Operation currentOp = qa.getCurrentReadOp();
     // If it's a tap ack there is no response
