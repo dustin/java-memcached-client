@@ -25,9 +25,12 @@ package net.spy.memcached;
 
 import java.net.InetSocketAddress;
 
+import org.junit.Ignore;
+
 /**
  * Test the test protocol over IPv6.
  */
+@Ignore("no-ipv6-tests")
 public class AsciiIPV6ClientTest extends AsciiClientTest {
 
   @Override
