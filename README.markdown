@@ -1,22 +1,27 @@
+#
+
+*BIG FAT WARNING* 
+
+This is a fork of the original spymemcached code base. It includes
+
+- use maven for building
+- no more logging configuration. Logging goes into slf4j
+- all findbugs problems fixed or annotated
+- all pmd problems annotated
+
 # Building
 
-Spymemcached can be compiled using Apache Ant by running the following
-command:
-
-    ant
-
-This will generate binary, source, and javadoc jars in the build
-directory of the project.
+Use mvn. Do "mvn install".
 
 To run the Spymemcached tests against Membase Server run the
 following command:
 
-    ant test -Dserver.type=membase
+    mvn test -Dserver.type=membase
 
 To test Spymemcached against Membase running on a different host
 use the following command:
 
-    ant test -Dserver.type=membase \
+    mvn test -Dserver.type=membase \
         -Dserver.address_v4=ip_address_of_membase
 
 # Testing
