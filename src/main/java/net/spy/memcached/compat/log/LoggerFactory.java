@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class LoggerFactory extends Object {
 
-  private static LoggerFactory instance = null;
+  private static LoggerFactory instance = new LoggerFactory();
 
   private final ConcurrentMap<String, Logger> instances;
 
@@ -52,12 +52,6 @@ public final class LoggerFactory extends Object {
   private LoggerFactory() {
     super();
     instances = new ConcurrentHashMap<String, Logger>();
-  }
-
-  private static void init() {
-    if (instance == null) {
-      instance = new LoggerFactory();
-    }
   }
 
   /**
@@ -80,7 +74,6 @@ public final class LoggerFactory extends Object {
     if (name == null) {
       throw new NullPointerException("Logger name may not be null.");
     }
-    init();
     return (instance.internalGetLogger(name));
   }
 

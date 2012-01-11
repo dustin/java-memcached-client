@@ -62,7 +62,7 @@ import net.spy.memcached.util.StringUtils;
 /**
  * Connection to a cluster of memcached servers.
  */
-public class MemcachedConnection extends SpyThread {
+public final class MemcachedConnection extends SpyThread {
 
   // The number of empty selects we'll allow before assuming we may have
   // missed one and should check the current selectors. This generally

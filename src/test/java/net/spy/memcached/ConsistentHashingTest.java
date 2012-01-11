@@ -73,13 +73,13 @@ public class ConsistentHashingTest extends TestCase {
     // Verify that EVERY entry in the smaller map has an equivalent
     // mapping in the larger map.
     boolean failed = false;
-    for (final Long key : smMap.keySet()) {
-      final MemcachedNode largeNode = lgMap.get(key);
-      final MemcachedNode smallNode = smMap.get(key);
+    for (final Map.Entry<Long, MemcachedNode> smEntry : smMap.entrySet()) {
+      final MemcachedNode largeNode = lgMap.get(smEntry.getKey());
+      final MemcachedNode smallNode = smEntry.getValue();
       if (!largeNode.equals(smallNode)) {
         failed = true;
         System.out.println("---------------");
-        System.out.println("Key: " + key);
+        System.out.println("Key: " + smEntry.getKey());
         System.out.println("Small: " + smallNode.getSocketAddress());
         System.out.println("Large: " + largeNode.getSocketAddress());
       }

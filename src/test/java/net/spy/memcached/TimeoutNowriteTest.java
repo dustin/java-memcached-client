@@ -36,6 +36,7 @@ import net.spy.memcached.protocol.ascii.ExtensibleOperationImpl;
 public class TimeoutNowriteTest extends ClientBaseCase {
 
   @Override
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings("IJU_TEARDOWN_NO_SUPER")
   protected void tearDown() throws Exception {
     // override teardown to avoid the flush phase
     client.shutdown();
@@ -91,7 +92,7 @@ public class TimeoutNowriteTest extends ClientBaseCase {
     System.err.println("Trying to get:");
     try {
       client.get("x");
-      String retValString = new String();
+      String retValString = "";
       System.err.println(retValString);
     } catch (net.spy.memcached.OperationTimeoutException ex) {
       System.err.println("Timed out successfully: " + ex.getMessage());

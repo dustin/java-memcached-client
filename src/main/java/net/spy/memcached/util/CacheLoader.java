@@ -115,11 +115,7 @@ public class CacheLoader extends SpyObject {
       } catch (IllegalStateException ex) {
         // Need to slow down a bit when we start getting rejections.
         try {
-          if (rv != null) {
-            rv.get(250, TimeUnit.MILLISECONDS);
-          } else {
-            Thread.sleep(250);
-          }
+          Thread.sleep(250); // rv is null here.
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
         } catch (Exception e2) {

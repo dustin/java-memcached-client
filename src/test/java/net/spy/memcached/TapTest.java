@@ -60,7 +60,7 @@ public class TapTest extends ClientBaseCase {
     HashMap<String, Boolean> items = new HashMap<String, Boolean>();
     for (int i = 0; i < 25; i++) {
       client.set("key" + i, 0, "value" + i).get();
-      items.put("key" + i + ",value" + i, new Boolean(false));
+      items.put("key" + i + ",value" + i, Boolean.FALSE);
     }
     tc.tapDump(null);
 
@@ -73,7 +73,7 @@ public class TapTest extends ClientBaseCase {
       if ((m = tc.getNextMessage()) != null) {
         String key = m.getKey() + "," + new String(m.getValue());
         if (items.containsKey(key)) {
-          items.put(key, new Boolean(true));
+          items.put(key, Boolean.TRUE);
         } else {
           fail();
         }

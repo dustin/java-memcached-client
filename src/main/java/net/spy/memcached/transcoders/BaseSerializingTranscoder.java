@@ -122,23 +122,23 @@ public abstract class BaseSerializingTranscoder extends SpyObject {
     Object rv=null;
     ByteArrayInputStream bis = null;
     ObjectInputStream is = null;
-    try {
-      if(in != null) {
+    if(in != null) {
+      try {
         bis=new ByteArrayInputStream(in);
         is=new ObjectInputStream(bis);
         rv=is.readObject();
         is.close();
         bis.close();
+      } catch (IOException e) {
+        getLogger().warn("Caught IOException decoding %d bytes of data",
+            in.length, e);
+      } catch (ClassNotFoundException e) {
+        getLogger().warn("Caught CNFE decoding %d bytes of data",
+            in.length, e);
+      } finally {
+        CloseUtil.close(is);
+        CloseUtil.close(bis);
       }
-    } catch (IOException e) {
-      getLogger().warn("Caught IOException decoding %d bytes of data",
-          in == null ? 0 : in.length, e);
-    } catch (ClassNotFoundException e) {
-      getLogger().warn("Caught CNFE decoding %d bytes of data",
-          in == null ? 0 : in.length, e);
-    } finally {
-      CloseUtil.close(is);
-      CloseUtil.close(bis);
     }
     return rv;
   }

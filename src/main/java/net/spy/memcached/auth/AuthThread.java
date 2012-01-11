@@ -39,7 +39,7 @@ import net.spy.memcached.ops.OperationStatus;
 /**
  * A thread that does SASL authentication.
  */
-public class AuthThread extends SpyThread {
+public final class AuthThread extends SpyThread {
 
   private final MemcachedConnection conn;
   private final AuthDescriptor authDescriptor;

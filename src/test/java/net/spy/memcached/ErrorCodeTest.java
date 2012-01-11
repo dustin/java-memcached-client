@@ -41,19 +41,19 @@ public class ErrorCodeTest extends TestCase {
     HashMap<Byte, String> errMap = new HashMap<Byte, String>();
     OperationFactory opFact = new BinaryOperationFactory();
 
-    errMap.put(new Byte((byte) 0x01), "NOT FOUND");
-    errMap.put(new Byte((byte) 0x02), "EXISTS");
-    errMap.put(new Byte((byte) 0x03), "2BIG");
-    errMap.put(new Byte((byte) 0x04), "INVAL");
-    errMap.put(new Byte((byte) 0x05), "NOT STORED");
-    errMap.put(new Byte((byte) 0x06), "DELTA BAD VAL");
-    errMap.put(new Byte((byte) 0x07), "NOT MY VBUCKET");
-    errMap.put(new Byte((byte) 0x81), "UNKNOWN COMMAND");
-    errMap.put(new Byte((byte) 0x82), "NO MEM");
-    errMap.put(new Byte((byte) 0x83), "NOT SUPPORTED");
-    errMap.put(new Byte((byte) 0x84), "INTERNAL ERROR");
-    errMap.put(new Byte((byte) 0x85), "BUSY");
-    errMap.put(new Byte((byte) 0x86), "TEMP FAIL");
+    errMap.put(Byte.valueOf((byte) 0x01), "NOT FOUND");
+    errMap.put(Byte.valueOf((byte) 0x02), "EXISTS");
+    errMap.put(Byte.valueOf((byte) 0x03), "2BIG");
+    errMap.put(Byte.valueOf((byte) 0x04), "INVAL");
+    errMap.put(Byte.valueOf((byte) 0x05), "NOT STORED");
+    errMap.put(Byte.valueOf((byte) 0x06), "DELTA BAD VAL");
+    errMap.put(Byte.valueOf((byte) 0x07), "NOT MY VBUCKET");
+    errMap.put(Byte.valueOf((byte) 0x81), "UNKNOWN COMMAND");
+    errMap.put(Byte.valueOf((byte) 0x82), "NO MEM");
+    errMap.put(Byte.valueOf((byte) 0x83), "NOT SUPPORTED");
+    errMap.put(Byte.valueOf((byte) 0x84), "INTERNAL ERROR");
+    errMap.put(Byte.valueOf((byte) 0x85), "BUSY");
+    errMap.put(Byte.valueOf((byte) 0x86), "TEMP FAIL");
 
     int opaque = 0;
     for (final Entry<Byte, String> err : errMap.entrySet()) {

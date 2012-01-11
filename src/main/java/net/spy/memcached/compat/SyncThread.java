@@ -32,7 +32,7 @@ import java.util.concurrent.CyclicBarrier;
 /**
  * Thread that invokes a callable multiple times concurrently.
  */
-public class SyncThread<T> extends SpyThread {
+public final class SyncThread<T> extends SpyThread {
 
   private final Callable<T> callable;
   private final CyclicBarrier barrier;

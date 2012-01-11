@@ -37,6 +37,7 @@ import java.util.concurrent.TimeoutException;
 public abstract class CancellationBaseCase extends ClientBaseCase {
 
   @Override
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings("IJU_TEARDOWN_NO_SUPER")
   protected void tearDown() throws Exception {
     // override teardown to avoid the flush phase
     client.shutdown();
