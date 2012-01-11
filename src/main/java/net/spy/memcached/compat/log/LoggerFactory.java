@@ -22,8 +22,6 @@
 
 package net.spy.memcached.compat.log;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -47,7 +45,6 @@ public final class LoggerFactory extends Object {
   private static LoggerFactory instance = null;
 
   private final ConcurrentMap<String, Logger> instances;
-  private Constructor<? extends Logger> instanceConstructor;
 
   /**
    * Get an instance of LoggerFactory.
@@ -93,12 +90,7 @@ public final class LoggerFactory extends Object {
     Logger rv = instances.get(name);
 
     if (rv == null) {
-      Logger newLogger = null;
-      try {
-        newLogger = getNewInstance(name);
-      } catch (Exception e) {
-        throw new RuntimeException("Problem getting logger", e);
-      }
+      final Logger newLogger = new Slf4JLogger(name);
       Logger tmp = instances.putIfAbsent(name, newLogger);
       // Return either the new logger we've just made, or one that was
       // created while we were waiting
@@ -107,68 +99,4 @@ public final class LoggerFactory extends Object {
 
     return (rv);
   }
-
-  private Logger getNewInstance(String name) throws InstantiationException,
-      IllegalAccessException, InvocationTargetException {
-
-    if (instanceConstructor == null) {
-      getConstructor();
-    }
-    Object[] args = { name };
-    Logger rv = instanceConstructor.newInstance(args);
-
-    return (rv);
-  }
-
-  // Find the appropriate constructor
-  @SuppressWarnings("unchecked")
-  private void getConstructor() {
-    Class<? extends Logger> c = DefaultLogger.class;
-    String className = System.getProperty("net.spy.log.LoggerImpl");
-
-    if (className != null) {
-      try {
-        c = (Class<? extends Logger>) Class.forName(className);
-      } catch (NoClassDefFoundError e) {
-        System.err.println("Warning:  " + className
-            + " not found while initializing"
-            + " net.spy.compat.log.LoggerFactory");
-        e.printStackTrace();
-        c = DefaultLogger.class;
-      } catch (ClassNotFoundException e) {
-        System.err.println("Warning:  " + className
-            + " not found while initializing"
-            + " net.spy.compat.log.LoggerFactory");
-        e.printStackTrace();
-        c = DefaultLogger.class;
-      }
-    }
-
-    // Find the best constructor
-    try {
-      // Try to find a constructor that takes a single string
-      Class<?>[] args = { String.class };
-      instanceConstructor = c.getConstructor(args);
-    } catch (NoSuchMethodException e) {
-      try {
-        // Try to find an empty constructor
-        Class<?>[] args = {};
-        instanceConstructor = c.getConstructor(args);
-      } catch (NoSuchMethodException e2) {
-        System.err.println("Warning:  " + className
-            + " has no appropriate constructor, using defaults.");
-
-        // Try to find a constructor that takes a single string
-        try {
-          Class<?>[] args = { String.class };
-          instanceConstructor = DefaultLogger.class.getConstructor(args);
-        } catch (NoSuchMethodException e3) {
-          // This shouldn't happen.
-          throw new NoSuchMethodError("There used to be a constructor that "
-              + "takes a single String on " + DefaultLogger.class + ", but I "
-              + "can't find one now.");
-        } // SOL
-      } // No empty constructor
-    } // No constructor that takes a string
-  } // getConstructor
 }
