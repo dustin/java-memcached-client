@@ -16,7 +16,7 @@
   </scm>
 
   <groupId>spymemcached</groupId>
-  <artifactId>spymemcached</artifactId>
+  <artifactId>memcached</artifactId>
   <name>java client library for memcached</name>
   <version>2.8-SNAPSHOT</version>
   <packaging>jar</packaging>
