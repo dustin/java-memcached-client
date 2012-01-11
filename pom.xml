@@ -32,6 +32,13 @@
           </systemPropertyVariables>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <configuration>
+          <arguments>-Pbuild-javadoc,check-build</arguments>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
