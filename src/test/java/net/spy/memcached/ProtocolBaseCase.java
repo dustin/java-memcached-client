@@ -818,7 +818,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
   }
 
   public void testUTF8Key() throws Exception {
-    final String key = "junit.Здравствуйте."
+    final String key = "junit.\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435."
         + System.currentTimeMillis();
     final String value = "Skiing rocks if you can find the time to go!";
 
@@ -830,7 +830,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
   public void testUTF8KeyDelete() throws Exception {
     final String key =
-        "junit.Здравствуйте." + System.currentTimeMillis();
+        "junit.\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435." + System.currentTimeMillis();
     final String value = "Skiing rocks if you can find the time to go!";
 
     assertTrue(client.set(key, 6000, value).get());
@@ -843,7 +843,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     Collection<String> keys = new ArrayList<String>();
     for (int i = 0; i < 50; i++) {
       final String key =
-          "junit.Здравствуйте." + System.currentTimeMillis() + "."
+          "junit.\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435." + System.currentTimeMillis() + "."
               + i;
       assertTrue(client.set(key, 6000, value).get());
       keys.add(key);
@@ -859,8 +859,8 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
   public void testUTF8Value() throws Exception {
     final String key = "junit.plaintext." + System.currentTimeMillis();
-    final String value = "Здравствуйте Здравствуйте �"
-        + "�дравствуйте Skiing rocks if you can find the time "
+    final String value = "\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435 \u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435 "
+        + "\u0417\u0434\u0440\u0430\u0432\u0441\u0442\u0432\u0443\u0439\u0442\u0435 Skiing rocks if you can find the time "
         + "to go!";
 
     assertTrue(client.set(key, 6000, value).get());
