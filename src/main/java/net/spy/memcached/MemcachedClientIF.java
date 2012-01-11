@@ -107,20 +107,27 @@ public interface MemcachedClientIF {
 
   Object get(String key);
 
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(Iterator<String> keys,
+      Iterator<Transcoder<T>> tcs);
   <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys,
       Iterator<Transcoder<T>> tcs);
 
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(Iterator<String> keys,
+      Transcoder<T> tc);
   <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys,
       Transcoder<T> tc);
 
+  BulkFuture<Map<String, Object>> asyncGetBulk(Iterator<String> keys);
   BulkFuture<Map<String, Object>> asyncGetBulk(Collection<String> keys);
 
   <T> BulkFuture<Map<String, T>> asyncGetBulk(Transcoder<T> tc, String... keys);
 
   BulkFuture<Map<String, Object>> asyncGetBulk(String... keys);
 
+  <T> Map<String, T> getBulk(Iterator<String> keys, Transcoder<T> tc);
   <T> Map<String, T> getBulk(Collection<String> keys, Transcoder<T> tc);
 
+  Map<String, Object> getBulk(Iterator<String> keys);
   Map<String, Object> getBulk(Collection<String> keys);
 
   <T> Map<String, T> getBulk(Transcoder<T> tc, String... keys);
