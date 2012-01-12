@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +30,14 @@ import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.TapOperation;
 import net.spy.memcached.tapmessage.BaseMessage;
 import net.spy.memcached.tapmessage.ResponseMessage;
-import net.spy.memcached.tapmessage.TapFlag;
 import net.spy.memcached.tapmessage.TapOpcode;
+import net.spy.memcached.tapmessage.TapResponseFlag;
 
 /**
  * Abstract implementation of a tap operation.
  */
 public abstract class TapOperationImpl extends OperationImpl implements
     TapOperation {
-  private static final byte TAP_FLAG_ACK = 0x1;
 
   private int bytesProcessed;
   private int bodylen;
@@ -74,8 +73,8 @@ public abstract class TapOperationImpl extends OperationImpl implements
         }
         if (bytesProcessed >= message.length) {
           ResponseMessage response = new ResponseMessage(message);
-          for (TapFlag flag : response.getFlags()) {
-            if (flag.getFlag() == TAP_FLAG_ACK) {
+          for (TapResponseFlag flag : response.getFlags()) {
+            if (flag == TapResponseFlag.TAP_ACK) {
               ((Callback) getCallback()).gotAck(response.getOpcode(),
                 response.getOpaque());
             }

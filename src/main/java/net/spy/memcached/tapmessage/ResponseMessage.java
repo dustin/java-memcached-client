@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ public class ResponseMessage extends BaseMessage {
   private static final int KEY_OFFSET = 40;
 
   private final short engineprivate;
-  private final List<TapFlag> flags;
+  private final List<TapResponseFlag> flags;
   private final byte ttl;
   private final byte reserved1;
   private final byte reserved2;
@@ -65,14 +65,14 @@ public class ResponseMessage extends BaseMessage {
     super(b);
     if (!opcode.equals(TapOpcode.NOOP)) {
       engineprivate = decodeShort(b, ENGINE_PRIVATE_OFFSET);
-      flags = TapFlag.getFlags(decodeShort(b, FLAGS_OFFSET));
+      flags = TapResponseFlag.getFlags(decodeShort(b, FLAGS_OFFSET));
       ttl = b[TTL_OFFSET];
       reserved1 = b[RESERVED1_OFFSET];
       reserved2 = b[RESERVED2_OFFSET];
       reserved3 = b[RESERVED3_OFFSET];
     } else {
       engineprivate = 0;
-      flags = new LinkedList<TapFlag>();
+      flags = new LinkedList<TapResponseFlag>();
       ttl = 0;
       reserved1 = 0;
       reserved2 = 0;
@@ -129,7 +129,7 @@ public class ResponseMessage extends BaseMessage {
    *
    * @return The flags data.
    */
-  public List<TapFlag> getFlags() {
+  public List<TapResponseFlag> getFlags() {
     return flags;
   }
 
