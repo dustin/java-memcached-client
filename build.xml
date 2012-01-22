@@ -317,7 +317,7 @@
       use="true"
       windowtitle="${name} ${version} API"
       doctitle="${name} ${version} API"
-      bottom="Copyright &amp;copy; 2006-2009 Dustin Sallings, 2009-2011 Couchbase, Inc.">
+      bottom="Copyright &amp;copy; 2006-2009 Dustin Sallings, 2009-2012 Couchbase, Inc.">
       <packageset dir="${src.dir}">
         <include name="**" />
       </packageset>
@@ -329,7 +329,7 @@
 
   <target name="docsjar" depends="docs"
       description="Create the documentation jar">
-    <zip destfile="${build.dir}/${name}-${version}-javadoc.jar"
+    <zip destfile="${build.dir}/javadocs/${name}-${version}.jar"
         basedir="${build.javadoc}" />
   </target>
 
@@ -385,17 +385,17 @@
   <target name="srcjar" depends="init,jar"
       description="Create source jars">
     <mkdir dir="${build.dir}" />
-    <jar jarfile="${build.dir}/${name}-${version}-sources.jar">
+    <jar jarfile="${build.dir}/sources/${name}-${version}.jar">
       <fileset dir="${src.dir}" />
       <fileset dir="${build.src.dir}" />
     </jar>
-    <jar jarfile="${build.dir}/${name}-test-${version}-sources.jar">
+    <jar jarfile="${build.dir}/sources/${name}-test-${version}.jar">
       <fileset dir="${test.dir}" />
     </jar>
   </target>
 
-  <target name="jar" depends="compile,compile-test" description="Creates a jar file for the plugin">
-    <jar jarfile="${build.dir}/${name}-${version}.jar" basedir="${build.classes}">
+  <target name="jar" depends="compile,compile-test" description="Creates a jar file for the library">
+    <jar jarfile="${build.dir}/jars/${name}-${version}.jar" basedir="${build.classes}">
       <manifest>
         <attribute name="Implementation-Title" value="java memcached client" />
         <attribute name="Implementation-Version" value="${version}" />
@@ -404,7 +404,7 @@
         <attribute name="Main-Class" value="net.spy.memcached.BuildInfo" />
       </manifest>
     </jar>
-    <jar jarfile="${build.dir}/${name}-test-${version}.jar" basedir="${build.test.classes}"/>
+    <jar jarfile="${build.dir}/jars/${name}-test-${version}.jar" basedir="${build.test.classes}"/>
   </target>
 
   <target name="package" depends="jar,srcjar,docsjar"
@@ -439,8 +439,8 @@
   <target name="mvn-prep" depends="ivy-init, gen-version"
       description="Creates maven files">
     <!-- prepare for mvn tasks. -->
-    <property name="spymemcached.pom" value="${mvn.build.dir}/spymemcached-${version}.pom" />
-    <property name="spymemcached-test.pom" value="${mvn.build.dir}/spymemcached-test-${version}.pom" />
+    <property name="spymemcached.pom" value="${mvn.build.dir}/poms/spymemcached-${version}.pom" />
+    <property name="spymemcached-test.pom" value="${mvn.build.dir}/poms/spymemcached-test-${version}.pom" />
 
     <!-- Download maven -->
     <mkdir dir="${build.dir}" />
@@ -453,14 +453,16 @@
         classpathref="mvn-ant-task.classpath"/>
 
     <!-- generate our poms from our ivy files. -->
-    <mkdir dir="${mvn.build.dir}" />
-    <ivy:makepom ivyfile="ivy/spymemcached.xml" pomfile="${spymemcached.pom}"
+    <mkdir dir="${mvn.build.dir}/poms" />
+    <ivy:makepom ivyfile="ivy/spymemcached.xml"
+        pomfile="${spymemcached.pom}"
         settingsRef="${name}.ivy.settings">
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
     </ivy:makepom>
 
-    <ivy:makepom ivyfile="ivy/spymemcached-test.xml" pomfile="${spymemcached-test.pom}"
+    <ivy:makepom ivyfile="ivy/spymemcached-test.xml"
+        pomfile="${spymemcached-test.pom}"
         settingsRef="${name}.ivy.settings">
      <mapping conf="default" scope="compile" />
      <mapping conf="runtime" scope="runtime" />
@@ -470,7 +472,7 @@
     <replaceregexp>
       <regexp pattern="&lt;version&gt;.*&lt;/version&gt;" />
       <substitution expression="&lt;version&gt;${version}&lt;/version&gt;" />
-      <fileset dir="${mvn.build.dir}">
+      <fileset dir="${mvn.build.dir}/poms">
         <include name="*.pom" />
       </fileset>
     </replaceregexp>
@@ -478,27 +480,28 @@
 
   <target name="mvn-install" depends="jar,srcjar,package,mvn-prep"
       description="Install Spymemcached in local m2 repository">
+    <!-- @todo: change to use ivy publish -->
     <artifact:pom id="spymemcached" file="${spymemcached.pom}" />
-    <artifact:install file="${build.dir}/${name}-${version}.jar">
+    <artifact:install file="${build.dir}/jars/${name}-${version}.jar">
       <pom refid="${name}" />
-      <attach file="${build.dir}/${name}-${version}-sources.jar"
+      <attach file="${build.dir}/sources/${name}-${version}.jar"
           classifier="sources" />
-      <attach file="${build.dir}/${name}-${version}-javadoc.jar"
+      <attach file="${build.dir}/javadocs/${name}-${version}.jar"
           classifier="javadocs" />
     </artifact:install>
     <artifact:pom id="spymemcached-test" file="${spymemcached-test.pom}" />
-      <artifact:install file="${build.dir}/${name}-test-${version}.jar">
+      <artifact:install file="${build.dir}/jars/${name}-test-${version}.jar">
         <pom refid="${name}-test" />
-        <attach file="${build.dir}/${name}-test-${version}-sources.jar"
+        <attach file="${build.dir}/sources/${name}-test-${version}.jar"
           classifier="sources" />
     </artifact:install>
   </target>
   <!-- ======================================
         Section: Stage Maven locally
        ====================================== -->
-  <target name="mvn-stage" depends="package,ivy-init,mvn-prep" description="publish jar/source to maven repo mounted at ~/repo">
+  <target name="mvn-stage" depends="package,ivy-init,mvn-prep" description="publish jar/source to maven repo mounted at ~/mvn-stage">
     <ivy:publish resolver="share-m2" forcedeliver="true" overwrite="true" publishivy="false">
-      <artifacts pattern="build/[artifact]-[revision].[ext]" />
+      <artifacts pattern="build/[type]s/[artifact]-[revision].[ext]" />
     </ivy:publish>
   </target>
 

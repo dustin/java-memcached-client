@@ -34,6 +34,7 @@ SOFTWARE.
 
     <conf name="common" visibility="private" extends="runtime"
       description="artifacts needed to compile/test the application"/>
+    <conf name="sources"/>
   </configurations>
 
   <!-- Added publications for JAR files and POMs -->
@@ -42,11 +43,11 @@ SOFTWARE.
 
     <artifact type="jar" ext="jar" conf="default"/>
 
-    <artifact type="source" ext="jar" conf="default" m:classifier="sources"/>
-    <artifact type="docs" ext="jar" conf="default" m:classifier="docs"/>
+    <artifact type="source" ext="jar" conf="sources" m:classifier="sources"/>
+    <artifact type="javadoc" ext="jar" conf="sources" m:classifier="javadoc"/>
   </publications>
 
-  <dependencies>
+  <dependencies defaultconfmapping="sources->sources(),%->default" defaultconf="default,sources">
     <dependency org="log4j" name="log4j" rev="${log4j.version}"
         conf="common->master" />
     <dependency org="jmock" name="jmock" rev="${jmock.version}"
