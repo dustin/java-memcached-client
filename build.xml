@@ -496,7 +496,7 @@
   <!-- ======================================
         Section: Stage Maven locally
        ====================================== -->
-  <target name="mvn-stage" depends="jar,ivy-init,mvn-prep" description="publish jar/source to maven repo mounted at ~/repo">
+  <target name="mvn-stage" depends="package,ivy-init,mvn-prep" description="publish jar/source to maven repo mounted at ~/repo">
     <ivy:publish resolver="share-m2" forcedeliver="true" overwrite="true" publishivy="false">
       <artifacts pattern="build/[artifact]-[revision].[ext]" />
     </ivy:publish>

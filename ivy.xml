@@ -43,6 +43,7 @@ SOFTWARE.
     <artifact type="jar" ext="jar" conf="default"/>
 
     <artifact type="source" ext="jar" conf="default" m:classifier="sources"/>
+    <artifact type="docs" ext="jar" conf="default" m:classifier="docs"/>
   </publications>
 
   <dependencies>
