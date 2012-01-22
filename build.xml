@@ -1,5 +1,5 @@
 <!--
-  Copyright (c) 2009-2011  Couchbase, Inc.
+  Copyright (c) 2009-2012  Couchbase, Inc.
 
   Permission is hereby granted, free of charge, to any person obtaining a copy of
   this software and associated documentation files (the "Software"), to deal in
@@ -72,9 +72,7 @@
   <property name="build.test.classes" location="${build.test}/classes" />
 
   <!-- maven -->
-  <property name="mvn.build.dir" value="${build.dir}/m2" />
-  <property name="spymemcached.pom" value="${mvn.build.dir}/spymemcached.pom" />
-  <property name="spymemcached-test.pom" value="${mvn.build.dir}/spymemcached-test.pom" />
+  <property name="mvn.build.dir" value="${build.dir}" />
 
   <!-- compilation -->
   <property name="javac.deprecation" value="off"/>
@@ -441,6 +439,8 @@
   <target name="mvn-prep" depends="ivy-init, gen-version"
       description="Creates maven files">
     <!-- prepare for mvn tasks. -->
+    <property name="spymemcached.pom" value="${mvn.build.dir}/spymemcached-${version}.pom" />
+    <property name="spymemcached-test.pom" value="${mvn.build.dir}/spymemcached-test-${version}.pom" />
 
     <!-- Download maven -->
     <mkdir dir="${build.dir}" />
@@ -492,6 +492,14 @@
         <attach file="${build.dir}/${name}-test-${version}-sources.jar"
           classifier="sources" />
     </artifact:install>
+  </target>
+  <!-- ======================================
+        Section: Stage Maven locally
+       ====================================== -->
+  <target name="mvn-stage" depends="jar,ivy-init,mvn-prep" description="publish jar/source to maven repo mounted at ~/repo">
+    <ivy:publish resolver="share-m2" forcedeliver="true" overwrite="true" publishivy="false">
+      <artifacts pattern="build/[artifact]-[revision].[ext]" />
+    </ivy:publish>
   </target>
 
   <!-- ======================================

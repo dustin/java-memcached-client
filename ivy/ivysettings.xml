@@ -40,6 +40,12 @@
   <settings defaultResolver="default"/>
 
   <resolvers>
+
+    <filesystem name="share-m2" m2compatible="true">
+      <artifact pattern="${user.home}/mvn-stage/[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]"/>
+    </filesystem>
+
+
     <chain name="default">
       <ibiblio name="maven2" root="${repo.maven.org}"
         pattern="${maven2.pattern.ext}" m2compatible="true"/>

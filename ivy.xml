@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2009-2011  Couchbase, Inc.
+Copyright (c) 2009-2012  Couchbase, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -20,8 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 -->
 
-<ivy-module version="2.0">
-  <info organisation="couchbase" module="spymemcached"/>
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
+  <info organisation="spy" module="${name}" revision="${version}"/>
 
   <configurations defaultconfmapping="default">
     <!--these match the Maven configurations-->
@@ -35,6 +35,15 @@ SOFTWARE.
     <conf name="common" visibility="private" extends="runtime"
       description="artifacts needed to compile/test the application"/>
   </configurations>
+
+  <!-- Added publications for JAR files and POMs -->
+  <publications>
+    <artifact type="pom" ext="pom" conf="default"/>
+
+    <artifact type="jar" ext="jar" conf="default"/>
+
+    <artifact type="source" ext="jar" conf="default" m:classifier="sources"/>
+  </publications>
 
   <dependencies>
     <dependency org="log4j" name="log4j" rev="${log4j.version}"
