@@ -1022,7 +1022,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * Asynchronously get a bunch of objects from the cache.
    *
    * @param <T>
-   * @param keys the keys to request
+   * @param keyIter Iterator that produces keys.
    * @param tcIter an iterator of transcoders to serialize and unserialize
    *          values; the transcoders are matched with the keys in the same
    *          order. The minimum of the key collection length and number of
@@ -1032,7 +1032,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
-  public <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys,
+  public <T> BulkFuture<Map<String, T>> asyncGetBulk(Iterator<String> keyIter,
       Iterator<Transcoder<T>> tcIter) {
     final Map<String, Future<T>> m = new ConcurrentHashMap<String, Future<T>>();
 
@@ -1046,7 +1046,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     final Map<MemcachedNode, Collection<String>> chunks =
         new HashMap<MemcachedNode, Collection<String>>();
     final NodeLocator locator = mconn.getLocator();
-    Iterator<String> keyIter = keys.iterator();
+
     while (keyIter.hasNext() && tcIter.hasNext()) {
       String key = keyIter.next();
       tcMap.put(key, tcIter.next());
@@ -1118,6 +1118,41 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    *
    * @param <T>
    * @param keys the keys to request
+   * @param tcIter an iterator of transcoders to serialize and unserialize
+   *          values; the transcoders are matched with the keys in the same
+   *          order. The minimum of the key collection length and number of
+   *          transcoders is used and no exception is thrown if they do not
+   *          match
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys,
+          Iterator<Transcoder<T>> tcIter) {
+    return asyncGetBulk(keys.iterator(), tcIter);
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache.
+   *
+   * @param <T>
+   * @param keyIter Iterator for the keys to request
+   * @param tc the transcoder to serialize and unserialize values
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> BulkFuture<Map<String, T>> asyncGetBulk(Iterator<String> keyIter,
+      Transcoder<T> tc) {
+    return asyncGetBulk(keyIter,
+            new SingleElementInfiniteIterator<Transcoder<T>>(tc));
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache.
+   *
+   * @param <T>
+   * @param keys the keys to request
    * @param tc the transcoder to serialize and unserialize values
    * @return a Future result of that fetch
    * @throws IllegalStateException in the rare circumstance where queue is too
@@ -1127,6 +1162,20 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       Transcoder<T> tc) {
     return asyncGetBulk(keys, new SingleElementInfiniteIterator<Transcoder<T>>(
         tc));
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache and decode them with
+   * the given transcoder.
+   *
+   * @param keyIter Iterator that produces the keys to request
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public BulkFuture<Map<String, Object>> asyncGetBulk(
+         Iterator<String> keyIter) {
+    return asyncGetBulk(keyIter, transcoder);
   }
 
   /**
@@ -1228,6 +1277,46 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * Get the values for multiple keys from the cache.
    *
    * @param <T>
+   * @param keyIter Iterator that produces the keys
+   * @param tc the transcoder to serialize and unserialize value
+   * @return a map of the values (for each value that exists)
+   * @throws OperationTimeoutException if the global operation timeout is
+   *           exceeded
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> Map<String, T> getBulk(Iterator<String> keyIter,
+      Transcoder<T> tc) {
+    try {
+      return asyncGetBulk(keyIter, tc).get(operationTimeout,
+          TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      throw new RuntimeException("Interrupted getting bulk values", e);
+    } catch (ExecutionException e) {
+      throw new RuntimeException("Failed getting bulk values", e);
+    } catch (TimeoutException e) {
+      throw new OperationTimeoutException("Timeout waiting for bulkvalues", e);
+    }
+  }
+
+  /**
+   * Get the values for multiple keys from the cache.
+   *
+   * @param keyIter Iterator that produces the keys
+   * @return a map of the values (for each value that exists)
+   * @throws OperationTimeoutException if the global operation timeout is
+   *           exceeded
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public Map<String, Object> getBulk(Iterator<String> keyIter) {
+    return getBulk(keyIter, transcoder);
+  }
+
+  /**
+   * Get the values for multiple keys from the cache.
+   *
+   * @param <T>
    * @param keys the keys
    * @param tc the transcoder to serialize and unserialize value
    * @return a map of the values (for each value that exists)
@@ -1238,16 +1327,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   public <T> Map<String, T> getBulk(Collection<String> keys,
       Transcoder<T> tc) {
-    try {
-      return asyncGetBulk(keys, tc).get(operationTimeout,
-          TimeUnit.MILLISECONDS);
-    } catch (InterruptedException e) {
-      throw new RuntimeException("Interrupted getting bulk values", e);
-    } catch (ExecutionException e) {
-      throw new RuntimeException("Failed getting bulk values", e);
-    } catch (TimeoutException e) {
-      throw new OperationTimeoutException("Timeout waiting for bulkvalues", e);
-    }
+    return getBulk(keys.iterator(), tc);
   }
 
   /**

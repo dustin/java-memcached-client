@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,29 +36,29 @@ public class MessageBuilder {
 
   public void doBackfill(long date) {
     message.setBackfill(date);
-    message.setFlags(TapFlag.BACKFILL);
+    message.setFlags(TapRequestFlag.BACKFILL);
   }
 
   public void doDump() {
-    message.setFlags(TapFlag.DUMP);
+    message.setFlags(TapRequestFlag.DUMP);
   }
 
   public void specifyVbuckets(short[] vbucketlist) {
     message.setVbucketlist(vbucketlist);
-    message.setFlags(TapFlag.LIST_VBUCKETS);
+    message.setFlags(TapRequestFlag.LIST_VBUCKETS);
   }
 
   public void supportAck() {
-    message.setFlags(TapFlag.SUPPORT_ACK);
+    message.setFlags(TapRequestFlag.SUPPORT_ACK);
   }
 
   public void keysOnly() {
-    message.setFlags(TapFlag.KEYS_ONLY);
+    message.setFlags(TapRequestFlag.KEYS_ONLY);
   }
 
   public void takeoverVbuckets(short[] vbucketlist) {
     message.setVbucketlist(vbucketlist);
-    message.setFlags(TapFlag.TAKEOVER_VBUCKETS);
+    message.setFlags(TapRequestFlag.TAKEOVER_VBUCKETS);
   }
 
   public RequestMessage getMessage() {
