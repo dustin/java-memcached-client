@@ -173,7 +173,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     // Now check the ops
     Operation nextOp = getCurrentWriteOp();
     while (nextOp != null && nextOp.isCancelled()) {
-      getLogger().info("Removing cancelled operation: %s", nextOp);
+      getLogger().debug("Removing cancelled operation: %s", nextOp);
       removeCurrentWriteOp();
       nextOp = getCurrentWriteOp();
     }

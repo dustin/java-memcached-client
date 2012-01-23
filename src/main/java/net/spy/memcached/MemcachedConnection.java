@@ -146,10 +146,10 @@ public final class MemcachedConnection extends SpyThread {
       // connect, but it considerably slowed down start time.
       try {
         if (ch.connect(sa)) {
-          getLogger().info("Connected to %s immediately", qa);
+          getLogger().info("Connected to %s immediately", qa.getSocketAddress());
           connected(qa);
         } else {
-          getLogger().info("Added %s to connect queue", qa);
+          getLogger().info("Added %s to connect queue", qa.getSocketAddress());
           ops = SelectionKey.OP_CONNECT;
         }
         qa.setSk(ch.register(selector, ops, qa));
@@ -180,7 +180,7 @@ public final class MemcachedConnection extends SpyThread {
           if (qa.getBytesRemainingToWrite() > 0) {
             expected |= SelectionKey.OP_WRITE;
           }
-          assert sops == expected : "Invalid ops:  " + qa + ", expected "
+          assert sops == expected : "Invalid ops:  " + qa.getSocketAddress() + ", expected "
               + expected + ", got " + sops;
         } else {
           int sops = qa.getSk().interestOps();
@@ -222,10 +222,10 @@ public final class MemcachedConnection extends SpyThread {
           + Thread.interrupted());
       if (++emptySelects > DOUBLE_CHECK_EMPTY) {
         for (SelectionKey sk : selector.keys()) {
-          getLogger().info("%s has %s, interested in %s", sk, sk.readyOps(),
+          getLogger().debug("%s has %s, interested in %s", sk, sk.readyOps(),
               sk.interestOps());
           if (sk.readyOps() != 0) {
-            getLogger().info("%s has a ready op, handling IO", sk);
+            getLogger().debug("%s has a ready op, handling IO", sk);
             handleIO(sk);
           } else {
             lostConnection((MemcachedNode) sk.attachment());
@@ -299,7 +299,7 @@ public final class MemcachedConnection extends SpyThread {
         if (qa.isActive()) {
           if (qa.getCurrentWriteOp() != null) {
             readyForIO = true;
-            getLogger().debug("Handling queued write %s", qa);
+            getLogger().debug("Handling queued write %s", qa.getSocketAddress());
           }
         } else {
           toAdd.add(qa);
@@ -386,20 +386,20 @@ public final class MemcachedConnection extends SpyThread {
     } catch (ClosedChannelException e) {
       // Note, not all channel closes end up here
       if (!shutDown) {
-        getLogger().info("Closed channel and not shutting down. Queueing"
-            + " reconnect on %s", qa, e);
+        getLogger().warn("Closed channel and not shutting down. Queueing"
+            + " reconnect on %s", qa.getSocketAddress(), e);
         lostConnection(qa);
       }
     } catch (ConnectException e) {
       // Failures to establish a connection should attempt a reconnect
       // without signaling the observers.
-      getLogger().info("Reconnecting due to failure to connect to %s", qa, e);
+      getLogger().warn("Reconnecting due to failure to connect to %s", qa.getSocketAddress(), e);
       queueReconnect(qa);
     } catch (OperationException e) {
       qa.setupForAuth(); // noop if !shouldAuth
-      getLogger().info("Reconnection due to exception handling a memcached "
+      getLogger().warn("Reconnection due to exception handling a memcached "
           + "operation on %s. This may be due to an authentication failure.",
-          qa, e);
+          qa.getSocketAddress(), e);
       lostConnection(qa);
     } catch (Exception e) {
       // Any particular error processing an item should simply
@@ -408,7 +408,7 @@ public final class MemcachedConnection extends SpyThread {
       // One cause is just network oddness or servers
       // restarting, which lead here with IOException
       qa.setupForAuth(); // noop if !shouldAuth
-      getLogger().info("Reconnecting due to exception on %s", qa, e);
+      getLogger().warn("Reconnecting due to exception on %s", qa.getSocketAddress(), e);
       lostConnection(qa);
     }
     qa.fixupOps();
@@ -514,7 +514,7 @@ public final class MemcachedConnection extends SpyThread {
         if (qa.getChannel() != null && qa.getChannel().socket() != null) {
           qa.getChannel().socket().close();
         } else {
-          getLogger().info("The channel or socket was null for %s", qa);
+          getLogger().warn("The channel or socket was null for %s", qa.getSocketAddress());
         }
       } catch (IOException e) {
         getLogger().warn("IOException trying to close a socket", e);
@@ -586,12 +586,12 @@ public final class MemcachedConnection extends SpyThread {
       try {
         if (!seen.containsKey(qa)) {
           seen.put(qa, Boolean.TRUE);
-          getLogger().info("Reconnecting %s", qa);
+          getLogger().info("Reconnecting %s", qa.getSocketAddress());
           ch = SocketChannel.open();
           ch.configureBlocking(false);
           int ops = 0;
           if (ch.connect(qa.getSocketAddress())) {
-            getLogger().info("Immediately reconnected to %s", qa);
+            getLogger().info("Immediately reconnected to %s", qa.getSocketAddress());
             assert ch.isConnected();
           } else {
             ops = SelectionKey.OP_CONNECT;
@@ -599,13 +599,13 @@ public final class MemcachedConnection extends SpyThread {
           qa.registerChannel(ch, ch.register(selector, ops, qa));
           assert qa.getChannel() == ch : "Channel was lost.";
         } else {
-          getLogger().debug("Skipping duplicate reconnect request for %s", qa);
+          getLogger().debug("Skipping duplicate reconnect request for %s", qa.getSocketAddress());
         }
       } catch (SocketException e) {
         getLogger().warn("Error on reconnect", e);
         rereQueue.add(qa);
       } catch (Exception e) {
-        getLogger().error("Exception on reconnect, lost node %s", qa, e);
+        getLogger().error("Exception on reconnect, lost node %s", qa.getSocketAddress(), e);
       } finally {
         // it's possible that above code will leak file descriptors under
         // abnormal
@@ -615,7 +615,7 @@ public final class MemcachedConnection extends SpyThread {
           try {
             ch.close();
           } catch (IOException x) {
-            getLogger().error("Exception closing channel: %s", qa, x);
+            getLogger().error("Exception closing channel: %s", qa.getSocketAddress(), x);
           }
         }
       }

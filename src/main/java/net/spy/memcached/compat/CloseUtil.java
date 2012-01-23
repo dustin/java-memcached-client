@@ -50,7 +50,7 @@ public final class CloseUtil {
       try {
         closeable.close();
       } catch (Exception e) {
-        logger.info("Unable to close %s", closeable, e);
+        logger.warn("Unable to close %s", closeable, e);
       }
     }
   }
