@@ -178,7 +178,7 @@ class MemcachedNodeROImpl implements MemcachedNode {
     throw new UnsupportedOperationException();
   }
 
-  public void shutdown() {
-      throw new UnsupportedOperationException();
+  public void shutdown() throws IOException {
+      root.shutdown();
     }
 }
