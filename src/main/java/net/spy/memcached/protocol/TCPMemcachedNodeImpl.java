@@ -34,6 +34,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.weakref.jmx.Managed;
 
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
@@ -59,13 +62,26 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   // indicator.
   private volatile int reconnectAttempt = 1;
   private SocketChannel channel;
-  private int toWrite = 0;
+  private volatile int toWrite = 0;
   protected Operation optimizedOp = null;
   private volatile SelectionKey sk = null;
   private boolean shouldAuth = false;
   private CountDownLatch authLatch;
   private ArrayList<Operation> reconnectBlocked;
   private long defaultOpTimeout;
+
+  private AtomicLong inputOpsRead = new AtomicLong();
+  private AtomicLong inputOpsWritten = new AtomicLong();
+
+  protected AtomicLong writeOpsRead = new AtomicLong();
+  private AtomicLong writeOpsWritten = new AtomicLong();
+
+  private AtomicLong readOpsRead = new AtomicLong();
+  private AtomicLong readOpsWritten = new AtomicLong();
+
+  private AtomicLong setupResendCount = new AtomicLong();
+  private AtomicLong cancelOps = new AtomicLong();
+
 
   // operation Future.get timeout counter
   private final AtomicInteger continuousTimeout = new AtomicInteger(0);
@@ -109,7 +125,10 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
 
     // don't drain more than we have space to place
     inputQueue.drainTo(tmp, writeQ.remainingCapacity());
+    inputOpsRead.addAndGet(tmp.size());
+
     writeQ.addAll(tmp);
+    writeOpsWritten.addAndGet(tmp.size());
   }
 
   /*
@@ -120,6 +139,8 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   public Collection<Operation> destroyInputQueue() {
     Collection<Operation> rv = new ArrayList<Operation>();
     inputQueue.drainTo(rv);
+    inputOpsRead.addAndGet(rv.size());
+
     return rv;
   }
 
@@ -129,10 +150,14 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    * @see net.spy.memcached.MemcachedNode#setupResend()
    */
   public final void setupResend() {
+
+    setupResendCount.incrementAndGet();
+
     // First, reset the current write op, or cancel it if we should
     // be authenticating
     Operation op = getCurrentWriteOp();
     if (shouldAuth && op != null) {
+      cancelOps.incrementAndGet();
       op.cancel();
     } else if (op != null) {
       ByteBuffer buf = op.getBuffer();
@@ -148,14 +173,16 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     while (hasReadOp()) {
       op = removeCurrentReadOp();
       if (op != getCurrentWriteOp()) {
-        getLogger().warn("Discarding partially completed op: %s", op);
+        getLogger().warn("Discarding partially completed read op: %s", op);
+        cancelOps.incrementAndGet();
         op.cancel();
       }
     }
 
     while (shouldAuth && hasWriteOp()) {
       op = removeCurrentWriteOp();
-      getLogger().warn("Discarding partially completed op: %s", op);
+      getLogger().warn("Discarding partially completed write op: %s", op);
+      cancelOps.incrementAndGet();
       op.cancel();
     }
 
@@ -242,6 +269,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
           o.writing();
           if (!(o instanceof TapAckOperationImpl)) {
             readQ.add(o);
+            readOpsWritten.incrementAndGet();
           }
           return o;
         }
@@ -282,6 +310,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    * @see net.spy.memcached.MemcachedNode#removeCurrentReadOp()
    */
   public final Operation removeCurrentReadOp() {
+    readOpsRead.incrementAndGet();
     return readQ.remove();
   }
 
@@ -302,6 +331,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   public final Operation removeCurrentWriteOp() {
     Operation rv = optimizedOp;
     if (rv == null) {
+      writeOpsRead.incrementAndGet();
       rv = writeQ.remove();
     } else {
       optimizedOp = null;
@@ -336,15 +366,19 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     try {
       if (!authLatch.await(1, TimeUnit.SECONDS)) {
         op.cancel();
+        cancelOps.incrementAndGet();
+
         getLogger().warn("Operation canceled because authentication "
                 + "or reconnection and authentication has "
                 + "taken more than one second to complete.");
         getLogger().debug("Canceled operation %s", op.toString());
         return;
       }
-      if (!inputQueue.offer(op, opQueueMaxBlockTime, TimeUnit.MILLISECONDS)) {
-        throw new IllegalStateException("Timed out waiting to add " + op
-            + "(max wait=" + opQueueMaxBlockTime + "ms)");
+      if (inputQueue.offer(op, opQueueMaxBlockTime, TimeUnit.MILLISECONDS)) {
+        inputOpsWritten.incrementAndGet();
+      }
+      else {
+        throw new IllegalStateException(String.format("Timed out waiting to add %s (max wait= %dms)", op, opQueueMaxBlockTime));
       }
     } catch (InterruptedException e) {
       // Restore the interrupted status
@@ -364,6 +398,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     tmp.add(op);
     inputQueue.drainTo(tmp);
     inputQueue.addAll(tmp);
+    inputOpsWritten.addAndGet(tmp.size());
   }
 
   /*
@@ -418,6 +453,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    *
    * @see net.spy.memcached.MemcachedNode#isActive()
    */
+  @Managed
   public final boolean isActive() {
     return reconnectAttempt == 0 && getChannel() != null
         && getChannel().isConnected();
@@ -448,6 +484,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    *
    * @see net.spy.memcached.MemcachedNode#getReconnectCount()
    */
+  @Managed
   public final int getReconnectCount() {
     return reconnectAttempt;
   }
@@ -531,6 +568,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    *
    * @see net.spy.memcached.MemcachedNode#getBytesRemainingInBuffer()
    */
+  @Managed
   public final int getBytesRemainingToWrite() {
     return toWrite;
   }
@@ -605,4 +643,89 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
       authLatch = new CountDownLatch(0);
     }
   }
+
+
+    @Managed(description="number of cancelled operations")
+    public long getCancelOps()
+    {
+        return cancelOps.get();
+    }
+
+    @Managed(description="number of ops read from the input queue")
+    public long getInputOpsRead()
+    {
+        return inputOpsRead.get();
+    }
+
+    @Managed(description="number of ops written in the input queue")
+    public long getInputOpsWritten()
+    {
+        return inputOpsWritten.get();
+    }
+
+    @Managed(description="number of ops read from the read queue")
+    public long getReadOpsRead()
+    {
+        return readOpsRead.get();
+    }
+
+    @Managed(description="number of ops written in the read queue")
+    public long getReadOpsWritten()
+    {
+        return readOpsWritten.get();
+    }
+
+    @Managed(description="number of ops resend setups")
+    public long getSetupResendCount()
+    {
+        return setupResendCount.get();
+    }
+
+    @Managed(description="number of ops read from the write queue")
+    public long getWriteOpsRead()
+    {
+        return writeOpsRead.get();
+    }
+
+    @Managed(description="number of ops written in the write queue")
+    public long getWriteOpsWritten()
+    {
+        return writeOpsWritten.get();
+    }
+
+    @Managed(description="available space in the write queue")
+    public long getWriteQueueSpace()
+    {
+        return writeQ.remainingCapacity();
+    }
+
+    @Managed
+    public boolean isWriteQueueEmpty()
+    {
+        return writeQ.isEmpty();
+    }
+
+    @Managed(description="available space in the read queue")
+    public long getReadQueueSpace()
+    {
+        return readQ.remainingCapacity();
+    }
+
+    @Managed
+    public boolean isReadQueueEmpty()
+    {
+        return readQ.isEmpty();
+    }
+
+    @Managed(description="available space in the input queue")
+    public long getInputQueueSpace()
+    {
+        return inputQueue.remainingCapacity();
+    }
+
+    @Managed
+    public boolean isInputQueueEmpty()
+    {
+        return inputQueue.isEmpty();
+    }
 }

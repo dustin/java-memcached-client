@@ -51,12 +51,16 @@ public final class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
     // attempting to optimize them.
     if (writeQ.peek() instanceof GetOperation) {
       optimizedOp = writeQ.remove();
+      writeOpsRead.incrementAndGet();
+
       if (writeQ.peek() instanceof GetOperation) {
         OptimizedGetImpl og = new OptimizedGetImpl((GetOperation) optimizedOp);
         optimizedOp = og;
 
         while (writeQ.peek() instanceof GetOperation) {
           GetOperationImpl o = (GetOperationImpl) writeQ.remove();
+          writeOpsRead.incrementAndGet();
+
           if (!o.isCancelled()) {
             og.addOperation(o);
           }
