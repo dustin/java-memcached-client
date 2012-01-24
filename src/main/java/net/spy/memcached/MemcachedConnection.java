@@ -77,6 +77,7 @@ public final class MemcachedConnection extends SpyThread {
   // If true, optimization will collapse multiple sequential get ops
   private final boolean shouldOptimize;
   protected Selector selector = null;
+  private final Object selectorLock = new Object();
   protected final NodeLocator locator;
   protected final FailureMode failureMode;
   // maximum amount of time to wait between reconnect attempts
@@ -136,31 +137,35 @@ public final class MemcachedConnection extends SpyThread {
       final Collection<InetSocketAddress> a) throws IOException {
     List<MemcachedNode> connections = new ArrayList<MemcachedNode>(a.size());
     for (SocketAddress sa : a) {
-      SocketChannel ch = SocketChannel.open();
-      ch.configureBlocking(false);
       MemcachedNode qa =
-          this.connectionFactory.createMemcachedNode(sa, ch, bufSize);
+          this.connectionFactory.createMemcachedNode(sa, bufSize);
+      final SocketChannel ch = qa.getChannel();
       int ops = 0;
       ch.socket().setTcpNoDelay(!this.connectionFactory.useNagleAlgorithm());
+      ch.socket().setSoLinger(false, 0);
+      ch.socket().setReuseAddress(true);
       // Initially I had attempted to skirt this by queueing every
       // connect, but it considerably slowed down start time.
-      try {
-        if (ch.connect(sa)) {
-          getLogger().info("Connected to %s immediately", qa.getSocketAddress());
-          connected(qa);
-        } else {
-          getLogger().info("Added %s to connect queue", qa.getSocketAddress());
-          ops = SelectionKey.OP_CONNECT;
-        }
-        qa.setSk(ch.register(selector, ops, qa));
-        assert ch.isConnected()
-            || qa.getSk().interestOps() == SelectionKey.OP_CONNECT
-            : "Not connected, and not wanting to connect";
-      } catch (SocketException e) {
-        getLogger().warn("Socket error on initial connect", e);
-        queueReconnect(qa);
+      synchronized(selectorLock) {
+          try {
+              if (ch.connect(sa)) {
+                  getLogger().info("Connected to %s immediately", qa.getSocketAddress());
+                  connected(qa);
+              } else {
+                  getLogger().info("Added %s to connect queue", qa.getSocketAddress());
+                  ops = SelectionKey.OP_CONNECT;
+                  selector.wakeup();
+              }
+              qa.setSk(ch.register(selector, ops, qa));
+              assert ch.isConnected()
+              || qa.getSk().interestOps() == SelectionKey.OP_CONNECT
+              : "Not connected, and not wanting to connect";
+          } catch (SocketException e) {
+              getLogger().warn("Socket error on initial connect", e);
+              queueReconnect(qa);
+          }
+          connections.add(qa);
       }
-      connections.add(qa);
     }
     return connections;
   }
@@ -215,66 +220,69 @@ public final class MemcachedConnection extends SpyThread {
     getLogger().debug("Selecting with delay of %sms", delay);
     assert selectorsMakeSense() : "Selectors don't make sense.";
     int selected = selector.select(delay);
-    Set<SelectionKey> selectedKeys = selector.selectedKeys();
 
-    if (selectedKeys.isEmpty() && !shutDown) {
-      getLogger().debug("No selectors ready, interrupted: "
-          + Thread.interrupted());
-      if (++emptySelects > DOUBLE_CHECK_EMPTY) {
-        for (SelectionKey sk : selector.keys()) {
-          getLogger().debug("%s has %s, interested in %s", sk, sk.readyOps(),
-              sk.interestOps());
-          if (sk.readyOps() != 0) {
-            getLogger().debug("%s has a ready op, handling IO", sk);
-            handleIO(sk);
-          } else {
-            lostConnection((MemcachedNode) sk.attachment());
+    synchronized(selectorLock) {
+      Set<SelectionKey> selectedKeys = selector.selectedKeys();
+
+      if (selectedKeys.isEmpty() && !shutDown) {
+        getLogger().debug("No selectors ready, interrupted: "
+            + Thread.interrupted());
+        if (++emptySelects > DOUBLE_CHECK_EMPTY) {
+          for (SelectionKey sk : selector.keys()) {
+            getLogger().debug("%s has %s, interested in %s", sk, sk.readyOps(),
+                sk.interestOps());
+            if (sk.readyOps() != 0) {
+              getLogger().debug("%s has a ready op, handling IO", sk);
+              handleIO(sk);
+            } else {
+              lostConnection((MemcachedNode) sk.attachment());
+            }
           }
+          assert emptySelects < EXCESSIVE_EMPTY : "Too many empty selects";
         }
-        assert emptySelects < EXCESSIVE_EMPTY : "Too many empty selects";
+      } else {
+        getLogger().debug("Selected %d, selected %d keys", selected,
+            selectedKeys.size());
+        emptySelects = 0;
+
+        for (SelectionKey sk : selectedKeys) {
+          handleIO(sk);
+        }
+        selectedKeys.clear();
       }
-    } else {
-      getLogger().debug("Selected %d, selected %d keys", selected,
-          selectedKeys.size());
-      emptySelects = 0;
 
-      for (SelectionKey sk : selectedKeys) {
-        handleIO(sk);
+      // see if any connections blew up with large number of timeouts
+      for (SelectionKey sk : selector.keys()) {
+        MemcachedNode mn = (MemcachedNode) sk.attachment();
+        if (mn.getContinuousTimeout() > timeoutExceptionThreshold) {
+          getLogger().warn("%s exceeded continuous timeout threshold", sk);
+          lostConnection(mn);
+        }
       }
-      selectedKeys.clear();
-    }
 
-    // see if any connections blew up with large number of timeouts
-    for (SelectionKey sk : selector.keys()) {
-      MemcachedNode mn = (MemcachedNode) sk.attachment();
-      if (mn.getContinuousTimeout() > timeoutExceptionThreshold) {
-        getLogger().warn("%s exceeded continuous timeout threshold", sk);
-        lostConnection(mn);
+      if (!shutDown && !reconnectQueue.isEmpty()) {
+        attemptReconnects();
       }
-    }
+      // rehash operations that in retry state
+      redistributeOperations(retryOps);
+      retryOps.clear();
 
-    if (!shutDown && !reconnectQueue.isEmpty()) {
-      attemptReconnects();
-    }
-    // rehash operations that in retry state
-    redistributeOperations(retryOps);
-    retryOps.clear();
-
-    // try to shutdown odd nodes
-    for (MemcachedNode qa : nodesToShutdown) {
-      if (!addedQueue.contains(qa)) {
-        nodesToShutdown.remove(qa);
-        Collection<Operation> notCompletedOperations = qa.destroyInputQueue();
-        if (qa.getChannel() != null) {
-          qa.getChannel().close();
-          qa.setSk(null);
-          if (qa.getBytesRemainingToWrite() > 0) {
-            getLogger().warn("Shut down with %d bytes remaining to write",
-                qa.getBytesRemainingToWrite());
+      // try to shutdown odd nodes
+      for (MemcachedNode qa : nodesToShutdown) {
+        if (!addedQueue.contains(qa)) {
+          nodesToShutdown.remove(qa);
+          Collection<Operation> notCompletedOperations = qa.destroyInputQueue();
+          if (qa.getChannel() != null) {
+            qa.getChannel().close();
+            qa.setSk(null);
+            if (qa.getBytesRemainingToWrite() > 0) {
+              getLogger().warn("Shut down with %d bytes remaining to write",
+                  qa.getBytesRemainingToWrite());
+            }
+            getLogger().debug("Shut down channel %s", qa.getChannel());
           }
-          getLogger().debug("Shut down channel %s", qa.getChannel());
+          redistributeOperations(notCompletedOperations);
         }
-        redistributeOperations(notCompletedOperations);
       }
     }
   }
