@@ -70,7 +70,7 @@ public final class KetamaIterator extends SpyObject implements Iterator<Memcache
   }
 
   public boolean hasNext() {
-    return remainingTries > 0;
+    return getNodeForKey(hashVal) != null && remainingTries > 0;
   }
 
   public MemcachedNode next() {
