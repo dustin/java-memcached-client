@@ -755,6 +755,15 @@ public final class MemcachedConnection extends SpyThread {
     getLogger().debug("Shut down selector %s", selector);
   }
 
+  public void destroyMemcachedNode(final MemcachedNode node) throws IOException
+  {
+      if (node != null) {
+          Selector s = selector.wakeup();
+          assert s == selector : "Wakeup returned the wrong selector.";
+          connectionFactory.destroyMemcachedNode(node);
+      }
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();

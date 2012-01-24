@@ -36,13 +36,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.weakref.jmx.Managed;
-
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.protocol.binary.TapAckOperationImpl;
+
+import org.weakref.jmx.Managed;
 
 /**
  * Represents a node with the memcached cluster, along with buffering and
@@ -649,14 +649,16 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   public void shutdown() throws IOException
   {
       if (getChannel() != null) {
+          getChannel().socket().shutdownInput();
+          getChannel().socket().shutdownOutput();
           getChannel().close();
           setSk(null);
+          setChannel(null);
           if (getBytesRemainingToWrite() > 0) {
               getLogger().warn("Shut down with %d bytes remaining to write", getBytesRemainingToWrite());
           }
           getLogger().debug("Shut down channel %s", getChannel());
-        }
-
+      }
   }
 
 
