@@ -25,7 +25,6 @@ package net.spy.memcached;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -86,14 +85,11 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
     assertTrue(f.createLocator(Collections.singletonList(n))
         instanceof ArrayModNodeLocator);
 
-    SocketChannel sc = SocketChannel.open();
+    final MemcachedNode n2 = f.createMemcachedNode(InetSocketAddress.createUnresolved("localhost", TestConfig.PORT_NUMBER), 1);
     try {
-      assertTrue(f.createMemcachedNode(
-          InetSocketAddress.createUnresolved("localhost",
-              TestConfig.PORT_NUMBER), sc, 1)
-          instanceof AsciiMemcachedNodeImpl);
+      assertTrue(n2 instanceof AsciiMemcachedNodeImpl);
     } finally {
-      sc.close();
+      n2.getChannel().close();
     }
 
     assertFalse(f.isDaemon());
@@ -159,14 +155,11 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
     assertTrue(f.createLocator(Collections.singletonList(n))
         instanceof KetamaNodeLocator);
 
-    SocketChannel sc = SocketChannel.open();
+    final MemcachedNode n2 = f.createMemcachedNode(InetSocketAddress.createUnresolved("localhost", TestConfig.PORT_NUMBER), 1);
     try {
-      assertTrue(f.createMemcachedNode(
-          InetSocketAddress.createUnresolved("localhost",
-              TestConfig.PORT_NUMBER), sc, 1)
-          instanceof BinaryMemcachedNodeImpl);
+      assertTrue(n2 instanceof BinaryMemcachedNodeImpl);
     } finally {
-      sc.close();
+      n2.getChannel().close();
     }
   }
 

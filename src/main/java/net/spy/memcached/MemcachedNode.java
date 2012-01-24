@@ -222,5 +222,4 @@ public interface MemcachedNode {
   int getContinuousTimeout();
 
   void shutdown() throws IOException;
-
 }
