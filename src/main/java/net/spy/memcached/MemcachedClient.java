@@ -2104,6 +2104,11 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     return node;
   }
 
+  public List<MemcachedNode> createConnections(final Collection<InetSocketAddress> a) throws IOException
+  {
+      return mconn.createConnections(a);
+  }
+
   public void connectionLost(SocketAddress sa) {
     // Don't care.
   }
