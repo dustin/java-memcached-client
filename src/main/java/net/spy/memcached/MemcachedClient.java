@@ -1053,7 +1053,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       StringUtils.validateKey(key);
       final MemcachedNode primaryNode = locator.getPrimary(key);
       MemcachedNode node = null;
-      if (primaryNode.isActive()) {
+      if (primaryNode != null && primaryNode.isActive()) {
         node = primaryNode;
       } else {
         for (Iterator<MemcachedNode> i = locator.getSequence(key); node == null
@@ -1067,13 +1067,15 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
           node = primaryNode;
         }
       }
-      assert node != null : "Didn't find a node for " + key;
-      Collection<String> ks = chunks.get(node);
-      if (ks == null) {
-        ks = new ArrayList<String>();
-        chunks.put(node, ks);
+      // Node can be null here if there are no nodes in the connection right now.
+      if (node != null) {
+          Collection<String> ks = chunks.get(node);
+          if (ks == null) {
+              ks = new ArrayList<String>();
+              chunks.put(node, ks);
+          }
+          ks.add(key);
       }
-      ks.add(key);
     }
 
     final CountDownLatch latch = new CountDownLatch(chunks.size());
