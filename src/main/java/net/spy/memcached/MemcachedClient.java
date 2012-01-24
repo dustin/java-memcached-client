@@ -45,9 +45,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.weakref.jmx.JmxException;
-import org.weakref.jmx.MBeanExporter;
-
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.auth.AuthThreadMonitor;
 import net.spy.memcached.compat.SpyObject;
@@ -2109,66 +2106,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     // Don't care.
   }
 
-
-    public void exportJmx(final MBeanExporter exporter, final String prefix)
-    {
-        if (exporter != null) {
-            for (final MemcachedNode n : mconn.getLocator().getAll()) {
-                final StringBuilder sb = new StringBuilder(prefix);
-                sb.append(",node=");
-                jmxAppend(n.getSocketAddress().toString(), sb);
-
-                try {
-                    exporter.export(sb.toString(), n);
-                }
-                catch (JmxException je) {
-                    getLogger().warn("Could not export new memcached node for %s", n.getSocketAddress(), je);
-                }
-            }
-        }
-    }
-
-    public void unexportJmx(final MBeanExporter exporter, final String prefix)
-    {
-        if (exporter != null) {
-            for (final MemcachedNode n : mconn.getLocator().getAll()) {
-                final StringBuilder sb = new StringBuilder(prefix);
-                sb.append(",node=");
-                jmxAppend(n.getSocketAddress().toString(), sb);
-
-                try {
-                    exporter.unexport(sb.toString());
-                }
-                catch (JmxException je) {
-                    getLogger().warn("Could not unexport new memcached node for %s", n.getSocketAddress(), je);
-                }
-            }
-        }
-    }
-
   @Override
   public String toString() {
     return connFactory.toString();
-  }
-
-  private final void jmxAppend(final String input, final StringBuilder sb)
-  {
-      if (input == null) {
-          return;
-      }
-
-      for (char c : input.toCharArray()) {
-          switch(c){
-          case ',':
-          case '=':
-          case ':':
-          case '*':
-          case '?':
-              sb.append("_");
-              break;
-          default:
-              sb.append(c);
-          }
-      }
   }
 }
