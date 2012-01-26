@@ -156,4 +156,6 @@ public interface ConnectionFactory {
    * Maximum number of timeout exception for shutdown connection.
    */
   int getTimeoutExceptionThreshold();
+
+  MemcachedNodeStats getMemcachedNodeStats(final SocketAddress sa);
 }

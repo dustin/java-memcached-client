@@ -146,7 +146,8 @@ public class DefaultConnectionFactory extends SpyObject implements
           createWriteOperationQueue(),
           createOperationQueue(),
           getOpQueueMaxBlockTime(),
-          getOperationTimeout());
+          getOperationTimeout(),
+          getMemcachedNodeStats(sa));
     } else if (of instanceof BinaryOperationFactory) {
       boolean doAuth = false;
       if (getAuthDescriptor() != null) {
@@ -158,7 +159,8 @@ public class DefaultConnectionFactory extends SpyObject implements
           createOperationQueue(),
           getOpQueueMaxBlockTime(),
           doAuth,
-          getOperationTimeout());
+          getOperationTimeout(),
+          getMemcachedNodeStats(sa));
     } else {
       throw new IllegalStateException("Unhandled operation factory type " + of);
     }
@@ -343,9 +345,16 @@ public class DefaultConnectionFactory extends SpyObject implements
     return DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
   }
 
+  public MemcachedNodeStats getMemcachedNodeStats(final SocketAddress sa)
+  {
+    return new MemcachedNodeStats();
+  }
+
   protected String getName() {
     return "DefaultConnectionFactory";
   }
+
+
 
   @Override
   public String toString() {

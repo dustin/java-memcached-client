@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.concurrent.BlockingQueue;
 
+import net.spy.memcached.MemcachedNodeStats;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
@@ -38,27 +39,34 @@ import net.spy.memcached.protocol.TCPMemcachedNodeImpl;
  */
 public final class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 
-  public AsciiMemcachedNodeImpl(SocketAddress sa, int bufSize,
-      BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
-      BlockingQueue<Operation> iq, long opQueueMaxBlockTime, long dt) throws IOException {
+  public AsciiMemcachedNodeImpl(SocketAddress sa,
+                                int bufSize,
+                                BlockingQueue<Operation> rq,
+                                BlockingQueue<Operation> wq,
+                                BlockingQueue<Operation> iq,
+                                long opQueueMaxBlockTime,
+                                long dt,
+                                final MemcachedNodeStats stats) throws IOException {
     // ASCII never does auth
-    super(sa, bufSize, rq, wq, iq, opQueueMaxBlockTime, false, dt);
+    super(sa, bufSize, rq, wq, iq, opQueueMaxBlockTime, false, dt, stats);
   }
 
   @Override
   protected void optimize() {
     // make sure there are at least two get operations in a row before
     // attempting to optimize them.
-    if (writeQ.peek() instanceof GetOperation) {
-      optimizedOp = writeQ.remove();
-      if (writeQ.peek() instanceof GetOperation) {
+    if (getWriteOpInQueue() instanceof GetOperation) {
+      optimizedOp = removeWriteOpFromQueue();
+      if (getWriteOpInQueue() instanceof GetOperation) {
         OptimizedGetImpl og = new OptimizedGetImpl((GetOperation) optimizedOp);
         optimizedOp = og;
+        getStats().optimizedGets(1);
 
-        while (writeQ.peek() instanceof GetOperation) {
-          GetOperationImpl o = (GetOperationImpl) writeQ.remove();
+        while (getWriteOpInQueue() instanceof GetOperation) {
+          GetOperationImpl o = (GetOperationImpl) removeWriteOpFromQueue();
           if (!o.isCancelled()) {
             og.addOperation(o);
+            getStats().optimizedGets(1);
           }
         }
 
