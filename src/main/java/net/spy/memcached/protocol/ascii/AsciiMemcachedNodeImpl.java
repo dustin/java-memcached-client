@@ -23,8 +23,8 @@
 
 package net.spy.memcached.protocol.ascii;
 
-import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.ops.GetOperation;
@@ -38,11 +38,11 @@ import net.spy.memcached.protocol.TCPMemcachedNodeImpl;
  */
 public final class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 
-  public AsciiMemcachedNodeImpl(SocketAddress sa, int bufSize,
+  public AsciiMemcachedNodeImpl(SocketAddress sa, SocketChannel c, int bufSize,
       BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
-      BlockingQueue<Operation> iq, long opQueueMaxBlockTime, long dt) throws IOException {
+      BlockingQueue<Operation> iq, long opQueueMaxBlockTime, long dt) {
     // ASCII never does auth
-    super(sa, bufSize, rq, wq, iq, opQueueMaxBlockTime, false, dt);
+    super(sa, c, bufSize, rq, wq, iq, opQueueMaxBlockTime, false, dt);
   }
 
   @Override

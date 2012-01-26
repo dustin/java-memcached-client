@@ -86,21 +86,19 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   // operation Future.get timeout counter
   private final AtomicInteger continuousTimeout = new AtomicInteger(0);
 
-  public TCPMemcachedNodeImpl(SocketAddress sa, int bufSize,
+  public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c, int bufSize,
       BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
       BlockingQueue<Operation> iq, long opQueueMaxBlockTime,
-      boolean waitForAuth, long dt) throws IOException {
+      boolean waitForAuth, long dt) {
     super();
     assert sa != null : "No SocketAddress";
+    assert c != null : "No SocketChannel";
     assert bufSize > 0 : "Invalid buffer size: " + bufSize;
     assert rq != null : "No operation read queue";
     assert wq != null : "No operation write queue";
     assert iq != null : "No input queue";
     socketAddress = sa;
-
-    SocketChannel ch = SocketChannel.open();
-    ch.configureBlocking(false);
-    setChannel(ch);
+    setChannel(c);
     // Since these buffers are allocated rarely (only on client creation
     // or reconfigure), and are passed to Channel.read() and Channel.write(),
     // use direct buffers to avoid

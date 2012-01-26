@@ -23,10 +23,12 @@
 
 package net.spy.memcached.protocol.binary;
 
-import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.weakref.jmx.Managed;
 
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.GetOperation;
@@ -35,8 +37,6 @@ import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.protocol.ProxyCallback;
 import net.spy.memcached.protocol.TCPMemcachedNodeImpl;
-
-import org.weakref.jmx.Managed;
 
 /**
  * Implementation of MemcachedNode for speakers of the binary protocol.
@@ -52,11 +52,11 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
   private final AtomicLong ignoreCancelledOperations = new AtomicLong(0L);
 
 
-  public BinaryMemcachedNodeImpl(SocketAddress sa,
+  public BinaryMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
       int bufSize, BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
       BlockingQueue<Operation> iq, long opQueueMaxBlockTime,
-      boolean waitForAuth, long dt) throws IOException {
-    super(sa, bufSize, rq, wq, iq, opQueueMaxBlockTime, waitForAuth, dt);
+      boolean waitForAuth, long dt) {
+    super(sa, c, bufSize, rq, wq, iq, opQueueMaxBlockTime, waitForAuth, dt);
   }
 
   @Override
