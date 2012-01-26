@@ -23,8 +23,8 @@
 
 package net.spy.memcached.protocol.binary;
 
+import java.io.IOException;
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.ops.CASOperation;
@@ -44,11 +44,11 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
   private static final int MAX_SET_OPTIMIZATION_COUNT = 65535;
   private static final int MAX_SET_OPTIMIZATION_BYTES = 2 * 1024 * 1024;
 
-  public BinaryMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
+  public BinaryMemcachedNodeImpl(SocketAddress sa,
       int bufSize, BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
       BlockingQueue<Operation> iq, long opQueueMaxBlockTime,
-      boolean waitForAuth, long dt) {
-    super(sa, c, bufSize, rq, wq, iq, opQueueMaxBlockTime, waitForAuth, dt);
+      boolean waitForAuth, long dt) throws IOException {
+    super(sa, bufSize, rq, wq, iq, opQueueMaxBlockTime, waitForAuth, dt);
   }
 
   @Override

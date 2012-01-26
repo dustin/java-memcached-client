@@ -136,11 +136,9 @@ public final class MemcachedConnection extends SpyThread {
       final Collection<InetSocketAddress> a) throws IOException {
     List<MemcachedNode> connections = new ArrayList<MemcachedNode>(a.size());
     for (SocketAddress sa : a) {
-      SocketChannel ch = SocketChannel.open();
-      ch.configureBlocking(false);
-      MemcachedNode qa =
-          this.connectionFactory.createMemcachedNode(sa, ch, bufSize);
+      MemcachedNode qa = this.connectionFactory.createMemcachedNode(sa, bufSize);
       int ops = 0;
+      final SocketChannel ch = qa.getChannel();
       ch.socket().setTcpNoDelay(!this.connectionFactory.useNagleAlgorithm());
       // Initially I had attempted to skirt this by queueing every
       // connect, but it considerably slowed down start time.
