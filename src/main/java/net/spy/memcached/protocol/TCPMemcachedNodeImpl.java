@@ -572,6 +572,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    *
    * @see net.spy.memcached.MemcachedNode#getContinuousTimeout
    */
+  @Managed
   public int getContinuousTimeout() {
     return continuousTimeout.get();
   }
@@ -616,6 +617,12 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
       return writeQ.remainingCapacity();
   }
 
+  @Managed(description="write queue length")
+  public long getWriteQueueSize()
+  {
+      return writeQ.size();
+  }
+
   @Managed
   public boolean isWriteQueueEmpty()
   {
@@ -628,6 +635,12 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
       return readQ.remainingCapacity();
   }
 
+  @Managed(description="read queue length")
+  public long getReadQueueSize()
+  {
+      return readQ.size();
+  }
+
   @Managed
   public boolean isReadQueueEmpty()
   {
@@ -638,6 +651,12 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   public long getInputQueueSpace()
   {
       return inputQueue.remainingCapacity();
+  }
+
+  @Managed(description="input queue length")
+  public long getInputQueueSize()
+  {
+      return inputQueue.size();
   }
 
   @Managed
