@@ -109,12 +109,17 @@ public class QueueOverflowTest extends ClientBaseCase {
     } catch (ExecutionException e) {
       // OK, at least we got one back.
     }
-    Thread.sleep(500);
+    Thread.sleep(1000);
     assertTrue("Was not able to set a key after failure.",
         client.set("kx", 0, "woo").get(10, TimeUnit.SECONDS));
   }
 
   public void testOverflowingInputQueue() throws Exception {
+
+    // Do not execute this for CI
+    if (TestConfig.isCITest()) {
+      return;
+    }
     runOverflowTest(new byte[] { 1 });
   }
 
