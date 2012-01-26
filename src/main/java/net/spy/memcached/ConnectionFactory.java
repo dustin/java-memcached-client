@@ -57,11 +57,6 @@ public interface ConnectionFactory {
       int bufSize);
 
   /**
-   * Shut down a memcached node.
-   */
-  void destroyMemcachedNode(MemcachedNode node);
-
-  /**
    * Create a BlockingQueue for operations for a connection.
    */
   BlockingQueue<Operation> createOperationQueue();

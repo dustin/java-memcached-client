@@ -748,7 +748,7 @@ public final class MemcachedConnection extends SpyThread {
     Selector s = selector.wakeup();
     assert s == selector : "Wakeup returned the wrong selector.";
     for (MemcachedNode qa : locator.getAll()) {
-      connectionFactory.destroyMemcachedNode(qa);
+      qa.shutdown();
     }
     running = false;
     selector.close();

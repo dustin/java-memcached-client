@@ -166,18 +166,6 @@ public class DefaultConnectionFactory extends SpyObject implements
     }
   }
 
-  public void destroyMemcachedNode(final MemcachedNode node)
-  {
-      if (node != null) {
-          try {
-              node.shutdown();
-          }
-          catch (IOException ioe) {
-              getLogger().warn("Could not shut down node for %s, probably leaking resources!", node.getSocketAddress(), ioe);
-          }
-      }
-  }
-
   /*
    * (non-Javadoc)
    *
