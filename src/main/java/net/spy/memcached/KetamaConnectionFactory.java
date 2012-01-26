@@ -68,4 +68,10 @@ public class KetamaConnectionFactory extends DefaultConnectionFactory {
   public NodeLocator createLocator(List<MemcachedNode> nodes) {
     return new KetamaNodeLocator(nodes, getHashAlg());
   }
+
+  @Override
+  protected String getName() {
+      return "KetamaConnectionFactory";
+  }
+
 }
