@@ -40,6 +40,12 @@ public class Slf4JLogger implements Logger
     }
 
     @Override
+    public boolean isTraceEnabled()
+    {
+        return internalLogger.isTraceEnabled();
+    }
+
+    @Override
     public boolean isDebugEnabled()
     {
         return internalLogger.isDebugEnabled();
@@ -49,6 +55,30 @@ public class Slf4JLogger implements Logger
     public boolean isInfoEnabled()
     {
         return internalLogger.isInfoEnabled();
+    }
+
+    @Override
+    public void trace(Object message, Throwable exception)
+    {
+        internalLogger.trace(checkNull(message), exception);
+    }
+
+    @Override
+    public void trace(Object message)
+    {
+        internalLogger.trace(checkNull(message));
+    }
+
+    @Override
+    public void trace(String message, Object... args)
+    {
+        final Throwable t = getThrowable(args);
+        if (t == null) {
+            internalLogger.trace(format(message, args));
+        }
+        else {
+            internalLogger.trace(format(message, args), t);
+        }
     }
 
     @Override

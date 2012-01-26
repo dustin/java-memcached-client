@@ -81,7 +81,7 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
       optimizedOp.initialize();
       assert optimizedOp.getState() == OperationState.WRITE_QUEUED;
       ProxyCallback pcb = (ProxyCallback) og.getCallback();
-      getLogger().debug("Set up %s with %s keys and %s callbacks", this,
+      getLogger().trace("Set up %s with %s keys and %s callbacks", this,
           pcb.numKeys(), pcb.numCallbacks());
     }
   }
