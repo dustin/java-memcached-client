@@ -141,7 +141,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
       if (buf != null) {
         buf.reset();
       } else {
-        getLogger().info("No buffer for current write op, removing");
+        getLogger().debug("No buffer for current write op, removing");
         removeCurrentWriteOp();
       }
     }
@@ -345,7 +345,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
         return;
       }
       if (!inputQueue.offer(op, opQueueMaxBlockTime, TimeUnit.MILLISECONDS)) {
-        throw new IllegalStateException(String.format("Timed out waiting to add %s (max wait=%dms)", op, opQueueMaxBlockTime));
+        throw new IllegalStateException(String.format("Timed out waiting to add %s (max wait=%d ms, cap is %d)", op, opQueueMaxBlockTime, inputQueue.remainingCapacity()));
       }
     } catch (InterruptedException e) {
       // Restore the interrupted status
