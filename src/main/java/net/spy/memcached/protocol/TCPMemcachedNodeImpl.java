@@ -611,6 +611,24 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     }
   }
 
+  public void shutdown()
+  {
+    if (getChannel() != null) {
+      try {
+          getChannel().close();
+      }
+      catch (IOException ioe) {
+          getLogger().warn("While shutting down channel", ioe);
+      }
+
+      setSk(null);
+      if (getBytesRemainingToWrite() > 0) {
+        getLogger().warn("Shut down with %d bytes remaining to write", getBytesRemainingToWrite());
+      }
+      getLogger().debug("Shut down channel %s", getChannel());
+    }
+  }
+
   @Managed(description="available space in the write queue")
   public long getWriteQueueSpace()
   {
