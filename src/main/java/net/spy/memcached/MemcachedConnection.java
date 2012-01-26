@@ -649,7 +649,7 @@ public final class MemcachedConnection extends SpyThread {
 
     MemcachedNode placeIn = null;
     MemcachedNode primary = locator.getPrimary(key);
-    if ((primary != null && primary.isActive()) || failureMode == FailureMode.Retry) {
+    if (primary.isActive() || failureMode == FailureMode.Retry) {
       placeIn = primary;
     } else if (failureMode == FailureMode.Cancel) {
       o.cancel();
