@@ -26,9 +26,6 @@ package net.spy.memcached.protocol.binary;
 import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.weakref.jmx.Managed;
 
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.GetOperation;
@@ -46,11 +43,6 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
   private static final int MAX_GET_OPTIMIZATION_COUNT = 4096;
   private static final int MAX_SET_OPTIMIZATION_COUNT = 65535;
   private static final int MAX_SET_OPTIMIZATION_BYTES = 2 * 1024 * 1024;
-
-  private final AtomicLong optimizeGets = new AtomicLong(0L);
-  private final AtomicLong optimizeStores = new AtomicLong(0L);
-  private final AtomicLong ignoreCancelledOperations = new AtomicLong(0L);
-
 
   public BinaryMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
       int bufSize, BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
@@ -73,7 +65,6 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
     // make sure there are at least two get operations in a row before
     // attempting to optimize them.
     optimizedOp = writeQ.remove();
-    writeOpsRead.incrementAndGet();
     if (writeQ.peek() instanceof GetOperation) {
       OptimizedGetImpl og = new OptimizedGetImpl((GetOperation) optimizedOp);
       optimizedOp = og;
@@ -81,13 +72,8 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
       while (writeQ.peek() instanceof GetOperation
           && og.size() < MAX_GET_OPTIMIZATION_COUNT) {
         GetOperation o = (GetOperation) writeQ.remove();
-        writeOpsRead.incrementAndGet();
         if (!o.isCancelled()) {
           og.addOperation(o);
-          optimizeGets.incrementAndGet();
-        }
-        else {
-            ignoreCancelledOperations.incrementAndGet();
         }
       }
 
@@ -95,7 +81,8 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
       optimizedOp.initialize();
       assert optimizedOp.getState() == OperationState.WRITE_QUEUED;
       ProxyCallback pcb = (ProxyCallback) og.getCallback();
-      getLogger().debug("Set up %s with %s keys and %s callbacks", this.getSocketAddress(), pcb.numKeys(), pcb.numCallbacks());
+      getLogger().debug("Set up %s with %s keys and %s callbacks", this,
+          pcb.numKeys(), pcb.numCallbacks());
     }
   }
 
@@ -103,7 +90,6 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
     // make sure there are at least two get operations in a row before
     // attempting to optimize them.
     optimizedOp = writeQ.remove();
-    writeOpsRead.incrementAndGet();
     if (writeQ.peek() instanceof CASOperation) {
       OptimizedSetImpl og = new OptimizedSetImpl((CASOperation) optimizedOp);
       optimizedOp = og;
@@ -112,14 +98,8 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
           && og.size() < MAX_SET_OPTIMIZATION_COUNT
           && og.bytes() < MAX_SET_OPTIMIZATION_BYTES) {
         CASOperation o = (CASOperation) writeQ.remove();
-        writeOpsRead.incrementAndGet();
-
         if (!o.isCancelled()) {
           og.addOperation(o);
-          optimizeStores.incrementAndGet();
-        }
-        else {
-            ignoreCancelledOperations.incrementAndGet();
         }
       }
 
@@ -127,23 +107,5 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
       optimizedOp.initialize();
       assert optimizedOp.getState() == OperationState.WRITE_QUEUED;
     }
-  }
-
-  @Managed(description="number of cancelled operations ignored")
-  public long getIgnoreCancelledOperations()
-  {
-      return ignoreCancelledOperations.get();
-  }
-
-  @Managed(description="number of read operations optimized")
-  public long getOptimizedGets()
-  {
-      return optimizeGets.get();
-  }
-
-  @Managed(description="number of store operations optimized")
-  public long getOptimizedStores()
-  {
-      return optimizeStores.get();
   }
 }
