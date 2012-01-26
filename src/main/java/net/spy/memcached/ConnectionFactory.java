@@ -52,7 +52,9 @@ public interface ConnectionFactory {
   /**
    * Create a new memcached node.
    */
-  MemcachedNode createMemcachedNode(SocketAddress sa, int bufSize) throws IOException ;
+  MemcachedNode createMemcachedNode(SocketAddress sa, int bufSize) throws IOException;
+
+  void destroyMemcachedNode(final MemcachedNode node);
 
   /**
    * Create a BlockingQueue for operations for a connection.

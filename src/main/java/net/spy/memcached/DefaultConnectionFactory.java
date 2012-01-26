@@ -166,6 +166,13 @@ public class DefaultConnectionFactory extends SpyObject implements
     }
   }
 
+  public void destroyMemcachedNode(final MemcachedNode node)
+  {
+      if (node != null) {
+          node.shutdown();
+      }
+  }
+
   /*
    * (non-Javadoc)
    *

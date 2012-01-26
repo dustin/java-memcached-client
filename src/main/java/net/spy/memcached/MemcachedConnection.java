@@ -263,7 +263,7 @@ public final class MemcachedConnection extends SpyThread {
       if (!addedQueue.contains(qa)) {
         nodesToShutdown.remove(qa);
         Collection<Operation> notCompletedOperations = qa.destroyInputQueue();
-        qa.shutdown();
+        connectionFactory.destroyMemcachedNode(qa);
         redistributeOperations(notCompletedOperations);
       }
     }
@@ -752,7 +752,7 @@ public final class MemcachedConnection extends SpyThread {
     Selector s = selector.wakeup();
     assert s == selector : "Wakeup returned the wrong selector.";
     for (MemcachedNode qa : locator.getAll()) {
-      qa.shutdown();
+        connectionFactory.destroyMemcachedNode(qa);
     }
     running = false;
     selector.close();
