@@ -24,21 +24,21 @@ package net.spy.memcached;
 
 import java.util.Iterator;
 import java.util.SortedMap;
-
+import java.util.TreeMap;
 import net.spy.memcached.compat.SpyObject;
 
 /**
  * Implements an Iterator which the KetamaNodeLoctaor may return to a client for
  * iterating through alternate nodes for a given key.
  */
-public final class KetamaIterator extends SpyObject implements Iterator<MemcachedNode> {
+class KetamaIterator extends SpyObject implements Iterator<MemcachedNode> {
 
   private final String key;
   private long hashVal;
   private int remainingTries;
   private int numTries = 0;
   private final HashAlgorithm hashAlg;
-  private final SortedMap<Long, MemcachedNode> ketamaNodes;
+  private final TreeMap<Long, MemcachedNode> ketamaNodes;
 
   /**
    * Create a new KetamaIterator to be used by a client for an operation.
@@ -50,8 +50,8 @@ public final class KetamaIterator extends SpyObject implements Iterator<Memcache
    * @param hashAlg the hash algorithm to use when selecting within the
    *          continuumq
    */
-  public KetamaIterator(final String k, final int t,
-      SortedMap<Long, MemcachedNode> ketamaNodes, final HashAlgorithm hashAlg) {
+  protected KetamaIterator(final String k, final int t,
+      TreeMap<Long, MemcachedNode> ketamaNodes, final HashAlgorithm hashAlg) {
     super();
     this.ketamaNodes = ketamaNodes;
     this.hashAlg = hashAlg;

@@ -32,7 +32,7 @@ import java.util.Collection;
 
 import net.spy.memcached.ops.Operation;
 
-public final class MemcachedNodeROImpl implements MemcachedNode {
+class MemcachedNodeROImpl implements MemcachedNode {
 
   private final MemcachedNode root;
 
