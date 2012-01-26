@@ -352,28 +352,37 @@ public final class MemcachedConnection extends SpyThread {
   private void handleIO(SelectionKey sk) {
     MemcachedNode qa = (MemcachedNode) sk.attachment();
     try {
-      getLogger().debug("Handling IO for:  %s (r=%s, w=%s, c=%s, op=%s)", sk,
-              sk.isReadable(), sk.isWritable(), sk.isConnectable(),
+      getLogger().debug("Handling IO for:  %s (v=%b, r=%b, w=%b, c=%b, op=%s)", sk,
+              sk.isValid(),
+              sk.isValid() && sk.isReadable(),
+              sk.isValid() && sk.isWritable(),
+              sk.isValid() && sk.isConnectable(),
               sk.attachment());
-      if (sk.isConnectable()) {
-        getLogger().info("Connection state changed for %s", sk);
-        final SocketChannel channel = qa.getChannel();
-        if (channel.finishConnect()) {
-          connected(qa);
-          addedQueue.offer(qa);
-          if (qa.getWbuf().hasRemaining()) {
-            handleWrites(qa);
+
+      if (sk.isValid()) {
+          if (sk.isConnectable()) {
+              getLogger().info("Connection state changed for %s", sk);
+              final SocketChannel channel = qa.getChannel();
+              if (channel.finishConnect()) {
+                  connected(qa);
+                  addedQueue.offer(qa);
+                  if (qa.getWbuf().hasRemaining()) {
+                      handleWrites(qa);
+                  }
+              } else {
+                  assert !channel.isConnected() : "connected";
+              }
+          } else {
+              if (sk.isReadable()) {
+                  handleReads(qa);
+              }
+              if (sk.isWritable()) {
+                  handleWrites(qa);
+              }
           }
-        } else {
-          assert !channel.isConnected() : "connected";
-        }
-      } else {
-        if (sk.isValid() && sk.isReadable()) {
-          handleReads(qa);
-        }
-        if (sk.isValid() && sk.isWritable()) {
-          handleWrites(qa);
-        }
+      }
+      else {
+          getLogger().debug("Selection key is no longer valid!");
       }
     } catch (ClosedChannelException e) {
       // Note, not all channel closes end up here
@@ -449,26 +458,30 @@ public final class MemcachedConnection extends SpyThread {
       rbuf.flip();
       while (rbuf.remaining() > 0) {
         if (currentOp == null) {
-          throw new IllegalStateException("No read operation.");
-        }
-        synchronized(currentOp) {
-          currentOp.readFromBuffer(rbuf);
-          if (currentOp.getState() == OperationState.COMPLETE) {
-            getLogger().debug("Completed read op: %s and giving the next %d "
-                + "bytes", currentOp, rbuf.remaining());
-            Operation op = qa.removeCurrentReadOp();
-            assert op == currentOp : "Expected to pop " + currentOp + " got "
-                + op;
-          } else if (currentOp.getState() == OperationState.RETRY) {
-            getLogger().warn("Reschedule read op due to NOT_MY_VBUCKET error: "
-                + "%s ", currentOp);
-            ((VBucketAware) currentOp).addNotMyVbucketNode(
-                currentOp.getHandlingNode());
-            Operation op = qa.removeCurrentReadOp();
-            assert op == currentOp : "Expected to pop " + currentOp + " got "
-                + op;
-            retryOps.add(currentOp);
+          if (!shutDown) {
+            getLogger().warn("No read op found, discarding data!");
           }
+        }
+        else {
+            synchronized(currentOp) {
+                currentOp.readFromBuffer(rbuf);
+                if (currentOp.getState() == OperationState.COMPLETE) {
+                    getLogger().debug("Completed read op: %s and giving the next %d "
+                                      + "bytes", currentOp, rbuf.remaining());
+                    Operation op = qa.removeCurrentReadOp();
+                    assert op == currentOp : "Expected to pop " + currentOp + " got "
+                    + op;
+                } else if (currentOp.getState() == OperationState.RETRY) {
+                    getLogger().warn("Reschedule read op due to NOT_MY_VBUCKET error: "
+                                     + "%s ", currentOp);
+                    ((VBucketAware) currentOp).addNotMyVbucketNode(
+                                                                   currentOp.getHandlingNode());
+                    Operation op = qa.removeCurrentReadOp();
+                    assert op == currentOp : "Expected to pop " + currentOp + " got "
+                    + op;
+                    retryOps.add(currentOp);
+                }
+            }
         }
         currentOp=qa.getCurrentReadOp();
       }
@@ -495,11 +508,12 @@ public final class MemcachedConnection extends SpyThread {
 
   private void queueReconnect(MemcachedNode qa) {
     if (!shutDown) {
-      getLogger().warn("Closing, and reopening %s, attempt %d.", qa,
-          qa.getReconnectCount());
-      if (qa.getSk() != null) {
-        qa.getSk().cancel();
-        assert !qa.getSk().isValid() : "Cancelled selection key is valid";
+      getLogger().warn("Closing, and reopening %s, attempt %d.", qa, qa.getReconnectCount());
+      final SelectionKey sk = qa.getSk();
+      qa.setSk(null);
+      if (sk != null) {
+          sk.cancel();
+          assert !sk.isValid() : "Cancelled selection key is valid";
       }
       qa.reconnecting();
       try {
