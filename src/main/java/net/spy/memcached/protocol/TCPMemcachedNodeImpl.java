@@ -35,6 +35,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.weakref.jmx.Managed;
+
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.Operation;
@@ -343,8 +345,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
         return;
       }
       if (!inputQueue.offer(op, opQueueMaxBlockTime, TimeUnit.MILLISECONDS)) {
-        throw new IllegalStateException("Timed out waiting to add " + op
-            + "(max wait=" + opQueueMaxBlockTime + "ms)");
+        throw new IllegalStateException(String.format("Timed out waiting to add %s (max wait=%dms)", op, opQueueMaxBlockTime));
       }
     } catch (InterruptedException e) {
       // Restore the interrupted status
@@ -418,6 +419,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    *
    * @see net.spy.memcached.MemcachedNode#isActive()
    */
+  @Managed
   public final boolean isActive() {
     return reconnectAttempt == 0 && getChannel() != null
         && getChannel().isConnected();
@@ -448,6 +450,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    *
    * @see net.spy.memcached.MemcachedNode#getReconnectCount()
    */
+  @Managed
   public final int getReconnectCount() {
     return reconnectAttempt;
   }
@@ -531,6 +534,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    *
    * @see net.spy.memcached.MemcachedNode#getBytesRemainingInBuffer()
    */
+  @Managed
   public final int getBytesRemainingToWrite() {
     return toWrite;
   }
@@ -604,5 +608,41 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     } else {
       authLatch = new CountDownLatch(0);
     }
+  }
+
+  @Managed(description="available space in the write queue")
+  public long getWriteQueueSpace()
+  {
+      return writeQ.remainingCapacity();
+  }
+
+  @Managed
+  public boolean isWriteQueueEmpty()
+  {
+      return writeQ.isEmpty();
+  }
+
+  @Managed(description="available space in the read queue")
+  public long getReadQueueSpace()
+  {
+      return readQ.remainingCapacity();
+  }
+
+  @Managed
+  public boolean isReadQueueEmpty()
+  {
+      return readQ.isEmpty();
+  }
+
+  @Managed(description="available space in the input queue")
+  public long getInputQueueSpace()
+  {
+      return inputQueue.remainingCapacity();
+  }
+
+  @Managed
+  public boolean isInputQueueEmpty()
+  {
+      return inputQueue.isEmpty();
   }
 }
