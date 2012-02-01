@@ -42,7 +42,7 @@ public class AuthDescriptor {
    * @param m list of mechanisms
    * @param h the callback handler for grabbing credentials and stuff
    */
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="EI_EXPOSE_REP", justification="efficiency")
+  @SuppressWarnings("EI_EXPOSE_REP")
   public AuthDescriptor(String[] m, CallbackHandler h) {
     mechs = m;
     cbh = h;
@@ -81,7 +81,7 @@ public class AuthDescriptor {
     }
   }
 
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="EI_EXPOSE_REP", justification="efficiency")
+  @SuppressWarnings("EI_EXPOSE_REP")
   public String[] getMechs() {
     return mechs;
   }

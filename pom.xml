@@ -37,6 +37,13 @@
           <arguments>-Pbuild-javadoc,check-build</arguments>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <configuration>
+          <failOnError>false</failOnError>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -80,13 +87,6 @@
       <groupId>org.weakref</groupId>
       <artifactId>jmxutils</artifactId>
       <version>1.11</version>
-      <optional>true</optional>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
-      <version>1.3.9</version>
       <optional>true</optional>
     </dependency>
 

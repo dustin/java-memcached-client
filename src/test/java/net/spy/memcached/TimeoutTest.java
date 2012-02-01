@@ -29,7 +29,7 @@ package net.spy.memcached;
 public class TimeoutTest extends ClientBaseCase {
 
   @Override
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings("IJU_TEARDOWN_NO_SUPER")
+  @SuppressWarnings("IJU_TEARDOWN_NO_SUPER")
   protected void tearDown() throws Exception {
     // override teardown to avoid the flush phase
     client.shutdown();

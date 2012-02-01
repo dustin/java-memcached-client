@@ -45,7 +45,7 @@ public class SingleElementInfiniteIterator<T> implements Iterator<T> {
     return true;
   }
 
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings("IT_NO_SUCH_ELEMENT")
+  @SuppressWarnings("IT_NO_SUCH_ELEMENT")
   public T next() {
     return element;
   }
