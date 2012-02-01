@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,7 @@ import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.ops.TapOperation;
+import net.spy.memcached.ops.UnlockOperation;
 import net.spy.memcached.ops.VersionOperation;
 import net.spy.memcached.tapmessage.RequestMessage;
 import net.spy.memcached.tapmessage.TapOpcode;
@@ -75,6 +76,17 @@ public interface OperationFactory {
    * @return the new DeleteOperation
    */
   DeleteOperation delete(String key, OperationCallback operationCallback);
+
+  /**
+   * Create a Unlock operation.
+   *
+   * @param key the key to delete
+   * @param casId the value of CAS
+   * @param operationCallback the status callback
+   * @return the new UnlockOperation
+   */
+  UnlockOperation unlock(String key, long casId,
+          OperationCallback operationCallback);
 
   /**
    * Create a flush operation.

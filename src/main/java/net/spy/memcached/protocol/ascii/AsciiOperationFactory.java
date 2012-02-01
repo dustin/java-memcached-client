@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,6 +54,7 @@ import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.ops.TapOperation;
+import net.spy.memcached.ops.UnlockOperation;
 import net.spy.memcached.ops.VersionOperation;
 import net.spy.memcached.tapmessage.RequestMessage;
 import net.spy.memcached.tapmessage.TapOpcode;
@@ -87,6 +88,11 @@ public class AsciiOperationFactory extends BaseOperationFactory {
 
   public GetlOperation getl(String key, int exp, GetlOperation.Callback cb) {
     return new GetlOperationImpl(key, exp, cb);
+  }
+
+  public UnlockOperation unlock(String key, long casId,
+          OperationCallback cb) {
+    return new UnlockOperationImpl(key, casId, cb);
   }
 
   public GetsOperation gets(String key, GetsOperation.Callback cb) {
