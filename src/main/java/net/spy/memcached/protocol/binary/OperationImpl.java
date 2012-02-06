@@ -192,6 +192,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
    * @param errCode the error code
    * @return the status to return, or null if this is an exceptional case
    */
+  @SuppressWarnings("SF_SWITCH_FALLTHROUGH")
   protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl)
     throws IOException {
     switch (errCode) {

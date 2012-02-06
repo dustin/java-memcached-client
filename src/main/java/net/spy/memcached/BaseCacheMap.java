@@ -101,6 +101,7 @@ public class BaseCacheMap<V> implements Map<String, V> {
     } catch (ClassCastException e) {
       // Most likely, this is because the key wasn't a String.
       // Either way, it's a no.
+        return null;
     }
     return rv;
   }
@@ -126,6 +127,7 @@ public class BaseCacheMap<V> implements Map<String, V> {
       client.delete(getKey((String) key));
     } catch (ClassCastException e) {
       // Not a string key. Ignore.
+        return null;
     }
     return rv;
   }

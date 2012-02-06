@@ -71,14 +71,14 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
   /**
    * Get the operation callback associated with this operation.
    */
-  public final OperationCallback getCallback() {
+  public synchronized final OperationCallback getCallback() {
     return callback;
   }
 
   /**
    * Set the callback for this instance.
    */
-  protected void setCallback(OperationCallback to) {
+  protected synchronized void setCallback(OperationCallback to) {
     callback = to;
   }
 
@@ -153,7 +153,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
 
   public abstract void readFromBuffer(ByteBuffer data) throws IOException;
 
-  protected void handleError(OperationErrorType eType, String line)
+  protected synchronized void handleError(OperationErrorType eType, String line)
     throws IOException {
     getLogger().error("Error:  %s", line);
     switch (eType) {

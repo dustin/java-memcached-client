@@ -74,23 +74,14 @@ public class LoggingTest extends TestCase {
     logger.error("test %s", "message");
     logger.fatal("fatal message");
     logger.fatal("test %s", "message");
-    logger.log(null, "test null", null);
     assertEquals(getClass().getName(), logger.getName());
   }
 
   /**
-   * Make sure we're using log4j.
+   * Test the slf4j logger.
    */
-  public void testLog4j() {
-    // Logger l=LoggerFactory.getLogger(getClass());
-    // assertEquals("net.spy.compat.log.Log4JLogger", l.getClass().getName());
-  }
-
-  /**
-   * Test the sun logger.
-   */
-  public void testSunLogger() {
-    Logger l = new SunLogger(getClass().getName());
+  public void testSlf4JLogger() {
+    Logger l = new Slf4JLogger(getClass().getName());
     assertFalse(l.isDebugEnabled());
     l.debug("debug message");
     assertTrue(l.isInfoEnabled());
@@ -99,50 +90,6 @@ public class LoggingTest extends TestCase {
     l.error("error message");
     l.fatal("fatal message");
     l.fatal("fatal message with exception", new Exception());
-    l.log(null, "test null", null);
-    l.log(null, "null message with exception and no requestor",
-        new Exception());
-  }
-
-  /**
-   * Test the default logger.
-   */
-  public void testMyLogger() {
-    Logger l = new DefaultLogger(getClass().getName());
-    assertFalse(l.isDebugEnabled());
-    l.debug("debug message");
-    assertTrue(l.isInfoEnabled());
-    l.info("info message");
-    l.warn("warn message");
-    l.error("error message");
-    l.fatal("fatal message");
-    l.fatal("fatal message with exception", new Exception());
-    l.log(null, "test null", null);
-    l.log(null, "null message with exception and no requestor",
-        new Exception());
-
-    try {
-      l = new DefaultLogger(null);
-      fail("Allowed me to create a logger with null name:  " + l);
-    } catch (NullPointerException e) {
-      assertEquals("Logger name may not be null.", e.getMessage());
-    }
-  }
-
-  /**
-   * Test stringing levels.
-   */
-  public void testLevelStrings() {
-    assertEquals("{LogLevel:  DEBUG}", String.valueOf(Level.DEBUG));
-    assertEquals("{LogLevel:  INFO}", String.valueOf(Level.INFO));
-    assertEquals("{LogLevel:  WARN}", String.valueOf(Level.WARN));
-    assertEquals("{LogLevel:  ERROR}", String.valueOf(Level.ERROR));
-    assertEquals("{LogLevel:  FATAL}", String.valueOf(Level.FATAL));
-    assertEquals("DEBUG", Level.DEBUG.name());
-    assertEquals("INFO", Level.INFO.name());
-    assertEquals("WARN", Level.WARN.name());
-    assertEquals("ERROR", Level.ERROR.name());
-    assertEquals("FATAL", Level.FATAL.name());
   }
 
   /**
@@ -150,7 +97,7 @@ public class LoggingTest extends TestCase {
    */
   public void testExceptionArg() throws Exception {
     Object[] args = new Object[] { "a", 42, new Exception("test") };
-    Throwable t = ((AbstractLogger) logger).getThrowable(args);
+    Throwable t = ((Slf4JLogger) logger).getThrowable(args);
     assertNotNull(t);
     assertEquals("test", t.getMessage());
   }
@@ -160,7 +107,7 @@ public class LoggingTest extends TestCase {
    */
   public void testNoExceptionArg() throws Exception {
     Object[] args = new Object[] { "a", 42, new Exception("test"), "x" };
-    Throwable t = ((AbstractLogger) logger).getThrowable(args);
+    Throwable t = ((Slf4JLogger) logger).getThrowable(args);
     assertNull(t);
-  }
+   }
 }

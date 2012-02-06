@@ -48,6 +48,7 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
   protected final Map<String, ?> props;
   protected final CallbackHandler cbh;
 
+  @SuppressWarnings("EI_EXPOSE_REP")
   public SASLBaseOperationImpl(byte c, String[] m, byte[] ch, String s,
       Map<String, ?> p, CallbackHandler h, OperationCallback cb) {
     super(c, generateOpaque(), cb);

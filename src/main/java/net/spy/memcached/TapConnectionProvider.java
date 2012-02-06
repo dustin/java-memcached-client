@@ -189,7 +189,7 @@ public class TapConnectionProvider extends SpyObject implements
   public boolean shutdown(long timeout, TimeUnit unit) {
     // Guard against double shutdowns (bug 8).
     if (shuttingDown) {
-      getLogger().info("Suppressing duplicate attempt to shut down");
+      getLogger().debug("Suppressing duplicate attempt to shut down");
       return false;
     }
     shuttingDown = true;

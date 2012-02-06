@@ -215,6 +215,7 @@ public class ResponseMessage extends BaseMessage {
    *
    * @return The value data.
    */
+  @SuppressWarnings("EI_EXPOSE_REP")
   public byte[] getValue() {
     return value;
   }
@@ -225,6 +226,7 @@ public class ResponseMessage extends BaseMessage {
    *
    * @return The revid of the document.
    */
+  @SuppressWarnings("EI_EXPOSE_REP")
   public byte[] getRevID() {
     return revid;
   }

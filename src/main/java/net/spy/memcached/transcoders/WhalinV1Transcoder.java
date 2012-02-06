@@ -95,12 +95,12 @@ public class WhalinV1Transcoder extends BaseSerializingTranscoder implements
     if (b.length > compressionThreshold) {
       byte[] compressed = compress(b);
       if (compressed.length < b.length) {
-        getLogger().info("Compressed %s from %d to %d", o.getClass().getName(),
+        getLogger().debug("Compressed %s from %d to %d", o.getClass().getName(),
             b.length, compressed.length);
         b = compressed;
         flags |= COMPRESSED;
       } else {
-        getLogger().info("Compression increased the size of %s from %d to %d",
+        getLogger().debug("Compression increased the size of %s from %d to %d",
             o.getClass().getName(), b.length, compressed.length);
       }
     }

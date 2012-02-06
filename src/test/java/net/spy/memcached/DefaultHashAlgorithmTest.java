@@ -40,6 +40,7 @@ public class DefaultHashAlgorithmTest extends TestCase {
   }
 
   // I don't hardcode any values here because they're subject to change
+  @SuppressWarnings("RV_ABSOLUTE_VALUE_OF_HASHCODE")
   private void assertNativeHash(String key) {
     assertHash(DefaultHashAlgorithm.NATIVE_HASH, key, Math.abs(key.hashCode()));
   }

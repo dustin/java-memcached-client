@@ -47,8 +47,8 @@ public class KetamaConnectionFactory extends DefaultConnectionFactory {
    * @param opQueueMaxBlockTime the maximum time to block waiting for op
    *        queue operations to complete, in milliseconds
    */
-  public KetamaConnectionFactory(int qLen, int bufSize,
-      long opQueueMaxBlockTime) {
+  public KetamaConnectionFactory(int qLen, int bufSize)
+  {
     super(qLen, bufSize, DefaultHashAlgorithm.KETAMA_HASH);
   }
 
@@ -56,8 +56,7 @@ public class KetamaConnectionFactory extends DefaultConnectionFactory {
    * Create a KetamaConnectionFactory with the default parameters.
    */
   public KetamaConnectionFactory() {
-    this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE,
-        DEFAULT_OP_QUEUE_MAX_BLOCK_TIME);
+    this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE);
   }
 
   /*
@@ -69,4 +68,10 @@ public class KetamaConnectionFactory extends DefaultConnectionFactory {
   public NodeLocator createLocator(List<MemcachedNode> nodes) {
     return new KetamaNodeLocator(nodes, getHashAlg());
   }
+
+  @Override
+  protected String getName() {
+      return "KetamaConnectionFactory";
+  }
+
 }

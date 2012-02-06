@@ -38,6 +38,13 @@ public interface Logger {
   String getName();
 
   /**
+   * True if trace is enabled for this logger.
+   *
+   * @return true if trace messages would be displayed
+   */
+  boolean isTraceEnabled();
+
+  /**
    * True if debug is enabled for this logger.
    *
    * @return true if debug messages would be displayed
@@ -52,21 +59,27 @@ public interface Logger {
   boolean isInfoEnabled();
 
   /**
-   * Log a message at the specified level.
+   * Log a message at trace level.
    *
-   * @param level the level at which to log
    * @param message the message to log
-   * @param exception an exception that caused the message
+   * @param exception the exception that caused the message to be generated
    */
-  void log(Level level, Object message, Throwable exception);
+  void trace(Object message, Throwable exception);
 
   /**
-   * Log a message at the specified level.
+   * Log a message at trace level.
    *
-   * @param level the level at which to log
    * @param message the message to log
    */
-  void log(Level level, Object message);
+  void trace(Object message);
+
+  /**
+   * Log a formatted message at trace level.
+   *
+   * @param message the message to log
+   * @param args the arguments for that message
+   */
+  void trace(String message, Object... args);
 
   /**
    * Log a message at debug level.

@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.MemcachedClientIF;
 import net.spy.memcached.compat.SpyObject;
@@ -115,19 +114,11 @@ public class CacheLoader extends SpyObject {
       } catch (IllegalStateException ex) {
         // Need to slow down a bit when we start getting rejections.
         try {
-          if (rv != null) {
-            rv.get(250, TimeUnit.MILLISECONDS);
-          } else {
-            Thread.sleep(250);
-          }
+          Thread.sleep(250); // rv is null here.
         } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
-        } catch (Exception e2) {
-          // Ignore exceptions here. We're just trying to slow
-          // down input.
         }
       }
-
     }
     return rv;
   }

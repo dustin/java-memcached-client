@@ -25,7 +25,6 @@ package net.spy.memcached;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -53,8 +52,9 @@ public interface ConnectionFactory {
   /**
    * Create a new memcached node.
    */
-  MemcachedNode createMemcachedNode(SocketAddress sa, SocketChannel c,
-      int bufSize);
+  MemcachedNode createMemcachedNode(SocketAddress sa, int bufSize) throws IOException;
+
+  void destroyMemcachedNode(final MemcachedNode node);
 
   /**
    * Create a BlockingQueue for operations for a connection.
@@ -158,4 +158,6 @@ public interface ConnectionFactory {
    * Maximum number of timeout exception for shutdown connection.
    */
   int getTimeoutExceptionThreshold();
+
+  MemcachedNodeStats getMemcachedNodeStats(final SocketAddress sa);
 }

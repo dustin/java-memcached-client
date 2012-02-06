@@ -39,7 +39,7 @@ import net.spy.memcached.ops.OperationStatus;
 /**
  * A thread that does SASL authentication.
  */
-public class AuthThread extends SpyThread {
+public final class AuthThread extends SpyThread {
 
   private final MemcachedConnection conn;
   private final AuthDescriptor authDescriptor;
@@ -102,14 +102,10 @@ public class AuthThread extends SpyThread {
 
       // Get the new status to inspect it.
       priorStatus = foundStatus.get();
-      if (priorStatus != null) {
-        if (!priorStatus.isSuccess()) {
-          getLogger().warn(
-              "Authentication failed to " + node.getSocketAddress());
-        }
+      if (priorStatus != null && !priorStatus.isSuccess()) {
+        getLogger().warn("Authentication failed to " + node.getSocketAddress());
       }
     }
-    return;
   }
 
   private Operation buildOperation(OperationStatus st, OperationCallback cb) {

@@ -45,6 +45,7 @@ public class SingleElementInfiniteIterator<T> implements Iterator<T> {
     return true;
   }
 
+  @SuppressWarnings("IT_NO_SUCH_ELEMENT")
   public T next() {
     return element;
   }

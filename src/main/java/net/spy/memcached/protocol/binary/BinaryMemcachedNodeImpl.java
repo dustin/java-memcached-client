@@ -23,10 +23,11 @@
 
 package net.spy.memcached.protocol.binary;
 
+import java.io.IOException;
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.concurrent.BlockingQueue;
 
+import net.spy.memcached.MemcachedNodeStats;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
@@ -44,16 +45,21 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
   private static final int MAX_SET_OPTIMIZATION_COUNT = 65535;
   private static final int MAX_SET_OPTIMIZATION_BYTES = 2 * 1024 * 1024;
 
-  public BinaryMemcachedNodeImpl(SocketAddress sa, SocketChannel c,
-      int bufSize, BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
-      BlockingQueue<Operation> iq, Long opQueueMaxBlockTimeNs,
-      boolean waitForAuth, long dt) {
-    super(sa, c, bufSize, rq, wq, iq, opQueueMaxBlockTimeNs, waitForAuth, dt);
+  public BinaryMemcachedNodeImpl(SocketAddress sa,
+                                 int bufSize,
+                                 BlockingQueue<Operation> rq,
+                                 BlockingQueue<Operation> wq,
+                                 BlockingQueue<Operation> iq,
+                                 long opQueueMaxBlockTime,
+                                 boolean waitForAuth,
+                                 long dt,
+                                 final MemcachedNodeStats stats) throws IOException {
+    super(sa, bufSize, rq, wq, iq, opQueueMaxBlockTime, waitForAuth, dt, stats);
   }
 
   @Override
   protected void optimize() {
-    Operation firstOp = writeQ.peek();
+    Operation firstOp = getWriteOpInQueue();
     if (firstOp instanceof GetOperation) {
       optimizeGets();
     } else if (firstOp instanceof CASOperation) {
@@ -64,16 +70,17 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
   private void optimizeGets() {
     // make sure there are at least two get operations in a row before
     // attempting to optimize them.
-    optimizedOp = writeQ.remove();
-    if (writeQ.peek() instanceof GetOperation) {
+    optimizedOp = removeWriteOpFromQueue();
+    if (getWriteOpInQueue() instanceof GetOperation) {
       OptimizedGetImpl og = new OptimizedGetImpl((GetOperation) optimizedOp);
       optimizedOp = og;
-
-      while (writeQ.peek() instanceof GetOperation
+      getStats().optimizedGets(1);
+      while (getWriteOpInQueue() instanceof GetOperation
           && og.size() < MAX_GET_OPTIMIZATION_COUNT) {
-        GetOperation o = (GetOperation) writeQ.remove();
+        GetOperation o = (GetOperation) removeWriteOpFromQueue();
         if (!o.isCancelled()) {
           og.addOperation(o);
+          getStats().optimizedGets(1);
         }
       }
 
@@ -81,7 +88,7 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
       optimizedOp.initialize();
       assert optimizedOp.getState() == OperationState.WRITE_QUEUED;
       ProxyCallback pcb = (ProxyCallback) og.getCallback();
-      getLogger().debug("Set up %s with %s keys and %s callbacks", this,
+      getLogger().trace("Set up %s with %s keys and %s callbacks", this,
           pcb.numKeys(), pcb.numCallbacks());
     }
   }
@@ -89,17 +96,18 @@ public class BinaryMemcachedNodeImpl extends TCPMemcachedNodeImpl {
   private void optimizeSets() {
     // make sure there are at least two get operations in a row before
     // attempting to optimize them.
-    optimizedOp = writeQ.remove();
-    if (writeQ.peek() instanceof CASOperation) {
+    optimizedOp = removeWriteOpFromQueue();
+    if (getWriteOpInQueue() instanceof CASOperation) {
       OptimizedSetImpl og = new OptimizedSetImpl((CASOperation) optimizedOp);
       optimizedOp = og;
-
-      while (writeQ.peek() instanceof StoreOperation
+      getStats().optimizedSets(1);
+      while (getWriteOpInQueue() instanceof StoreOperation
           && og.size() < MAX_SET_OPTIMIZATION_COUNT
           && og.bytes() < MAX_SET_OPTIMIZATION_BYTES) {
-        CASOperation o = (CASOperation) writeQ.remove();
+        CASOperation o = (CASOperation) removeWriteOpFromQueue();
         if (!o.isCancelled()) {
           og.addOperation(o);
+          getStats().optimizedSets(1);
         }
       }
 

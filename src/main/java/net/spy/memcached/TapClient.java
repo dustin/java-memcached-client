@@ -256,7 +256,7 @@ public class TapClient {
     return messagesRead;
   }
 
-  class TapAck {
+  static class TapAck {
     private TapConnectionProvider conn;
     private TapOpcode opcode;
     private int opaque;

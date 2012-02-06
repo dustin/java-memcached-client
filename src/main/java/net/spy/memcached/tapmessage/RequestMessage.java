@@ -101,6 +101,7 @@ public class RequestMessage extends BaseMessage{
    *
    * @param vbs - A list of vbuckets.
    */
+  @SuppressWarnings("EI_EXPOSE_REP")
   public void setVbucketlist(short[] vbs) {
     int oldSize = (vblist.length + 1) * 2;
     int newSize = (vbs.length + 1) * 2;

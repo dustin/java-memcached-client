@@ -42,6 +42,7 @@ public class AuthDescriptor {
    * @param m list of mechanisms
    * @param h the callback handler for grabbing credentials and stuff
    */
+  @SuppressWarnings("EI_EXPOSE_REP")
   public AuthDescriptor(String[] m, CallbackHandler h) {
     mechs = m;
     cbh = h;
@@ -80,6 +81,7 @@ public class AuthDescriptor {
     }
   }
 
+  @SuppressWarnings("EI_EXPOSE_REP")
   public String[] getMechs() {
     return mechs;
   }

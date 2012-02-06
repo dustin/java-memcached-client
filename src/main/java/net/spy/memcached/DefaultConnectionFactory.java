@@ -26,7 +26,6 @@ package net.spy.memcached;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -138,32 +137,40 @@ public class DefaultConnectionFactory extends SpyObject implements
     this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE);
   }
 
-  public MemcachedNode createMemcachedNode(SocketAddress sa, SocketChannel c,
-      int bufSize) {
+  public MemcachedNode createMemcachedNode(SocketAddress sa, int bufSize) throws IOException {
 
     OperationFactory of = getOperationFactory();
     if (of instanceof AsciiOperationFactory) {
-      return new AsciiMemcachedNodeImpl(sa, c, bufSize,
+      return new AsciiMemcachedNodeImpl(sa, bufSize,
           createReadOperationQueue(),
           createWriteOperationQueue(),
           createOperationQueue(),
           getOpQueueMaxBlockTime(),
-          getOperationTimeout());
+          getOperationTimeout(),
+          getMemcachedNodeStats(sa));
     } else if (of instanceof BinaryOperationFactory) {
       boolean doAuth = false;
       if (getAuthDescriptor() != null) {
         doAuth = true;
       }
-      return new BinaryMemcachedNodeImpl(sa, c, bufSize,
+      return new BinaryMemcachedNodeImpl(sa, bufSize,
           createReadOperationQueue(),
           createWriteOperationQueue(),
           createOperationQueue(),
           getOpQueueMaxBlockTime(),
           doAuth,
-          getOperationTimeout());
+          getOperationTimeout(),
+          getMemcachedNodeStats(sa));
     } else {
       throw new IllegalStateException("Unhandled operation factory type " + of);
     }
+  }
+
+  public void destroyMemcachedNode(final MemcachedNode node)
+  {
+      if (node != null) {
+          node.shutdown();
+      }
   }
 
   /*
@@ -345,9 +352,16 @@ public class DefaultConnectionFactory extends SpyObject implements
     return DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
   }
 
+  public MemcachedNodeStats getMemcachedNodeStats(final SocketAddress sa)
+  {
+    return new MemcachedNodeStats();
+  }
+
   protected String getName() {
     return "DefaultConnectionFactory";
   }
+
+
 
   @Override
   public String toString() {

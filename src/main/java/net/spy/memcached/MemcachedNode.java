@@ -220,4 +220,9 @@ public interface MemcachedNode {
   void setContinuousTimeout(boolean timedOut);
 
   int getContinuousTimeout();
+
+  /**
+   * Shut a node down.
+   */
+  void shutdown();
 }

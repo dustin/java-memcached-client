@@ -49,6 +49,7 @@ public final class CachedData {
    * @param d the data
    * @param maxSize the maximum allowable size.
    */
+  @SuppressWarnings("EI_EXPOSE_REP")
   public CachedData(int f, byte[] d, int maxSize) {
     super();
     if (d.length > maxSize) {
@@ -63,6 +64,7 @@ public final class CachedData {
   /**
    * Get the stored data.
    */
+  @SuppressWarnings("EI_EXPOSE_REP")
   public byte[] getData() {
     return data;
   }
