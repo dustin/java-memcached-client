@@ -112,8 +112,15 @@ public class TapConnectionProvider extends SpyObject implements
     }
   }
 
-  protected void addOp(final Operation op) {
-    conn.enqueueOperation("TStream", op);
+  public void addTapAckOp(MemcachedNode node, final Operation op) {
+    conn.addOperation(node, op);
+  }
+
+  public CountDownLatch broadcastOp(final BroadcastOpFactory of) {
+    if (shuttingDown) {
+      throw new IllegalStateException("Shutting down");
+    }
+    return conn.broadcastOperation(of, conn.getLocator().getAll());
   }
 
   /**
@@ -248,15 +255,6 @@ public class TapConnectionProvider extends SpyObject implements
     } catch (InterruptedException e) {
       throw new RuntimeException("Interrupted waiting for queues", e);
     }
-  }
-
-  CountDownLatch broadcastOp(final BroadcastOpFactory of) {
-    return broadcastOp(of, conn.getLocator().getAll(), true);
-  }
-
-  CountDownLatch broadcastOp(final BroadcastOpFactory of,
-      Collection<MemcachedNode> nodes) {
-    return broadcastOp(of, nodes, true);
   }
 
   private CountDownLatch broadcastOp(BroadcastOpFactory of,

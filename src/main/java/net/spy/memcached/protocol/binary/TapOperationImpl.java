@@ -75,8 +75,8 @@ public abstract class TapOperationImpl extends OperationImpl implements
           ResponseMessage response = new ResponseMessage(message);
           for (TapResponseFlag flag : response.getFlags()) {
             if (flag == TapResponseFlag.TAP_ACK) {
-              ((Callback) getCallback()).gotAck(response.getOpcode(),
-                response.getOpaque());
+              ((Callback) getCallback()).gotAck(getHandlingNode(),
+                  response.getOpcode(), response.getOpaque());
             }
           }
           if (response.getOpcode() != TapOpcode.OPAQUE && response.getOpcode()

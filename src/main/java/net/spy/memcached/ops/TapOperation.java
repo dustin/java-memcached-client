@@ -22,6 +22,7 @@
 
 package net.spy.memcached.ops;
 
+import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.tapmessage.ResponseMessage;
 import net.spy.memcached.tapmessage.TapOpcode;
 
@@ -41,7 +42,7 @@ public interface TapOperation extends Operation {
      */
     void gotData(ResponseMessage message);
 
-    void gotAck(TapOpcode opcode, int opaque);
+    void gotAck(MemcachedNode node, TapOpcode opcode, int opaque);
   }
 
   void streamClosed(OperationState state);
