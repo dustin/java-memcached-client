@@ -70,9 +70,11 @@ public class TapTest extends ClientBaseCase {
       if ((m = tc.getNextMessage()) != null) {
         String key = m.getKey() + "," + new String(m.getValue());
         if (items.containsKey(key)) {
-          items.put(key, new Boolean(true));
+          items.put(key, true);
         } else {
-          fail();
+          System.err.println("Received additional item likely left over from"
+            + " previous test: " + m.getKey());
+          System.err.println("ResponseMessage : \n" + m);
         }
       }
     }
@@ -83,8 +85,10 @@ public class TapTest extends ClientBaseCase {
   private void checkTapKeys(HashMap<String, Boolean> items) {
     for (Entry<String, Boolean> kv : items.entrySet()) {
       if (!kv.getValue().booleanValue()) {
-        fail();
+        fail("Failed to receive one of the previously set items: \""
+          + kv.getKey() + "\". Number of items received: " + items.size());
       }
     }
+    System.err.println("Received " + items.size() + " items over TAP.");
   }
 }
