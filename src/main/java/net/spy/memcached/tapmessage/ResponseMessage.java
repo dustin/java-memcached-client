@@ -25,6 +25,8 @@ package net.spy.memcached.tapmessage;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
+import net.spy.memcached.CachedData;
+import net.spy.memcached.transcoders.SerializingTranscoder;
 
 /**
  * A representation of a tap stream message sent from a tap stream server.
@@ -283,4 +285,23 @@ public class ResponseMessage extends BaseMessage {
     }
     return bb;
   }
+
+  @Override
+  public String toString() {
+    return String.format("Key: %s, Flags: %d, TTL: %d, Size: %d\nValue: %s",
+      getKey(), getItemFlags(), getTTL(), getValue().length, deserialize());
+  }
+
+  /**
+   * Attempt to get the object represented by the given serialized bytes.
+   */
+  private Object deserialize() {
+    SerializingTranscoder tc = new SerializingTranscoder();
+    CachedData d = new CachedData(this.getItemFlags(), this.getValue(),
+      CachedData.MAX_SIZE);
+    Object rv = null;
+    rv = tc.decode(d);
+    return rv;
+  }
+
 }

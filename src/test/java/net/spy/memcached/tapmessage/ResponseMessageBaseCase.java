@@ -193,4 +193,12 @@ public class ResponseMessageBaseCase {
     assertEquals((byte)42, result[result.length-1]);
   }
 
+  /**
+   * Test of toString method, of class ResponseMessage.
+   */
+  @Test
+  public void testToString() {
+    assertNotNull(instance.toString());
+  }
+
 }
