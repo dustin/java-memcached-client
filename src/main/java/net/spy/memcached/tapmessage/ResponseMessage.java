@@ -80,7 +80,12 @@ public class ResponseMessage extends BaseMessage {
     }
 
     if (opcode.equals(TapOpcode.MUTATION)) {
-      itemflags = decodeInt(b, ITEM_FLAGS_OFFSET);
+      if (flags.contains(TapResponseFlag.TAP_FLAG_NETWORK_BYTE_ORDER)) {
+        itemflags = decodeInt(b, ITEM_FLAGS_OFFSET);
+      } else {
+        // handles Couchbase bug MB-4834
+        itemflags = decodeIntHostOrder(b, ITEM_FLAGS_OFFSET);
+      }
       itemexpiry = decodeInt(b, ITEM_EXPIRY_OFFSET);
       vbucketstate = 0;
       revid = new byte[engineprivate];

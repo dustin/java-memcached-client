@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.TapOperation;
 import net.spy.memcached.tapmessage.RequestMessage;
+import net.spy.memcached.tapmessage.TapRequestFlag;
 
 /**
  * Implementation of a custom tap operation.
@@ -47,6 +48,7 @@ public class TapCustomOperationImpl extends TapOperationImpl implements
 
   @Override
   public void initialize() {
+    message.setFlags(TapRequestFlag.FIX_BYTEORDER);
     if (id != null) {
       message.setName(id);
     } else {

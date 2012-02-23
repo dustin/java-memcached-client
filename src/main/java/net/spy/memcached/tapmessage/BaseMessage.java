@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -246,6 +246,13 @@ public abstract class BaseMessage extends SpyObject {
       | (data[i + 1] & 0xff) << 16
       | (data[i + 2] & 0xff) << 8
       | (data[i + 3] & 0xff);
+  }
+
+  protected int decodeIntHostOrder(byte[] data, int i) {
+    return (data[i] & 0xff)
+      | (data[i + 1] & 0xff) << 8
+      | (data[i + 2] & 0xff) << 16
+      | (data[i + 3] & 0xff) << 24;
   }
 
   protected long decodeLong(byte[] data, int i) {
