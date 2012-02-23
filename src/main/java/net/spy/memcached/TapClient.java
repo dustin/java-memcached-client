@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,7 +91,7 @@ public class TapClient {
    *         empty for more than one second.
    */
   public ResponseMessage getNextMessage() {
-    return getNextMessage(1, TimeUnit.SECONDS);
+    return getNextMessage(10, TimeUnit.SECONDS);
   }
 
   /**
