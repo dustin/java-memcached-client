@@ -33,40 +33,47 @@ public enum TapResponseFlag {
   /**
    * This message requires acknowledgment.
    */
-  TAP_ACK((byte) 0x01),
+  TAP_ACK((short) 0x01),
 
   /**
    * This message doesn't contain a value.
    */
-  TAP_NO_VALUE((byte) 0x02);
+  TAP_NO_VALUE((short) 0x02),
+
+  /**
+   * This message is sent correctly in network byte order.
+   */
+  TAP_FLAG_NETWORK_BYTE_ORDER((short) 0x04);
 
   /**
    * The flag value.
    */
-  private byte flag;
+  private short flag;
 
   /**
    * Defines the flag value.
    *
    * @param flag - The new flag value
    */
-  TapResponseFlag(byte flag) {
+  TapResponseFlag(short flag) {
     this.flag = flag;
   }
 
   public static List<TapResponseFlag> getFlags(short f) {
     List<TapResponseFlag> flags = new LinkedList<TapResponseFlag>();
-    if ((f & TapResponseFlag.TAP_ACK.flag) == 1) {
+    if ((f & TapResponseFlag.TAP_ACK.flag) != 0) {
       flags.add(TapResponseFlag.TAP_ACK);
     }
-    if ((f & TapResponseFlag.TAP_NO_VALUE.flag) == 1) {
+    if ((f & TapResponseFlag.TAP_NO_VALUE.flag) != 0) {
       flags.add(TapResponseFlag.TAP_NO_VALUE);
     }
-
+    if ((f & TapResponseFlag.TAP_FLAG_NETWORK_BYTE_ORDER.flag) != 0) {
+      flags.add(TapResponseFlag.TAP_FLAG_NETWORK_BYTE_ORDER);
+    }
     return flags;
   }
 
-  public byte getFlag() {
+  public short getFlags() {
     return flag;
   }
 }

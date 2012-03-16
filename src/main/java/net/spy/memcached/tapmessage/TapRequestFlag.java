@@ -33,80 +33,89 @@ public enum TapRequestFlag {
   /**
    * Tap backfill flag definition.
    */
-  BACKFILL((byte) 0x01),
+  BACKFILL((int) 0x01),
 
   /**
    * Tap dump flag definition.
    */
-  DUMP((byte) 0x02),
+  DUMP((int) 0x02),
 
   /**
    * Tap list vBuckets flag definition.
    */
-  LIST_VBUCKETS((byte) 0x04),
+  LIST_VBUCKETS((int) 0x04),
 
   /**
    * Tap take over vBuckets flag definition.
    */
-  TAKEOVER_VBUCKETS((byte) 0x08),
+  TAKEOVER_VBUCKETS((int) 0x08),
 
   /**
    * Tap support acknowledgment flag definition.
    */
-  SUPPORT_ACK((byte) 0x10),
+  SUPPORT_ACK((int) 0x10),
 
   /**
    * Tap send keys only flag definition.
    */
-  KEYS_ONLY((byte) 0x20),
+  KEYS_ONLY((int) 0x20),
 
   /**
    * Tap use checkpoints.
    */
-  CHECKPOINT((byte) 0x40);
+  CHECKPOINT((int) 0x40),
+
+  /**
+   * Tap request fixed byteorder.
+   *
+   * Some releases of Couchbase Server (at least through 1.8.0) send data in
+   * host byteorder on x86 based systems.  This requests network byte order
+   * (fixed).  See MB-4834.
+   */
+  FIX_BYTEORDER((int) 0x100);
 
   /**
    * The flag value.
    */
-  private byte flag;
+  private int flag;
 
   /**
    * Defines the flag value.
    *
    * @param flag - The new flag value
    */
-  TapRequestFlag(byte flag) {
+  TapRequestFlag(int flag) {
     this.flag = flag;
   }
 
-  public static List<TapRequestFlag> getFlags(short f) {
+  public static List<TapRequestFlag> getFlags(int f) {
     List<TapRequestFlag> flags = new LinkedList<TapRequestFlag>();
-    if ((f & TapRequestFlag.BACKFILL.flag) == 1) {
+    if ((f & TapRequestFlag.BACKFILL.flag) != 0) {
       flags.add(TapRequestFlag.BACKFILL);
     }
-    if ((f & TapRequestFlag.DUMP.flag) == 1) {
+    if ((f & TapRequestFlag.DUMP.flag) != 0) {
       flags.add(TapRequestFlag.DUMP);
     }
-    if ((f & TapRequestFlag.LIST_VBUCKETS.flag) == 1) {
+    if ((f & TapRequestFlag.LIST_VBUCKETS.flag) != 0) {
       flags.add(TapRequestFlag.LIST_VBUCKETS);
     }
-    if ((f & TapRequestFlag.TAKEOVER_VBUCKETS.flag) == 1) {
+    if ((f & TapRequestFlag.TAKEOVER_VBUCKETS.flag) != 0) {
       flags.add(TapRequestFlag.TAKEOVER_VBUCKETS);
     }
-    if ((f & TapRequestFlag.SUPPORT_ACK.flag) == 1) {
+    if ((f & TapRequestFlag.SUPPORT_ACK.flag) != 0) {
       flags.add(TapRequestFlag.SUPPORT_ACK);
     }
-    if ((f & TapRequestFlag.KEYS_ONLY.flag) == 1) {
+    if ((f & TapRequestFlag.KEYS_ONLY.flag) != 0) {
       flags.add(TapRequestFlag.KEYS_ONLY);
     }
-    if ((f & TapRequestFlag.CHECKPOINT.flag) == 1) {
+    if ((f & TapRequestFlag.CHECKPOINT.flag) != 0) {
       flags.add(TapRequestFlag.CHECKPOINT);
     }
 
     return flags;
   }
 
-  public byte getFlag() {
+  public int getFlags() {
     return flag;
   }
 }

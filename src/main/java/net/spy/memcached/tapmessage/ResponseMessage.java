@@ -249,7 +249,7 @@ public class ResponseMessage extends BaseMessage {
 
     short flag = 0;
     for (int i = 0; i < flags.size(); i++) {
-      flag |= flags.get(i).getFlag();
+      flag |= flags.get(i).getFlags();
     }
 
     bb.putShort(flag);

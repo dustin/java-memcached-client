@@ -142,7 +142,7 @@ public class RequestMessage extends BaseMessage{
     if (hasFlags) {
       int flag = 0;
       for (int i = 0; i < flagList.size(); i++) {
-        flag |= flagList.get(i).getFlag();
+        flag |= flagList.get(i).getFlags();
       }
       bb.putInt(flag);
     }
