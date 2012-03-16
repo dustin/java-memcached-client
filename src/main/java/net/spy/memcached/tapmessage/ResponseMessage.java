@@ -235,7 +235,14 @@ public class ResponseMessage extends BaseMessage {
   }
 
   public ByteBuffer getBytes() {
-    ByteBuffer bb = ByteBuffer.allocate(HEADER_LENGTH + getTotalbody());
+    int bufSize = 0;
+    bufSize += HEADER_LENGTH;
+    if (opcode.equals(TapOpcode.MUTATION)) {
+      bufSize += 16;
+    }
+    bufSize += getTotalbody();
+
+    ByteBuffer bb = ByteBuffer.allocate(bufSize);
     bb.put(magic.getMagic());
     bb.put(opcode.getOpcode());
     bb.putShort(keylength);
