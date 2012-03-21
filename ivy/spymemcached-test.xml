@@ -44,9 +44,7 @@
     <artifact conf="master"/>
   </publications>
   <dependencies>
-    <dependency org="log4j" name="log4j" rev="${log4j.version}" conf="default" />
     <dependency org="jmock" name="jmock" rev="${jmock.version}" conf="default" />
     <dependency org="junit" name="junit" rev="${junit.version" conf="default" />
-    <dependency org="org.springframework" name="spring-beans" rev="${spring-beans.version}" conf="default" />
   </dependencies>
 </ivy-module>

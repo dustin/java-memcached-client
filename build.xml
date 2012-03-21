@@ -459,13 +459,17 @@
         settingsRef="${name}.ivy.settings">
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
+      <dependency group="log4j" artifact="log4j" version="${log4j.version}" optional="true" />
+      <dependency group="org.springframework" artifact="spring-beans" version="${spring-beans.version}" optional="true" />
     </ivy:makepom>
 
     <ivy:makepom ivyfile="ivy/spymemcached-test.xml"
         pomfile="${spymemcached-test.pom}"
         settingsRef="${name}.ivy.settings">
-     <mapping conf="default" scope="compile" />
-     <mapping conf="runtime" scope="runtime" />
+      <mapping conf="default" scope="compile" />
+      <mapping conf="runtime" scope="runtime" />
+      <dependency group="log4j" artifact="log4j" version="${log4j.version}" optional="true" />
+      <dependency group="org.springframework" artifact="spring-beans" version="${spring-beans.version}" optional="true" />
    </ivy:makepom>
 
     <!-- Change the version in the pom file to reflect our claimed version. -->
