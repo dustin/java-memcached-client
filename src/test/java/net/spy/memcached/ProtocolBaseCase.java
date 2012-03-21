@@ -101,22 +101,6 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     assertTrue(Integer.parseInt(noItemsSmall) >= 1);
   }
 
-  public void testGetStatsCacheDump() throws Exception {
-    if (isMoxi()) {
-      return;
-    }
-    // There needs to at least have been one value set or there
-    // won't be anything to dump
-    client.set("dumpinitializer", 0, "hi");
-    Map<SocketAddress, Map<String, String>> stats =
-        client.getStats("cachedump 1 10000");
-    System.out.println("Stats cachedump:  " + stats);
-    assertEquals(1, stats.size());
-    Map<String, String> oneStat = stats.values().iterator().next();
-    String val = oneStat.get("dumpinitializer");
-    assertTrue(val + "doesn't match", val.matches("\\[2 b; \\d+ s\\]"));
-  }
-
   public void testDelayedFlush() throws Exception {
     assertNull(client.get("test1"));
     assert client.set("test1", 5, "test1value").getStatus().isSuccess();
