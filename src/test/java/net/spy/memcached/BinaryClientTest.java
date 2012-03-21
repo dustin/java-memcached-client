@@ -52,12 +52,6 @@ public class BinaryClientTest extends ProtocolBaseCase {
         TestConfig.PORT_NUMBER));
   }
 
-  @Override
-  public void testGetStatsCacheDump() throws Exception {
-    // XXX: Cachedump isn't returning anything from the server in binprot
-    assertTrue(true);
-  }
-
   public void testCASAppendFail() throws Exception {
     final String key = "append.key";
     assertTrue(client.set(key, 5, "test").get());
