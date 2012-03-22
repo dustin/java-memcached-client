@@ -800,6 +800,43 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     return asyncStore(StoreType.replace, key, exp, o, transcoder);
   }
 
+    /**
+     * Get the given key asynchronously.
+     *
+     * @param <T>
+     * @param key the key to fetch
+     * @param tc the transcoder to serialize and unserialize value
+     * @param listener the listener to handle complete event
+     * @return a future that will hold the return value of the fetch
+     * @throws IllegalStateException in the rare circumstance where queue is too
+     *           full to accept any more requests
+     */
+    public <T> GetFuture<T> asyncGet(final String key, final Transcoder<T> tc, final OperationListener<T> listener) {
+      final MemcachedClient client = this;
+      final CountDownLatch latch = new CountDownLatch(1);
+      final GetFuture<T> rv = new GetFuture<T>(latch, operationTimeout, key);
+      Operation op = opFact.get(key, new GetOperation.Callback() {
+        private Future<T> val = null;
+
+        public void receivedStatus(OperationStatus status) {
+          rv.set(val, status);
+        }
+
+        public void gotData(String k, int flags, byte[] data) {
+          assert key.equals(k) : "Wrong key returned";
+          val = tcService.decode(tc, new CachedData(flags, data, tc.getMaxSize()));
+        }
+
+        public void complete() {
+          latch.countDown();
+          if (listener != null) listener.onComplete(client, rv.getStatus(), rv);
+        }
+      });
+      rv.setOperation(op);
+      mconn.enqueueOperation(key, op);
+      return rv;
+    }
+
   /**
    * Get the given key asynchronously.
    *
@@ -811,29 +848,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    *           full to accept any more requests
    */
   public <T> GetFuture<T> asyncGet(final String key, final Transcoder<T> tc) {
-
-    final CountDownLatch latch = new CountDownLatch(1);
-    final GetFuture<T> rv = new GetFuture<T>(latch, operationTimeout, key);
-    Operation op = opFact.get(key, new GetOperation.Callback() {
-      private Future<T> val = null;
-
-      public void receivedStatus(OperationStatus status) {
-        rv.set(val, status);
-      }
-
-      public void gotData(String k, int flags, byte[] data) {
-        assert key.equals(k) : "Wrong key returned";
-        val =
-            tcService.decode(tc, new CachedData(flags, data, tc.getMaxSize()));
-      }
-
-      public void complete() {
-        latch.countDown();
-      }
-    });
-    rv.setOperation(op);
-    mconn.enqueueOperation(key, op);
-    return rv;
+    return asyncGet(key, tc, null);
   }
 
   /**

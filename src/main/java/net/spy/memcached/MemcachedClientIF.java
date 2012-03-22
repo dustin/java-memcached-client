@@ -82,6 +82,8 @@ public interface MemcachedClientIF {
 
   Future<Boolean> replace(String key, int exp, Object o);
 
+  <T> Future<T> asyncGet(String key, Transcoder<T> tc, OperationListener<T> listener);
+
   <T> Future<T> asyncGet(String key, Transcoder<T> tc);
 
   Future<Object> asyncGet(String key);
