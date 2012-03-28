@@ -99,6 +99,10 @@ public class AsciiOperationFactory extends BaseOperationFactory {
     return new GetsOperationImpl(key, cb);
   }
 
+  public GetsOperation gets(Collection<String> keys, GetsOperation.Callback cb) {
+    return new GetsOperationImpl(keys, cb);
+  }
+
   public MutatorOperation mutate(Mutator m, String key, long by, long exp,
       int def, OperationCallback cb) {
     return new MutatorOperationImpl(m, key, by, cb);

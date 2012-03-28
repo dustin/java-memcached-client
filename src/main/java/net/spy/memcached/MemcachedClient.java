@@ -1258,6 +1258,45 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     return get(key, transcoder);
   }
 
+  private <T> Map<MemcachedNode, Collection<String>> getChunks(Iterator<String> keyIter,
+                                                               Iterator<Transcoder<T>> tcIter,
+                                                               Map<String, Transcoder<T>> outTcMap) {
+    final Map<MemcachedNode, Collection<String>> chunks =
+            new HashMap<MemcachedNode, Collection<String>>();
+    final NodeLocator locator = mconn.getLocator();
+
+    while (keyIter.hasNext() && tcIter.hasNext()) {
+      String key = keyIter.next();
+      outTcMap.put(key, tcIter.next());
+      StringUtils.validateKey(key);
+      final MemcachedNode primaryNode = locator.getPrimary(key);
+      MemcachedNode node = null;
+      if (primaryNode.isActive()) {
+        node = primaryNode;
+      } else {
+        for (Iterator<MemcachedNode> i = locator.getSequence(key); node == null
+                && i.hasNext();) {
+          MemcachedNode n = i.next();
+          if (n.isActive()) {
+            node = n;
+          }
+        }
+        if (node == null) {
+          node = primaryNode;
+        }
+      }
+      assert node != null : "Didn't find a node for " + key;
+      Collection<String> ks = chunks.get(node);
+      if (ks == null) {
+        ks = new ArrayList<String>();
+        chunks.put(node, ks);
+      }
+      ks.add(key);
+    }
+
+    return chunks;
+  }
+
   /**
    * Asynchronously get a bunch of objects from the cache.
    *
@@ -1279,42 +1318,10 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     // This map does not need to be a ConcurrentHashMap
     // because it is fully populated when it is used and
     // used only to read the transcoder for a key.
-    final Map<String, Transcoder<T>> tcMap =
-        new HashMap<String, Transcoder<T>>();
+    final Map<String, Transcoder<T>> tcMap = new HashMap<String, Transcoder<T>>();
 
     // Break the gets down into groups by key
-    final Map<MemcachedNode, Collection<String>> chunks =
-        new HashMap<MemcachedNode, Collection<String>>();
-    final NodeLocator locator = mconn.getLocator();
-
-    while (keyIter.hasNext() && tcIter.hasNext()) {
-      String key = keyIter.next();
-      tcMap.put(key, tcIter.next());
-      StringUtils.validateKey(key);
-      final MemcachedNode primaryNode = locator.getPrimary(key);
-      MemcachedNode node = null;
-      if (primaryNode.isActive()) {
-        node = primaryNode;
-      } else {
-        for (Iterator<MemcachedNode> i = locator.getSequence(key); node == null
-            && i.hasNext();) {
-          MemcachedNode n = i.next();
-          if (n.isActive()) {
-            node = n;
-          }
-        }
-        if (node == null) {
-          node = primaryNode;
-        }
-      }
-      assert node != null : "Didn't find a node for " + key;
-      Collection<String> ks = chunks.get(node);
-      if (ks == null) {
-        ks = new ArrayList<String>();
-        chunks.put(node, ks);
-      }
-      ks.add(key);
-    }
+    final Map<MemcachedNode, Collection<String>> chunks = getChunks(keyIter, tcIter, tcMap);
 
     final MemcachedClient client = this;
     final CountDownLatch latch = new CountDownLatch(chunks.size());
@@ -1354,6 +1361,265 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     mconn.addOperations(mops);
     return rv;
   }
+
+  /**
+   * Asynchronously get a bunch of CASed objects from the cache.
+   *
+   * @param <T>
+   * @param keyIter Iterator that produces keys.
+   * @param tcIter an iterator of transcoders to serialize and unserialize
+   *          values; the transcoders are matched with the keys in the same
+   *          order. The minimum of the key collection length and number of
+   *          transcoders is used and no exception is thrown if they do not
+   *          match
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keyIter,
+       Iterator<Transcoder<T>> tcIter, final OperationListener<Map<String, CASValue<T>>> listener) {
+    final Map<String, Future<CASValue<T>>> m = new ConcurrentHashMap<String, Future<CASValue<T>>>();
+
+    // This map does not need to be a ConcurrentHashMap
+    // because it is fully populated when it is used and
+    // used only to read the transcoder for a key.
+    final Map<String, Transcoder<T>> tcMap = new HashMap<String, Transcoder<T>>();
+
+    // Break the gets down into groups by key
+    final Map<MemcachedNode, Collection<String>> chunks = getChunks(keyIter, tcIter, tcMap);
+
+    final MemcachedClient client = this;
+    final CountDownLatch latch = new CountDownLatch(chunks.size());
+    final Collection<Operation> ops = new ArrayList<Operation>(chunks.size());
+    final BulkGetFuture<CASValue<T>> rv = new BulkGetFuture<CASValue<T>>(m, ops, latch);
+
+    GetsOperation.Callback cb = new GetsOperation.Callback() {
+      @SuppressWarnings("synthetic-access")
+      public void receivedStatus(OperationStatus status) {
+        rv.setStatus(status);
+      }
+
+      public void gotData(String k, int flags, long cas, byte[] data) {
+        assert cas > 0 : "CAS was less than zero:  " + cas;
+        Transcoder<T> tc = tcMap.get(k);
+        m.put(k, tcService.decodes(tc, new CachedData(flags, data, tc.getMaxSize()), cas));
+      }
+
+      public void complete() {
+        latch.countDown();
+        if (listener != null && latch.getCount() < 1) listener.onComplete(client, rv.getStatus(), rv);
+      }
+    };
+
+    // Now that we know how many servers it breaks down into, and the latch
+    // is all set up, convert all of these strings collections to operations
+    final Map<MemcachedNode, Operation> mops =
+            new HashMap<MemcachedNode, Operation>();
+
+    for (Map.Entry<MemcachedNode, Collection<String>> me : chunks.entrySet()) {
+      Operation op = opFact.gets(me.getValue(), cb);
+      mops.put(me.getKey(), op);
+      ops.add(op);
+    }
+    assert mops.size() == chunks.size();
+    mconn.checkState();
+    mconn.addOperations(mops);
+    return rv;
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache.
+   *
+   * @param <T>
+   * @param keyIter Iterator that produces keys.
+   * @param tcIter an iterator of transcoders to serialize and unserialize
+   *          values; the transcoders are matched with the keys in the same
+   *          order. The minimum of the key collection length and number of
+   *          transcoders is used and no exception is thrown if they do not
+   *          match
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keyIter,
+      Iterator<Transcoder<T>> tcIter) {
+    return asyncGetsBulk(keyIter, tcIter, null);
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache.
+   *
+   * @param <T>
+   * @param keys the keys to request
+   * @param tcIter an iterator of transcoders to serialize and unserialize
+   *          values; the transcoders are matched with the keys in the same
+   *          order. The minimum of the key collection length and number of
+   *          transcoders is used and no exception is thrown if they do not
+   *          match
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keys,
+      Iterator<Transcoder<T>> tcIter, OperationListener<Map<String, CASValue<T>>> listener) {
+    return asyncGetsBulk(keys.iterator(), tcIter, listener);
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache.
+   *
+   * @param <T>
+   * @param keys the keys to request
+   * @param tcIter an iterator of transcoders to serialize and unserialize
+   *          values; the transcoders are matched with the keys in the same
+   *          order. The minimum of the key collection length and number of
+   *          transcoders is used and no exception is thrown if they do not
+   *          match
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keys,
+      Iterator<Transcoder<T>> tcIter) {
+    return asyncGetsBulk(keys.iterator(), tcIter, null);
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache.
+   *
+   * @param <T>
+   * @param keyIter Iterator for the keys to request
+   * @param tc the transcoder to serialize and unserialize values
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keyIter,
+      Transcoder<T> tc, OperationListener<Map<String, CASValue<T>>> listener) {
+    return asyncGetsBulk(keyIter, new SingleElementInfiniteIterator<Transcoder<T>>(tc), listener);
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache.
+   *
+   * @param <T>
+   * @param keyIter Iterator for the keys to request
+   * @param tc the transcoder to serialize and unserialize values
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keyIter,
+      Transcoder<T> tc) {
+    return asyncGetsBulk(keyIter,
+            new SingleElementInfiniteIterator<Transcoder<T>>(tc));
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache.
+   *
+   * @param <T>
+   * @param keys the keys to request
+   * @param tc the transcoder to serialize and unserialize values
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keys,
+      Transcoder<T> tc, OperationListener<Map<String, CASValue<T>>> listener) {
+    return asyncGetsBulk(keys, new SingleElementInfiniteIterator<Transcoder<T>>(
+            tc), listener);
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache.
+   *
+   * @param <T>
+   * @param keys the keys to request
+   * @param tc the transcoder to serialize and unserialize values
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keys,
+     Transcoder<T> tc) {
+    return asyncGetsBulk(keys, new SingleElementInfiniteIterator<Transcoder<T>>(
+            tc), null);
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache and decode them with
+   * the given transcoder.
+   *
+   * @param keyIter Iterator that produces the keys to request
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(
+          Iterator<String> keyIter, OperationListener<Map<String, CASValue<Object>>> listener) {
+    return asyncGetsBulk(keyIter, transcoder, listener);
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache and decode them with
+   * the given transcoder.
+   *
+   * @param keyIter Iterator that produces the keys to request
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(
+          Iterator<String> keyIter) {
+    return asyncGetsBulk(keyIter, transcoder);
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache and decode them with
+   * the given transcoder.
+   *
+   * @param keys the keys to request
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(Collection<String> keys, OperationListener<Map<String, CASValue<Object>>> listener) {
+    return asyncGetsBulk(keys, transcoder, listener);
+  }
+
+  /**
+   * Asynchronously get a bunch of objects from the cache and decode them with
+   * the given transcoder.
+   *
+   * @param keys the keys to request
+   * @return a Future result of that fetch
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(Collection<String> keys) {
+    return asyncGetsBulk(keys, transcoder);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   /**
    * Asynchronously get a bunch of objects from the cache.
