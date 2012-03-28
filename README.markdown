@@ -1,3 +1,8 @@
+# This fork features
+
+- asynchronous event callbacks
+- gets bulk support (multi-get with provided cas values, tested only for binary protocol)
+
 # Building
 
 Spymemcached can be compiled using Apache Ant by running the following
