@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
+ * Copyright (C) 2009-2011 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,27 +21,23 @@
  * IN THE SOFTWARE.
  */
 
-package net.spy.memcached.protocol.ascii;
+package net.spy.memcached.protocol.binary;
+
+import net.spy.memcached.ops.GetsOperation;
+import net.spy.memcached.ops.OperationCallback;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 
-import net.spy.memcached.ops.GetOperation;
-import net.spy.memcached.ops.GetsOperation;
+class MultiGetsOperationImpl extends MultiGetOperationBaseImpl implements
+    GetsOperation {
 
-/**
- * Implementation of the gets operation.
- */
-class GetsOperationImpl extends BaseGetOpImpl implements GetsOperation {
-
-  private static final String CMD = "gets";
-
-  public GetsOperationImpl(String key, GetsOperation.Callback cb) {
-    super(CMD, cb, Collections.singleton(key));
+  MultiGetsOperationImpl(Collection<String> k, OperationCallback cb) {
+    super(k, cb);
   }
 
-  public GetsOperationImpl(Collection<String> k, GetsOperation.Callback cb) {
-    super(CMD, cb, new HashSet<String>(k));
+  @Override
+  protected void finishedPayloadCallback(int flags, byte[] data) {
+    Callback cb = (Callback) getCallback();
+    cb.gotData(keys.get(responseOpaque), flags, responseCas, data);
   }
 }

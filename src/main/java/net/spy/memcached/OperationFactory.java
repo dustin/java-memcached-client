@@ -139,6 +139,15 @@ public interface OperationFactory {
   GetsOperation gets(String key, GetsOperation.Callback callback);
 
   /**
+   * Create a multi-gets (CASes) operation.
+   *
+   * @param keys the collection of keys to get
+   * @param cb the callback that will contain the results
+   * @return a new GetOperation
+   */
+  GetsOperation gets(Collection<String> keys, GetsOperation.Callback cb);
+
+  /**
    * Create a get operation.
    *
    * @param keys the collection of keys to get

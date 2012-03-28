@@ -99,6 +99,10 @@ public class BinaryOperationFactory extends BaseOperationFactory {
     return new GetsOperationImpl(key, cb);
   }
 
+  public GetsOperation gets(Collection<String> keys, GetsOperation.Callback cb) {
+    return new MultiGetsOperationImpl(keys, cb);
+  }
+
   public MutatorOperation mutate(Mutator m, String key, long by, long def,
       int exp, OperationCallback cb) {
     return new MutatorOperationImpl(m, key, by, def, exp, cb);
