@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.spy.memcached.CASResponse;
+import net.spy.memcached.CASResponseType;
 import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.Operation;
@@ -69,7 +69,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
   protected static final byte[] EMPTY_BYTES = new byte[0];
 
   protected static final OperationStatus STATUS_OK = new CASOperationStatus(
-      true, "OK", CASResponse.OK);
+      true, "OK", CASResponseType.OK);
 
   private static final AtomicInteger SEQ_NUMBER = new AtomicInteger(0);
 
@@ -102,6 +102,10 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
     cmd = c;
     opaque = o;
     setCallback(cb);
+  }
+
+  public long getResponseCas() {
+    return responseCas;
   }
 
   protected void resetInput() {
@@ -181,7 +185,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
         && !getState().equals(OperationState.COMPLETE)) {
       transitionState(OperationState.RETRY);
     } else {
-      getCallback().receivedStatus(status);
+      getCallback().receivedStatus(this, status);
       transitionState(OperationState.COMPLETE);
     }
   }
@@ -199,13 +203,13 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
       return STATUS_OK;
     case ERR_NOT_FOUND:
       return new CASOperationStatus(false, new String(errPl),
-          CASResponse.NOT_FOUND);
+          CASResponseType.NOT_FOUND);
     case ERR_EXISTS:
       return new CASOperationStatus(false, new String(errPl),
-          CASResponse.EXISTS);
+          CASResponseType.EXISTS);
     case ERR_NOT_STORED:
       return new CASOperationStatus(false, new String(errPl),
-          CASResponse.NOT_FOUND);
+          CASResponseType.NOT_FOUND);
     case ERR_2BIG:
     case ERR_INTERNAL:
       handleError(OperationErrorType.SERVER, new String(errPl));
@@ -230,7 +234,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
    */
   protected void decodePayload(byte[] pl) {
     assert pl.length == 0 : "Payload has bytes, but decode isn't overridden";
-    getCallback().receivedStatus(STATUS_OK);
+    getCallback().receivedStatus(this, STATUS_OK);
   }
 
   /**

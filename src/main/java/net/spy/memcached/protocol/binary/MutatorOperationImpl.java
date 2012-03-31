@@ -66,7 +66,7 @@ class MutatorOperationImpl extends SingleKeyOperationImpl implements
 
   @Override
   protected void decodePayload(byte[] pl) {
-    getCallback().receivedStatus(
+    getCallback().receivedStatus(this,
         new OperationStatus(true, String.valueOf(decodeLong(pl, 0))));
   }
 

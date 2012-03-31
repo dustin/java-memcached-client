@@ -32,10 +32,10 @@ public interface OperationCallback {
    *
    * @param status the result of the operation
    */
-  void receivedStatus(OperationStatus status);
+  void receivedStatus(Operation operation, OperationStatus status);
 
   /**
    * Called whenever an operation completes.
    */
-  void complete();
+  void complete(Operation operation);
 }

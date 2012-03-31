@@ -59,11 +59,11 @@ public class TimeoutNowriteTest extends ClientBaseCase {
 
   public void testTimeoutDontwrite() {
     Operation op = new ExtensibleOperationImpl(new OperationCallback() {
-      public void complete() {
+      public void complete(Operation operation) {
         System.err.println("Complete.");
       }
 
-      public void receivedStatus(OperationStatus s) {
+      public void receivedStatus(Operation operation, OperationStatus s) {
         System.err.println("Received a line.");
       }
     }) {

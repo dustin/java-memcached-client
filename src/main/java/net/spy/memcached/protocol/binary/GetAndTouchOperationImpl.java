@@ -59,7 +59,7 @@ public class GetAndTouchOperationImpl extends SingleKeyOperationImpl implements
     GetAndTouchOperation.Callback gcb =
         (GetAndTouchOperation.Callback) getCallback();
     gcb.gotData(key, flags, responseCas, data);
-    getCallback().receivedStatus(STATUS_OK);
+    getCallback().receivedStatus(this, STATUS_OK);
   }
 
   @Override

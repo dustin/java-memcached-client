@@ -61,11 +61,11 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
     super.setUp();
     ofact = getOperationFactory();
     genericCallback = new OperationCallback() {
-      public void complete() {
+      public void complete(Operation operation) {
         fail("Unexpected invocation");
       }
 
-      public void receivedStatus(OperationStatus status) {
+      public void receivedStatus(Operation operation, OperationStatus status) {
         fail("Unexpected status:  " + status);
       }
     };
@@ -245,8 +245,8 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
     for (Operation o : ofact.clone(op)) {
       GetOperation.Callback cb = (GetOperation.Callback) o.getCallback();
       cb.gotData(ki.next(), ++i, new byte[3]);
-      cb.receivedStatus(st);
-      cb.complete();
+      cb.receivedStatus(o, st);
+      cb.complete(o);
     }
   }
 

@@ -65,7 +65,7 @@ final class MutatorOperationImpl extends OperationImpl implements
     } else {
       found = new OperationStatus(true, line);
     }
-    getCallback().receivedStatus(found);
+    getCallback().receivedStatus(this, found);
     transitionState(OperationState.COMPLETE);
   }
 
@@ -81,7 +81,7 @@ final class MutatorOperationImpl extends OperationImpl implements
   @Override
   protected void wasCancelled() {
     // XXX: Replace this comment with why the hell I did this.
-    getCallback().receivedStatus(CANCELLED);
+    getCallback().receivedStatus(this, CANCELLED);
   }
 
   public Collection<String> getKeys() {

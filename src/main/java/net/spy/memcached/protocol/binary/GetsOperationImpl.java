@@ -54,6 +54,6 @@ public class GetsOperationImpl extends SingleKeyOperationImpl implements
     System.arraycopy(pl, EXTRA_HDR_LEN, data, 0, pl.length - EXTRA_HDR_LEN);
     GetsOperation.Callback gcb = (GetsOperation.Callback) getCallback();
     gcb.gotData(key, flags, responseCas, data);
-    getCallback().receivedStatus(STATUS_OK);
+    getCallback().receivedStatus(this, STATUS_OK);
   }
 }

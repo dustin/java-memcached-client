@@ -48,7 +48,7 @@ final class FlushOperationImpl extends OperationImpl implements FlushOperation {
   @Override
   public void handleLine(String line) {
     getLogger().debug("Flush completed successfully");
-    getCallback().receivedStatus(matchStatus(line, OK));
+    getCallback().receivedStatus(this, matchStatus(line, OK));
     transitionState(OperationState.COMPLETE);
   }
 

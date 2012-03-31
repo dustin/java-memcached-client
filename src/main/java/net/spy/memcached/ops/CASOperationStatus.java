@@ -22,16 +22,16 @@
 
 package net.spy.memcached.ops;
 
-import net.spy.memcached.CASResponse;
+import net.spy.memcached.CASResponseType;
 
 /**
  * OperationStatus subclass for indicating CAS status.
  */
 public class CASOperationStatus extends OperationStatus {
 
-  private final CASResponse casResponse;
+  private final CASResponseType casResponse;
 
-  public CASOperationStatus(boolean success, String msg, CASResponse cres) {
+  public CASOperationStatus(boolean success, String msg, CASResponseType cres) {
     super(success, msg);
     casResponse = cres;
   }
@@ -39,7 +39,7 @@ public class CASOperationStatus extends OperationStatus {
   /**
    * Get the CAS response indicated here.
    */
-  public CASResponse getCASResponse() {
+  public CASResponseType getCASResponse() {
     return casResponse;
   }
 }

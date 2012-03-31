@@ -23,45 +23,21 @@
 
 package net.spy.memcached.protocol.binary;
 
-import net.spy.memcached.ops.GetlOperation;
+import net.spy.memcached.ops.GetsOperation;
+import net.spy.memcached.ops.OperationCallback;
 
-/**
- * Implementation of the get and lock operation.
- */
-public class GetlOperationImpl extends SingleKeyOperationImpl implements
-    GetlOperation {
+import java.util.Collection;
 
-  static final byte GETL_CMD = (byte) 0x94;
+class MultiGetsOperationImpl extends MultiGetOperationBaseImpl implements
+    GetsOperation {
 
-  /**
-   * Length of the extra header stuff for a GET response.
-   */
-  static final int EXTRA_HDR_LEN = 4;
-
-  private final int exp;
-
-  public GetlOperationImpl(String k, int e, GetlOperation.Callback cb) {
-    super(GETL_CMD, generateOpaque(), k, cb);
-    exp = e;
+  MultiGetsOperationImpl(Collection<String> k, OperationCallback cb) {
+    super(k, cb);
   }
 
   @Override
-  public void initialize() {
-    prepareBuffer(key, 0, EMPTY_BYTES, exp);
-  }
-
-  @Override
-  protected void decodePayload(byte[] pl) {
-    final int flags = decodeInt(pl, 0);
-    final byte[] data = new byte[pl.length - EXTRA_HDR_LEN];
-    System.arraycopy(pl, EXTRA_HDR_LEN, data, 0, pl.length - EXTRA_HDR_LEN);
-    GetlOperation.Callback gcb = (GetlOperation.Callback) getCallback();
-    gcb.gotData(key, flags, responseCas, data);
-    getCallback().receivedStatus(this, STATUS_OK);
-  }
-
-  @Override
-  public String toString() {
-    return super.toString() + " Exp: " + exp;
+  protected void finishedPayloadCallback(int flags, byte[] data) {
+    Callback cb = (Callback) getCallback();
+    cb.gotData(keys.get(responseOpaque), flags, responseCas, data);
   }
 }

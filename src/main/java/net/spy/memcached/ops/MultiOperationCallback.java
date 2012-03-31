@@ -49,14 +49,14 @@ public abstract class MultiOperationCallback implements OperationCallback {
     remaining = todo;
   }
 
-  public void complete() {
+  public void complete(Operation operation) {
     if (--remaining == 0) {
-      originalCallback.receivedStatus(mostRecentStatus);
-      originalCallback.complete();
+      originalCallback.receivedStatus(operation, mostRecentStatus);
+      originalCallback.complete(operation);
     }
   }
 
-  public void receivedStatus(OperationStatus status) {
+  public void receivedStatus(Operation operation, OperationStatus status) {
     mostRecentStatus = status;
   }
 }

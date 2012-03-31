@@ -52,13 +52,20 @@ public interface MemcachedClientIF {
 
   NodeLocator getNodeLocator();
 
-  Future<Boolean> append(long cas, String key, Object val);
+  Future<CASResponse> append(long cas, String key, Object val);
 
-  <T> Future<Boolean> append(long cas, String key, T val, Transcoder<T> tc);
+  <T> Future<CASResponse> append(long cas, String key, T val, Transcoder<T> tc);
 
-  Future<Boolean> prepend(long cas, String key, Object val);
+  <T> Future<CASResponse> append(long cas, String key, T val, Transcoder<T> tc, OperationListener<CASResponse> listener);
 
-  <T> Future<Boolean> prepend(long cas, String key, T val, Transcoder<T> tc);
+  Future<CASResponse> prepend(long cas, String key, Object val);
+
+  <T> Future<CASResponse> prepend(long cas, String key, T val, Transcoder<T> tc);
+
+  <T> Future<CASResponse> prepend(long cas, String key, T val, Transcoder<T> tc, OperationListener<CASResponse> listener);
+
+  <T> Future<CASResponse> asyncCAS(String key, long casId, T value,
+                                   Transcoder<T> tc, OperationListener<CASResponse> listener);
 
   <T> Future<CASResponse> asyncCAS(String key, long casId, T value,
       Transcoder<T> tc);
@@ -70,17 +77,25 @@ public interface MemcachedClientIF {
 
   CASResponse cas(String key, long casId, Object value);
 
-  <T> Future<Boolean> add(String key, int exp, T o, Transcoder<T> tc);
+  <T> Future<CASResponse> add(String key, int exp, T o, Transcoder<T> tc, OperationListener<CASResponse> listener);
 
-  Future<Boolean> add(String key, int exp, Object o);
+  <T> Future<CASResponse> add(String key, int exp, T o, Transcoder<T> tc);
 
-  <T> Future<Boolean> set(String key, int exp, T o, Transcoder<T> tc);
+  Future<CASResponse> add(String key, int exp, Object o);
 
-  Future<Boolean> set(String key, int exp, Object o);
+  <T> Future<CASResponse> set(String key, int exp, T o, Transcoder<T> tc, OperationListener<CASResponse> listener);
 
-  <T> Future<Boolean> replace(String key, int exp, T o, Transcoder<T> tc);
+  <T> Future<CASResponse> set(String key, int exp, T o, Transcoder<T> tc);
 
-  Future<Boolean> replace(String key, int exp, Object o);
+  Future<CASResponse> set(String key, int exp, Object o);
+
+  <T> Future<CASResponse> replace(String key, int exp, T o, Transcoder<T> tc, OperationListener<CASResponse> listener);
+
+  <T> Future<CASResponse> replace(String key, int exp, T o, Transcoder<T> tc);
+
+  Future<CASResponse> replace(String key, int exp, Object o);
+
+  <T> Future<T> asyncGet(String key, Transcoder<T> tc, OperationListener<T> listener);
 
   <T> Future<T> asyncGet(String key, Transcoder<T> tc);
 
@@ -88,12 +103,15 @@ public interface MemcachedClientIF {
 
   Future<CASValue<Object>> asyncGetAndTouch(final String key, final int exp);
 
-  <T> Future<CASValue<T>> asyncGetAndTouch(final String key, final int exp,
-      final Transcoder<T> tc);
+  <T> Future<CASValue<T>> asyncGetAndTouch(final String key, final int exp, final Transcoder<T> tc);
+
+  <T> Future<CASValue<T>> asyncGetAndTouch(final String key, final int exp, final Transcoder<T> tc, OperationListener<CASValue<T>> listener);
 
   CASValue<Object> getAndTouch(String key, int exp);
 
   <T> CASValue<T> getAndTouch(String key, int exp, Transcoder<T> tc);
+
+  <T> Future<CASValue<T>> asyncGets(String key, Transcoder<T> tc, OperationListener<CASValue<T>> listener);
 
   <T> Future<CASValue<T>> asyncGets(String key, Transcoder<T> tc);
 
@@ -107,20 +125,47 @@ public interface MemcachedClientIF {
 
   Object get(String key);
 
-  <T> BulkFuture<Map<String, T>> asyncGetBulk(Iterator<String> keys,
-      Iterator<Transcoder<T>> tcs);
-  <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys,
-      Iterator<Transcoder<T>> tcs);
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keyIter, Iterator<Transcoder<T>> tcIter, OperationListener<Map<String, CASValue<T>>> listener);
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keyIter, Iterator<Transcoder<T>> tcIter, OperationListener<Map<String, CASValue<T>>> listener);
 
-  <T> BulkFuture<Map<String, T>> asyncGetBulk(Iterator<String> keys,
-      Transcoder<T> tc);
-  <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys,
-      Transcoder<T> tc);
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keyIter, Transcoder<T> tcIter, OperationListener<Map<String, CASValue<T>>> listener);
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keyIter, Transcoder<T> tcIter, OperationListener<Map<String, CASValue<T>>> listener);
+
+  BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(Iterator<String> keyIter, OperationListener<Map<String, CASValue<Object>>> listener);
+  BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(Collection<String> keyIter, OperationListener<Map<String, CASValue<Object>>> listener);
+
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keyIter, Iterator<Transcoder<T>> tcIter);
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keyIter, Iterator<Transcoder<T>> tcIter);
+
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Iterator<String> keyIter, Transcoder<T> tcIter);
+  <T> BulkFuture<Map<String, CASValue<T>>> asyncGetsBulk(Collection<String> keyIter, Transcoder<T> tcIter);
+
+  BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(Iterator<String> keyIter);
+  BulkFuture<Map<String, CASValue<Object>>> asyncGetsBulk(Collection<String> keyIter);
+
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(Iterator<String> keys, Iterator<Transcoder<T>> tcs, OperationListener<Map<String, T>> listener);
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys, Iterator<Transcoder<T>> tcs, OperationListener<Map<String, T>> listener);
+
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(Iterator<String> keys, Transcoder<T> tc, OperationListener<Map<String, T>> listener);
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys, Transcoder<T> tc, OperationListener<Map<String, T>> listener);
+
+  BulkFuture<Map<String, Object>> asyncGetBulk(Iterator<String> keys, OperationListener<Map<String, Object>> listener);
+  BulkFuture<Map<String, Object>> asyncGetBulk(Collection<String> keys, OperationListener<Map<String, Object>> listener);
+
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(Iterator<String> keys, Iterator<Transcoder<T>> tcs);
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys, Iterator<Transcoder<T>> tcs);
+
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(Iterator<String> keys, Transcoder<T> tc);
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(Collection<String> keys, Transcoder<T> tc);
 
   BulkFuture<Map<String, Object>> asyncGetBulk(Iterator<String> keys);
   BulkFuture<Map<String, Object>> asyncGetBulk(Collection<String> keys);
 
+  <T> BulkFuture<Map<String, T>> asyncGetBulk(OperationListener<Map<String, T>> listener, Transcoder<T> tc, String... keys);
+
   <T> BulkFuture<Map<String, T>> asyncGetBulk(Transcoder<T> tc, String... keys);
+
+  BulkFuture<Map<String, Object>> asyncGetBulk(OperationListener<Map<String, Object>> listener, String... keys);
 
   BulkFuture<Map<String, Object>> asyncGetBulk(String... keys);
 
@@ -134,10 +179,9 @@ public interface MemcachedClientIF {
 
   Map<String, Object> getBulk(String... keys);
 
-  <T> Future<Boolean> touch(final String key, final int exp,
-      final Transcoder<T> tc);
-
-  <T> Future<Boolean> touch(final String key, final int exp);
+  <T> Future<CASResponse> touch(final String key, final int exp, final Transcoder<T> tc, OperationListener<CASResponse> listener);
+  <T> Future<CASResponse> touch(final String key, final int exp, final Transcoder<T> tc);
+  <T> Future<CASResponse> touch(final String key, final int exp);
 
   Map<SocketAddress, String> getVersions();
 
@@ -161,13 +205,21 @@ public interface MemcachedClientIF {
 
   long decr(String key, int by, long def, int exp);
 
-  Future<Long> asyncIncr(String key, long by);
+  Future<CASLongResponse> asyncIncr(String key, long by);
 
-  Future<Long> asyncIncr(String key, int by);
+  Future<CASLongResponse> asyncIncr(String key, int by);
 
-  Future<Long> asyncDecr(String key, long by);
+  Future<CASLongResponse> asyncDecr(String key, long by);
 
-  Future<Long> asyncDecr(String key, int by);
+  Future<CASLongResponse> asyncDecr(String key, int by);
+
+  Future<CASLongResponse> asyncIncr(String key, long by, OperationListener<CASLongResponse> listener);
+
+  Future<CASLongResponse> asyncIncr(String key, int by, OperationListener<CASLongResponse> listener);
+
+  Future<CASLongResponse> asyncDecr(String key, long by, OperationListener<CASLongResponse> listener);
+
+  Future<CASLongResponse> asyncDecr(String key, int by, OperationListener<CASLongResponse> listener);
 
   long incr(String key, long by, long def);
 
@@ -177,11 +229,13 @@ public interface MemcachedClientIF {
 
   long decr(String key, int by, long def);
 
-  Future<Boolean> delete(String key);
+  Future<CASResponse> delete(String key);
 
   Future<Boolean> flush(int delay);
 
   Future<Boolean> flush();
+
+  Future<CASResponse> delete(String key, OperationListener<CASResponse> listener);
 
   void shutdown();
 

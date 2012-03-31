@@ -73,7 +73,7 @@ public class RedistributeFailureModeTest extends ClientBaseCase {
 
   // Just to make sure the sequence is being handled correctly
   public void testMixedSetsAndUpdates() throws Exception {
-    Collection<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+    Collection<Future<CASResponse>> futures = new ArrayList<Future<CASResponse>>();
     Collection<String> keys = new ArrayList<String>();
     Thread.sleep(100);
     for (int i = 0; i < 100; i++) {
@@ -87,9 +87,9 @@ public class RedistributeFailureModeTest extends ClientBaseCase {
     for (Map.Entry<String, Object> me : m.entrySet()) {
       assertEquals(me.getKey(), me.getValue());
     }
-    for (Iterator<Future<Boolean>> i = futures.iterator(); i.hasNext();) {
-      assertTrue(i.next().get(10, TimeUnit.MILLISECONDS));
-      assertFalse(i.next().get(10, TimeUnit.MILLISECONDS));
+    for (Iterator<Future<CASResponse>> i = futures.iterator(); i.hasNext();) {
+      assertTrue(i.next().get(10, TimeUnit.MILLISECONDS).type == CASResponseType.OK);
+      assertFalse(i.next().get(10, TimeUnit.MILLISECONDS).type == CASResponseType.OK);
     }
     System.err.println(getName() + " complete.");
   }

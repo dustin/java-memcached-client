@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,38 +21,24 @@
  * IN THE SOFTWARE.
  */
 
-package net.spy.memcached.protocol.binary;
+package net.spy.memcached;
 
-import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.OperationStatus;
+
+import java.util.concurrent.Future;
 
 /**
- * Implementation of the get operation.
+ * Interface provided to handle operations completions on memcached client.
+ * It allows you not to block on Future(T) object waiting for any result.
+ * @param <T> Type of data returned by Future(T).
  */
-class GetOperationImpl extends SingleKeyOperationImpl implements GetOperation {
-
-  static final byte GET_CMD = 0x00;
-
-  /**
-   * Length of the extra header stuff for a GET response.
-   */
-  static final int EXTRA_HDR_LEN = 4;
-
-  public GetOperationImpl(String k, GetOperation.Callback cb) {
-    super(GET_CMD, generateOpaque(), k, cb);
-  }
-
-  @Override
-  public void initialize() {
-    prepareBuffer(key, 0, EMPTY_BYTES);
-  }
-
-  @Override
-  protected void decodePayload(byte[] pl) {
-    final int flags = decodeInt(pl, 0);
-    final byte[] data = new byte[pl.length - EXTRA_HDR_LEN];
-    System.arraycopy(pl, EXTRA_HDR_LEN, data, 0, pl.length - EXTRA_HDR_LEN);
-    GetOperation.Callback gcb = (GetOperation.Callback) getCallback();
-    gcb.gotData(key, flags, data);
-    getCallback().receivedStatus(this, STATUS_OK);
-  }
+public interface OperationListener<T> {
+    /**
+     * This method calls when MemcachedClient got a completion event on it's operation.
+     * Implementations of this method should never block it's processing thread.
+     * @param client Client that was processing the operation.
+     * @param status Operation processing status.
+     * @param future Future(T) object holding result of operation.
+     */
+    public void onComplete(MemcachedClientIF client, OperationStatus status, Future<T> future);
 }

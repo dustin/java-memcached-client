@@ -59,7 +59,7 @@ abstract class BaseStoreOperationImpl extends OperationImpl {
   public void handleLine(String line) {
     assert getState() == OperationState.READING : "Read ``" + line
         + "'' when in " + getState() + " state";
-    getCallback().receivedStatus(matchStatus(line, STORED));
+    getCallback().receivedStatus(this, matchStatus(line, STORED));
     transitionState(OperationState.COMPLETE);
   }
 
@@ -79,7 +79,7 @@ abstract class BaseStoreOperationImpl extends OperationImpl {
   @Override
   protected void wasCancelled() {
     // XXX: Replace this comment with why I did this
-    getCallback().receivedStatus(CANCELLED);
+    getCallback().receivedStatus(this, CANCELLED);
   }
 
   public Collection<String> getKeys() {

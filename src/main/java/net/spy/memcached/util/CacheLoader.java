@@ -28,6 +28,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import net.spy.memcached.CASResponse;
+import net.spy.memcached.CASResponseType;
 import net.spy.memcached.MemcachedClientIF;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.internal.ImmediateFuture;
@@ -77,7 +79,7 @@ public class CacheLoader extends SpyObject {
    * @param i the iterator of data to load
    */
   public <T> Future<?> loadData(Iterator<Map.Entry<String, T>> i) {
-    Future<Boolean> mostRecent = null;
+    Future<CASResponse> mostRecent = null;
     while (i.hasNext()) {
       Map.Entry<String, T> e = i.next();
       mostRecent = push(e.getKey(), e.getValue());
@@ -107,8 +109,8 @@ public class CacheLoader extends SpyObject {
    * @param value the value
    * @return the future representing the stored data
    */
-  public <T> Future<Boolean> push(String k, T value) {
-    Future<Boolean> rv = null;
+  public <T> Future<CASResponse> push(String k, T value) {
+    Future<CASResponse> rv = null;
     while (rv == null) {
       try {
         rv = client.set(k, expiration, value);
@@ -132,12 +134,12 @@ public class CacheLoader extends SpyObject {
     return rv;
   }
 
-  private void watch(final String key, final Future<Boolean> f) {
+  private void watch(final String key, final Future<CASResponse> f) {
     if (executorService != null && storageListener != null) {
       executorService.execute(new Runnable() {
         public void run() {
           try {
-            storageListener.storeResult(key, f.get());
+            storageListener.storeResult(key, f.get().type == CASResponseType.OK);
           } catch (Exception e) {
             storageListener.errorStoring(key, e);
           }

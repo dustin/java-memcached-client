@@ -45,7 +45,7 @@ final class VersionOperationImpl extends OperationImpl implements
   @Override
   public void handleLine(String line) {
     assert line.startsWith("VERSION ");
-    getCallback().receivedStatus(
+    getCallback().receivedStatus(this,
         new OperationStatus(true, line.substring("VERSION ".length())));
     transitionState(OperationState.COMPLETE);
   }

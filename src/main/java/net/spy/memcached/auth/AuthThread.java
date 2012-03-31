@@ -66,7 +66,7 @@ public class AuthThread extends SpyThread {
           new AtomicReference<OperationStatus>();
 
       final OperationCallback cb = new OperationCallback() {
-        public void receivedStatus(OperationStatus val) {
+        public void receivedStatus(Operation operation, OperationStatus val) {
           // If the status we found was null, we're done.
           if (val.getMessage().length() == 0) {
             done.set(true);
@@ -77,7 +77,7 @@ public class AuthThread extends SpyThread {
           }
         }
 
-        public void complete() {
+        public void complete(Operation operation) {
           latch.countDown();
         }
       };

@@ -42,6 +42,6 @@ class VersionOperationImpl extends OperationImpl implements VersionOperation {
 
   @Override
   protected void decodePayload(byte[] pl) {
-    getCallback().receivedStatus(new OperationStatus(true, new String(pl)));
+    getCallback().receivedStatus(this, new OperationStatus(true, new String(pl)));
   }
 }

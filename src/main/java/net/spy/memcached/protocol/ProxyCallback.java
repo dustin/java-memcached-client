@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationStatus;
 
 /**
@@ -42,7 +43,7 @@ public class ProxyCallback implements GetOperation.Callback {
 
   public void addCallbacks(GetOperation o) {
     GetOperation.Callback c =
-        new GetCallbackWrapper(o.getKeys().size(),
+        new GetCallbackWrapper(o, o.getKeys().size(),
             (GetOperation.Callback) o.getCallback());
     allCallbacks.add(c);
     for (String s : o.getKeys()) {
@@ -63,15 +64,15 @@ public class ProxyCallback implements GetOperation.Callback {
     }
   }
 
-  public void receivedStatus(OperationStatus status) {
+  public void receivedStatus(Operation operation, OperationStatus status) {
     for (GetOperation.Callback c : allCallbacks) {
-      c.receivedStatus(status);
+      c.receivedStatus(operation, status);
     }
   }
 
-  public void complete() {
+  public void complete(Operation operation) {
     for (GetOperation.Callback c : allCallbacks) {
-      c.complete();
+      c.complete(operation);
     }
   }
 

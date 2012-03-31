@@ -237,11 +237,11 @@ public class TapConnectionProvider extends SpyObject implements
       public Operation newOp(final MemcachedNode n,
           final CountDownLatch latch) {
         return opFact.noop(new OperationCallback() {
-          public void complete() {
+          public void complete(Operation operation) {
             latch.countDown();
           }
 
-          public void receivedStatus(OperationStatus s) {
+          public void receivedStatus(Operation operation, OperationStatus s) {
             // Nothing special when receiving status, only
             // necessary to complete the interface
           }

@@ -23,6 +23,7 @@
 package net.spy.memcached.protocol;
 
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationStatus;
 
 /**
@@ -32,12 +33,14 @@ public class GetCallbackWrapper implements GetOperation.Callback {
 
   private static final OperationStatus END = new OperationStatus(true, "END");
 
+  private Operation operation;
   private boolean completed = false;
   private int remainingKeys = 0;
   private GetOperation.Callback cb = null;
 
-  public GetCallbackWrapper(int k, GetOperation.Callback c) {
+  public GetCallbackWrapper(Operation op, int k, GetOperation.Callback c) {
     super();
+    operation = op;
     remainingKeys = k;
     cb = c;
   }
@@ -47,19 +50,19 @@ public class GetCallbackWrapper implements GetOperation.Callback {
     cb.gotData(key, flags, data);
     if (--remainingKeys == 0) {
       // Fake a status line
-      receivedStatus(END);
+      receivedStatus(operation, END);
     }
   }
 
-  public void receivedStatus(OperationStatus status) {
+  public void receivedStatus(Operation operation, OperationStatus status) {
     if (!completed) {
-      cb.receivedStatus(status);
+      cb.receivedStatus(operation, status);
     }
   }
 
-  public void complete() {
+  public void complete(Operation operation) {
     assert !completed;
-    cb.complete();
+    cb.complete(operation);
     completed = true;
   }
 }
