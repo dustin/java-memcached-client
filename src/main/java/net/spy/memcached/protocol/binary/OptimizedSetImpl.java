@@ -32,12 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.spy.memcached.KeyUtil;
-import net.spy.memcached.ops.CASOperation;
-import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.OperationState;
-import net.spy.memcached.ops.OperationStatus;
-import net.spy.memcached.ops.StoreType;
-import net.spy.memcached.ops.VBucketAware;
+import net.spy.memcached.ops.*;
 
 /**
  * Optimized Set operation for folding a bunch of sets together.
@@ -153,8 +148,8 @@ public class OptimizedSetImpl extends MultiKeyOperationImpl {
   protected void finishedPayload(byte[] pl) throws IOException {
     if (responseOpaque == terminalOpaque) {
       for (OperationCallback cb : callbacks.values()) {
-        cb.receivedStatus(STATUS_OK);
-        cb.complete();
+        cb.receivedStatus(this, STATUS_OK);
+        cb.complete(this);
       }
       transitionState(OperationState.COMPLETE);
     } else {
@@ -163,8 +158,8 @@ public class OptimizedSetImpl extends MultiKeyOperationImpl {
       assert errorCode != 0 : "Got no error on a quiet mutation.";
       OperationStatus status = getStatusForErrorCode(errorCode, pl);
       assert status != null : "Got no status for a quiet mutation error";
-      cb.receivedStatus(status);
-      cb.complete();
+      cb.receivedStatus(this, status);
+      cb.complete(this);
     }
     resetInput();
   }
@@ -177,11 +172,11 @@ public class OptimizedSetImpl extends MultiKeyOperationImpl {
 
   static class NoopCallback implements OperationCallback {
 
-    public void complete() {
+    public void complete(Operation operation) {
       // noop
     }
 
-    public void receivedStatus(OperationStatus status) {
+    public void receivedStatus(Operation operation, OperationStatus status) {
       // noop
     }
   }

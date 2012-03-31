@@ -97,8 +97,8 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
   public final synchronized void cancel() {
     cancelled = true;
     wasCancelled();
-    callback.receivedStatus(CANCELLED);
-    callback.complete();
+    callback.receivedStatus(this, CANCELLED);
+    callback.complete(this);
   }
 
   /**
@@ -137,7 +137,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
       cmd = null;
     }
     if (state == OperationState.COMPLETE) {
-      callback.complete();
+      callback.complete(this);
     }
   }
 
@@ -169,7 +169,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
     default:
       assert false;
     }
-    callback.receivedStatus(new OperationStatus(false,
+    callback.receivedStatus(this, new OperationStatus(false,
         exception.getMessage()));
     transitionState(OperationState.COMPLETE);
     throw exception;
@@ -187,27 +187,24 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
     handlingNode = to;
   }
 
-  @Override
   public synchronized void timeOut() {
     timedout = true;
-    callback.receivedStatus(TIMED_OUT);
-    callback.complete();
+    callback.receivedStatus(this, TIMED_OUT);
+    callback.complete(this);
   }
 
-  @Override
   public synchronized boolean isTimedOut() {
     return timedout;
   }
 
-  @Override
   public synchronized boolean isTimedOut(long ttlMillis) {
     long elapsed = System.nanoTime();
     long ttlNanos = ttlMillis * 1000 * 1000;
     if (elapsed - creationTime > ttlNanos) {
       timedOutUnsent = true;
       timedout = true;
-      callback.receivedStatus(TIMED_OUT);
-      callback.complete();
+      callback.receivedStatus(this, TIMED_OUT);
+      callback.complete(this);
     } else {
       // timedout would be false, but we cannot allow you to untimeout an
       // operation
@@ -219,7 +216,6 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
     return timedout;
   }
 
-  @Override
   public boolean isTimedOutUnsent() {
     return timedOutUnsent;
   }

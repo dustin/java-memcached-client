@@ -55,7 +55,7 @@ final class DeleteOperationImpl extends OperationImpl implements
   @Override
   public void handleLine(String line) {
     getLogger().debug("Delete of %s returned %s", key, line);
-    getCallback().receivedStatus(matchStatus(line, DELETED, NOT_FOUND));
+    getCallback().receivedStatus(this, matchStatus(line, DELETED, NOT_FOUND));
     transitionState(OperationState.COMPLETE);
   }
 

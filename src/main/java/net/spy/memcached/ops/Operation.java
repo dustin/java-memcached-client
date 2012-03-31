@@ -32,6 +32,10 @@ import net.spy.memcached.MemcachedNode;
  * Base interface for all operations.
  */
 public interface Operation {
+  /**
+   * Cas responded by server
+   */
+  long getResponseCas();
 
   /**
    * Has this operation been cancelled?

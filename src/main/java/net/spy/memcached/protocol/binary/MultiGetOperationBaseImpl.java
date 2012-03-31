@@ -114,7 +114,7 @@ abstract class MultiGetOperationBaseImpl extends MultiKeyOperationImpl {
   @Override
   protected void finishedPayload(byte[] pl) throws IOException {
     if (responseOpaque == terminalOpaque) {
-      getCallback().receivedStatus(STATUS_OK);
+      getCallback().receivedStatus(this, STATUS_OK);
       transitionState(OperationState.COMPLETE);
     } else if (errorCode != 0) {
       getLogger().warn("Error on key %s:  %s (%d)", keys.get(responseOpaque),

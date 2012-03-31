@@ -26,6 +26,7 @@ package net.spy.memcached;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.ascii.ExtensibleOperationImpl;
@@ -39,11 +40,11 @@ public class AsciiClientTest extends ProtocolBaseCase {
   public void testBadOperation() throws Exception {
     client.mconn.enqueueOperation("x",
         new ExtensibleOperationImpl(new OperationCallback() {
-          public void complete() {
+          public void complete(Operation operation) {
             System.err.println("Complete.");
           }
 
-          public void receivedStatus(OperationStatus s) {
+          public void receivedStatus(Operation operation, OperationStatus s) {
             System.err.println("Received a line.");
           }
         }) {

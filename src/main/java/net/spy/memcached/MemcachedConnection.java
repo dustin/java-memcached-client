@@ -439,7 +439,7 @@ public class MemcachedConnection extends SpyThread {
     if (read < 0) {
       if (currentOp instanceof TapOperation) {
         // If were doing tap then we won't throw an exception
-        currentOp.getCallback().complete();
+        currentOp.getCallback().complete(currentOp);
         ((TapOperation) currentOp).streamClosed(OperationState.COMPLETE);
         getLogger().debug("Completed read op: %s and giving the next %d bytes",
             currentOp, rbuf.remaining());

@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import junit.framework.TestCase;
 
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 
@@ -66,7 +67,7 @@ public class ErrorCodeTest extends TestCase {
           err.getValue().length());
 
       GetOperation op = opFact.get("key", new GetOperation.Callback() {
-        public void receivedStatus(OperationStatus s) {
+        public void receivedStatus(Operation operation, OperationStatus s) {
           assert !s.isSuccess();
           assert err.getValue().equals(s.getMessage());
         }
@@ -75,7 +76,7 @@ public class ErrorCodeTest extends TestCase {
 
         }
 
-        public void complete() {
+        public void complete(Operation operation) {
         }
       });
       ByteBuffer bb = ByteBuffer.wrap(b);

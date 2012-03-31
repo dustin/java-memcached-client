@@ -54,33 +54,33 @@ public class BinaryClientTest extends ProtocolBaseCase {
 
   public void testCASAppendFail() throws Exception {
     final String key = "append.key";
-    assertTrue(client.set(key, 5, "test").get());
+    assertTrue(client.set(key, 5, "test").get().type == CASResponseType.OK);
     CASValue<Object> casv = client.gets(key);
-    assertFalse(client.append(casv.getCas() + 1, key, "es").get());
+    assertFalse(client.append(casv.getCas() + 1, key, "es").get().type == CASResponseType.OK);
     assertEquals("test", client.get(key));
   }
 
   public void testCASAppendSuccess() throws Exception {
     final String key = "append.key";
-    assertTrue(client.set(key, 5, "test").get());
+    assertTrue(client.set(key, 5, "test").get().type == CASResponseType.OK);
     CASValue<Object> casv = client.gets(key);
-    assertTrue(client.append(casv.getCas(), key, "es").get());
+    assertTrue(client.append(casv.getCas(), key, "es").get().type == CASResponseType.OK);
     assertEquals("testes", client.get(key));
   }
 
   public void testCASPrependFail() throws Exception {
     final String key = "append.key";
-    assertTrue(client.set(key, 5, "test").get());
+    assertTrue(client.set(key, 5, "test").get().type == CASResponseType.OK);
     CASValue<Object> casv = client.gets(key);
-    assertFalse(client.prepend(casv.getCas() + 1, key, "es").get());
+    assertFalse(client.prepend(casv.getCas() + 1, key, "es").get().type == CASResponseType.OK);
     assertEquals("test", client.get(key));
   }
 
   public void testCASPrependSuccess() throws Exception {
     final String key = "append.key";
-    assertTrue(client.set(key, 5, "test").get());
+    assertTrue(client.set(key, 5, "test").get().type == CASResponseType.OK);
     CASValue<Object> casv = client.gets(key);
-    assertTrue(client.prepend(casv.getCas(), key, "es").get());
+    assertTrue(client.prepend(casv.getCas(), key, "es").get().type == CASResponseType.OK);
     assertEquals("estest", client.get(key));
   }
 

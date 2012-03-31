@@ -2,6 +2,8 @@
 
 - asynchronous event callbacks
 - gets bulk support (multi-get with provided cas values, tested only for binary protocol)
+- CAS values for any of data update op supported by binary protocol: add, set, replace, cat (prepend/append))
+- (planned) group key (single locator per request) support for multi-gets requests
 
 # Building
 

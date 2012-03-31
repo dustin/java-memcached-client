@@ -70,9 +70,9 @@ public class CancelFailureModeTest extends ClientBaseCase {
   }
 
   public void testQueueingToDownServer() throws Exception {
-    Future<Boolean> f = client.add("someKey", 0, "some object");
+    Future<CASResponse> f = client.add("someKey", 0, "some object");
     try {
-      boolean b = f.get();
+      boolean b = f.get().type == CASResponseType.OK;
       fail("Should've thrown an exception, returned " + b);
     } catch (ExecutionException e) {
       // probably OK

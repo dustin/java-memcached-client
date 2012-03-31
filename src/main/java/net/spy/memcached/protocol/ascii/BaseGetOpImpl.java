@@ -86,13 +86,18 @@ abstract class BaseGetOpImpl extends OperationImpl {
   }
 
   @Override
+  public long getResponseCas() {
+    return casValue;
+  }
+
+  @Override
   public final void handleLine(String line) {
     if (line.equals("END")) {
       getLogger().debug("Get complete!");
       if (hasValue) {
-        getCallback().receivedStatus(END);
+        getCallback().receivedStatus(this, END);
       } else {
-        getCallback().receivedStatus(NOT_FOUND);
+        getCallback().receivedStatus(this, NOT_FOUND);
       }
       transitionState(OperationState.COMPLETE);
       data = null;
@@ -111,7 +116,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
       getLogger().debug("Set read type to data");
       setReadType(OperationReadType.DATA);
     } else if (line.equals("LOCK_ERROR")) {
-      getCallback().receivedStatus(LOCK_ERROR);
+      getCallback().receivedStatus(this, LOCK_ERROR);
       transitionState(OperationState.COMPLETE);
     } else {
       assert false : "Unknown line type: " + line;
@@ -219,7 +224,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
 
   @Override
   protected final void wasCancelled() {
-    getCallback().receivedStatus(CANCELLED);
+    getCallback().receivedStatus(this, CANCELLED);
   }
 
   @Override

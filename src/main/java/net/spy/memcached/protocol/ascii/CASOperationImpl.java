@@ -26,7 +26,7 @@ import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
 
-import net.spy.memcached.CASResponse;
+import net.spy.memcached.CASResponseType;
 import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.CASOperationStatus;
@@ -43,11 +43,11 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
   private static final int OVERHEAD = 64;
 
   private static final OperationStatus STORED = new CASOperationStatus(true,
-      "STORED", CASResponse.OK);
+      "STORED", CASResponseType.OK);
   private static final OperationStatus NOT_FOUND = new CASOperationStatus(
-      false, "NOT_FOUND", CASResponse.NOT_FOUND);
+      false, "NOT_FOUND", CASResponseType.NOT_FOUND);
   private static final OperationStatus EXISTS = new CASOperationStatus(false,
-      "EXISTS", CASResponse.EXISTS);
+      "EXISTS", CASResponseType.EXISTS);
 
   private final String key;
   private final long casValue;
@@ -69,7 +69,7 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
   public void handleLine(String line) {
     assert getState() == OperationState.READING : "Read ``" + line
         + "'' when in " + getState() + " state";
-    getCallback().receivedStatus(matchStatus(line, STORED, NOT_FOUND, EXISTS));
+    getCallback().receivedStatus(this, matchStatus(line, STORED, NOT_FOUND, EXISTS));
     transitionState(OperationState.COMPLETE);
   }
 

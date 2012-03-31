@@ -140,34 +140,34 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     final String key = "castestkey";
     // First, make sure it doesn't work for a non-existing value.
     assertSame("Expected error CASing with no existing value.",
-        CASResponse.NOT_FOUND, client.cas(key, 0x7fffffffffL, "bad value"));
+        CASResponseType.NOT_FOUND, client.cas(key, 0x7fffffffffL, "bad value"));
 
     // OK, stick a value in here.
-    assertTrue(client.add(key, 5, "original value").get());
+    assertTrue(client.add(key, 5, "original value").get().type == CASResponseType.OK);
     CASValue<?> getsVal = client.gets(key);
     assertEquals("original value", getsVal.getValue());
 
     // Now try it with an existing value, but wrong CAS id
-    assertSame("Expected error CASing with invalid id", CASResponse.EXISTS,
+    assertSame("Expected error CASing with invalid id", CASResponseType.EXISTS,
         client.cas(key, getsVal.getCas() + 1, "broken value"));
     // Validate the original value is still in tact.
     assertEquals("original value", getsVal.getValue());
 
     // OK, now do a valid update
     assertSame("Expected successful CAS with correct id (" + getsVal.getCas()
-        + ")", CASResponse.OK, client.cas(key, getsVal.getCas(), "new value"));
+        + ")", CASResponseType.OK, client.cas(key, getsVal.getCas(), "new value"));
     assertEquals("new value", client.get(key));
 
     // Test a CAS replay
     assertSame("Expected unsuccessful CAS with replayed id",
-        CASResponse.EXISTS, client.cas(key, getsVal.getCas(), "crap value"));
+        CASResponseType.EXISTS, client.cas(key, getsVal.getCas(), "crap value"));
     assertEquals("new value", client.get(key));
   }
 
   public void testReallyLongCASId() throws Exception {
     String key = "this-is-my-key";
     assertSame("Expected error CASing with no existing value.",
-        CASResponse.NOT_FOUND,
+        CASResponseType.NOT_FOUND,
         client.cas(key, 9223372036854775807L, "bad value"));
   }
 
@@ -298,10 +298,10 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
   public void testAdd() throws Exception {
     assertNull(client.get("test1"));
     assert !client.asyncGet("test1").getStatus().isSuccess();
-    assertTrue(client.set("test1", 5, "test1value").get());
+    assertTrue(client.set("test1", 5, "test1value").get().type == CASResponseType.OK);
     assertEquals("test1value", client.get("test1"));
     assert client.asyncGet("test1").getStatus().isSuccess();
-    assertFalse(client.add("test1", 5, "ignoredvalue").get());
+    assertFalse(client.add("test1", 5, "ignoredvalue").get().type == CASResponseType.OK);
     assert !client.add("test1", 5, "ignoredvalue").getStatus().isSuccess();
     // Should return the original value
     assertEquals("test1value", client.get("test1"));
@@ -311,9 +311,9 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     Transcoder<String> t = new TestTranscoder();
     assertNull(client.get("test1", t));
     assert !client.asyncGet("test1", t).getStatus().isSuccess();
-    assertTrue(client.set("test1", 5, "test1value", t).get());
+    assertTrue(client.set("test1", 5, "test1value", t).get().type == CASResponseType.OK);
     assertEquals("test1value", client.get("test1", t));
-    assertFalse(client.add("test1", 5, "ignoredvalue", t).get());
+    assertFalse(client.add("test1", 5, "ignoredvalue", t).get().type == CASResponseType.OK);
     assert !client.add("test1", 5, "ignoredvalue", t).getStatus().isSuccess();
     // Should return the original value
     assertEquals("test1value", client.get("test1", t));
@@ -363,7 +363,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
   // Just to make sure the sequence is being handled correctly
   public void testMixedSetsAndUpdates() throws Exception {
-    Collection<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
+    Collection<Future<CASResponse>> futures = new ArrayList<Future<CASResponse>>();
     Collection<String> keys = new ArrayList<String>();
     for (int i = 0; i < 100; i++) {
       String key = "k" + i;
@@ -376,9 +376,9 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     for (Map.Entry<String, Object> me : m.entrySet()) {
       assertEquals(me.getKey(), me.getValue());
     }
-    for (Iterator<Future<Boolean>> i = futures.iterator(); i.hasNext();) {
-      assertTrue(i.next().get());
-      assertFalse(i.next().get());
+    for (Iterator<Future<CASResponse>> i = futures.iterator(); i.hasNext();) {
+      assertTrue(i.next().get().type == CASResponseType.OK);
+      assertFalse(i.next().get().type == CASResponseType.OK);
     }
   }
 
@@ -527,27 +527,27 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
   public void testAsyncIncrement() throws Exception {
     String k = "async-incr";
     client.set(k, 0, "5");
-    Future<Long> f = client.asyncIncr(k, 1);
-    assertEquals(6, (long) f.get());
+    Future<CASLongResponse> f = client.asyncIncr(k, 1);
+    assertEquals(6, f.get().value);
   }
 
   public void testAsyncIncrementNonExistent() throws Exception {
     String k = "async-incr-non-existent";
-    Future<Long> f = client.asyncIncr(k, 1);
-    assertEquals(-1, (long) f.get());
+    Future<CASLongResponse> f = client.asyncIncr(k, 1);
+    assertEquals(-1, f.get().value);
   }
 
   public void testAsyncDecrement() throws Exception {
     String k = "async-decr";
     client.set(k, 0, "5");
-    Future<Long> f = client.asyncDecr(k, 1);
-    assertEquals(4, (long) f.get());
+    Future<CASLongResponse> f = client.asyncDecr(k, 1);
+    assertEquals(4, f.get().value);
   }
 
   public void testAsyncDecrementNonExistent() throws Exception {
     String k = "async-decr-non-existent";
-    Future<Long> f = client.asyncDecr(k, 1);
-    assertEquals(-1, (long) f.get());
+    Future<CASLongResponse> f = client.asyncDecr(k, 1);
+    assertEquals(-1, f.get().value);
   }
 
   public void testConcurrentMutation() throws Throwable {
@@ -625,7 +625,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     }
 
     do {
-      set = client.set(key, 0, value).get();
+      set = client.set(key, 0, value).get().type == CASResponseType.OK;
       j++;
     } while (!set && j < 10);
     assert set;
@@ -790,12 +790,12 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
       futures.add(client.set(k, 5, "xval"));
       futures.add(client.asyncGet(k));
     }
-    OperationFuture<Boolean> sf = client.set(k, 5, "myxval");
+    OperationFuture<CASResponse> sf = client.set(k, 5, "myxval");
     GetFuture<Object> gf = client.asyncGet(k);
     for (Future<?> f : futures) {
       f.cancel(true);
     }
-    assertTrue(sf.get());
+    assertTrue(sf.get().type == CASResponseType.OK);
     assert sf.getStatus().isSuccess();
     assertEquals("myxval", gf.get());
     assert gf.getStatus().isSuccess();
@@ -806,7 +806,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
         + System.currentTimeMillis();
     final String value = "Skiing rocks if you can find the time to go!";
 
-    assertTrue(client.set(key, 6000, value).get());
+    assertTrue(client.set(key, 6000, value).get().type == CASResponseType.OK);
     Object output = client.get(key);
     assertNotNull("output is null", output);
     assertEquals("output is not equal", value, output);
@@ -817,8 +817,8 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
         "junit.Здравствуйте." + System.currentTimeMillis();
     final String value = "Skiing rocks if you can find the time to go!";
 
-    assertTrue(client.set(key, 6000, value).get());
-    assertTrue(client.delete(key).get());
+    assertTrue(client.set(key, 6000, value).get().type == CASResponseType.OK);
+    assertTrue(client.delete(key).get().type == CASResponseType.OK);
     assertNull(client.get(key));
   }
 
@@ -829,7 +829,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
       final String key =
           "junit.Здравствуйте." + System.currentTimeMillis() + "."
               + i;
-      assertTrue(client.set(key, 6000, value).get());
+      assertTrue(client.set(key, 6000, value).get().type == CASResponseType.OK);
       keys.add(key);
     }
 
@@ -843,11 +843,11 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
   public void testUTF8Value() throws Exception {
     final String key = "junit.plaintext." + System.currentTimeMillis();
-    final String value = "Здравствуйте Здравствуйте �"
-        + "�дравствуйте Skiing rocks if you can find the time "
+    final String value = "Здравствуйте Здравствуйте �"
+        + "�дравствуйте Skiing rocks if you can find the time "
         + "to go!";
 
-    assertTrue(client.set(key, 6000, value).get());
+    assertTrue(client.set(key, 6000, value).get().type == CASResponseType.OK);
     Object output = client.get(key);
     assertNotNull("output is null", output);
     assertEquals("output is not equal", value, output);
@@ -855,31 +855,31 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
   public void testAppend() throws Exception {
     final String key = "append.key";
-    assertTrue(client.set(key, 5, "test").get());
-    OperationFuture<Boolean> op = client.append(0, key, "es");
-    assertTrue(op.get());
+    assertTrue(client.set(key, 5, "test").get().type == CASResponseType.OK);
+    OperationFuture<CASResponse> op = client.append(0, key, "es");
+    assertTrue(op.get().type == CASResponseType.OK);
     assert op.getStatus().isSuccess();
     assertEquals("testes", client.get(key));
   }
 
   public void testPrepend() throws Exception {
     final String key = "prepend.key";
-    assertTrue(client.set(key, 5, "test").get());
-    OperationFuture<Boolean> op = client.prepend(0, key, "es");
-    assertTrue(op.get());
+    assertTrue(client.set(key, 5, "test").get().type == CASResponseType.OK);
+    OperationFuture<CASResponse> op = client.prepend(0, key, "es");
+    assertTrue(op.get().type == CASResponseType.OK);
     assert op.getStatus().isSuccess();
     assertEquals("estest", client.get(key));
   }
 
   public void testAppendNoSuchKey() throws Exception {
     final String key = "append.missing";
-    assertFalse(client.append(0, key, "es").get());
+    assertFalse(client.append(0, key, "es").get().type == CASResponseType.OK);
     assertNull(client.get(key));
   }
 
   public void testPrependNoSuchKey() throws Exception {
     final String key = "prepend.missing";
-    assertFalse(client.prepend(0, key, "es").get());
+    assertFalse(client.prepend(0, key, "es").get().type == CASResponseType.OK);
     assertNull(client.get(key));
   }
 

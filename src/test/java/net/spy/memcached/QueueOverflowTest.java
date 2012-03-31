@@ -90,7 +90,7 @@ public class QueueOverflowTest extends ClientBaseCase {
   }
 
   private void runOverflowTest(byte[] b) throws Exception {
-    Collection<Future<Boolean>> c = new ArrayList<Future<Boolean>>();
+    Collection<Future<CASResponse>> c = new ArrayList<Future<CASResponse>>();
     try {
       for (int i = 0; i < 1000; i++) {
         c.add(client.set("k" + i, 0, b));
@@ -101,7 +101,7 @@ public class QueueOverflowTest extends ClientBaseCase {
     }
     try {
       Thread.sleep(50);
-      for (Future<Boolean> f : c) {
+      for (Future<CASResponse> f : c) {
         f.get(1, TimeUnit.SECONDS);
       }
     } catch (TimeoutException e) {
@@ -111,7 +111,7 @@ public class QueueOverflowTest extends ClientBaseCase {
     }
     Thread.sleep(500);
     assertTrue("Was not able to set a key after failure.",
-        client.set("kx", 0, "woo").get(10, TimeUnit.SECONDS));
+        client.set("kx", 0, "woo").get(10, TimeUnit.SECONDS).type == CASResponseType.OK);
   }
 
   public void testOverflowingInputQueue() throws Exception {
@@ -161,6 +161,6 @@ public class QueueOverflowTest extends ClientBaseCase {
       }
     }
     Thread.sleep(500);
-    assertTrue(client.set("kx", 0, "woo").get(5, TimeUnit.SECONDS));
+    assertTrue(client.set("kx", 0, "woo").get(5, TimeUnit.SECONDS).type == CASResponseType.OK);
   }
 }

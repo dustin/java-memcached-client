@@ -53,7 +53,7 @@ final class StatsOperationImpl extends OperationImpl implements StatsOperation {
   @Override
   public void handleLine(String line) {
     if (line.equals("END")) {
-      cb.receivedStatus(END);
+      cb.receivedStatus(this, END);
       transitionState(OperationState.COMPLETE);
     } else {
       String[] parts = line.split(" ", 3);
@@ -69,7 +69,7 @@ final class StatsOperationImpl extends OperationImpl implements StatsOperation {
 
   @Override
   protected void wasCancelled() {
-    cb.receivedStatus(CANCELLED);
+    cb.receivedStatus(this, CANCELLED);
   }
 
   @Override
