@@ -34,7 +34,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Map;
+import java.util.HashMap;
 
+
+import net.spy.memcached.LocalStatType;
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.Operation;
@@ -604,5 +608,15 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     } else {
       authLatch = new CountDownLatch(0);
     }
+  }
+  
+  public Map<LocalStatType, String> getLocalStats(){
+    Map <LocalStatType, String> localStatMap;
+    localStatMap = new HashMap<LocalStatType, String>();
+    localStatMap.put(LocalStatType.WRITE_QUEUE_SIZE, String.valueOf(writeQ.size()));
+    localStatMap.put(LocalStatType.READ_QUEUE_SIZE, String.valueOf(readQ.size()));
+    localStatMap.put(LocalStatType.INPUT_QUEUE_SIZE, String.valueOf(inputQueue.size()));
+    
+    return localStatMap;
   }
 }

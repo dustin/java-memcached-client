@@ -29,7 +29,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.Collection;
+import java.util.Map;
 
+import net.spy.memcached.LocalStatType;
 import net.spy.memcached.ops.Operation;
 
 /**
@@ -220,4 +222,11 @@ public interface MemcachedNode {
   void setContinuousTimeout(boolean timedOut);
 
   int getContinuousTimeout();
+  
+  /**
+   * Get all local stats for this node grouped by Stat ID
+   *
+   * @return a Map of stats by Stat ID
+   */
+  Map<LocalStatType, String> getLocalStats();
 }
