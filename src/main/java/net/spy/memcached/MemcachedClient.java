@@ -53,6 +53,7 @@ import net.spy.memcached.internal.BulkGetFuture;
 import net.spy.memcached.internal.GetFuture;
 import net.spy.memcached.internal.OperationFuture;
 import net.spy.memcached.internal.SingleElementInfiniteIterator;
+import net.spy.memcached.LocalStatType;
 import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.CancelledOperationStatus;
 import net.spy.memcached.ops.ConcatenationType;
@@ -71,6 +72,8 @@ import net.spy.memcached.ops.TimedOutOperationStatus;
 import net.spy.memcached.transcoders.TranscodeService;
 import net.spy.memcached.transcoders.Transcoder;
 import net.spy.memcached.util.StringUtils;
+import net.spy.memcached.ops.OperationResponseHandler;
+import net.spy.memcached.ops.StoreOperationHandler;
 
 /**
  * Client to a memcached server.
@@ -297,9 +300,27 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     return rv;
   }
 
+  private <T> void asyncStore(StoreType storeType,
+      String key, int exp, T value, Transcoder<T> tc, OperationResponseHandler<Boolean> rh) {
+    CachedData co = tc.encode(value);
+    final CountDownLatch latch = new CountDownLatch(1);
+    final OperationFuture<Boolean> rv =
+        new OperationFuture<Boolean>(key, latch, operationTimeout);
+    StoreOperationHandler handler = new StoreOperationHandler(rv, latch, rh);
+    Operation op = opFact.store(storeType, key, co.getFlags(), exp,
+        co.getData(), handler);
+    rv.setOperation(op);
+    mconn.enqueueOperation(key, op);
+  }
+
   private OperationFuture<Boolean> asyncStore(StoreType storeType, String key,
       int exp, Object value) {
     return asyncStore(storeType, key, exp, value, transcoder);
+  }
+
+  private void asyncStore(StoreType storeType, String key,
+      int exp, Object value, OperationResponseHandler<Boolean> rh) {
+    asyncStore(storeType, key, exp, value, transcoder, rh);
   }
 
   private <T> OperationFuture<Boolean> asyncCat(ConcatenationType catType,
@@ -621,6 +642,43 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   }
 
   /**
+   * Add an object to the cache iff it does not exist already.
+   *
+   * <p>
+   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * and will be processed per the memcached protocol specification:
+   * </p>
+   *
+   * <p>
+   * Note that the return will be false any time a mutation has not occurred.
+   * </p>
+   *
+   * <blockquote>
+   * <p>
+   * The actual value sent may either be Unix time (number of seconds since
+   * January 1, 1970, as a 32-bit value), or a number of seconds starting from
+   * current time. In the latter case, this number of seconds may not exceed
+   * 60*60*24*30 (number of seconds in 30 days); if the number sent by a client
+   * is larger than that, the server will consider it to be real Unix time value
+   * rather than an offset from current time.
+   * </p>
+   * </blockquote>
+   *
+   * @param <T>
+   * @param key the key under which this object should be added.
+   * @param exp the expiration of this object
+   * @param o the object to store
+   * @param tc the transcoder to serialize and unserialize the value
+   * @param rh the response handler for add operation
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> void add(String key, int exp, T o,
+      Transcoder<T> tc, OperationResponseHandler<Boolean> rh) {
+    asyncStore(StoreType.add, key, exp, o, tc, rh);
+  }
+
+ /**
    * Add an object to the cache (using the default transcoder) iff it does not
    * exist already.
    *
@@ -653,6 +711,41 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   public OperationFuture<Boolean> add(String key, int exp, Object o) {
     return asyncStore(StoreType.add, key, exp, o, transcoder);
+  }
+
+  /**
+   * Add an object to the cache (using the default transcoder) iff it does not
+   * exist already.
+   *
+   * <p>
+   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * and will be processed per the memcached protocol specification:
+   * </p>
+   *
+   * <p>
+   * Note that the return will be false any time a mutation has not occurred.
+   * </p>
+   *
+   * <blockquote>
+   * <p>
+   * The actual value sent may either be Unix time (number of seconds since
+   * January 1, 1970, as a 32-bit value), or a number of seconds starting from
+   * current time. In the latter case, this number of seconds may not exceed
+   * 60*60*24*30 (number of seconds in 30 days); if the number sent by a client
+   * is larger than that, the server will consider it to be real Unix time value
+   * rather than an offset from current time.
+   * </p>
+   * </blockquote>
+   *
+   * @param key the key under which this object should be added.
+   * @param exp the expiration of this object
+   * @param o the object to store
+   * @param rh the response handler for add operation
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public void add(String key, int exp, Object o, OperationResponseHandler<Boolean> rh) {
+    asyncStore(StoreType.add, key, exp, o, transcoder, rh);
   }
 
   /**
@@ -692,6 +785,44 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     return asyncStore(StoreType.set, key, exp, o, tc);
   }
 
+ /**
+   * Set an object in the cache regardless of any existing value.
+   *
+   * <p>
+   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * and will be processed per the memcached protocol specification:
+   * </p>
+   *
+   * <p>
+   * Note that the return will be false any time a mutation has not occurred.
+   * </p>
+   *
+   * <blockquote>
+   * <p>
+   * The actual value sent may either be Unix time (number of seconds since
+   * January 1, 1970, as a 32-bit value), or a number of seconds starting from
+   * current time. In the latter case, this number of seconds may not exceed
+   * 60*60*24*30 (number of seconds in 30 days); if the number sent by a client
+   * is larger than that, the server will consider it to be real Unix time value
+   * rather than an offset from current time.
+   * </p>
+   * </blockquote>
+   *
+   * @param <T>
+   * @param key the key under which this object should be added.
+   * @param exp the expiration of this object
+   * @param o the object to store
+   * @param tc the transcoder to serialize and unserialize the value
+   * @param rh operation response handler for the set operation
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> void set(String key, int exp, T o,
+      Transcoder<T> tc, OperationResponseHandler<Boolean> rh) {
+    asyncStore(StoreType.set, key, exp, o, tc, rh);
+  }
+
+
   /**
    * Set an object in the cache (using the default transcoder) regardless of any
    * existing value.
@@ -725,6 +856,41 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   public OperationFuture<Boolean> set(String key, int exp, Object o) {
     return asyncStore(StoreType.set, key, exp, o, transcoder);
+  }
+
+ /**
+   * Set an object in the cache (using the default transcoder) regardless of any
+   * existing value.
+   *
+   * <p>
+   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * and will be processed per the memcached protocol specification:
+   * </p>
+   *
+   * <p>
+   * Note that the return will be false any time a mutation has not occurred.
+   * </p>
+   *
+   * <blockquote>
+   * <p>
+   * The actual value sent may either be Unix time (number of seconds since
+   * January 1, 1970, as a 32-bit value), or a number of seconds starting from
+   * current time. In the latter case, this number of seconds may not exceed
+   * 60*60*24*30 (number of seconds in 30 days); if the number sent by a client
+   * is larger than that, the server will consider it to be real Unix time value
+   * rather than an offset from current time.
+   * </p>
+   * </blockquote>
+   *
+   * @param key the key under which this object should be added.
+   * @param exp the expiration of this object
+   * @param o the object to store
+   * @param rh operation response handler for the set operation
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public void set(String key, int exp, Object o, OperationResponseHandler<Boolean> rh) {
+    asyncStore(StoreType.set, key, exp, o, transcoder, rh);
   }
 
   /**
@@ -765,6 +931,44 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     return asyncStore(StoreType.replace, key, exp, o, tc);
   }
 
+ /**
+   * Replace an object with the given value iff there is already a value for the
+   * given key.
+   *
+   * <p>
+   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * and will be processed per the memcached protocol specification:
+   * </p>
+   *
+   * <p>
+   * Note that the return will be false any time a mutation has not occurred.
+   * </p>
+   *
+   * <blockquote>
+   * <p>
+   * The actual value sent may either be Unix time (number of seconds since
+   * January 1, 1970, as a 32-bit value), or a number of seconds starting from
+   * current time. In the latter case, this number of seconds may not exceed
+   * 60*60*24*30 (number of seconds in 30 days); if the number sent by a client
+   * is larger than that, the server will consider it to be real Unix time value
+   * rather than an offset from current time.
+   * </p>
+   * </blockquote>
+   *
+   * @param <T>
+   * @param key the key under which this object should be added.
+   * @param exp the expiration of this object
+   * @param o the object to store
+   * @param tc the transcoder to serialize and unserialize the value
+   * @param rh operation response handler for the replace operation
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public <T> void replace(String key, int exp, T o,
+      Transcoder<T> tc, OperationResponseHandler<Boolean> rh) {
+    asyncStore(StoreType.replace, key, exp, o, tc, rh);
+  }
+
   /**
    * Replace an object with the given value (transcoded with the default
    * transcoder) iff there is already a value for the given key.
@@ -798,6 +1002,41 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   public OperationFuture<Boolean> replace(String key, int exp, Object o) {
     return asyncStore(StoreType.replace, key, exp, o, transcoder);
+  }
+
+ /**
+   * Replace an object with the given value (transcoded with the default
+   * transcoder) iff there is already a value for the given key.
+   *
+   * <p>
+   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * and will be processed per the memcached protocol specification:
+   * </p>
+   *
+   * <p>
+   * Note that the return will be false any time a mutation has not occurred.
+   * </p>
+   *
+   * <blockquote>
+   * <p>
+   * The actual value sent may either be Unix time (number of seconds since
+   * January 1, 1970, as a 32-bit value), or a number of seconds starting from
+   * current time. In the latter case, this number of seconds may not exceed
+   * 60*60*24*30 (number of seconds in 30 days); if the number sent by a client
+   * is larger than that, the server will consider it to be real Unix time value
+   * rather than an offset from current time.
+   * </p>
+   * </blockquote>
+   *
+   * @param key the key under which this object should be added.
+   * @param exp the expiration of this object
+   * @param o the object to store
+   * @param rh operation response handler for the replace operation
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public void replace(String key, int exp, Object o, OperationResponseHandler<Boolean> rh) {
+    asyncStore(StoreType.replace, key, exp, o, transcoder, rh);
   }
 
   /**
@@ -1408,6 +1647,18 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     return rv;
   }
 
+  /**
+   * Get all of the local stats from all of the connections. This will not 
+   * send a call to server but report only stats that are known to client.
+   * The stats are grouped by Node (SocketAddress) and Stat ID
+   *
+   * @return a Map of a Map of stats by Node
+   * 
+   */
+  public Map<SocketAddress, Map<LocalStatType, String>> getLocalStats() {
+    return mconn.getLocalStats();
+  }
+  
   /**
    * Get all of the stats from all of the connections.
    *
