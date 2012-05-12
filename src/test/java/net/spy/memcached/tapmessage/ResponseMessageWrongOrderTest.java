@@ -51,7 +51,7 @@ public class ResponseMessageWrongOrderTest extends ResponseMessageBaseCase {
     binReqTapMutation.put(5, (byte)0x06); // datatype
     binReqTapMutation.put(11, (byte)0x09); // body length 1 key 8 value
     // the flags themselves, 0x0200 for four bytes starting at 32
-    binReqTapMutation.put(33, (byte)0x02);
+    binReqTapMutation.put(33, (byte)0x03);
 
     // key and value
     binReqTapMutation.put(40, (byte)'a');

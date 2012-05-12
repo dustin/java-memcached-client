@@ -54,7 +54,7 @@ public class ResponseMessageFixedOrderTest extends ResponseMessageBaseCase {
     binReqTapMutation.put(11, (byte)0x09); // body length 1 key 8 value
     binReqTapMutation.put(27, (byte)0x04); // TAP_FLAG_NETWORK_BYTE_ORDER; fixed
     // the flags themselves, 0x0200 for four bytes starting at 32
-    binReqTapMutation.put(34, (byte)0x02);
+    binReqTapMutation.put(34, (byte)0x03);
 
     // key and value
     binReqTapMutation.put(40, (byte)'a');

@@ -147,7 +147,7 @@ public class ResponseMessageBaseCase {
    */
   @Test
   public void testGetItemFlags() {
-    int expResult = (int)0x0200;
+    int expResult = (int)0x0300;
     int result = instance.getItemFlags();
     assertEquals(expResult, result);
   }
