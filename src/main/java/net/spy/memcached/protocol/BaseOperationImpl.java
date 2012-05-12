@@ -31,6 +31,7 @@ import java.util.HashSet;
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.ops.CancelledOperationStatus;
+import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
@@ -170,7 +171,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
       assert false;
     }
     callback.receivedStatus(new OperationStatus(false,
-        exception.getMessage()));
+        exception.getMessage(), ErrorCode.EXCEPTION, exception));
     transitionState(OperationState.COMPLETE);
     throw exception;
   }

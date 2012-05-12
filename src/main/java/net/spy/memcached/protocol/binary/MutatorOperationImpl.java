@@ -23,6 +23,7 @@
 
 package net.spy.memcached.protocol.binary;
 
+import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.OperationCallback;
@@ -66,8 +67,9 @@ class MutatorOperationImpl extends SingleKeyOperationImpl implements
 
   @Override
   protected void decodePayload(byte[] pl) {
+    ErrorCode ec = ErrorCode.getErrorCode((byte)errorCode);
     getCallback().receivedStatus(
-        new OperationStatus(true, String.valueOf(decodeLong(pl, 0))));
+        new OperationStatus(true, String.valueOf(decodeLong(pl, 0)), ec));
   }
 
   public long getBy() {

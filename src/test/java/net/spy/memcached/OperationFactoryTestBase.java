@@ -32,6 +32,7 @@ import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
 import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.DeleteOperation;
+import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
@@ -226,7 +227,7 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
   public void testMultipleGetOperationFanout() {
     Collection<String> keys = Arrays.asList("k1", "k2", "k3");
     Mock m = mock(GetOperation.Callback.class);
-    OperationStatus st = new OperationStatus(true, "blah");
+    OperationStatus st = new OperationStatus(true, "blah", ErrorCode.SUCCESS);
     m.expects(once()).method("complete");
     m.expects(once()).method("receivedStatus").with(same(st));
     m.expects(once()).method("gotData").with(eq("k1"), eq(1),

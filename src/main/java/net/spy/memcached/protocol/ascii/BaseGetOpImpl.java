@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import net.spy.memcached.KeyUtil;
+import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.GetAndTouchOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetlOperation;
@@ -42,11 +43,12 @@ import net.spy.memcached.util.StringUtils;
  */
 abstract class BaseGetOpImpl extends OperationImpl {
 
-  private static final OperationStatus END = new OperationStatus(true, "END");
+  private static final OperationStatus END = new OperationStatus(true, "END",
+      ErrorCode.SUCCESS);
   private static final OperationStatus NOT_FOUND = new OperationStatus(false,
-      "NOT_FOUND");
+      "NOT_FOUND", ErrorCode.ERR_NOT_FOUND);
   private static final OperationStatus LOCK_ERROR = new OperationStatus(false,
-      "LOCK_ERROR");
+      "LOCK_ERROR", ErrorCode.ERR_EXISTS);
   private static final byte[] RN_BYTES = "\r\n".getBytes();
   private final String cmd;
   private final Collection<String> keys;

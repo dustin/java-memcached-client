@@ -22,6 +22,7 @@
 
 package net.spy.memcached.protocol;
 
+import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.OperationStatus;
 
@@ -30,7 +31,8 @@ import net.spy.memcached.ops.OperationStatus;
  */
 public class GetCallbackWrapper implements GetOperation.Callback {
 
-  private static final OperationStatus END = new OperationStatus(true, "END");
+  private static final OperationStatus END = new OperationStatus(true, "END",
+      ErrorCode.SUCCESS);
 
   private boolean completed = false;
   private int remainingKeys = 0;

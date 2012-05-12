@@ -24,6 +24,7 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
+import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StatsOperation;
@@ -33,7 +34,8 @@ import net.spy.memcached.ops.StatsOperation;
  */
 final class StatsOperationImpl extends OperationImpl implements StatsOperation {
 
-  private static final OperationStatus END = new OperationStatus(true, "END");
+  private static final OperationStatus END = new OperationStatus(true, "END",
+      ErrorCode.SUCCESS);
 
   private static final byte[] MSG = "stats\r\n".getBytes();
 

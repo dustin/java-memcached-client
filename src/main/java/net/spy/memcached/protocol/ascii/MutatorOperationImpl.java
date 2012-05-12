@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import net.spy.memcached.KeyUtil;
+import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.OperationCallback;
@@ -42,7 +43,7 @@ final class MutatorOperationImpl extends OperationImpl implements
   public static final int OVERHEAD = 32;
 
   private static final OperationStatus NOT_FOUND = new OperationStatus(false,
-      "NOT_FOUND");
+      "NOT_FOUND", ErrorCode.ERR_NOT_FOUND);
 
   private final Mutator mutator;
   private final String key;
@@ -63,7 +64,7 @@ final class MutatorOperationImpl extends OperationImpl implements
     if (line.equals("NOT_FOUND")) {
       found = NOT_FOUND;
     } else {
-      found = new OperationStatus(true, line);
+      found = new OperationStatus(true, line, ErrorCode.SUCCESS);
     }
     getCallback().receivedStatus(found);
     transitionState(OperationState.COMPLETE);

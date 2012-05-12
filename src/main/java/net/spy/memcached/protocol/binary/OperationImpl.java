@@ -52,7 +52,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
   protected static final byte[] EMPTY_BYTES = new byte[0];
 
   protected static final OperationStatus STATUS_OK = new CASOperationStatus(
-      true, "OK", CASResponse.OK);
+      true, "OK", ErrorCode.SUCCESS, CASResponse.OK);
 
   private static final AtomicInteger SEQ_NUMBER = new AtomicInteger(0);
 
@@ -178,17 +178,18 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
    */
   protected OperationStatus getStatusForErrorCode(short errCode, byte[] errPl)
     throws IOException {
-    switch (ErrorCode.getErrorCode(errCode)) {
+    ErrorCode ec = ErrorCode.getErrorCode(errCode);
+    switch (ec) {
     case SUCCESS:
       return STATUS_OK;
     case ERR_NOT_FOUND:
-      return new CASOperationStatus(false, new String(errPl),
+      return new CASOperationStatus(false, new String(errPl), ec,
           CASResponse.NOT_FOUND);
     case ERR_EXISTS:
-      return new CASOperationStatus(false, new String(errPl),
+      return new CASOperationStatus(false, new String(errPl), ec,
           CASResponse.EXISTS);
     case ERR_NOT_STORED:
-      return new CASOperationStatus(false, new String(errPl),
+      return new CASOperationStatus(false, new String(errPl), ec,
           CASResponse.NOT_FOUND);
     case ERR_2BIG:
     case ERR_INTERNAL:
@@ -201,7 +202,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
     case ERR_NOT_SUPPORTED:
     case ERR_BUSY:
     case ERR_TEMP_FAIL:
-      return new OperationStatus(false, new String(errPl));
+      return new OperationStatus(false, new String(errPl), ec);
     default:
       return null;
     }
