@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
       new CancelledOperationStatus();
   public static final OperationStatus TIMED_OUT=
       new TimedOutOperationStatus();
-  private OperationState state = OperationState.WRITE_QUEUED;
+  private volatile OperationState state = OperationState.WRITE_QUEUED;
   private ByteBuffer cmd = null;
   private boolean cancelled = false;
   private OperationException exception = null;
