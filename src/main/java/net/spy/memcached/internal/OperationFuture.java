@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,13 @@ import net.spy.memcached.ops.OperationStatus;
 /**
  * Managed future for operations.
  *
- * Not intended for general use.
+ * <p>From an OperationFuture, application code can determine if the status of a
+ * given Operation in an asynchronous manner.
+ *
+ * <p>If for example we needed to update the keys "user:<userid>:name",
+ * "user:<userid>:friendlist" because later in the method we were going to
+ * verify the change occurred as expected interacting with the user, we can
+ * fire multiple IO operations simultaneously with this concept.
  *
  * @param <T> Type of object returned from this future.
  */
@@ -53,10 +59,29 @@ public class OperationFuture<T> extends SpyObject implements Future<T> {
   private Operation op;
   private final String key;
 
+  /**
+   * Create an OperationFuture for a given async operation.
+   *
+   * This is intended for internal use only.
+   *
+   * @param k the key for the operation
+   * @param l the latch to be used counting down the OperationFuture
+   * @param opTimeout the timeout within which the operation needs to be done
+   */
   public OperationFuture(String k, CountDownLatch l, long opTimeout) {
     this(k, l, new AtomicReference<T>(null), opTimeout);
   }
 
+  /**
+   * Create an OperationFuture for a given async operation.
+   *
+   * This is intended for internal use only.
+   *
+   * @param k the key for the operation
+   * @param l the latch to be used counting down the OperationFuture
+   * @param oref an AtomicReference associated with the operation
+   * @param opTimeout the timeout within which the operation needs to be done
+   */
   public OperationFuture(String k, CountDownLatch l, AtomicReference<T> oref,
       long opTimeout) {
     super();
@@ -67,14 +92,40 @@ public class OperationFuture<T> extends SpyObject implements Future<T> {
     key = k;
   }
 
+  /**
+   * Cancel this operation, if possible.
+   *
+   * @param ign not used
+   * @deprecated
+   * @return true if the operation has not yet been written to the network
+   */
   public boolean cancel(boolean ign) {
     assert op != null : "No operation";
     op.cancel();
-    // This isn't exactly correct, but it's close enough. If we're in
-    // a writing state, we *probably* haven't started.
     return op.getState() == OperationState.WRITE_QUEUED;
   }
 
+  /**
+   * Cancel this operation, if possible.
+   *
+   * @return true if the operation has not yet been written to the network
+   */
+  public boolean cancel() {
+    assert op != null : "No operation";
+    op.cancel();
+    return op.getState() == OperationState.WRITE_QUEUED;
+  }
+
+  /**
+   * Get the results of the given operation.
+   *
+   * As with the Future interface, this call will block until the results of
+   * the future operation has been received.
+   *
+   * @return the operation results of this OperationFuture
+   * @throws InterruptedException
+   * @throws ExecutionException
+   */
   public T get() throws InterruptedException, ExecutionException {
     try {
       return get(timeout, TimeUnit.MILLISECONDS);
@@ -83,6 +134,19 @@ public class OperationFuture<T> extends SpyObject implements Future<T> {
     }
   }
 
+  /**
+   * Get the results of the given operation.
+   *
+   * As with the Future interface, this call will block until the results of
+   * the future operation has been received.
+   *
+   * @param duration amount of time to wait
+   * @param units unit of time to wait
+   * @return the operation results of this OperationFuture
+   * @throws InterruptedException
+   * @throws TimeoutException
+   * @throws ExecutionException
+   */
   public T get(long duration, TimeUnit units) throws InterruptedException,
       TimeoutException, ExecutionException {
     if (!latch.await(duration, units)) {
@@ -108,13 +172,28 @@ public class OperationFuture<T> extends SpyObject implements Future<T> {
           "Operation timed out.", op));
     }
 
+    assert op.getState() == OperationState.COMPLETE;
+
     return objRef.get();
   }
 
+  /**
+   * Get the key for this operation.
+   *
+   * @return the key for this operation
+   */
   public String getKey() {
     return key;
   }
 
+  /**
+   * Get the current status of this operation.
+   *
+   * Note that the operation status may change as the operation is tried and
+   * potentially retried against the servers specified by the NodeLocator.
+   *
+   * @return OperationStatus
+   */
   public OperationStatus getStatus() {
     if (status == null) {
       try {
@@ -130,20 +209,55 @@ public class OperationFuture<T> extends SpyObject implements Future<T> {
     return status;
   }
 
+  /**
+   * Set the Operation associated with this OperationFuture.
+   *
+   * This is intended for internal use only.
+   *
+   * @param o the Operation object itself
+   * @param s the OperationStatus associated with this operation
+   */
   public void set(T o, OperationStatus s) {
     objRef.set(o);
     status = s;
   }
 
+  /**
+   *  Set the Operation associated with this OperationFuture.
+   *
+   * This is intended for internal use only.
+   *
+   * @param to the Operation to set this OperationFuture to be tracking
+   */
   public void setOperation(Operation to) {
     op = to;
   }
 
+  /**
+   * Whether or not the Operation associated with this OperationFuture has been
+   * canceled.
+   *
+   * One scenario in which this can occur is if the connection is lost and the
+   * Operation has been sent over the network.  In this case, the operation may
+   * or may not have reached the server before the connection was dropped.
+   *
+   * @return true if the Operation has been canceled
+   */
   public boolean isCancelled() {
     assert op != null : "No operation";
     return op.isCancelled();
   }
 
+  /**
+   * Whether or not the Operation is done and result can be retrieved with
+   * get().
+   *
+   * The most common way to wait for this OperationFuture is to use the get()
+   * method which will block.  This method allows one to check if it's complete
+   * without blocking.
+   *
+   * @return true if the Operation is done
+   */
   public boolean isDone() {
     assert op != null : "No operation";
     return latch.getCount() == 0 || op.isCancelled()
