@@ -468,7 +468,7 @@ public class MemcachedConnection extends SpyThread {
             assert op == currentOp : "Expected to pop " + currentOp + " got "
                 + op;
           } else if (currentOp.getState() == OperationState.RETRY) {
-            getLogger().warn("Reschedule read op due to NOT_MY_VBUCKET error: "
+            getLogger().debug("Reschedule read op due to NOT_MY_VBUCKET error: "
                 + "%s ", currentOp);
             ((VBucketAware) currentOp).addNotMyVbucketNode(
                 currentOp.getHandlingNode());
