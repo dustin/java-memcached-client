@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -161,10 +161,7 @@ public class OptimizedSetImpl extends MultiKeyOperationImpl {
       OperationCallback cb = callbacks.remove(responseOpaque);
       assert cb != null : "No callback for " + responseOpaque;
       assert errorCode != 0 : "Got no error on a quiet mutation.";
-      OperationStatus status = getStatusForErrorCode(errorCode, pl);
-      assert status != null : "Got no status for a quiet mutation error";
-      cb.receivedStatus(status);
-      cb.complete();
+      super.finishedPayload(pl);
     }
     resetInput();
   }
