@@ -501,7 +501,7 @@ public class MemcachedConnection extends SpyThread {
     return sb.toString();
   }
 
-  private void queueReconnect(MemcachedNode qa) {
+  protected void queueReconnect(MemcachedNode qa) {
     if (!shutDown) {
       getLogger().warn("Closing, and reopening %s, attempt %d.", qa,
           qa.getReconnectCount());
