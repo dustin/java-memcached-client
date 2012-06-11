@@ -172,7 +172,9 @@ public class OperationFuture<T> extends SpyObject implements Future<T> {
           "Operation timed out.", op));
     }
 
-    assert op.getState() == OperationState.COMPLETE;
+    if (op != null) {
+      assert op.getState() == OperationState.COMPLETE;
+    }
 
     return objRef.get();
   }
