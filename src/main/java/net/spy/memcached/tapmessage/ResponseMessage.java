@@ -100,10 +100,11 @@ public class ResponseMessage extends BaseMessage {
       itemflags = 0;
       itemexpiry = 0;
       vbucketstate = 0;
+      revid = new byte[engineprivate];
+      System.arraycopy(b, 32, revid, 0, engineprivate);
       key = new byte[keylength];
-      System.arraycopy(b, ITEM_FLAGS_OFFSET, key, 0, keylength);
+      System.arraycopy(b, 32 + engineprivate, key, 0, keylength);
       value = new byte[0];
-      revid = new byte[0];
     } else if (opcode.equals(TapOpcode.VBUCKETSET)) {
       itemflags = 0;
       itemexpiry = 0;
@@ -279,6 +280,7 @@ public class ResponseMessage extends BaseMessage {
       bb.put(key);
       bb.put(value);
     } else if (opcode.equals(TapOpcode.DELETE)) {
+      bb.put(revid);
       bb.put(key);
     } else if (opcode.equals(TapOpcode.VBUCKETSET)) {
       bb.putInt(vbucketstate);
