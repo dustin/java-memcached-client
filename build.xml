@@ -436,15 +436,16 @@
         Section: Maven Support
        ====================================== -->
 
-  <target name="mvn-prep" depends="ivy-init, gen-version"
+  <target name="mvn-download" unless="offline">
+    <mkdir dir="${build.dir}" />
+    <get src="${mvn_repo_url}" dest="${mvn.jar}" usetimestamp="true" />
+  </target>
+
+  <target name="mvn-prep" depends="ivy-init, gen-version, mvn-download"
       description="Creates maven files">
     <!-- prepare for mvn tasks. -->
     <property name="spymemcached.pom" value="${mvn.build.dir}/poms/spymemcached-${version}.pom" />
     <property name="spymemcached-test.pom" value="${mvn.build.dir}/poms/spymemcached-test-${version}.pom" />
-
-    <!-- Download maven -->
-    <mkdir dir="${build.dir}" />
-    <get src="${mvn_repo_url}" dest="${mvn.jar}" usetimestamp="true" />
 
     <!-- Register mvn tasks -->
     <path id="mvn-ant-task.classpath" path="${mvn.jar}" />
