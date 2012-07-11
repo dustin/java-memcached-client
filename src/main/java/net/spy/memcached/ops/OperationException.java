@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +28,7 @@ import java.io.IOException;
 /**
  * Exceptions thrown when protocol errors occur.
  */
-public final class OperationException extends IOException {
+public class OperationException extends IOException {
 
   private static final long serialVersionUID = 1524499960923239786L;
 
