@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.keytransformers.KeyTransformer;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
@@ -44,6 +45,7 @@ public class ConnectionFactoryBuilder {
   protected OperationQueueFactory readQueueFactory;
   protected OperationQueueFactory writeQueueFactory;
 
+  protected KeyTransformer keyTransformer;
   protected Transcoder<Object> transcoder;
 
   protected FailureMode failureMode;
@@ -90,6 +92,7 @@ public class ConnectionFactoryBuilder {
     setShouldOptimize(cf.shouldOptimize());
     setTimeoutExceptionThreshold(cf.getTimeoutExceptionThreshold());
     setTranscoder(cf.getDefaultTranscoder());
+    setKeyTransformer(cf.getIdentityKeyTransformer());
     setUseNagleAlgorithm(cf.useNagleAlgorithm());
   }
 
@@ -130,6 +133,14 @@ public class ConnectionFactoryBuilder {
    */
   public ConnectionFactoryBuilder setTranscoder(Transcoder<Object> t) {
     transcoder = t;
+    return this;
+  }
+
+    /**
+   * Set the default key transformer.
+   */
+  public ConnectionFactoryBuilder setKeyTransformer(KeyTransformer t) {
+    keyTransformer = t;
     return this;
   }
 
@@ -303,6 +314,11 @@ public class ConnectionFactoryBuilder {
       @Override
       public Transcoder<Object> getDefaultTranscoder() {
         return transcoder == null ? super.getDefaultTranscoder() : transcoder;
+      }
+
+      @Override
+      public KeyTransformer getIdentityKeyTransformer() {
+        return keyTransformer == null ? super.getIdentityKeyTransformer() : keyTransformer;
       }
 
       @Override

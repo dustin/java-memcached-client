@@ -34,6 +34,7 @@ import net.spy.memcached.HashAlgorithm;
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.OperationFactory;
 import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.keytransformers.KeyTransformer;
 import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.transcoders.Transcoder;
 
@@ -153,6 +154,10 @@ public class MemcachedClientFactoryBean implements FactoryBean {
 
   public void setTranscoder(final Transcoder<Object> t) {
     connectionFactoryBuilder.setTranscoder(t);
+  }
+
+  public void setKeyTransformer(final KeyTransformer t) {
+    connectionFactoryBuilder.setKeyTransformer(t);
   }
 
   public void setUseNagleAlgorithm(final boolean to) {

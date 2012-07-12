@@ -37,6 +37,8 @@ import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.compat.SpyObject;
+import net.spy.memcached.keytransformers.IdentityKeyTransformer;
+import net.spy.memcached.keytransformers.KeyTransformer;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
@@ -298,6 +300,15 @@ public class DefaultConnectionFactory extends SpyObject implements
    */
   public Transcoder<Object> getDefaultTranscoder() {
     return new SerializingTranscoder();
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see net.spy.memcached.ConnectionFactory#getIdentityKeyTransformer()
+   */
+  public KeyTransformer getIdentityKeyTransformer() {
+    return new IdentityKeyTransformer();
   }
 
   /*

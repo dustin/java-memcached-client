@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.keytransformers.KeyTransformer;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.transcoders.Transcoder;
 
@@ -126,6 +127,12 @@ public interface ConnectionFactory {
    * factory.
    */
   Transcoder<Object> getDefaultTranscoder();
+
+   /**
+   * Get the default key transformer to be used in connections created by this
+   * factory.
+   */
+  KeyTransformer getIdentityKeyTransformer();
 
   /**
    * If true, low-level optimization is in effect.
