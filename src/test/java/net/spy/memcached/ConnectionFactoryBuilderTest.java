@@ -36,6 +36,7 @@ import net.spy.memcached.ConnectionFactoryBuilder.Protocol;
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.auth.PlainCallbackHandler;
 import net.spy.memcached.compat.BaseMockCase;
+import net.spy.memcached.keytransformers.IdentityKeyTransformer;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.protocol.ascii.AsciiMemcachedNodeImpl;
@@ -132,7 +133,8 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
         .setOpQueueFactory(opQueueFactory)
         .setReadOpQueueFactory(rQueueFactory)
         .setWriteOpQueueFactory(wQueueFactory).setReadBufferSize(19)
-        .setTranscoder(new WhalinTranscoder()).setUseNagleAlgorithm(true)
+        .setTranscoder(new WhalinTranscoder()).setKeyTransformer(new IdentityKeyTransformer())
+        .setUseNagleAlgorithm(true)
         .setLocatorType(Locator.CONSISTENT).setOpQueueMaxBlockTime(19)
         .setAuthDescriptor(anAuthDescriptor).build();
 
@@ -140,6 +142,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
     assertEquals(19, f.getReadBufSize());
     assertSame(DefaultHashAlgorithm.KETAMA_HASH, f.getHashAlg());
     assertTrue(f.getDefaultTranscoder() instanceof WhalinTranscoder);
+    assertTrue(f.getIdentityKeyTransformer() instanceof IdentityKeyTransformer);
     assertSame(FailureMode.Redistribute, f.getFailureMode());
     assertEquals(1, f.getInitialObservers().size());
     assertSame(testObserver, f.getInitialObservers().iterator().next());
