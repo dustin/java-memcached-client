@@ -56,7 +56,7 @@ public class ConnectionFactoryBuilder {
   protected Locator locator = Locator.ARRAY_MOD;
   protected long opTimeout = -1;
   protected boolean isDaemon = false;
-  protected boolean shouldOptimize = true;
+  protected boolean shouldOptimize = false;
   protected boolean useNagle = false;
   protected long maxReconnectDelay =
       DefaultConnectionFactory.DEFAULT_MAX_RECONNECT_DELAY;

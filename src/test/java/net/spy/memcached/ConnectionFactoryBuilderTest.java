@@ -97,7 +97,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
     }
 
     assertFalse(f.isDaemon());
-    assertTrue(f.shouldOptimize());
+    assertFalse(f.shouldOptimize());
     assertFalse(f.useNagleAlgorithm());
     assertEquals(f.getOpQueueMaxBlockTime(),
         DefaultConnectionFactory.DEFAULT_OP_QUEUE_MAX_BLOCK_TIME);
