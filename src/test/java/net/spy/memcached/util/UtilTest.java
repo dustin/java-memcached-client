@@ -20,8 +20,8 @@ public class UtilTest extends TestCase {
   public void testJoin() {
     Collection<String> keys = new LinkedList<String>();
     keys.add("key1");
-    keys.add("key1");
-    keys.add("key1");
-    assert StringUtils.join(keys, ",").compareTo("key1,key2,key3") == 0;
+    keys.add("key2");
+    keys.add("key3");
+    assertEquals("key1,key2,key3", StringUtils.join(keys, ","));
   }
 }
