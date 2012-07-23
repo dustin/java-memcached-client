@@ -57,7 +57,6 @@ import net.spy.memcached.ops.CASOperationStatus;
 import net.spy.memcached.ops.CancelledOperationStatus;
 import net.spy.memcached.ops.ConcatenationType;
 import net.spy.memcached.ops.DeleteOperation;
-import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.GetAndTouchOperation;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.GetsOperation;
@@ -1910,7 +1909,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       @Override
       public Boolean get(long duration, TimeUnit units)
         throws InterruptedException, TimeoutException, ExecutionException {
-        status = new OperationStatus(true, "OK", ErrorCode.SUCCESS);
+        status = new OperationStatus(true, "OK");
         return super.get(duration, units);
       }
 

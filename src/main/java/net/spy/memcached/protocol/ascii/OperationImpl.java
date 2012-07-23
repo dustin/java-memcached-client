@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import net.spy.memcached.KeyUtil;
-import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
@@ -73,12 +72,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
       }
     }
     if (rv == null) {
-      // TODO: (Mike) We need to standardize response messages in memcached
-      // and ep-engine in order for this operation status to be correctly
-      // returned in ASCII since ASCII doesn't return an error code and just
-      // returns a message. Invalid is probably the best since we will catch
-      // the most common responses before getting here anyways.
-      rv = new OperationStatus(false, line, ErrorCode.ERR_INVAL);
+      rv = new OperationStatus(false, line);
     }
     return rv;
   }

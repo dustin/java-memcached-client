@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import net.spy.memcached.KeyUtil;
-import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
@@ -43,9 +42,9 @@ final class UnlockOperationImpl extends OperationImpl implements
   private static final int OVERHEAD = 32;
 
   private static final OperationStatus UNLOCKED = new OperationStatus(true,
-      "UNLOCKED", ErrorCode.SUCCESS);
+      "UNLOCKED");
   private static final OperationStatus NOT_FOUND = new OperationStatus(false,
-      "NOT_FOUND", ErrorCode.ERR_NOT_FOUND);
+      "NOT_FOUND");
 
   private static final String CMD = "unl";
   private final String key;

@@ -22,7 +22,6 @@
 
 package net.spy.memcached.protocol.binary;
 
-import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.SASLMechsOperation;
@@ -43,8 +42,7 @@ class SASLMechsOperationImpl extends OperationImpl implements
 
   @Override
   protected void decodePayload(byte[] pl) {
-    ErrorCode ec = ErrorCode.getErrorCode((byte)errorCode);
-    getCallback().receivedStatus(new OperationStatus(true, new String(pl), ec));
+    getCallback().receivedStatus(new OperationStatus(true, new String(pl)));
   }
 
   @Override

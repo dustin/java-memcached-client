@@ -29,20 +29,11 @@ public class OperationStatus {
 
   private final boolean isSuccess;
   private final String message;
-  private final ErrorCode errorCode;
-  private final Throwable throwable;
 
-  public OperationStatus(boolean success, String msg, ErrorCode ec) {
-    this(success, msg, ec, null);
-  }
-
-  public OperationStatus(boolean success, String msg, ErrorCode ec,
-        Throwable t) {
+  public OperationStatus(boolean success, String msg) {
     super();
     isSuccess = success;
     message = msg;
-    errorCode = ec;
-    throwable = null;
   }
 
   /**
@@ -57,20 +48,6 @@ public class OperationStatus {
    */
   public String getMessage() {
     return message;
-  }
-
-  /**
-   * Get the error code associated with this request.
-   */
-  public ErrorCode getErrorCode() {
-    return errorCode;
-  }
-
-  /**
-   * Get the throwable if one exists for this operation.
-   */
-  public Throwable getThrowable() {
-    return throwable;
   }
 
   @Override

@@ -35,7 +35,6 @@ import java.util.concurrent.TimeoutException;
 
 import net.spy.memcached.MemcachedConnection;
 import net.spy.memcached.compat.log.LoggerFactory;
-import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
@@ -74,7 +73,7 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
       v.cancel(ign);
     }
     cancelled = true;
-    status = new OperationStatus(false, "Cancelled", ErrorCode.CANCELLED);
+    status = new OperationStatus(false, "Cancelled");
     return rv;
   }
 
@@ -168,8 +167,7 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
       try {
         get();
       } catch (InterruptedException e) {
-        status = new OperationStatus(false, "Interrupted",
-            ErrorCode.EXCEPTION);
+        status = new OperationStatus(false, "Interrupted");
         Thread.currentThread().interrupt();
       } catch (ExecutionException e) {
         return status;

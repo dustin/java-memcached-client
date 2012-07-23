@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import net.spy.memcached.KeyUtil;
-import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
@@ -39,7 +38,7 @@ abstract class BaseStoreOperationImpl extends OperationImpl {
 
   private static final int OVERHEAD = 32;
   private static final OperationStatus STORED = new OperationStatus(true,
-      "STORED", ErrorCode.SUCCESS);
+      "STORED");
   protected final String type;
   protected final String key;
   protected final int flags;

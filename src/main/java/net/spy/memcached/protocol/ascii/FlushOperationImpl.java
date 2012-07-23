@@ -24,7 +24,6 @@ package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
 
-import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.FlushOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
@@ -37,8 +36,7 @@ final class FlushOperationImpl extends OperationImpl implements FlushOperation {
 
   private static final byte[] FLUSH = "flush_all\r\n".getBytes();
 
-  private static final OperationStatus OK = new OperationStatus(true, "OK",
-      ErrorCode.SUCCESS);
+  private static final OperationStatus OK = new OperationStatus(true, "OK");
 
   private final int delay;
 

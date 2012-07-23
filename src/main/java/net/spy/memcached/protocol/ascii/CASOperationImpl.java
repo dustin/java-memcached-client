@@ -30,7 +30,6 @@ import net.spy.memcached.CASResponse;
 import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.CASOperationStatus;
-import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
@@ -44,11 +43,11 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
   private static final int OVERHEAD = 64;
 
   private static final OperationStatus STORED = new CASOperationStatus(true,
-      "STORED", ErrorCode.SUCCESS, CASResponse.OK);
+      "STORED", CASResponse.OK);
   private static final OperationStatus NOT_FOUND = new CASOperationStatus(
-      false, "NOT_FOUND", ErrorCode.ERR_NOT_FOUND, CASResponse.NOT_FOUND);
+      false, "NOT_FOUND", CASResponse.NOT_FOUND);
   private static final OperationStatus EXISTS = new CASOperationStatus(false,
-      "EXISTS", ErrorCode.ERR_EXISTS, CASResponse.EXISTS);
+      "EXISTS", CASResponse.EXISTS);
 
   private final String key;
   private final long casValue;

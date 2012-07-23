@@ -23,7 +23,6 @@
 
 package net.spy.memcached.protocol.binary;
 
-import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.VersionOperation;
@@ -43,7 +42,6 @@ class VersionOperationImpl extends OperationImpl implements VersionOperation {
 
   @Override
   protected void decodePayload(byte[] pl) {
-    ErrorCode ec = ErrorCode.getErrorCode((byte)errorCode);
-    getCallback().receivedStatus(new OperationStatus(true, new String(pl), ec));
+    getCallback().receivedStatus(new OperationStatus(true, new String(pl)));
   }
 }

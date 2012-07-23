@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.spy.memcached.CASResponse;
 import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.CASOperationStatus;
-import net.spy.memcached.ops.ErrorCode;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
@@ -49,10 +48,28 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
   protected static final byte DUMMY_OPCODE = (byte)0xff;
   protected static final int MIN_RECV_PACKET = 24;
 
+  /**
+   * Error code for operations.
+   */
+  protected static final int SUCCESS = 0x00;
+  protected static final int ERR_NOT_FOUND = 0x01;
+  protected static final int ERR_EXISTS = 0x02;
+  protected static final int ERR_2BIG = 0x03;
+  protected static final int ERR_INVAL = 0x04;
+  protected static final int ERR_NOT_STORED = 0x05;
+  protected static final int ERR_DELTA_BADVAL = 0x06;
+  protected static final int ERR_NOT_MY_VBUCKET = 0x07;
+  protected static final int ERR_UNKNOWN_COMMAND = 0x81;
+  protected static final int ERR_NO_MEM = 0x82;
+  protected static final int ERR_NOT_SUPPORTED = 0x83;
+  protected static final int ERR_INTERNAL = 0x84;
+  protected static final int ERR_BUSY = 0x85;
+  protected static final int ERR_TEMP_FAIL = 0x86;
+
   protected static final byte[] EMPTY_BYTES = new byte[0];
 
   protected static final OperationStatus STATUS_OK = new CASOperationStatus(
-      true, "OK", ErrorCode.SUCCESS, CASResponse.OK);
+      true, "OK", CASResponse.OK);
 
   private static final AtomicInteger SEQ_NUMBER = new AtomicInteger(0);
 
@@ -68,7 +85,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
   // Response header fields
   protected int keyLen;
   protected byte responseCmd;
-  protected short errorCode;
+  protected int errorCode;
   protected int responseOpaque;
   protected long responseCas;
 
@@ -120,7 +137,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
           : "Unexpected response command value";
         keyLen = decodeShort(header, 2);
         // TODO: Examine extralen and datatype
-        errorCode = (short) decodeShort(header, 6);
+        errorCode = decodeShort(header, 6);
         int bytesToRead = decodeInt(header, 8);
         payload = new byte[bytesToRead];
         responseOpaque = decodeInt(header, 12);
@@ -154,14 +171,13 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 
   protected void finishedPayload(byte[] pl) throws IOException {
     OperationStatus status = getStatusForErrorCode(errorCode, pl);
-    ErrorCode ec = ErrorCode.getErrorCode(errorCode);
 
     if (status == null) {
       handleError(OperationErrorType.SERVER, new String(pl));
-    } else if (ec == ErrorCode.SUCCESS) {
+    } else if (errorCode == SUCCESS) {
       decodePayload(pl);
       transitionState(OperationState.COMPLETE);
-    } else if (ec == ErrorCode.ERR_NOT_MY_VBUCKET
+    } else if (errorCode == ERR_NOT_MY_VBUCKET
         && !getState().equals(OperationState.COMPLETE)) {
       transitionState(OperationState.RETRY);
     } else {
@@ -176,20 +192,19 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
    * @param errCode the error code
    * @return the status to return, or null if this is an exceptional case
    */
-  protected OperationStatus getStatusForErrorCode(short errCode, byte[] errPl)
+  protected OperationStatus getStatusForErrorCode(int errCode, byte[] errPl)
     throws IOException {
-    ErrorCode ec = ErrorCode.getErrorCode(errCode);
-    switch (ec) {
+    switch (errCode) {
     case SUCCESS:
       return STATUS_OK;
     case ERR_NOT_FOUND:
-      return new CASOperationStatus(false, new String(errPl), ec,
+      return new CASOperationStatus(false, new String(errPl),
           CASResponse.NOT_FOUND);
     case ERR_EXISTS:
-      return new CASOperationStatus(false, new String(errPl), ec,
+      return new CASOperationStatus(false, new String(errPl),
           CASResponse.EXISTS);
     case ERR_NOT_STORED:
-      return new CASOperationStatus(false, new String(errPl), ec,
+      return new CASOperationStatus(false, new String(errPl),
           CASResponse.NOT_FOUND);
     case ERR_2BIG:
     case ERR_INTERNAL:
@@ -202,7 +217,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
     case ERR_NOT_SUPPORTED:
     case ERR_BUSY:
     case ERR_TEMP_FAIL:
-      return new OperationStatus(false, new String(errPl), ec);
+      return new OperationStatus(false, new String(errPl));
     default:
       return null;
     }
