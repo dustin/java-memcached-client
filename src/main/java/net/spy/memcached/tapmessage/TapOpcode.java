@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2012 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,12 +74,12 @@ public enum TapOpcode {
   VBUCKETSET((byte) 0x45),
 
   /**
-   * Defines the start of a checkpoint
+   * Defines the start of a checkpoint.
    */
   START_CHECKPOINT((byte) 0x46),
 
   /**
-   * Defines the end of a checkpoint
+   * Defines the end of a checkpoint.
    */
   END_CHECKPOINT((byte) 0x47);
 
@@ -124,8 +124,7 @@ public enum TapOpcode {
       return TapOpcode.START_CHECKPOINT;
     } else if (b == TapOpcode.END_CHECKPOINT.opcode) {
       return TapOpcode.END_CHECKPOINT;
-    }
-    else {
+    } else {
       return null;
     }
   }
