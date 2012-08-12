@@ -883,6 +883,14 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     assertNull(client.get(key));
   }
 
+  public void testSetReturnsCAS() throws Exception {
+
+    OperationFuture<Boolean> setOp = client.set("testSetReturnsCAS",
+            0, "testSetReturnsCAS");
+    setOp.get();
+    assertTrue(setOp.getCas() > 0);
+  }
+
   private static class TestTranscoder implements Transcoder<String> {
     private static final int FLAGS = 238885206;
 

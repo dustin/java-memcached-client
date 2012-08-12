@@ -57,6 +57,7 @@ public class OperationFuture<T> extends SpyObject implements Future<T> {
   private final long timeout;
   private Operation op;
   private final String key;
+  private Long cas;
 
   /**
    * Create an OperationFuture for a given async operation.
@@ -89,6 +90,7 @@ public class OperationFuture<T> extends SpyObject implements Future<T> {
     status = null;
     timeout = opTimeout;
     key = k;
+    cas = null;
   }
 
   /**
@@ -185,6 +187,32 @@ public class OperationFuture<T> extends SpyObject implements Future<T> {
     return key;
   }
 
+ /**
+   * Set the key for this operation.
+   *
+   * @param inCas the CAS value
+   */
+  public void setCas(long inCas) {
+    this.cas = inCas;
+  }
+
+ /**
+   * Get the CAS for this operation.
+   * If this is for an ASCII protocol configured client,
+   * the exception Un
+   *
+   * @return the CAS for this operation or null
+   * if unsuccessful.
+   *
+   */
+  public long getCas() {
+    if (isDone() && getStatus().isSuccess()
+            && (cas == null)) {
+      throw new UnsupportedOperationException("ASCII Protocol"
+              + " does not return a CAS value");
+    }
+    return cas;
+  }
   /**
    * Get the current status of this operation.
    *

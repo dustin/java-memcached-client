@@ -24,7 +24,6 @@
 package net.spy.memcached.protocol.binary;
 
 import net.spy.memcached.ops.CASOperation;
-import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 
@@ -69,7 +68,7 @@ class StoreOperationImpl extends SingleKeyOperationImpl implements
   }
 
   public StoreOperationImpl(StoreType t, String k, int f, int e, byte[] d,
-      long c, OperationCallback cb) {
+      long c, StoreOperation.Callback cb) {
     super(cmdMap(t), generateOpaque(), k, cb);
     flags = f;
     exp = e;
@@ -101,6 +100,12 @@ class StoreOperationImpl extends SingleKeyOperationImpl implements
 
   public StoreType getStoreType() {
     return storeType;
+  }
+
+  @Override
+  protected void decodePayload(byte[] pl) {
+    super.decodePayload(pl);
+    ((StoreOperation.Callback) getCallback()).gotData(key, responseCas);
   }
 
   @Override

@@ -182,7 +182,7 @@ public interface OperationFactory {
    * @return the new store operation
    */
   StoreOperation store(StoreType storeType, String key, int flags, int exp,
-      byte[] data, OperationCallback cb);
+      byte[] data, StoreOperation.Callback cb);
 
   /**
    * Resets a keys expiration time.
@@ -219,7 +219,7 @@ public interface OperationFactory {
    * @return the new store operation
    */
   CASOperation cas(StoreType t, String key, long casId, int flags, int exp,
-      byte[] data, OperationCallback cb);
+      byte[] data, StoreOperation.Callback cb);
 
   /**
    * Create a new version operation.
