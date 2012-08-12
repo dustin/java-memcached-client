@@ -110,7 +110,7 @@ public class BinaryOperationFactory extends BaseOperationFactory {
   }
 
   public StoreOperation store(StoreType storeType, String key, int flags,
-      int exp, byte[] data, OperationCallback cb) {
+      int exp, byte[] data, StoreOperation.Callback cb) {
     return new StoreOperationImpl(storeType, key, flags, exp, data, 0, cb);
   }
 
@@ -128,7 +128,7 @@ public class BinaryOperationFactory extends BaseOperationFactory {
   }
 
   public CASOperation cas(StoreType type, String key, long casId, int flags,
-      int exp, byte[] data, OperationCallback cb) {
+      int exp, byte[] data, StoreOperation.Callback cb) {
     return new StoreOperationImpl(type, key, flags, exp, data, casId, cb);
   }
 

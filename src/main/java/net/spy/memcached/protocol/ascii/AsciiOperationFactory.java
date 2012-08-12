@@ -109,7 +109,7 @@ public class AsciiOperationFactory extends BaseOperationFactory {
   }
 
   public StoreOperation store(StoreType storeType, String key, int flags,
-      int exp, byte[] data, OperationCallback cb) {
+      int exp, byte[] data, StoreOperation.Callback cb) {
     return new StoreOperationImpl(storeType, key, flags, exp, data, cb);
   }
 
@@ -128,7 +128,7 @@ public class AsciiOperationFactory extends BaseOperationFactory {
   }
 
   public CASOperation cas(StoreType type, String key, long casId, int flags,
-      int exp, byte[] data, OperationCallback cb) {
+      int exp, byte[] data, StoreOperation.Callback cb) {
     return new CASOperationImpl(key, casId, flags, exp, data, cb);
   }
 

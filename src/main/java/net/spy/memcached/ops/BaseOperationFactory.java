@@ -63,7 +63,7 @@ public abstract class BaseOperationFactory implements OperationFactory {
       CASOperation cop = (CASOperation) op;
       rv.add(cas(cop.getStoreType(), first(op.getKeys()), cop.getCasValue(),
           cop.getFlags(), cop.getExpiration(), cop.getData(),
-          cop.getCallback()));
+          (StoreOperation.Callback) cop.getCallback()));
     } else if(op instanceof DeleteOperation) {
       rv.add(delete(first(op.getKeys()), op.getCallback()));
     } else if (op instanceof MutatorOperation) {
@@ -73,7 +73,8 @@ public abstract class BaseOperationFactory implements OperationFactory {
     } else if (op instanceof StoreOperation) {
       StoreOperation so = (StoreOperation) op;
       rv.add(store(so.getStoreType(), first(op.getKeys()), so.getFlags(),
-          so.getExpiration(), so.getData(), op.getCallback()));
+          so.getExpiration(), so.getData(),
+          (StoreOperation.Callback) op.getCallback()));
     } else if (op instanceof ConcatenationOperation) {
       ConcatenationOperation c = (ConcatenationOperation) op;
       rv.add(cat(c.getStoreType(), c.getCasValue(), first(op.getKeys()),
