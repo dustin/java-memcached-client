@@ -47,6 +47,11 @@ class UnlockOperationImpl extends SingleKeyOperationImpl implements
   }
 
   @Override
+  protected void decodePayload(byte[] pl) {
+    getCallback().receivedStatus(STATUS_OK);
+  }
+
+  @Override
   public String toString() {
     return super.toString() + " Cas: " + cas;
   }
