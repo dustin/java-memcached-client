@@ -250,6 +250,9 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
     return (data[i] & 0xff) << 8 | (data[i + 1] & 0xff);
   }
 
+  static int decodeByte(byte[] data, int i) {
+    return (data[i] & 0xff);
+  }
   static int decodeInt(byte[] data, int i) {
     return (data[i] & 0xff) << 24
       | (data[i + 1] & 0xff) << 16
@@ -293,6 +296,8 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
         extraLen += ((byte[]) o).length;
       } else if (o instanceof Long) {
         extraLen += 8;
+      } else  if (o instanceof Short) {
+        extraLen += 2;
       } else {
         assert false : "Unhandled extra header type:  " + o.getClass();
       }
@@ -325,6 +330,8 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
         bb.put((byte[]) o);
       } else if (o instanceof Long) {
         bb.putLong((Long) o);
+      } else if (o instanceof Short) {
+        bb.putShort((Short) o);
       } else {
         assert false : "Unhandled extra header type:  " + o.getClass();
       }

@@ -41,6 +41,7 @@ import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.NoopOperation;
+import net.spy.memcached.ops.ObserveOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.SASLAuthOperation;
@@ -80,13 +81,25 @@ public interface OperationFactory {
   /**
    * Create a Unlock operation.
    *
-   * @param key the key to delete
+   * @param key the key to unlock
    * @param casId the value of CAS
    * @param operationCallback the status callback
    * @return the new UnlockOperation
    */
   UnlockOperation unlock(String key, long casId,
           OperationCallback operationCallback);
+
+  /**
+   * Create an Observe operation.
+   *
+   * @param key the key to observe
+   * @param casId the value of CAS
+   * @param index the VBucket index of key
+   * @param operationCallback the status callback
+   * @return the new ObserveOperation
+   */
+  ObserveOperation observe(String key, long casId, int index,
+          ObserveOperation.Callback operationCallback);
 
   /**
    * Create a flush operation.
