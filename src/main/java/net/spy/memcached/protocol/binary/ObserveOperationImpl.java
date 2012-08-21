@@ -34,7 +34,6 @@ class ObserveOperationImpl extends SingleKeyOperationImpl implements
   private static final byte CMD = (byte) 0x92;
 
   private final long cas;
-  private final String key;
   private final int index;
   private byte keystate = (byte)0xff;
   private long retCas = 0;
@@ -43,7 +42,6 @@ class ObserveOperationImpl extends SingleKeyOperationImpl implements
           OperationCallback cb) {
     super(CMD, generateOpaque(), k, cb);
     cas = c;
-    key = k;
     index = i;
   }
 
@@ -63,9 +61,7 @@ class ObserveOperationImpl extends SingleKeyOperationImpl implements
     final short  keylen = (short) decodeShort(pl, 2);
     keystate = (byte) decodeByte(pl, keylen+4);
     retCas = (long) decodeLong(pl, keylen+5);
-
-    ObserveResponse r = ObserveResponse.values()[keystate];
-
+    ObserveResponse r = ObserveResponse.valueOf(keystate);
     ((ObserveOperation.Callback) getCallback()).gotData(key, retCas, r);
     getCallback().receivedStatus(STATUS_OK);
   }
