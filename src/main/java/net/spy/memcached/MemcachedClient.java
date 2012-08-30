@@ -464,8 +464,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
-  public <T> Future<CASResponse> asyncCAS(String key, long casId, T value,
-      Transcoder<T> tc) {
+  public <T> OperationFuture<CASResponse>
+  asyncCAS(String key, long casId, T value, Transcoder<T> tc) {
     return asyncCAS(key, casId, 0, value, tc);
   }
 
@@ -482,8 +482,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
-  public <T> Future<CASResponse> asyncCAS(String key, long casId, int exp,
-      T value, Transcoder<T> tc) {
+  public <T> OperationFuture<CASResponse>
+  asyncCAS(String key, long casId, int exp, T value, Transcoder<T> tc) {
     CachedData co = tc.encode(value);
     final CountDownLatch latch = new CountDownLatch(1);
     final OperationFuture<CASResponse> rv =
@@ -523,7 +523,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
-  public Future<CASResponse> asyncCAS(String key, long casId, Object value) {
+  public OperationFuture<CASResponse>
+  asyncCAS(String key, long casId, Object value) {
     return asyncCAS(key, casId, value, transcoder);
   }
 
@@ -561,9 +562,13 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   public <T> CASResponse cas(String key, long casId, int exp, T value,
       Transcoder<T> tc) {
+    CASResponse casr = null;
     try {
-      return asyncCAS(key, casId, exp, value, tc).get(operationTimeout,
+      OperationFuture<CASResponse> casOp = asyncCAS(key,
+              casId, exp, value, tc);
+      casr = casOp.get(operationTimeout,
           TimeUnit.MILLISECONDS);
+      return casr;
     } catch (InterruptedException e) {
       throw new RuntimeException("Interrupted waiting for value", e);
     } catch (ExecutionException e) {

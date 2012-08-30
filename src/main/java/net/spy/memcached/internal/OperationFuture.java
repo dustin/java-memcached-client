@@ -205,7 +205,7 @@ public class OperationFuture<T> extends SpyObject implements Future<T> {
    * if unsuccessful.
    *
    */
-  public long getCas() {
+  public Long getCas() {
     if (isDone() && getStatus().isSuccess()
             && (cas == null)) {
       throw new UnsupportedOperationException("ASCII Protocol"

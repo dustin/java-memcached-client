@@ -41,5 +41,19 @@ public enum CASResponse {
    * different CAS value than expected. In this case, the value must be
    * refetched and the CAS operation tried again.
    */
-  EXISTS
+  EXISTS,
+  /**
+   * Status indicating there was an error in specifying the arguments for
+   * the Observe.
+   */
+  OBSERVE_ERROR_IN_ARGS,
+  /**
+   * Status indicating the CAS operation succeeded but the value was
+   * subsequently modified during Observe.
+   */
+  OBSERVE_MODIFIED,
+  /**
+   * Status indicating there was a Timeout in the Observe operation.
+   */
+  OBSERVE_TIMEOUT;
 }
