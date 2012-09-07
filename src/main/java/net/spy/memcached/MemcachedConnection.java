@@ -729,7 +729,7 @@ public class MemcachedConnection extends SpyThread {
    */
   public CountDownLatch broadcastOperation(final BroadcastOpFactory of,
       Collection<MemcachedNode> nodes) {
-    final CountDownLatch latch = new CountDownLatch(locator.getAll().size());
+    final CountDownLatch latch = new CountDownLatch(nodes.size());
     for (MemcachedNode node : nodes) {
       getLogger().debug("broadcast Operation: node = " + node);
       Operation op = of.newOp(node, latch);
