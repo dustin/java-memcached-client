@@ -22,6 +22,7 @@
 
 package net.spy.memcached.ops;
 
+import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.ObserveResponse;
 
 /**

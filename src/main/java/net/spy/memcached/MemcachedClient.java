@@ -1861,9 +1861,13 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     final CountDownLatch latch = new CountDownLatch(1);
     final OperationFuture<Boolean> rv = new OperationFuture<Boolean>(key,
         latch, operationTimeout);
-    DeleteOperation op = opFact.delete(key, new OperationCallback() {
+    DeleteOperation op = opFact.delete(key, new DeleteOperation.Callback() {
       public void receivedStatus(OperationStatus s) {
         rv.set(s.isSuccess(), s);
+      }
+
+      public void gotData(long cas) {
+        rv.setCas(cas);
       }
 
       public void complete() {

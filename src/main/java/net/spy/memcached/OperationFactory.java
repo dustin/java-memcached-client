@@ -76,7 +76,7 @@ public interface OperationFactory {
    * @param operationCallback the status callback
    * @return the new DeleteOperation
    */
-  DeleteOperation delete(String key, OperationCallback operationCallback);
+  DeleteOperation delete(String key, DeleteOperation.Callback callback);
 
   /**
    * Create a Unlock operation.
