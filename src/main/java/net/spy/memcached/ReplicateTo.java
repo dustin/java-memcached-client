@@ -29,17 +29,27 @@ public enum ReplicateTo {
   /**
    * Replicate to at least zero nodes.
    */
-  ZERO,
+  ZERO(0),
   /**
    * Replicate to at least one node.
    */
-  ONE,
+  ONE(1),
   /**
    * Replicate to at least two nodes.
    */
-  TWO,
+  TWO(2),
   /**
    * Replicate to at least three nodes.
    */
-  THREE
+  THREE(3);
+
+  private final int value;
+
+  ReplicateTo(int val) {
+    value = val;
+  }
+
+  public int getValue() {
+    return value;
+  }
 }

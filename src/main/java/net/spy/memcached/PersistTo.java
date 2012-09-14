@@ -29,21 +29,31 @@ public enum PersistTo {
   /**
    * Persist to the Master. ONE implies MASTER.
    */
-  MASTER,
+  MASTER(1),
   /**
    * ONE implies MASTER.
    */
-  ONE,
+  ONE(1),
   /**
    * Persist to at least two nodes including Master.
    */
-  TWO,
+  TWO(2),
   /**
    * Persist to at least three nodes including Master.
    */
-  THREE,
+  THREE(3),
   /**
    * Persist to at least four nodes including Master.
    */
-  FOUR
+  FOUR(4);
+
+  private final int value;
+
+  PersistTo(int val) {
+    value = val;
+  }
+
+  public int getValue() {
+    return value;
+  }
 }
