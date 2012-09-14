@@ -62,7 +62,8 @@ class ObserveOperationImpl extends SingleKeyOperationImpl implements
     keystate = (byte) decodeByte(pl, keylen+4);
     retCas = (long) decodeLong(pl, keylen+5);
     ObserveResponse r = ObserveResponse.valueOf(keystate);
-    ((ObserveOperation.Callback) getCallback()).gotData(key, retCas, r);
+    ((ObserveOperation.Callback) getCallback()).gotData(key, retCas,
+        getHandlingNode(), r);
     getCallback().receivedStatus(STATUS_OK);
   }
 }

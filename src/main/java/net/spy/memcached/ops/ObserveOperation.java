@@ -39,6 +39,6 @@ public interface ObserveOperation extends KeyedOperation {
      * @param cas the CAS value for this record
      * @param or the ObserveResponse
      */
-    void gotData(String key, long cas, ObserveResponse or);
+    void gotData(String key, long cas, MemcachedNode node, ObserveResponse or);
   }
 }
