@@ -93,7 +93,7 @@ public class BinaryClientTest extends ProtocolBaseCase {
     OperationFuture<CASResponse> casRes = client.asyncCAS(key, getsRes.getCas(),
       key + "1");
     try {
-      CASResponse innerCasRes = casRes.get();
+      casRes.get();
       assertNotNull("OperationFuture is missing cas value.", casRes.getCas());
     } catch (InterruptedException ex) {
       fail("Interrupted while getting CASResponse");
