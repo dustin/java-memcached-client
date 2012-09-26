@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class LoggerFactory extends Object {
 
-  private static LoggerFactory instance = null;
+  private static volatile LoggerFactory instance = null;
 
   private final ConcurrentMap<String, Logger> instances;
   private Constructor<? extends Logger> instanceConstructor;
