@@ -30,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import net.spy.memcached.MemcachedClientIF;
 import net.spy.memcached.compat.BaseMockCase;
@@ -82,26 +83,26 @@ public class CacheLoaderTest extends BaseMockCase {
     es.shutdown();
     es.awaitTermination(1, TimeUnit.SECONDS);
 
-    assertEquals(1, sl.success);
-    assertEquals(1, sl.exceptions);
-    assertEquals(1, sl.failure);
+    assertEquals(1, sl.success.get());
+    assertEquals(1, sl.exceptions.get());
+    assertEquals(1, sl.failure.get());
   }
 
   static class LoadCounter implements CacheLoader.StorageListener {
 
-    private volatile int exceptions = 0;
-    private volatile int success = 0;
-    private volatile int failure = 0;
+    private AtomicInteger exceptions = new AtomicInteger(0);
+    private AtomicInteger success = new AtomicInteger(0);
+    private AtomicInteger failure = new AtomicInteger(0);
 
     public void errorStoring(String k, Exception e) {
-      exceptions++;
+      exceptions.incrementAndGet();
     }
 
     public void storeResult(String k, boolean result) {
       if (result) {
-        success++;
+        success.incrementAndGet();
       } else {
-        failure++;
+        failure.incrementAndGet();
       }
     }
   }
