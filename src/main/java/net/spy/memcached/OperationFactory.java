@@ -161,6 +161,15 @@ public interface OperationFactory {
   GetOperation get(Collection<String> keys, GetOperation.Callback cb);
 
   /**
+   * Get a new KeyStatsOperation.
+   *
+   * @param key the key to get stats for
+   * @param cb the stats callback
+   * @return the new StatsOperation
+   */
+  StatsOperation keyStats(String key, StatsOperation.Callback cb);
+
+  /**
    * Create a mutator operation.
    *
    * @param m the mutator type
