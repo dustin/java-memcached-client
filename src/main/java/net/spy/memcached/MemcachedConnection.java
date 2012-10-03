@@ -56,6 +56,7 @@ import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.TapOperation;
 import net.spy.memcached.ops.VBucketAware;
+import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.protocol.binary.TapAckOperationImpl;
 import net.spy.memcached.util.StringUtils;
 
@@ -636,7 +637,7 @@ public class MemcachedConnection extends SpyThread {
   }
 
   public void enqueueOperation(String key, Operation o) {
-    StringUtils.validateKey(key);
+    StringUtils.validateKey(key, opFact instanceof BinaryOperationFactory);
     checkState();
     addOperation(key, o);
   }

@@ -178,7 +178,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     assertEquals("test1value", client.get(key));
   }
 
-  public void testInvalidKey1() throws Exception {
+  public void testKeyWithSpaces() throws Exception {
     try {
       client.get("key with spaces");
       fail("Expected IllegalArgumentException getting key with spaces");
@@ -187,7 +187,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     }
   }
 
-  public void testInvalidKey2() throws Exception {
+  public void testKeyLongerThan250() throws Exception {
     try {
       StringBuilder longKey = new StringBuilder();
       for (int i = 0; i < 251; i++) {
@@ -200,7 +200,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     }
   }
 
-  public void testInvalidKey3() throws Exception {
+  public void testKeyWithNewline() throws Exception {
     try {
       Object val = client.get("Key\n");
       fail("Expected IllegalArgumentException, got " + val);
@@ -209,7 +209,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     }
   }
 
-  public void testInvalidKey4() throws Exception {
+  public void testKeyWithReturn() throws Exception {
     try {
       Object val = client.get("Key\r");
       fail("Expected IllegalArgumentException, got " + val);
@@ -218,7 +218,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     }
   }
 
-  public void testInvalidKey5() throws Exception {
+  public void testKeyWithASCIINull() throws Exception {
     try {
       Object val = client.get("Key\0");
       fail("Expected IllegalArgumentException, got " + val);
@@ -236,7 +236,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     }
   }
 
-  public void testInvalidKeyBulk() throws Exception {
+  public void testGetBulkKeyWSpaces() throws Exception {
     try {
       Object val = client.getBulk("Key key2");
       fail("Expected IllegalArgumentException, got " + val);

@@ -63,7 +63,7 @@ public final class StringUtils {
     }
   }
 
-  public static void validateKey(String key) {
+  public static void validateKey(String key, boolean binary) {
     byte[] keyBytes = KeyUtil.getKeyBytes(key);
     if (keyBytes.length > MemcachedClientIF.MAX_KEY_LENGTH) {
       throw new IllegalArgumentException("Key is too long (maxlen = "
@@ -73,11 +73,13 @@ public final class StringUtils {
       throw new IllegalArgumentException(
           "Key must contain at least one character.");
     }
-    // Validate the key
-    for (byte b : keyBytes) {
-      if (b == ' ' || b == '\n' || b == '\r' || b == 0) {
-        throw new IllegalArgumentException(
-            "Key contains invalid characters:  ``" + key + "''");
+    if(!binary) {
+      // Validate the key
+      for (byte b : keyBytes) {
+        if (b == ' ' || b == '\n' || b == '\r' || b == 0) {
+          throw new IllegalArgumentException(
+              "Key contains invalid characters:  ``" + key + "''");
+        }
       }
     }
   }
