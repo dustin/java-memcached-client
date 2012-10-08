@@ -26,6 +26,11 @@ package net.spy.memcached;
  * PersistTo codes for a Observe operation.
  */
 public enum PersistTo {
+
+  /**
+   * Don't wait for persistence on any nodes.
+   */
+  ZERO(0),
   /**
    * Persist to the Master. ONE implies MASTER.
    */
