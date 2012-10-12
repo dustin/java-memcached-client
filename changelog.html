@@ -18,8 +18,243 @@
 <body>
 
 <h1>Changelog</h1>
-<h2>Changes from release 2.7.2 to 2.7.3</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Matt" alt="contributors"/><pre>Release of 2.7.3
+<h2>Changes from release 2.8.3 to 2.8.4</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Raghavan" alt="contributors"/><pre>Release of 2.8.4
+
+The 2.8.4 release of spymemcached has only a
+single bugfix for handling some issues with the
+observe command introduced in 2.8.3.  The observe
+command is for use with Couchbase Server only.
+
+Summary of changes by contributor:
+
+Raghavan Srinivas (1):
+      Fixed issues with the Observe Method(s)
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+
+Note that Couchbase also tracks issues here:
+http://www.couchbase.org/issues/browse/SPY
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (Darwin)
+
+iEYEABECAAYFAlA0bb0ACgkQQM0/OE2fY9oE5wCaAxAkZVsIbO7iWWhtfz9gVj8Q
+A/UAniDgAtcEeDxTI8vg4AQ6CnkfgoyL
+=oMhK
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.8.2 to 2.8.3</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:uP&amp;chl=Raghavan%7cMatt" alt="contributors"/><pre>Release of 2.8.3
+
+The 2.8.3 release is a minor update to spymemcached which
+includes a bug fix and some minor new features in support
+of Couchbase Server in the Couchbase Java Client project
+which depends on some protocol capabilities and handling
+in this project.
+
+Note that SPY-97 was opened for unlock, as the fix
+described above doesn't address situations where there
+is a TMPFAIL or a NOT_MY_VBUCKET, for example.
+
+Summary of changes by contributor:
+
+Raghavan Srinivas (3):
+      Adding a getCas() for Store functions
+      Changes for Observe.
+      Fixed failing Unlock test
+
+Matt Ingenthron (1):
+      Add the node back to connected during reconnect.  Issue 225.
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+
+Note that Couchbase also tracks issues here:
+http://www.couchbase.org/issues/browse/SPY
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (Darwin)
+
+iEYEABECAAYFAlAxVnUACgkQQM0/OE2fY9revACggGGC77kpAmFNyNTElmHca5BP
+8YEAoLP5KAXL6QdZ3e2Ky2rp3c7hZvuM
+=CbPl
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.8.1 to 2.8.2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:fZG&amp;chl=Matt%7cMike%7cMarty" alt="contributors"/><pre>Release of 2.8.2
+
+The 2.8.2 release is a minor update to spymemcached which
+includes bug fixes and a workaround to recently discovered
+issues.  The major workaround included in this release is
+that optimization has been disabled.  Recent tests
+indicate that there is a problem with optimization in the
+ascii implementation that may cause operations to come
+back with a cache miss prematurely.  Further, it was found
+on binary protocol that an error in the middle of binary
+optimization pipelined sets, it can cause lack of recovery
+on the client.
+
+To address these two correctness issues, optimization is
+now off by default, but may be enabled to make the client
+behave like it had previously.  It is expected that
+optimization will be re-enabled in the next release.
+
+There were also minor bugfixes for logging, some internal
+utilities, and handling of certain error cases.
+
+Summary of changes by contributor:
+
+Matt Ingenthron (11):
+      Change vbucket retry logging to debug level. SPY-87
+      Make queueReconnect protected so subclasses can request reconnects.
+      Make the OperationState volatile.  SPY-88
+      Add javadoc for OperationFuture.
+      Comment correction in MemcachedConnection.  Non-javadoc.
+      Let offline try to work with already downloaded mvn.
+      Correct test for StringUtils.join().
+      Disable optimization by default, remove assert. SPY-88.
+      Revert ErrorCode and OperationStatus changes.
+      Change selection key logging to debug level.
+      Fixed misc checkstyle errors which crept in.
+
+Mike Wiederhold (9):
+      Retry not my vbucket error for optimized sets. SPY-88
+      Fixed tap message test cases
+      Create an ErrorCode class for error codes
+      OperationStatus now has an error code
+      Check if op is null before asserting in OperationFuture
+      SPY-90: getStats() can return an error
+      Fixed parsing of delete tap packet
+      JCBC-52: Fix StringUtils.join()
+      JCBC-72: Make OperationException extendable
+
+Marty Schoch (2):
+      add TAP Opcodes for start/end checkpoint
+      add support for TAP request/response with checkpoint info
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+
+Note that Couchbase also tracks issues here:
+http://www.couchbase.org/issues/browse/SPY
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (Darwin)
+
+iEYEABECAAYFAlAXJ+4ACgkQQM0/OE2fY9rRXwCfcXQOxw36+cFdWK+iDO/obtwd
+MoMAoMbq8dLS4/yz29/+vHbtIG2QCkxl
+=bm+e
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.8.0 to 2.8.1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:vJF&amp;chl=Matt%7cMike%7cRaghavan" alt="contributors"/><pre>Release of 2.8.1
+
+The 2.8.1 release is a minor update to spymemcached which
+includes bug fixes related to the TAP feature and some
+minor changes to generate better maven descriptions.
+
+Summary of changes by contributor:
+
+Matt Ingenthron (10):
+      Enhanced TapTest, ensuring success with random leftovers.
+      Remove test for "stats cachedump".
+      Wait longer on tap data received.
+      Fixed handling of TAP flags.
+      Decode TAP mutation flags as host byte order.
+      Add test coverage for ResponseMessage and fix to get bytes.
+      Complete the removal of stats cachedump.
+      Bump log4j to 1.2.16 to get rid of transitive JMS deps.
+      Make log4j, spring-beans optional in our maven artifacts.
+      Added toString() for ResponseMessage.
+
+Mike Wiederhold (2):
+      Created TapStream abstraction
+      Made TapAck its own class
+
+Raghavan Srinivas (1):
+      Added support for unl command
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+
+Note that Couchbase also tracks issues here:
+http://www.couchbase.org/issues/browse/SPY
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAk9qeFYACgkQQM0/OE2fY9qrxwCcDtDMg2OjIVwTT0Osn7hFIoDo
+lpAAnj4TFiSBzhH9j3uKDNClEX/BBWoa
+=BdaS
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.7.3 to 2.8.0</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:yFCBBBB&amp;chl=Mike%7cMatt%7cRaghavan%7cDustin%7cPaul%7cPaul%7cOther" alt="contributors"/><pre>Release of 2.8.0
+
+The 2.8.0 release is a minor update to spymemcached which
+includes bug fixes, some minor new features and some
+features split out into a separate project.
+
+Starting in the 2.8.0 release, there is no longer support
+directly in the MemcachedClient object for Membase Server.
+That has been broken out into a separate library which is
+hosted at http://www.couchbase.com/develop/java/current
+
+By separating out that code, it reduced the dependency
+burden on this project.  Also, a number of the proposed
+new features, namely support for Couchbase Server views
+seemed increasingly like they did not belong in this
+project.
+
+The new project should be compatible with minimal,
+though some, code changes.  It is Open Source under an
+Apache 2.0 license, and support of that library continues
+by the same developers.
+
+This new release also includes Iterator versions of
+getAsyncBulk and getBulk.
+
+For example:
+
+    public PrefixAdderIterator implements Iterator<String> {
+
+      private final String prefix;
+      private final Iterator<String> iterator;
+      public PrefixAdderIterator(String prefix,
+             Iterator<String> iterator) {
+        this.prefix = prefix;
+        this.iterator = iterator;
+      }
+      ...
+      public String next() {
+        return prefix+iterator.next();
+      }
+     ...
+    }
+
+    rather than
+
+     List<String> prefixedKeys = new ArrayList<String>();
+     for (String key: keys) {
+      prefixedKeys.add(prefix+key);
+     }
+
+Thanks much to Ted Crossman for the idea and
+contribution.
+
+Bugs fixed/closed in 2.8.0:
+http://code.google.com/p/spymemcached/issues69/detail?id=199
+ (a.k.a. http://www.couchbase.org/issues/browse/SPY-48)
+http://code.google.com/p/spymemcached/issues69/detail?id=134
+
+With others which can be listed here:
+http://code.google.com/p/spymemcached/issues/list
+
+Note that Couchbase also tracks issues here:
+http://www.couchbase.org/issues/browse/SPY
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAk8cSp4ACgkQQM0/OE2fY9p5lACeKxrY5c5DsIshUDTtRnO/ENbr
+jFgAnR1ygjAuKMM8prLDbKhxpMNMb2Cn
+=csob
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.7.2 to 2.7.3</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Matt" alt="contributors"/><pre>Release of 2.7.3
 
 The 2.7.3 release is a patch update, covering just one issue
 which was intended to be in 2.7.2.
@@ -90,7 +325,7 @@ X2UAoJwatM6/Ww4BI6PHHzEIT1iKrHrA
 =dL3t
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.7.1 to 2.7.2</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:vFFCC&amp;chl=Mike%7cDaniel%7cMatt%7cMartin%7csanada0670" alt="contributors"/><pre>Release of 2.7.2
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:vFFCC&amp;chl=Mike%7cDaniel%7cMatt%7cMartin%7csanada0670" alt="contributors"/><pre>Release of 2.7.2
 
 The 2.7.2 release is a patch update, including a number of new
 features.
@@ -228,7 +463,7 @@ NrQAoNMPqEjZEwQZoAjomiNg004Jx19G
 =jPt9
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.7 to 2.7.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:uIDBBB&amp;chl=Mike%7cMatt%7cDustin%7cNelz%7cPaul%7cVitaly" alt="contributors"/><pre>Release of 2.7.1
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:uIDBBB&amp;chl=Mike%7cMatt%7cDustin%7cNelz%7cPaul%7cVitaly" alt="contributors"/><pre>Release of 2.7.1
 
 The 2.7.1 release is a patch update, including a number of new
 features.  It should be compatible with all 2.7 deployments, with one
@@ -406,8 +641,8 @@ iEYEABECAAYFAk5TzBQACgkQQM0/OE2fY9orXgCgjndXOzGYyIWh7jcNuK8yDFCY
 VNAAniTc/ItkjlbTOBnhlK4e/FMpeOZC
 =ejy9
 -----END PGP SIGNATURE-----
-</pre></div><h2>Changes from release 2.6 to 2.7</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:gTL&amp;chl=Matt%7cAlexander%7cMike" alt="contributors"/><pre>Release of 2.7
+</pre></div><h2>Changes from release 2.6rc2 to 2.7</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:eRJEC&amp;chl=Matt%7cAlexander%7cMike%7cDustin%7cLuke" alt="contributors"/><pre>Release of 2.7
 
 Changes since the 2.6 series:
 
@@ -506,8 +741,74 @@ iEYEABECAAYFAk3vVV4ACgkQQM0/OE2fY9ovDQCfa5vI52rB5V55i2W4xmMaBjWk
 Du8An3MI92f4aNpDZwf8OcCVGW1QP/o7
 =NTH8
 -----END PGP SIGNATURE-----
-</pre></div><h2>Changes from release 2.5 to 2.6</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:dOIFCCD&amp;chl=Matt%7cBlair%7cDustin%7cBoris%7cddlatham%7cEran%7cOther" alt="contributors"/><pre>Release of 2.6
+</pre></div><h2>Changes from release 2.6rc1 to 2.6rc2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:2H&amp;chl=Matt%7cEran" alt="contributors"/><pre>Prerelease of 2.6
+
+Changes since the 2.5 series:
+
+The major change, and the reason for the version bump, is that timeout
+handling has been improved.  Previously, timed out operations may have
+actually been written to the network even after they'd timed out.  The
+change required some small API changes (generally forward compatible
+so minor version bump only) and adds a new operation state of timedout.
+
+Other changes include performance enhancements, transcoder enahncements
+and improvements in the continuious timeout counter to be per
+connection rather than for the entire MemcachedClient.  The library is
+now easier to use in Spring as well, owing to a FactoryBean contribution.
+
+Between rc1 and rc2, a major issue (issue 175) with the
+KetamaNodeLocator was found, so some changes were backported along with
+the fix.
+
+(notes updated from rc1)
+
+Contributors:
+    19  Matt Ingenthron
+     9  Blair Zajac
+     3  Dustin Sallings
+     3  Boris Partensky
+     1  Eran Harel
+     1  Andrey Kartashov
+     1  ddlatham
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAk21l4EACgkQQM0/OE2fY9qP7gCgyLSWhBmxq1fMF4A6XaAlZ6Tb
+xbsAnjQ6U9MMu9UIbN5wnG3sJ7TSvdcq
+=m+F6
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.6 to 2.6rc1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:" alt="contributors"/><pre>Prerelease of 2.6
+
+Changes since the 2.5 series:
+
+The major change, and the reason for the version bump, is that timeout
+handling has been improved.  Previously, timed out operations may have
+actually been written to the network even after they'd timed out.  The
+change required some small API changes (generally forward compatible
+so minor version bump only) and adds a new operation state of timedout.
+
+Other changes include performance enhancements, transcoder enahncements
+and improvements in the continuious timeout counter to be per
+connection rather than for the entire MemcachedClient.
+
+Contributors:
+    10  Matt Ingenthron
+     9  Blair Zajac
+     3  Boris Partensky
+     3  Dustin Sallings
+     1  Andrey Kartashov
+     1  ddlatham
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAk1az2AACgkQQM0/OE2fY9r6PQCgmN56nm0E9qYL4VSuJcdGC2R9
+pxkAniaHQ53J8EsiAbAyHPsbLIxe06jn
+=kXof
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.5rc3 to 2.6</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:fMHEBBE&amp;chl=Matt%7cBlair%7cDustin%7cBoris%7cAndrey%7cddlatham%7cOther" alt="contributors"/><pre>Release of 2.6
 
 Changes since the 2.5 series:
 
@@ -627,8 +928,100 @@ iEYEABECAAYFAk3MQXoACgkQQM0/OE2fY9oxYwCePLecOdyQrs3zebXBBWvpRcD/
 DmwAnRqlAkHaxH9AFlRmDzQCD66E7isv
 =Uljc
 -----END PGP SIGNATURE-----
-</pre></div><h2>Changes from release 2.4.2 to 2.5</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:dVFDCC&amp;chl=Dustin%7cMatt%7cBlair%7cAhn%7cGreg%7cKristian" alt="contributors"/><pre>Release of 2.5
+</pre></div><h2>Changes from release 2.5rc2 to 2.5rc3</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Matt" alt="contributors"/><pre>Prerelease of 2.5
+
+Changes since the 2.4 series:
+
+The main new feature of the 2.5 release is support for SASL auth
+to go along with the same feature in the memcached 1.4.3 and later
+servers.
+
+There is also a new feature which can be used in conjunction with the
+failure cancel mode to close all connections to memcached servers if
+there are timeouts against a server.  This helps to recover from
+situations where a memcached server in the list may hard fail.
+
+The reason for rc3, and the significant changes over rc2, is that
+a number of issues were found where operations could be sent without
+allowing SASL to complete.
+
+Contributors:
+
+     2	Ahn Seong Hwa
+     3	Blair Zajac
+    25	Dustin Sallings
+     2	Kevin Lafferty
+     1	Kristian Eide
+    11	Matt Ingenthron
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAkuzsvIACgkQQM0/OE2fY9p7ewCfTmDHahx2r5nQZZGp0wcwHXuZ
+eMEAn3eeb3VSeyyloOL5uIi8o5+DKl1x
+=4zvl
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.5rc1 to 2.5rc2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:bTIEE&amp;chl=Dustin%7cMatt%7cAhn%7cBlair%7cKristian" alt="contributors"/><pre>Prerelease of 2.5
+
+Changes since the 2.4 series:
+
+The main new feature of the 2.5 release is support for SASL auth
+to go along with the same feature in the memcached 1.4.3 and later
+servers.
+
+There is also a new feature which can be used in conjunction with the
+failure cancel mode to close all connections to memcached servers if
+there are timeouts against a server.  This helps to recover from
+situations where a memcached server in the list may hard fail.
+
+Contributors:
+
+     7  Dustin Sallings
+     5  Matt Ingenthron
+     2  Ahn Seong Hwa
+     1  Blair Zajac
+     1  Kristian Eide
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAkuaxYIACgkQQM0/OE2fY9oosgCghESfFPGt/WX4GL+MPyq/xkjh
+9JsAnRKQHN7AoOfASlHit7Eg7EMThgLv
+=WS9h
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.5-ns to 2.5rc1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:" alt="contributors"/><pre>Prerelease of 2.5
+
+Changes since the 2.4 series:
+
+The primary new thing here is SASL support.  While the implementation
+isn't exactly what I want, I think the API is good enough to be
+considered stable.
+
+Contributors:
+
+    12  Dustin Sallings
+     2  Blair Zajac
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAkr9qa4ACgkQeWDnv0PlnVRW2wCggk3rJbBTKKVQLN5Fc4ygh7tK
+OUEAoIft6/2E6E5/cWRFGEySNQaqtN35
+=R0DX
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.5 to 2.5-ns</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Matt" alt="contributors"/><pre>Prerelease of spymemcached 2.5 with NorthScale fixes.
+
+These will be added to spymemcached soon for review.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (Darwin)
+
+iEYEABECAAYFAkuePiQACgkQQM0/OE2fY9rQEwCePbWqFNz+MgGit3Hj7h/JHsIB
+MucAoNH89AAmhMRoug9Wc2nx69HHH2QJ
+=3PgX
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.4rc1 to 2.5</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:jPDCCBD&amp;chl=Dustin%7cMatt%7cBlair%7cAhn%7cKevin%7cKristian%7cOther" alt="contributors"/><pre>Release of 2.5
 
 Changes since the 2.4 series:
 
@@ -727,8 +1120,77 @@ iEYEABECAAYFAkvDyG4ACgkQQM0/OE2fY9o/BwCfZBcaORvnKuLFBtjsOcZmSiI9
 IFEAnArde+Jn1xkICom2MmQg6h3rFZdz
 =1oIc
 -----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.4.2 to 2.4rc1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:" alt="contributors"/><pre>Prerelease of 2.4
+
+Changes since the 2.3 series.
+
+Bug Fixes:
+
+* Memcached node tracking.
+  When a timeout occurs on an operation, the exception indicates the
+  server node that was the intendend recipient of the operation.
+* Fixed reconnect loss on multiple simultaneous connection failures.
+  This is a rare occurrence, but the wrong thing would happen if two
+  simultaneous reconnects were requeued for any reason.
+* Fixed a race condition that occurred when tearing down a connection.
+  There was a case where shutting down a connection would cause an NPE
+  to get logged due to the a race between a selector check and the
+  selector being shut down.  Unlikely to affect a running app, but
+  it was still wrong.
+* Handle initial connect failures.
+  There were rare cases where an async connect would error instantly
+  on the first attempt, but that connect wouldn't be retried.
+
+Features:
+
+* ConnectionFactoryBuilder
+  Rather than having to build a custom subclass of
+  DefaultConnectionFactory to override behaviors, you can now use a
+  ConnectionFactoryBuilder to easily assemble a ConnectionFactory as
+  you want it.
+* Mutation-only CAS mutator
+  Previously, the CASMutator required an initial object to use if the
+  object you were attempting to mutate wasn't found.  Now you can
+  specify this as NULL and CASMutator will *only* mutate an existing
+  object, but never create a new one.
+* CacheLoader
+  CacheLoader provides a couple of convenient mechanisms for
+  efficiently loading bulk data.  I've seen many benchmarks trying to
+  see how fast data can go into memcached through the client (as
+  opposed to normal usage), but they do things to make it
+  unnecessarily slow.  This should satisfy both benchmarking
+  requirements and legitimate bulk loading requirements.
+
+Performance Enhancements:
+
+* Disable Nagle Algorithm by Default
+  The usage of the Nagle algorithm (tcpNoDelay) is now configurable
+  and is configured off by default (Nagle algorithm off = tcpNoDelay
+  on).  This should be more optimal for most configurations.
+* Multi-set Escalation in the Binary Protocol
+  With no changes to the API, multiple sequential sets will be
+  escalated into a multi-set operation similar to multi-get.  In a
+  bulk load test, this is generally around 2x faster.
+* Asynchronous Transcoding Service
+  A transcoder can request a transcoder service (effectively a
+  threadpool) to asynchronously decode cache response objects both
+  outside of the API and outside of the caller thread.
+
+Contributors:
+
+    30  Dustin Sallings
+     1  Joseph Hart
+     1  Wang Nan
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAkq6ppQACgkQeWDnv0PlnVRwUgCggSCV7VelTY946bpFJuRgPhtJ
+FC8Ani097J6tQN55vuq8u0p9qSU+ALI0
+=NGik
+-----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.4.1 to 2.4.2</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:jRJ&amp;chl=Dustin%7cKevin%7cMatt" alt="contributors"/><pre>Release 2.4.2
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:jRJ&amp;chl=Dustin%7cKevin%7cMatt" alt="contributors"/><pre>Release 2.4.2
 
 Changes since 2.4.1:
 
@@ -762,7 +1224,7 @@ ErYAn1iFb2oJzIXYagDftjRweLekwgHY
 =1DIS
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.4 to 2.4.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.4.1
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.4.1
 
 Changes since 2.4:
 
@@ -776,8 +1238,8 @@ iEYEABECAAYFAkrWGpwACgkQeWDnv0PlnVS7UACgju74mIRLgqTTQE1WZIut5LC3
 U4EAoKa8kOConX0SX5eFXJQQNioIk3bQ
 =dLTz
 -----END PGP SIGNATURE-----
-</pre></div><h2>Changes from release 2.3.1 to 2.4</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:3BBBB&amp;chl=Dustin%7cJoseph%7cLewis%7cWang%7cciaranj" alt="contributors"/><pre>Version 2.4
+</pre></div><h2>Changes from release 2.3rc1 to 2.4</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:3BBBBB&amp;chl=Dustin%7cJoseph%7cLewis%7cWang%7cciaranj%7craykrueger" alt="contributors"/><pre>Version 2.4
 
 Changes since the 2.3 series.
 
@@ -858,8 +1320,42 @@ iEYEABECAAYFAkrU6jwACgkQeWDnv0PlnVTvRQCfRnwYXIM/ELclluJ2r9t/eLnm
 GXsAoI/FFr8b3HN50IlPYFr/OBTtWc/8
 =T4x/
 -----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.3.1 to 2.3rc1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:" alt="contributors"/><pre>Changes since 2.2:
+
+* A Map interface to memcached
+    This is somewhat limited, of course, in that you obviously can't
+    list all of the mappings, but you can replace many Map<String,V>
+    usages with a memcached backed map.
+
+* Failure Modes
+    There are now three failure modes to choose from so you can decide
+    what you want to do in the case of a node failure. (see
+    FailureMode in the documentation for more details).
+
+* Connection Observation
+    You can register for callbacks that will notify you when a node
+    goes up or down.  This is useful for things like notifying
+    monitoring systems, or preventing a system from starting up until
+    a required minimum number of memcached servers come online.
+
+* Misc bug fixes and accessibility to memcached functionality.
+
+Contributors:
+
+    51  Dustin Sallings
+     1  Nick Brachet
+     1  Valeri Felberg
+     1  raykrueger
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAkmkjM4ACgkQeWDnv0PlnVSBcwCdGOGqHn2/NDf5jsmzlM5wTOtN
+olAAoIpgb/0uUUCrU1sTpCXa3UX+R3Ly
+=f8kU
+-----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.3 to 2.3.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.3.1
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Release 2.3.1
 
 Changes since 2.3:
 
@@ -892,8 +1388,8 @@ iEYEABECAAYFAknU3IsACgkQeWDnv0PlnVTpggCeP5eeyreCoZxG91G/BqHCuTnw
 SCYAmgM37FG/pVg3VqsREqEuR4z64Vgo
 =+IGM
 -----END PGP SIGNATURE-----
-</pre></div><h2>Changes from release 2.2 to 2.3</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:5CBB&amp;chl=Dustin%7craykrueger%7cNick%7cValeri" alt="contributors"/><pre>Release 2.3.
+</pre></div><h2>Changes from release 2.2rc2 to 2.3</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:5CBB&amp;chl=Dustin%7craykrueger%7cNick%7cValeri" alt="contributors"/><pre>Release 2.3.
 
 Changes since 2.2:
 
@@ -928,8 +1424,67 @@ iEYEABECAAYFAknBXjQACgkQeWDnv0PlnVQvogCgy6VzHZgtr/Q+J/y8dLR84CYb
 +nwAn2VflMFw63uAO8Tr0Q6jZm1kifAk
 =+GSJ
 -----END PGP SIGNATURE-----
-</pre></div><h2>Changes from release 2.1 to 2.2</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:rEEEEC&amp;chl=Dustin%7cBoris%7cKristian%7cNelz%7cNick%7cRobey" alt="contributors"/><pre>Changes since 2.1:
+</pre></div><h2>Changes from release 2.2rc1 to 2.2rc2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:yIE&amp;chl=Dustin%7cBoris%7cNick" alt="contributors"/><pre>RC for 2.2.
+
+Changes since 2.1:
+
+* Data decoding occurs in caller threads instead of IO thread.
+ This should greatly improve performance by spreading out the load to
+ more threads. (Kristian Eide)
+* MemcachedClientIF is added as an interface the client represents.
+ This allows a client making use of the interface to mock the memcached
+ interaction for better test coverage (Nelz)
+* Binary protocol stat support (protocol wasn't complete until October 19).
+* Async incr/decr with no default (Nick Brachet)
+* Whalin V1 transcoder (Boris Partensky)
+* Removed delete with hold support (pulled from server in 1.3).
+* Miscellaneous bug fixes.
+
+Contributors:
+
+   19  Dustin Sallings
+    2  Boris Partensky
+    2  Kristian Eide
+    2  Nelz
+    2  Nick Brachet
+    1  Robey Pointer
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAkkChFoACgkQeWDnv0PlnVQ36ACguT7R5yJyj3hjB7RjC0yo5jUI
+TNwAmgJwlEFQXeIyJNA+tbA6osB4SeL9
+=WvyM
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.2 to 2.2rc1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:" alt="contributors"/><pre>RC for 2.2.
+
+Changes since 2.1:
+
+* Data decoding occurs in caller threads instead of IO thread.
+  This should greatly improve performance by spreading out the load to
+  more threads. (Kristian Eide)
+* MemcachedClientIF is added as an interface the client represents.
+  This allows a client making use of the interface to mock the memcached
+  interaction for better test coverage (Nelz)
+* Miscellaneous bug fixes.
+
+Contributors:
+
+     6  Dustin Sallings
+     2  Kristian Eide
+     2  Nelz
+     1  Nick Brachet
+     1  Robey Pointer
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (Darwin)
+
+iEYEABECAAYFAkjlplUACgkQeWDnv0PlnVTeUQCfd20dAc5DNt+klr4hTkgoeImq
+wroAn0YWFLwQMqSW5IQSVW8Ub/IrwoTW
+=a9zq
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.1rc3 to 2.2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:rEEEEC&amp;chl=Dustin%7cBoris%7cKristian%7cNelz%7cNick%7cRobey" alt="contributors"/><pre>Changes since 2.1:
 
 * Data decoding occurs in caller threads instead of IO thread.
   This should greatly improve performance by spreading out the load to
@@ -959,8 +1514,56 @@ iEYEABECAAYFAkkJR8sACgkQeWDnv0PlnVR6tgCfZIwI3cZRRUsrR8ECQpO/rwYU
 pCYAn2BKDsOJw0q/8MzvUo/PqIRn7LkD
 =YTZN
 -----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.1rc2 to 2.1rc3</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:pU&amp;chl=Dustin%7cNelz" alt="contributors"/><pre>2.1rc3 includes a couple bug fixes and a convenience feature:
+
+1) The three internal queues can be sized individually.
+2) Fixed an elusive NPE in a partial read in bin.
+3) Brought in Nelz' consistent hash convenience factory.
+
+Regarding #1, it's pretty easy to overflow a read queue by having a
+giant write queue such that the write queue's short commands going out
+can get drained fairly quickly and set up for read, but there's no
+room for the reads.  With new connection factory methods, it's both
+easy to simulate that as well as size appropriately for your
+application in such a way that might avoid it.  The defaults should
+probably be fine for everyone, of course.
+
+The effect of #2 was mostly that one of my tests occasionally failed.
+It was a real bug though and would've sucked for someone someday.
+
+The KetamaConnectionFactory can be used place of
+DefaultConnectionFactory to get a stock ketama setup.  I don't
+particularly like the KETAMA_HASH (md5), but the goal is to have a few
+configurations on the shelf that one can choose from.
+</pre></div><h2>Changes from release 2.1rc1 to 2.1rc2</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>A second release candidate for 2.1.
+
+This is basically bug fixes and doc updates.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (Darwin)
+
+iEYEABECAAYFAkgqiw4ACgkQeWDnv0PlnVTLLwCeJNr2syXS0ialsbxYh45BV1Un
+HPQAn1gHF6MnZuInUCbXgrnh3tQDAJeR
+=Gts8
+-----END PGP SIGNATURE-----
+</pre></div><h2>Changes from release 2.1 to 2.1rc1</h2>
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:" alt="contributors"/><pre>Release candidate for a 2.1 release.
+
+Main features since 2.0:
+
+* Operation timeouts for blocking operations.
+* Support for append and prepend.
+* Optional Whalin compatible transcoder.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (Darwin)
+
+iEYEABECAAYFAkgmpeMACgkQeWDnv0PlnVSQZACgmvWGRgeWfhTUj71uKsTw3FcF
+S0YAoKRle6INqcUksxITjfyeBmJHG3Dp
+=A/kj
+-----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.0.2 to 2.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:0HB&amp;chl=Dustin%7cRay%7cNelz" alt="contributors"/><pre>2.1 release
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:0HB&amp;chl=Dustin%7cRay%7cNelz" alt="contributors"/><pre>2.1 release
 
 Main features since 2.0:
 
@@ -977,7 +1580,7 @@ twIAn3ujjpt1bdVlJUhmyb847vIzEfOk
 =t9ek
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.0.1 to 2.0.2</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Binary protocol updates.
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Binary protocol updates.
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.8 (Darwin)
 
@@ -986,7 +1589,7 @@ WxwAn2VcyPEjp8A4uh0vOZR1SkoJj+nx
 =wEoe
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 2.0 to 2.0.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Some minor post-2.0 fixes.
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>Some minor post-2.0 fixes.
 
 * Binary protocol changes re alignment (as released in memcached 1.3.0)
 * More input validation when constructing a client.
@@ -1000,7 +1603,7 @@ g2UAn1dtsFf5fDuDplULfIWSBY2Rsfuu
 =Ycwi
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 1.4 to 2.0</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:3G&amp;chl=Dustin%7cBlair" alt="contributors"/><pre>2.0 has been a long time coming.
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:3G&amp;chl=Dustin%7cBlair" alt="contributors"/><pre>2.0 has been a long time coming.
 
 The initial reason for it to exist was protocol abstraction (specifically to
 implement the binary protocol).  The slowness of the binary protocol release
@@ -1025,33 +1628,33 @@ FnAAn1PeBUmqOr0eCpIVppsU14R1pbRm
 =2k6j
 -----END PGP SIGNATURE-----
 </pre></div><h2>Changes from release 1.3.1 to 1.4</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.4
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.4
 </pre></div><h2>Changes from release 1.3 to 1.3.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.3.1
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.3.1
 </pre></div><h2>Changes from release 1.2 to 1.3</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.3
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.3
 </pre></div><h2>Changes from release 1.1 to 1.2</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.2
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.2
 </pre></div><h2>Changes from release 1.0.44 to 1.1</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.1
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.1
 </pre></div><h2>Changes from release 1.0.43 to 1.0.44</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.44
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.44
 </pre></div><h2>Changes from release 1.0.42 to 1.0.43</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.43
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.43
 </pre></div><h2>Changes from release 1.0.41 to 1.0.42</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.42
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.42
 </pre></div><h2>Changes from release 1.0.40 to 1.0.41</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.41
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.41
 </pre></div><h2>Changes from release 1.0.39 to 1.0.40</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.40
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.40
 </pre></div><h2>Changes from release 1.0.38 to 1.0.39</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.39
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.39
 </pre></div><h2>Changes from release 1.0.37 to 1.0.38</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.38
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.38
 </pre></div><h2>Changes from release 1.0.36 to 1.0.37</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.37
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.37
 </pre></div><h2>Changes from release 1.0.34 to 1.0.36</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.36
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:9&amp;chl=Dustin" alt="contributors"/><pre>release 1.0.36
 </pre></div><h2>Release 1.0.34</h2>
-<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=420x300&amp;chd=s:" alt="contributors"/><pre>release 1.0.34
+<div><img class="pie" src="http://chart.apis.google.com/chart?cht=p&amp;chs=400x300&amp;chd=s:" alt="contributors"/><pre>release 1.0.34
 </pre></div></body></html>
