@@ -54,11 +54,19 @@ public interface MemcachedClientIF {
 
   Future<Boolean> append(long cas, String key, Object val);
 
+  Future<Boolean> append(String key, Object val);
+
   <T> Future<Boolean> append(long cas, String key, T val, Transcoder<T> tc);
+
+  <T> Future<Boolean> append(String key, T val, Transcoder<T> tc);
 
   Future<Boolean> prepend(long cas, String key, Object val);
 
+  Future<Boolean> prepend(String key, Object val);
+
   <T> Future<Boolean> prepend(long cas, String key, T val, Transcoder<T> tc);
+
+  <T> Future<Boolean> prepend(String key, T val, Transcoder<T> tc);
 
   <T> Future<CASResponse> asyncCAS(String key, long casId, T value,
       Transcoder<T> tc);
