@@ -45,11 +45,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import net.spy.memcached.compat.SpyThread;
 import net.spy.memcached.compat.log.LoggerFactory;
 import net.spy.memcached.internal.OperationFuture;
@@ -62,7 +60,6 @@ import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.TapOperation;
 import net.spy.memcached.ops.VBucketAware;
-import net.spy.memcached.ops.VersionOperation;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.protocol.binary.TapAckOperationImpl;
 import net.spy.memcached.util.StringUtils;
@@ -421,8 +418,8 @@ public class MemcachedConnection extends SpyThread {
             }
           }
 
-          if (!done || testOp.isCancelled() || testOp.hasErrored() ||
-            testOp.isTimedOut()) {
+          if (!done || testOp.isCancelled() || testOp.hasErrored()
+            || testOp.isTimedOut()) {
             throw new ConnectException("Could not send noop upon connect! "
               + "This may indicate a running, but not responding memcached "
               + "instance.");
