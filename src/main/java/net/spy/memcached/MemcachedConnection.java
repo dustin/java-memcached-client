@@ -361,6 +361,22 @@ public class MemcachedConnection extends SpyThread {
   }
 
   /**
+   * Makes sure that the given SelectionKey belongs to the current
+   * cluster.
+   *
+   * Before trying to connect to a node, make sure it actually
+   * belongs to the currently connected cluster.
+   */
+  boolean belongsToCluster(MemcachedNode node) {
+    for (MemcachedNode n : locator.getAll()) {
+      if (n.getSocketAddress().equals(node.getSocketAddress())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Handle IO for a specific selector. Any IOException will cause a
    * reconnect.
    *
@@ -377,7 +393,7 @@ public class MemcachedConnection extends SpyThread {
       getLogger().debug("Handling IO for:  %s (r=%s, w=%s, c=%s, op=%s)", sk,
               sk.isReadable(), sk.isWritable(), sk.isConnectable(),
               sk.attachment());
-      if (sk.isConnectable()) {
+      if (sk.isConnectable() && belongsToCluster(node)) {
         getLogger().info("Connection state changed for %s", sk);
         final SocketChannel channel = node.getChannel();
         if (channel.finishConnect()) {

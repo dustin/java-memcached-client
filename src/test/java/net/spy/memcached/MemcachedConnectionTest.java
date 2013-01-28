@@ -22,9 +22,14 @@
 
 package net.spy.memcached;
 
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import junit.framework.TestCase;
+import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 
 /**
  * Test stuff that can be tested within a MemcachedConnection separately.
@@ -36,5 +41,25 @@ public class MemcachedConnectionTest extends TestCase {
     ByteBuffer bb = ByteBuffer.wrap(input.getBytes());
     String s = MemcachedConnection.dbgBuffer(bb, input.length());
     assertEquals("this is a test \\x5f", s);
+  }
+
+  public void testBelongsToCluster() throws Exception {
+    ConnectionFactory factory = new DefaultConnectionFactory();
+    Collection<ConnectionObserver> observers =
+      new ArrayList<ConnectionObserver>();
+    OperationFactory opfactory = new BinaryOperationFactory();
+
+    MemcachedNode node = new MockMemcachedNode(
+      new InetSocketAddress(TestConfig.IPV4_ADDR, TestConfig.PORT_NUMBER));
+    MemcachedNode node2 = new MockMemcachedNode(
+      new InetSocketAddress("invalidIpAddr", TestConfig.PORT_NUMBER));
+
+    List<InetSocketAddress> nodes = new ArrayList<InetSocketAddress>();
+    nodes.add((InetSocketAddress)node.getSocketAddress());
+
+    MemcachedConnection conn = new MemcachedConnection(
+      100, factory, nodes, observers, FailureMode.Retry, opfactory);
+    assertTrue(conn.belongsToCluster(node));
+    assertFalse(conn.belongsToCluster(node2));
   }
 }
