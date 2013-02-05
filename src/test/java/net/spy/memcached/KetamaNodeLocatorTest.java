@@ -62,7 +62,7 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
   }
 
   public void testAllAfterUpdate() throws Exception {
-     setupNodes(4);
+    setupNodes(4);
 
     Collection<MemcachedNode> all = locator.getAll();
     assertEquals(4, all.size());
