@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Factory to get logger instances.
  *
- * The system property <code>net.spy.compat.log.LoggerImpl</code> should point
+ * The system property <code>net.spy.log.LoggerImpl</code> should point
  * to an implementation of net.spy.compat.log.Logger to use.
  *
  * <p>
