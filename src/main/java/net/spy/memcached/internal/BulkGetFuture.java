@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -149,7 +150,7 @@ public class BulkGetFuture<T> implements BulkFuture<Map<String, T>> {
     }
     for (Operation op : ops) {
       if (op.isCancelled()) {
-        throw new ExecutionException(new RuntimeException("Cancelled"));
+        throw new ExecutionException(new CancellationException("Cancelled"));
       }
       if (op.hasErrored()) {
         throw new ExecutionException(op.getException());

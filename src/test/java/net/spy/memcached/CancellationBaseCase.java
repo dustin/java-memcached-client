@@ -26,6 +26,7 @@ package net.spy.memcached;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +58,7 @@ public abstract class CancellationBaseCase extends ClientBaseCase {
       fail("Expected cancellation, got " + o);
     } catch (ExecutionException e) {
       assertTrue(e.getCause() instanceof RuntimeException);
+      assertTrue(e.getCause() instanceof CancellationException);
       assertEquals("Cancelled", e.getCause().getMessage());
     }
   }
