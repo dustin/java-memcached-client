@@ -43,12 +43,14 @@ import net.spy.memcached.ops.GetsOperation;
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.MultiGetOperationCallback;
 import net.spy.memcached.ops.MultiGetsOperationCallback;
+import net.spy.memcached.ops.MultiReplicaGetOperationCallback;
 import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.ObserveOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.ReplicaGetOperation;
 import net.spy.memcached.ops.SASLAuthOperation;
 import net.spy.memcached.ops.SASLMechsOperation;
 import net.spy.memcached.ops.SASLStepOperation;
@@ -95,6 +97,11 @@ public class BinaryOperationFactory extends BaseOperationFactory {
 
   public GetOperation get(String key, Callback callback) {
     return new GetOperationImpl(key, callback);
+  }
+
+  public ReplicaGetOperation replicaGet(String key, int index,
+    ReplicaGetOperation.Callback callback) {
+    return new ReplicaGetOperationImpl(key, index, callback);
   }
 
   public GetOperation get(Collection<String> value, Callback cb) {
@@ -156,15 +163,25 @@ public class BinaryOperationFactory extends BaseOperationFactory {
     Collection<Operation> rv = new ArrayList<Operation>();
     GetOperation.Callback getCb = null;
     GetsOperation.Callback getsCb = null;
+    ReplicaGetOperation.Callback replicaGetCb = null;
     if (op.getCallback() instanceof GetOperation.Callback) {
       getCb =
           new MultiGetOperationCallback(op.getCallback(), op.getKeys().size());
+    } else if(op.getCallback() instanceof ReplicaGetOperation.Callback) {
+      replicaGetCb =
+       new MultiReplicaGetOperationCallback(op.getCallback(), op.getKeys().size());
     } else {
       getsCb =
           new MultiGetsOperationCallback(op.getCallback(), op.getKeys().size());
     }
     for (String k : op.getKeys()) {
-      rv.add(getCb == null ? gets(k, getsCb) : get(k, getCb));
+      if(getCb != null) {
+        rv.add(get(k, getCb));
+      } else if(getsCb != null) {
+        rv.add(get(k, getCb));
+      } else {
+        rv.add(replicaGet(k, ((ReplicaGetOperationImpl)op).getReplicaIndex() ,replicaGetCb));
+      }
     }
     return rv;
   }

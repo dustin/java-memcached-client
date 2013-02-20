@@ -53,6 +53,8 @@ public abstract class BaseOperationFactory implements OperationFactory {
     Collection<Operation> rv = new ArrayList<Operation>(op.getKeys().size());
     if (op instanceof GetOperation) {
       rv.addAll(cloneGet(op));
+    } else if (op instanceof ReplicaGetOperation) {
+      rv.addAll(cloneGet(op));
     } else if (op instanceof GetsOperation) {
       GetsOperation.Callback callback =
           (GetsOperation.Callback) op.getCallback();

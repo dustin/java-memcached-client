@@ -47,6 +47,7 @@ import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.ObserveOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.ReplicaGetOperation;
 import net.spy.memcached.ops.SASLAuthOperation;
 import net.spy.memcached.ops.SASLMechsOperation;
 import net.spy.memcached.ops.SASLStepOperation;
@@ -207,5 +208,12 @@ public class AsciiOperationFactory extends BaseOperationFactory {
   public TapOperation tapDump(String id, OperationCallback cb) {
     throw new UnsupportedOperationException("Tap is not supported for ASCII"
         + " protocol");
+  }
+
+  @Override
+  public ReplicaGetOperation replicaGet(String key, int index,
+  ReplicaGetOperation.Callback callback) {
+    throw new UnsupportedOperationException("Replica get is not supported "
+        + "for ASCII protocol");
   }
 }
