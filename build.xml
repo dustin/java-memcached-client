@@ -329,6 +329,7 @@
 
   <target name="docsjar" depends="docs"
       description="Create the documentation jar">
+    <mkdir dir="${build.dir}/javadocs" />
     <zip destfile="${build.dir}/javadocs/${name}-${version}.jar"
         basedir="${build.javadoc}" />
   </target>
@@ -384,7 +385,7 @@
 
   <target name="srcjar" depends="init,jar"
       description="Create source jars">
-    <mkdir dir="${build.dir}" />
+    <mkdir dir="${build.dir}/sources" />
     <jar jarfile="${build.dir}/sources/${name}-${version}.jar">
       <fileset dir="${src.dir}" />
       <fileset dir="${build.src.dir}" />
@@ -395,6 +396,7 @@
   </target>
 
   <target name="jar" depends="compile,compile-test" description="Creates a jar file for the library">
+    <mkdir dir="${build.dir}/jars" />
     <jar jarfile="${build.dir}/jars/${name}-${version}.jar" basedir="${build.classes}">
       <manifest>
         <attribute name="Implementation-Title" value="java memcached client" />
