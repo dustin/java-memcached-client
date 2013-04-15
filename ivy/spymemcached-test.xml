@@ -45,6 +45,6 @@
   </publications>
   <dependencies>
     <dependency org="jmock" name="jmock" rev="${jmock.version}" conf="default" />
-    <dependency org="junit" name="junit" rev="${junit.version" conf="default" />
+    <dependency org="junit" name="junit" rev="${junit.version}" conf="default" />
   </dependencies>
 </ivy-module>
