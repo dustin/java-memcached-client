@@ -48,7 +48,7 @@ SOFTWARE.
   </publications>
 
   <dependencies defaultconfmapping="sources->sources(),%->default" defaultconf="default,sources">
-    <dependency org="log4j" name="log4j" rev="${log4j.version}"
+    <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j.version}"
         conf="common->master" />
     <dependency org="jmock" name="jmock" rev="${jmock.version}"
         conf="common->master" />

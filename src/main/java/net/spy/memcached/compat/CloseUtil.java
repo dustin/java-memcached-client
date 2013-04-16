@@ -24,8 +24,8 @@ package net.spy.memcached.compat;
 
 import java.io.Closeable;
 
-import net.spy.memcached.compat.log.Logger;
-import net.spy.memcached.compat.log.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * CloseUtil exists to provide a safe means to close anything closeable. This

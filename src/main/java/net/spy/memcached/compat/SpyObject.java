@@ -22,8 +22,8 @@
 
 package net.spy.memcached.compat;
 
-import net.spy.memcached.compat.log.Logger;
-import net.spy.memcached.compat.log.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Superclass for all Spy Objects.
