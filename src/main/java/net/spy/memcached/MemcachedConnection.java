@@ -157,7 +157,10 @@ public class MemcachedConnection extends SpyThread {
           getLogger().info("Added %s to connect queue", qa);
           ops = SelectionKey.OP_CONNECT;
         }
+
+        selector.wakeup();
         qa.setSk(ch.register(selector, ops, qa));
+
         assert ch.isConnected()
             || qa.getSk().interestOps() == SelectionKey.OP_CONNECT
             : "Not connected, and not wanting to connect";
