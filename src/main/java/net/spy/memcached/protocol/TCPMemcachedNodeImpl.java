@@ -64,6 +64,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   private CountDownLatch authLatch;
   private ArrayList<Operation> reconnectBlocked;
   private long defaultOpTimeout;
+  private long lastReadTimestamp = System.currentTimeMillis();
 
   // operation Future.get timeout counter
   private final AtomicInteger continuousTimeout = new AtomicInteger(0);
@@ -424,6 +425,15 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   /*
    * (non-Javadoc)
    *
+   * @see net.spy.memcached.MemcachedNode#isAuthenticated()
+   */
+  public boolean isAuthenticated() {
+    return (0 == authLatch.getCount());
+  }
+
+  /*
+   * (non-Javadoc)
+   *
    * @see net.spy.memcached.MemcachedNode#reconnecting()
    */
   public final void reconnecting() {
@@ -603,4 +613,21 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
       authLatch = new CountDownLatch(0);
     }
   }
+
+  /**
+   * Number of milliseconds since the last read of this node completed.
+   *
+   * @return milliseconds since last read.
+   */
+  public long lastReadDelta() {
+    return System.currentTimeMillis() - lastReadTimestamp;
+  }
+
+  /**
+   * Mark this node as having just completed a read.
+   */
+  public void completedRead() {
+    lastReadTimestamp = System.currentTimeMillis();
+  }
+
 }

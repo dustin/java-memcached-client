@@ -198,4 +198,17 @@ public class MockMemcachedNode implements MemcachedNode {
   public void setContinuousTimeout(boolean timedOut) {
     // noop
   }
+
+  public boolean isAuthenticated() {
+    return true;
+  }
+
+  public long lastReadDelta() {
+    return 0;
+  }
+
+  public void completedRead() {
+    // noop
+  }
+
 }

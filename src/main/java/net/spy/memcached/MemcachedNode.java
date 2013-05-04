@@ -142,6 +142,24 @@ public interface MemcachedNode {
   boolean isActive();
 
   /**
+   * True if this node is <q>authenticated.</q>
+   */
+  boolean isAuthenticated();
+
+  /**
+   * Milliseconds since last successful read.
+   */
+  long lastReadDelta();
+
+  /**
+   * Notify node of successful read.
+   *
+   * This is used so the node can keep track of any internal debugging or
+   * state it cares about on read.
+   */
+  void completedRead();
+
+  /**
    * Notify this node that it will be reconnecting.
    */
   void reconnecting();

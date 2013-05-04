@@ -26,6 +26,7 @@ package net.spy.memcached;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -678,7 +679,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         throw new RuntimeException("Exception waiting for value", e);
       }
     } catch (TimeoutException e) {
-      throw new OperationTimeoutException("Timeout waiting for value", e);
+      throw new OperationTimeoutException("Timeout waiting for value: "
+        + buildTimeoutMessage(operationTimeout, TimeUnit.MILLISECONDS), e);
     }
   }
 
@@ -1130,7 +1132,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         throw new RuntimeException("Exception waiting for value", e);
       }
     } catch (TimeoutException e) {
-      throw new OperationTimeoutException("Timeout waiting for value", e);
+      throw new OperationTimeoutException("Timeout waiting for value: "
+        + buildTimeoutMessage(operationTimeout, TimeUnit.MILLISECONDS), e);
     }
   }
 
@@ -1430,7 +1433,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         throw new RuntimeException("Exception waiting for bulk values", e);
       }
     } catch (TimeoutException e) {
-      throw new OperationTimeoutException("Timeout waiting for bulk values", e);
+      throw new OperationTimeoutException("Timeout waiting for bulk values: "
+        + buildTimeoutMessage(operationTimeout, TimeUnit.MILLISECONDS), e);
     }
   }
 
@@ -1811,7 +1815,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         }
       } catch (TimeoutException e) {
         throw new OperationTimeoutException("Timeout waiting to mutate or init"
-            + " value", e);
+          + " value" + buildTimeoutMessage(operationTimeout,
+            TimeUnit.MILLISECONDS), e);
       }
     }
     return rv;
@@ -2265,6 +2270,15 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     }
     assert node != null : "Couldn't find node connected to " + sa;
     return node;
+  }
+
+  private String buildTimeoutMessage(long timeWaited, TimeUnit unit) {
+    StringBuilder message = new StringBuilder();
+
+    message.append(MessageFormat.format("waited {0} ms.",
+      unit.convert(timeWaited, TimeUnit.MILLISECONDS)));
+    message.append(" Node status: ").append(mconn.connectionsStatus());
+    return message.toString();
   }
 
   public void connectionLost(SocketAddress sa) {
