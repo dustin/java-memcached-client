@@ -124,6 +124,13 @@ import net.spy.memcached.util.StringUtils;
  *          // Do other timeout related stuff
  *      }
  * </pre>
+ *
+ * <p>Optionally, it is possible to activate a check that makes sure that
+ * the node is alive and responding before running actual operations (even
+ * before authentication. Only enable this if you are sure that you do not
+ * run into issues during connection (some memcached services have problems
+ * with it). You can enable it by setting the net.spy.verifyAliveOnConnect
+ * System Property to "true".</p>
  */
 public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     ConnectionObserver {
