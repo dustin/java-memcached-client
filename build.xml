@@ -281,7 +281,10 @@
         srcdir="${test.dir}"
         includes="**/*.java"
         destdir="${build.test.classes}"
-        debug="${javac.debug}">
+        debug="${javac.debug}"
+        includeantruntime="false"
+        target="1.6"
+        source="1.6">
       <classpath>
         <path refid="test.classpath"/>
       </classpath>
@@ -366,7 +369,10 @@
         includes="**/*.java"
         destdir="${build.classes}"
         debug="${javac.debug}"
-        deprecation="${javac.deprecation}">
+        deprecation="${javac.deprecation}"
+        includeantruntime="false"
+        target="1.6"
+        source="1.6">
       <classpath refid="${name}.common.classpath" />
     </javac>
 
@@ -376,7 +382,10 @@
         includes="**/*.java"
         destdir="${build.classes}"
         debug="${javac.debug}"
-        deprecation="${javac.deprecation}">
+        deprecation="${javac.deprecation}"
+        includeantruntime="false"
+        target="1.6"
+        source="1.6">
       <classpath refid="${name}.common.classpath"/>
     </javac>
     <move file="${build.src.dir}/net/spy/memcached/changelog.txt"
