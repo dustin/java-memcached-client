@@ -1,5 +1,4 @@
 /**
- * Copyright (C) 2006-2009 Dustin Sallings
  * Copyright (C) 2009-2013 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,45 +22,49 @@
 
 package net.spy.memcached.compat.log;
 
-import org.apache.log4j.Logger;
-
 /**
- * Logging implementation using <a
- * href="http://jakarta.apache.org/log4j/docs/">log4j</a>.
+ * Logging Implementation using the <a href="http://www.slf4j.org/">SLF4J</a>
+ * logging facade.
+ *
+ * <p>Note that by design, the SLF4J facade does not ship with an actual
+ * implementation so that it can be chosen during runtime. If you fail to
+ * provide a logging implementation during runtime, no log messages will
+ * be logged. See the <a href="http://www.slf4j.org/manual.html">SLF4J
+ * Manual</a> for more information on how to do this.</p>
+ *
+ * <p>Since SLF4J does not support a FATAL log level, errors logged at that
+ * level get promoted down to ERROR, since this is the highest level
+ * available.</p>
  */
-public class Log4JLogger extends AbstractLogger {
+public class SLF4JLogger extends AbstractLogger {
 
-  // Can't really import this without confusion as there's another thing
-  // by this name in here.
-  private final Logger l4jLogger;
+  private final org.slf4j.Logger logger;
 
   /**
-   * Get an instance of Log4JLogger.
+   * Get an instance of the SLF4JLogger.
    */
-  public Log4JLogger(String name) {
+  public SLF4JLogger(String name) {
     super(name);
-
-    // Get the log4j logger instance.
-    l4jLogger = Logger.getLogger(name);
+    logger = org.slf4j.LoggerFactory.getLogger(name);
   }
 
   @Override
   public boolean isTraceEnabled() {
-    return (l4jLogger.isTraceEnabled());
+    return logger.isTraceEnabled();
   }
 
   @Override
   public boolean isDebugEnabled() {
-    return (l4jLogger.isDebugEnabled());
+    return logger.isDebugEnabled();
   }
 
   @Override
   public boolean isInfoEnabled() {
-    return (l4jLogger.isInfoEnabled());
+    return logger.isInfoEnabled();
   }
 
   /**
-   * Wrapper around log4j.
+   * Wrapper around SLF4J logger facade.
    *
    * @param level net.spy.compat.log.Level level.
    * @param message object message
@@ -69,33 +72,33 @@ public class Log4JLogger extends AbstractLogger {
    */
   @Override
   public void log(Level level, Object message, Throwable e) {
-    org.apache.log4j.Level pLevel = org.apache.log4j.Level.DEBUG;
+    if(level == null) {
+      level = Level.FATAL;
+    }
 
-    switch (level == null ? Level.FATAL : level) {
+    switch(level) {
     case TRACE:
-      pLevel = org.apache.log4j.Level.TRACE;
+      logger.trace(message.toString(), e);
       break;
     case DEBUG:
-      pLevel = org.apache.log4j.Level.DEBUG;
+      logger.debug(message.toString(), e);
       break;
     case INFO:
-      pLevel = org.apache.log4j.Level.INFO;
+      logger.info(message.toString(), e);
       break;
     case WARN:
-      pLevel = org.apache.log4j.Level.WARN;
+      logger.warn(message.toString(), e);
       break;
     case ERROR:
-      pLevel = org.apache.log4j.Level.ERROR;
+      logger.error(message.toString(), e);
       break;
     case FATAL:
-      pLevel = org.apache.log4j.Level.FATAL;
+      logger.error(message.toString(), e);
       break;
     default:
-      // I don't know what this is, so consider it fatal
-      pLevel = org.apache.log4j.Level.FATAL;
-      l4jLogger.log("net.spy.compat.log.AbstractLogger", pLevel, "Unhandled "
-          + "log level:  " + level + " for the following message", null);
+      logger.error("Unhandled Logging Level: " + level
+        + " with log message: " + message.toString(), e);
     }
-    l4jLogger.log("net.spy.compat.log.AbstractLogger", pLevel, message, e);
   }
+
 }

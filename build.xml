@@ -472,6 +472,7 @@
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
       <dependency group="log4j" artifact="log4j" version="${log4j.version}" optional="true" />
+      <dependency group="org.slf4j" artifact="slf4j-api" version="${slf4j.version}" optional="true" />
       <dependency group="org.springframework" artifact="spring-beans" version="${spring-beans.version}" optional="true" />
     </ivy:makepom>
 
@@ -481,6 +482,7 @@
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
       <dependency group="log4j" artifact="log4j" version="${log4j.version}" optional="true" />
+      <dependency group="org.slf4j" artifact="slf4j-api" version="${slf4j.version}" optional="true" />
       <dependency group="org.springframework" artifact="spring-beans" version="${spring-beans.version}" optional="true" />
    </ivy:makepom>
 

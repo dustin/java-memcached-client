@@ -54,6 +54,8 @@ SOFTWARE.
         conf="common->master" />
     <dependency org="junit" name="junit" rev="${junit.version}"
         conf="common->master" />
+    <dependency org="org.slf4j" name="slf4j-api" rev="${slf4j.version}"
+        conf="common->master" />
     <dependency org="org.springframework" name="spring-beans"
         rev="${spring-beans.version}" conf="common->master" />
     <dependency org="checkstyle" name="checkstyle" rev="${checkstyle.version}"

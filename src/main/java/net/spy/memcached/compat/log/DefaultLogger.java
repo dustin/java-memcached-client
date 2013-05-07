@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
+ * Copyright (C) 2009-2013 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +45,15 @@ public class DefaultLogger extends AbstractLogger {
   }
 
   /**
-   * False.
+   * Always returns false, trace is not enabled on the DefaultLogger.
+   */
+  @Override
+  public boolean isTraceEnabled() {
+    return (false);
+  }
+
+  /**
+   * Always returns false, debug is not enabled on the DefaultLogger.
    */
   @Override
   public boolean isDebugEnabled() {
@@ -52,7 +61,7 @@ public class DefaultLogger extends AbstractLogger {
   }
 
   /**
-   * True.
+   * Always returns true, info is always enabled on the DefaultLogger.
    */
   @Override
   public boolean isInfoEnabled() {

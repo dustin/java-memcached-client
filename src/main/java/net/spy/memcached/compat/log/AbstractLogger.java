@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
+ * Copyright (C) 2009-2013 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,6 +77,37 @@ public abstract class AbstractLogger implements Logger {
    * @return true if info messages would be displayed
    */
   public abstract boolean isInfoEnabled();
+
+  /**
+   * Log a message at trace level.
+   *
+   * @param message the message to log
+   * @param exception the exception that caused the message to be generated
+   */
+  public void trace(Object message, Throwable exception) {
+    log(Level.TRACE, message, exception);
+  }
+
+  /**
+   * Log a formatted message at trace level.
+   *
+   * @param message the message to log
+   * @param args the arguments for that message
+   */
+  public void trace(String message, Object... args) {
+    if (isDebugEnabled()) {
+      trace(String.format(message, args), getThrowable(args));
+    }
+  }
+
+  /**
+   * Log a message at trace level.
+   *
+   * @param message the message to log
+   */
+  public void trace(Object message) {
+    trace(message, null);
+  }
 
   /**
    * Log a message at debug level.

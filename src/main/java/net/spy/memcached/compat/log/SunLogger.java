@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
+ * Copyright (C) 2009-2013 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +25,17 @@ package net.spy.memcached.compat.log;
 
 /**
  * Logging implementation using the sun logger.
+ *
+ * <p>The SunLogger implements logging using the java.util.logging facilities.
+ * Since the logging levels provided by this implementations do not map directly
+ * to those provided by SLF4J or Log4J, different mappings are applied.</p>
+ *
+ * <p>Aside from the logging levels that are named the same, all log messages
+ * that get logged at the TRACE level get translated to the FINEST level. Also,
+ * both ERROR and FATAL levels get translated to SEVERE.</p>
  */
 public class SunLogger extends AbstractLogger {
 
-  // Can't really import this without confusion as there's another thing
-  // by this name in here.
   private final java.util.logging.Logger sunLogger;
 
   /**
@@ -41,17 +48,16 @@ public class SunLogger extends AbstractLogger {
     sunLogger = java.util.logging.Logger.getLogger(name);
   }
 
-  /**
-   * True if the underlying logger would allow Level.FINE through.
-   */
+  @Override
+  public boolean isTraceEnabled() {
+    return (sunLogger.isLoggable(java.util.logging.Level.FINEST));
+  }
+
   @Override
   public boolean isDebugEnabled() {
     return (sunLogger.isLoggable(java.util.logging.Level.FINE));
   }
 
-  /**
-   * True if the underlying logger would allow Level.INFO through.
-   */
   @Override
   public boolean isInfoEnabled() {
     return (sunLogger.isLoggable(java.util.logging.Level.INFO));
@@ -69,6 +75,9 @@ public class SunLogger extends AbstractLogger {
     java.util.logging.Level sLevel = java.util.logging.Level.SEVERE;
 
     switch (level == null ? Level.FATAL : level) {
+    case TRACE:
+      sLevel = java.util.logging.Level.FINEST;
+      break;
     case DEBUG:
       sLevel = java.util.logging.Level.FINE;
       break;
