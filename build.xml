@@ -33,7 +33,7 @@
 
   <property name="name" value="spymemcached"/>
   <property name="copyright" value="2006-2011 Dustin Sallings, Matt Ingenthron" />
-  <property name="group" value="spy" />
+  <property name="group" value="net.spy" />
 
   <property name="base.src.dir" value="${basedir}/src" />
   <property name="build.dir" value="${basedir}/build" />
@@ -56,7 +56,7 @@
   <property name="ivy.settings.dir" value="${basedir}/ivy" />
   <property name="ivy.pom.url"
       value="http://www.couchbase.org/code/couchbase/java" />
-  <property name="ivy.pom.groupId" value="spy" />
+  <property name="ivy.pom.groupId" value="net.spy" />
   <property name="ivy.pom.description"
    value = "A client library for memcached."/>
   <path id="test.classpath">

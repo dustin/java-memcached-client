@@ -21,7 +21,7 @@ SOFTWARE.
 -->
 
 <ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
-  <info organisation="spy" module="${name}" revision="${version}"/>
+  <info organisation="net.spy" module="${name}" revision="${version}"/>
 
   <configurations defaultconfmapping="default">
     <!--these match the Maven configurations-->
