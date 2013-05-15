@@ -46,6 +46,8 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
   private OperationReadType readType = OperationReadType.LINE;
   private boolean foundCr = false;
 
+  protected short vbucket = 0;
+
   protected OperationImpl() {
     super();
   }
