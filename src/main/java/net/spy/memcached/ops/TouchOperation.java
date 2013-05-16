@@ -1,6 +1,5 @@
 /**
- * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2013 SoundCloud, Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,30 +20,11 @@
  * IN THE SOFTWARE.
  */
 
-package net.spy.memcached;
-
-import java.net.InetSocketAddress;
+package net.spy.memcached.ops;
 
 /**
- * Test the test protocol over IPv6.
+ * Touch operation marker.
  */
-public class AsciiIPV6ClientTest extends AsciiClientTest {
-
-  @Override
-  protected void initClient(ConnectionFactory cf) throws Exception {
-    client = new MemcachedClient(cf,
-            AddrUtil.getAddresses(TestConfig.IPV6_ADDR
-            + ":" + TestConfig.PORT_NUMBER));
-    client.flush().get();
-  }
-
-  @Override
-  protected String getExpectedVersionSource() {
-    if (TestConfig.defaultToIPV4()) {
-      return String.valueOf(new InetSocketAddress(TestConfig.IPV4_ADDR,
-              TestConfig.PORT_NUMBER));
-    }
-    return String.valueOf(new InetSocketAddress(TestConfig.IPV6_ADDR,
-            TestConfig.PORT_NUMBER));
-  }
+public interface TouchOperation extends Operation {
+  // nothing
 }

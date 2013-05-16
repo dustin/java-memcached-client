@@ -578,6 +578,12 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     assertNull(client.get("test2"));
   }
 
+  public void testTouch() throws Exception {
+    assertNull(client.get("touchtest"));
+    client.set("touchtest", 5, "touchtest");
+    assertTrue(client.touch("touchtest", 2).get());
+  }
+
   public void testGracefulShutdown() throws Exception {
     for (int i = 0; i < 1000; i++) {
       client.set("t" + i, 10, i);
