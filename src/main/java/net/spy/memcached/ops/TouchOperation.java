@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2013 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,37 +21,12 @@
  * IN THE SOFTWARE.
  */
 
-package net.spy.memcached.protocol.binary;
-
-import net.spy.memcached.ops.OperationCallback;
-import static net.spy.memcached.protocol.binary.OperationImpl.STATUS_OK;
+package net.spy.memcached.ops;
 
 /**
- * Operation to reset a timeout in Membase server.
- */
-public class TouchOperationImpl extends SingleKeyOperationImpl {
-
-  static final byte CMD = 0x1c;
-
-  private final int exp;
-
-  protected TouchOperationImpl(String k, int e, OperationCallback cb) {
-    super(CMD, generateOpaque(), k, cb);
-    exp = e;
-  }
-
-  @Override
-  public void initialize() {
-    prepareBuffer(key, 0, EMPTY_BYTES, exp);
-  }
-
-  @Override
-  protected void decodePayload(byte[] pl) {
-    getCallback().receivedStatus(STATUS_OK);
-  }
-
-  @Override
-  public String toString() {
-    return super.toString() + " Exp: " + exp;
-  }
+ * Touch operation marker.
+ **/
+public interface TouchOperation extends KeyedOperation {
+  // TODO: hook this in with binary protocol
 }
+

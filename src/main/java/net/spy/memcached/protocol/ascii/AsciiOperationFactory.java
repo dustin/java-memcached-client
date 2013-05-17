@@ -127,8 +127,7 @@ public class AsciiOperationFactory extends BaseOperationFactory {
 
   public KeyedOperation touch(String key, int expiration,
       OperationCallback cb) {
-    throw new UnsupportedOperationException("Touch is not supported for "
-        + "ASCII protocol");
+    return new TouchOperationImpl(key, expiration, cb);
   }
 
   public VersionOperation version(OperationCallback cb) {
