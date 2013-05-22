@@ -37,6 +37,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -253,11 +254,21 @@ public class MemcachedConnection extends SpyThread {
     }
 
     // see if any connections blew up with large number of timeouts
-    for (SelectionKey sk : selector.keys()) {
-      MemcachedNode mn = (MemcachedNode) sk.attachment();
-      if (mn.getContinuousTimeout() > timeoutExceptionThreshold) {
-        getLogger().warn("%s exceeded continuous timeout threshold", sk);
-        lostConnection(mn);
+    boolean stillCheckingTimeouts = true;
+    while(stillCheckingTimeouts) {
+      try {
+        for (SelectionKey sk : selector.keys()) {
+          MemcachedNode mn = (MemcachedNode) sk.attachment();
+          if (mn.getContinuousTimeout() > timeoutExceptionThreshold) {
+            getLogger().warn("%s exceeded continuous timeout threshold", sk);
+            lostConnection(mn);
+          }
+        }
+        stillCheckingTimeouts = false;
+      } catch(ConcurrentModificationException e) {
+        getLogger().warn("Retrying selector keys after "
+          + "ConcurrentModificationException caught", e);
+        continue;
       }
     }
 
@@ -923,6 +934,8 @@ public class MemcachedConnection extends SpyThread {
       } catch (ClosedSelectorException e) {
         logRunException(e);
       } catch (IllegalStateException e) {
+        logRunException(e);
+      } catch (ConcurrentModificationException e) {
         logRunException(e);
       }
     }
