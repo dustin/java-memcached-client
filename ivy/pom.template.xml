@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+	<groupId>${ivy.pom.groupId}</groupId>
+	<artifactId>${ivy.pom.artifactId}</artifactId>
+	<packaging>${ivy.pom.packaging}</packaging>
+	<version>${ivy.pom.version}</version>
+	<name>${ivy.pom.name}</name>
+	<description>${ivy.pom.description}</description>
+	<url>${ivy.pom.url}</url>
+
+	<licenses>
+		<license>
+		  <name>The Apache Software License, Version 2.0</name>
+		  <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		  <distribution>repo</distribution>
+		</license>
+	</licenses>
+    
+	<scm>
+		<url>https://github.com/couchbase/spymemcached</url>
+		<connection>scm:git:git://github.com/couchbase/spymemcached.git</connection>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>net.spy.spymemcached</id>
+			<name>The Spymemcached Project Contributors</name>
+			<url>https://code.google.com/p/spymemcached/</url>
+			<organization>Couchbase, Inc.</organization>
+			<organizationUrl>http://couchbase.com/</organizationUrl>
+		</developer>
+	</developers>
+
+</project>

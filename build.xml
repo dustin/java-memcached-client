@@ -59,6 +59,7 @@
   <property name="ivy.pom.groupId" value="net.spy" />
   <property name="ivy.pom.description"
    value = "A client library for memcached."/>
+  <property name="ivy.pom.name" value="Spymemcached" />
   <path id="test.classpath">
     <pathelement location="${build.classes}" />
     <fileset dir="${lib.dir}">
@@ -115,6 +116,12 @@
   <!--this is the naming policy for artifacts we want pulled down-->
   <property name="ivy.artifact.retrieve.pattern"
       value="${name}/[conf]/[artifact]-[revision](-[classifier]).[ext]"/>
+
+  <!-- maven central repo urls -->
+  <property name="maven-snapshots-repository-id" value="sonatype-nexus-snapshots" />
+  <property name="maven-snapshots-repository-url" value="https://oss.sonatype.org/content/repositories/snapshots/" />
+  <property name="maven-staging-repository-id" value="sonatype-nexus-staging" />
+  <property name="maven-staging-repository-url" value="https://oss.sonatype.org/service/local/staging/deploy/maven2/" />
 
   <!-- paths used for compilation and run  -->
   <path id="lib.path.id">
@@ -468,6 +475,7 @@
     <mkdir dir="${mvn.build.dir}/poms" />
     <ivy:makepom ivyfile="ivy/spymemcached.xml"
         pomfile="${spymemcached.pom}"
+        templatefile="ivy/pom.template.xml"
         settingsRef="${name}.ivy.settings">
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
@@ -478,6 +486,7 @@
 
     <ivy:makepom ivyfile="ivy/spymemcached-test.xml"
         pomfile="${spymemcached-test.pom}"
+        templatefile="ivy/pom.template.xml"
         settingsRef="${name}.ivy.settings">
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
@@ -514,10 +523,54 @@
           classifier="sources" />
     </artifact:install>
   </target>
+
+  <target name="mvn-deploy" depends="mvn-install" description="deploy snapshot version to maven snapshot repository">
+    <artifact:mvn>
+        <arg value="org.apache.maven.plugins:maven-deploy-plugin:2.6:deploy-file" />
+        <arg value="-Durl=${maven-snapshots-repository-url}" />
+        <arg value="-DrepositoryId=${maven-snapshots-repository-id}" />
+        <arg value="-DpomFile=${spymemcached.pom}" />
+        <arg value="-Dfile=${build.dir}/jars/${name}-${version}.jar" />
+    </artifact:mvn>
+  </target>
+
+  <target name="mvn-stage" depends="mvn-install" description="deploy release version to maven staging repository">
+    <!-- sign and deploy the main artifact -->
+    <artifact:mvn>
+            <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+            <arg value="-Durl=${maven-staging-repository-url}" />
+            <arg value="-DrepositoryId=${maven-staging-repository-id}" />
+            <arg value="-DpomFile=${spymemcached.pom}" />
+            <arg value="-Dfile=${build.dir}/jars/${name}-${version}.jar" />
+            <arg value="-Pgpg" />
+    </artifact:mvn>
+
+    <!-- sign and deploy the sources artifact -->
+    <artifact:mvn>
+            <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+            <arg value="-Durl=${maven-staging-repository-url}" />
+            <arg value="-DrepositoryId=${maven-staging-repository-id}" />
+            <arg value="-DpomFile=${spymemcached.pom}" />
+            <arg value="-Dfile=${build.dir}/sources/${name}-${version}.jar" />
+            <arg value="-Dclassifier=sources" />
+            <arg value="-Pgpg" />
+    </artifact:mvn>
+
+    <!-- sign and deploy the javadoc artifact -->
+    <artifact:mvn>
+            <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+            <arg value="-Durl=${maven-staging-repository-url}" />
+            <arg value="-DrepositoryId=${maven-staging-repository-id}" />
+            <arg value="-DpomFile=${spymemcached.pom}" />
+            <arg value="-Dfile=${build.dir}/javadocs/${name}-${version}.jar" />
+            <arg value="-Dclassifier=javadoc" />
+            <arg value="-Pgpg" />
+    </artifact:mvn>
+  </target>
   <!-- ======================================
         Section: Stage Maven locally
        ====================================== -->
-  <target name="mvn-stage" depends="package,ivy-init,mvn-prep" description="publish jar/source to maven repo mounted at ~/mvn-stage">
+  <target name="mvn-stage-local" depends="package,ivy-init,mvn-prep" description="publish jar/source to maven repo mounted at ~/mvn-stage">
     <ivy:publish resolver="share-m2" forcedeliver="true" overwrite="true" publishivy="false">
       <artifacts pattern="build/[type]s/[artifact]-[revision].[ext]" />
     </ivy:publish>
@@ -588,6 +641,7 @@
         <exclude name="ivy.xml" />
         <exclude name="LICENSE.txt" />
         <exclude name="README.markdown" />
+        <exclude name=".gitreview" />
       </fileset>
     </delete>
   </target>
