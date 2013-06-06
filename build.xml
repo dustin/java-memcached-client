@@ -44,6 +44,7 @@
   <property name="test.dir" value="${base.src.dir}/test/java" />
   <property name="script.src.dir" value="${base.src.dir}/scripts" />
   <property name="build.javadoc" location="${build.dir}/docs/" />
+  <property name="build.javadoc.test" location="${build.dir}/testdocs/" />
   <property name="junit.dir" location="${build.dir}/junit" />
 
   <property name="dist.dir" value="${basedir}/target" />
@@ -304,7 +305,11 @@
 
   <target name="javadoc-uptodate" depends="init">
     <uptodate property="javadoc.is.uptodate">
-    <srcfiles dir="${src.dir}">
+      <srcfiles dir="${src.dir}">
+        <include name="**/*.java" />
+        <include name="**/*.html" />
+      </srcfiles>
+      <srcfiles dir="${test.dir}">
         <include name="**/*.java" />
         <include name="**/*.html" />
       </srcfiles>
@@ -313,8 +318,9 @@
   </target>
 
   <target name="docs" description="Build javadoc"
-      depends="init,javadoc-uptodate,compile" unless="javadoc.is.uptodate">
+      depends="init,javadoc-uptodate,compile" >
     <mkdir dir="${build.javadoc}" />
+    <mkdir dir="${build.javadoc.test}" />
     <exec executable="date" outputproperty="year">
       <arg value="+%Y" />
     </exec>
@@ -327,13 +333,28 @@
       use="true"
       windowtitle="${name} ${version} API"
       doctitle="${name} ${version} API"
-      bottom="Copyright &amp;copy; 2006-2009 Dustin Sallings, 2009-2012 Couchbase, Inc.">
+      bottom="Copyright &amp;copy; 2006-2009 Dustin Sallings, 2009-2013 Couchbase, Inc.">
       <packageset dir="${src.dir}">
         <include name="**" />
       </packageset>
       <classpath>
         <path refid="${name}.common.classpath" />
       </classpath>
+    </javadoc>
+    <javadoc
+      packagenames="src"
+      sourcepath="${test.dir}"
+      destdir="${build.javadoc.test}"
+      author="true"
+      version="true"
+      use="true"
+      windowtitle="${name}-test ${version} API"
+      doctitle="${name}-test ${version} API"
+      bottom="Copyright &amp;copy; 2006-2009 Dustin Sallings, 2009-2013 Couchbase, Inc.">
+      <packageset dir="${test.dir}">
+        <include name="**" />
+      </packageset>
+      <classpath refid="test.classpath" />
     </javadoc>
   </target>
 
@@ -342,6 +363,8 @@
     <mkdir dir="${build.dir}/javadocs" />
     <zip destfile="${build.dir}/javadocs/${name}-${version}.jar"
         basedir="${build.javadoc}" />
+    <zip destfile="${build.dir}/javadocs/${name}-test-${version}.jar"
+        basedir="${build.javadoc.test}" />
   </target>
 
   <!-- =======================================
@@ -521,6 +544,8 @@
         <pom refid="${name}-test" />
         <attach file="${build.dir}/sources/${name}-test-${version}.jar"
           classifier="sources" />
+        <attach file="${build.dir}/javadocs/${name}-test-${version}.jar"
+          classifier="javadoc" />
     </artifact:install>
   </target>
 
@@ -566,7 +591,40 @@
             <arg value="-Dclassifier=javadoc" />
             <arg value="-Pgpg" />
     </artifact:mvn>
+
+        <!-- sign and deploy the main artifact -->
+    <artifact:mvn>
+            <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+            <arg value="-Durl=${maven-staging-repository-url}" />
+            <arg value="-DrepositoryId=${maven-staging-repository-id}" />
+            <arg value="-DpomFile=${spymemcached-test.pom}" />
+            <arg value="-Dfile=${build.dir}/jars/${name}-test-${version}.jar" />
+            <arg value="-Pgpg" />
+    </artifact:mvn>
+
+    <!-- sign and deploy the sources artifact -->
+    <artifact:mvn>
+            <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+            <arg value="-Durl=${maven-staging-repository-url}" />
+            <arg value="-DrepositoryId=${maven-staging-repository-id}" />
+            <arg value="-DpomFile=${spymemcached-test.pom}" />
+            <arg value="-Dfile=${build.dir}/sources/${name}-test-${version}.jar" />
+            <arg value="-Dclassifier=sources" />
+            <arg value="-Pgpg" />
+    </artifact:mvn>
+
+    <!-- sign and deploy the javadoc artifact -->
+    <artifact:mvn>
+            <arg value="org.apache.maven.plugins:maven-gpg-plugin:1.3:sign-and-deploy-file" />
+            <arg value="-Durl=${maven-staging-repository-url}" />
+            <arg value="-DrepositoryId=${maven-staging-repository-id}" />
+            <arg value="-DpomFile=${spymemcached-test.pom}" />
+            <arg value="-Dfile=${build.dir}/javadocs/${name}-test-${version}.jar" />
+            <arg value="-Dclassifier=javadoc" />
+            <arg value="-Pgpg" />
+    </artifact:mvn>
   </target>
+
   <!-- ======================================
         Section: Stage Maven locally
        ====================================== -->
