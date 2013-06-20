@@ -843,8 +843,8 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
 
   public void testUTF8Value() throws Exception {
     final String key = "junit.plaintext." + System.currentTimeMillis();
-    final String value = "Здравствуйте Здравствуйте �"
-        + "�дравствуйте Skiing rocks if you can find the time "
+    final String value = "Здравствуйте!"
+        + " Skiing rocks if you can find the time "
         + "to go!";
 
     assertTrue(client.set(key, 6000, value).get());
