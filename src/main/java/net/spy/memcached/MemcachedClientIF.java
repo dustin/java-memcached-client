@@ -187,6 +187,8 @@ public interface MemcachedClientIF {
 
   Future<Boolean> delete(String key);
 
+  Future<Boolean> delete(String key, long cas);
+
   Future<Boolean> flush(int delay);
 
   Future<Boolean> flush();

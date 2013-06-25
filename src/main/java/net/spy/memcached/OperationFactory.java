@@ -79,6 +79,17 @@ public interface OperationFactory {
   DeleteOperation delete(String key, DeleteOperation.Callback callback);
 
   /**
+   * Create a deletion operation with CAS.
+   *
+   * @param key the key to delete
+   * @param cas the CAS value to pass along
+   * @param callback the status callback
+   * @return the new DeleteOperation
+   */
+  DeleteOperation delete(String key, long cas,
+    DeleteOperation.Callback callback);
+
+  /**
    * Create a Unlock operation.
    *
    * @param key the key to unlock

@@ -1986,10 +1986,24 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    *           full to accept any more requests
    */
   public OperationFuture<Boolean> delete(String key) {
+    return delete(key, (long) 0);
+  }
+
+  /**
+   * Delete the given key from the cache of the given CAS value applies.
+   *
+   * @param key the key to delete
+   * @param cas the CAS value to apply.
+   * @return whether or not the operation was performed
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public OperationFuture<Boolean> delete(String key, long cas) {
     final CountDownLatch latch = new CountDownLatch(1);
     final OperationFuture<Boolean> rv = new OperationFuture<Boolean>(key,
         latch, operationTimeout);
-    DeleteOperation op = opFact.delete(key, new DeleteOperation.Callback() {
+
+    DeleteOperation.Callback callback = new DeleteOperation.Callback() {
       public void receivedStatus(OperationStatus s) {
         rv.set(s.isSuccess(), s);
       }
@@ -2001,7 +2015,15 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       public void complete() {
         latch.countDown();
       }
-    });
+    };
+
+    DeleteOperation op = null;
+    if(cas == 0) {
+      op = opFact.delete(key, callback);
+    } else {
+      op = opFact.delete(key, cas, callback);
+    }
+
     rv.setOperation(op);
     mconn.enqueueOperation(key, op);
     return rv;

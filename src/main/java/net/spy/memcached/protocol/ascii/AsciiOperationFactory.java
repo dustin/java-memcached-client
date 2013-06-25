@@ -69,6 +69,12 @@ public class AsciiOperationFactory extends BaseOperationFactory {
     return new DeleteOperationImpl(key, cb);
   }
 
+  public DeleteOperation delete(String key, long cas,
+    DeleteOperation.Callback cb) {
+    throw new UnsupportedOperationException("Delete with CAS is not supported "
+        + "for ASCII protocol");
+  }
+
   public FlushOperation flush(int delay, OperationCallback cb) {
     return new FlushOperationImpl(delay, cb);
   }
