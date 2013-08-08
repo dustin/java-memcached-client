@@ -33,16 +33,22 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertSame;
+import static junit.framework.Assert.assertTrue;
 
 import net.spy.memcached.compat.SyncThread;
 import net.spy.memcached.internal.BulkFuture;
+import net.spy.memcached.internal.BulkGetFuture;
+import net.spy.memcached.internal.BulkGetCompletionListener;
 import net.spy.memcached.internal.GetFuture;
+import net.spy.memcached.internal.GetCompletionListener;
 import net.spy.memcached.internal.OperationFuture;
+import net.spy.memcached.internal.OperationCompletionListener;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.transcoders.SerializingTranscoder;
@@ -929,6 +935,53 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
             0, "testSetReturnsCAS");
     setOp.get();
     assertTrue(setOp.getCas() > 0);
+  }
+
+  public void testSetWithCallback() throws Exception {
+    OperationFuture<Boolean> setOp =
+      client.set("setWithCallback", 0, "content");
+
+    final CountDownLatch latch = new CountDownLatch(1);
+    setOp.addListener(new OperationCompletionListener() {
+      @Override
+      public void onComplete(OperationFuture<?> f) throws Exception {
+        latch.countDown();
+      }
+    });
+
+    assertTrue(latch.await(2, TimeUnit.SECONDS));
+  }
+
+  public void testGetWithCallback() throws Exception {
+    client.set("getWithCallback", 0, "content").get();
+
+    GetFuture<Object> getOp = client.asyncGet("getWithCallback");
+
+    final CountDownLatch latch = new CountDownLatch(1);
+    getOp.addListener(new GetCompletionListener() {
+      @Override
+      public void onComplete(GetFuture<?> f) throws Exception {
+        latch.countDown();
+      }
+    });
+
+    assertTrue(latch.await(2, TimeUnit.SECONDS));
+  }
+
+  public void testGetBulkWithCallback() throws Exception {
+    client.set("getBulkWithCallback1", 0, "content").get();
+    BulkFuture<Map<String, Object>> asyncGetBulk =
+      client.asyncGetBulk("getBulkWithCallback1");
+
+    final CountDownLatch latch = new CountDownLatch(1);
+    asyncGetBulk.addListener(new BulkGetCompletionListener() {
+      @Override
+      public void onComplete(BulkGetFuture<?> f) throws Exception {
+        latch.countDown();
+      }
+    });
+
+    assertTrue(latch.await(2, TimeUnit.SECONDS));
   }
 
   private static class TestTranscoder implements Transcoder<String> {

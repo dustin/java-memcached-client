@@ -32,6 +32,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -113,6 +115,12 @@ public class DefaultConnectionFactory extends SpyObject implements
    * Turn off metric collection by default.
    */
   public static final MetricType DEFAULT_METRIC_TYPE = MetricType.OFF;
+
+  /**
+   * The ExecutorService in which the listener callbacks will be executed.
+   */
+  public static final ExecutorService DEFAULT_LISTENER_EXECUTOR_SERVICE =
+    Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
   protected final int opQueueLen;
   private final int readBufSize;
@@ -247,6 +255,10 @@ public class DefaultConnectionFactory extends SpyObject implements
    */
   public long getOpQueueMaxBlockTime() {
     return DEFAULT_OP_QUEUE_MAX_BLOCK_TIME;
+  }
+
+  public ExecutorService getListenerExecutorService() {
+    return DEFAULT_LISTENER_EXECUTOR_SERVICE;
   }
 
   /*

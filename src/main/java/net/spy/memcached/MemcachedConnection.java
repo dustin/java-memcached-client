@@ -49,6 +49,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.compat.SpyThread;
@@ -131,6 +132,7 @@ public class MemcachedConnection extends SpyThread {
   private final Collection<Operation> retryOps;
   protected final ConcurrentLinkedQueue<MemcachedNode> nodesToShutdown;
   private final boolean verifyAliveOnConnect;
+  private final ExecutorService listenerExecutorService;
 
   protected final MetricCollector metrics;
   protected final MetricType metricType;
@@ -158,6 +160,7 @@ public class MemcachedConnection extends SpyThread {
     selector = Selector.open();
     retryOps = new ArrayList<Operation>();
     nodesToShutdown = new ConcurrentLinkedQueue<MemcachedNode>();
+    listenerExecutorService = f.getListenerExecutorService();
     this.bufSize = bufSize;
     this.connectionFactory = f;
 
@@ -485,7 +488,8 @@ public class MemcachedConnection extends SpyThread {
             // Test to see if it's truly alive, could be a hung process, OS
             final CountDownLatch latch = new CountDownLatch(1);
             final OperationFuture<Boolean> rv =
-              new OperationFuture<Boolean>("noop", latch, 2500);
+              new OperationFuture<Boolean>("noop", latch, 2500,
+                listenerExecutorService);
             NoopOperation testOp = opFact.noop(new OperationCallback() {
               public void receivedStatus(OperationStatus status) {
                 rv.set(status.isSuccess(), status);

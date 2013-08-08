@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2013 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,55 +23,14 @@
 
 package net.spy.memcached.internal;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
-import net.spy.memcached.ops.OperationStatus;
 
 /**
- * Additional flexibility for asyncGetBulk
- *
- * <p>
- * This interface is now returned from all asyncGetBulk methods. Unlike
- * {@link #get(long, TimeUnit)}, {@link #getSome(long, TimeUnit)} does not throw
- * CheckedOperationTimeoutException, thus allowing retrieval of partial results
- * after timeout occurs. This behavior is especially useful in case of large
- * multi gets.
- * </p>
- *
- * @author boris.partensky@gmail.com
- * @param <V>
+ * A {@link Future} that accepts one or more listeners that will be executed
+ * asynchronously.
  */
-public interface BulkFuture<V> extends Future<V> {
-
-  /**
-   * @return true if timeout was reached, false otherwise
-   */
-  boolean isTimeout();
-
-  /**
-   * Wait for the operation to complete and return results
-   *
-   * If operation could not complete within specified timeout, partial result is
-   * returned. Otherwise, the behavior is identical to
-   * {@link #get(long, TimeUnit)}
-   *
-   * @param timeout
-   * @param unit
-   * @return a partial get bulk result
-   * @throws InterruptedException
-   * @throws ExecutionException
-   */
-  V getSome(long timeout, TimeUnit unit) throws InterruptedException,
-      ExecutionException;
-
-  /**
-   * Gets the status of the operation upon completion.
-   *
-   * @return the operation status.
-   */
-  OperationStatus getStatus();
+public interface ListenableFuture<T, L extends GenericCompletionListener>
+  extends Future<T> {
 
   /**
    * Add a listener to the future, which will be executed once the operation
@@ -80,7 +39,7 @@ public interface BulkFuture<V> extends Future<V> {
    * @param listener the listener which will be executed.
    * @return the current future to allow for object-chaining.
    */
-  Future<V> addListener(BulkGetCompletionListener listener);
+  Future<T> addListener(L listener);
 
   /**
    * Remove a previously added listener from the future.
@@ -88,6 +47,6 @@ public interface BulkFuture<V> extends Future<V> {
    * @param listener the previously added listener.
    * @return the current future to allow for object-chaining.
    */
-  Future<V> removeListener(BulkGetCompletionListener listener);
+  Future<T> removeListener(L listener);
 
 }
