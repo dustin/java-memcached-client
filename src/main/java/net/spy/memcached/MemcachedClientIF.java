@@ -78,6 +78,8 @@ public interface MemcachedClientIF {
 
   CASResponse cas(String key, long casId, Object value);
 
+  CASResponse cas(String key, long casId, int exp, Object value);
+
   <T> Future<Boolean> add(String key, int exp, T o, Transcoder<T> tc);
 
   Future<Boolean> add(String key, int exp, Object o);

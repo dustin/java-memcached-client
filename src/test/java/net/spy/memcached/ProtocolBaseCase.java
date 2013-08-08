@@ -36,6 +36,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertSame;
 
 import net.spy.memcached.compat.SyncThread;
 import net.spy.memcached.internal.BulkFuture;
@@ -162,6 +164,18 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     assertSame("Expected unsuccessful CAS with replayed id",
         CASResponse.EXISTS, client.cas(key, getsVal.getCas(), "crap value"));
     assertEquals("new value", client.get(key));
+
+    final String key2 = "castestkey2";
+
+    assertTrue(client.add(key2, 0, "value").get());
+    CASValue<Object> casValue = client.gets(key2);
+
+    assertEquals(CASResponse.OK,
+      client.cas(key2, casValue.getCas(), 3, "new val"));
+
+    // Verify the doc is not there anymore
+    Thread.sleep(5000);
+    assertNull(client.get(key2));
   }
 
   public void testReallyLongCASId() throws Exception {

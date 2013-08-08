@@ -701,6 +701,23 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   }
 
   /**
+   * Perform a synchronous CAS operation with the default transcoder.
+   *
+   * @param key the key
+   * @param casId the CAS identifier (from a gets operation)
+   * @param exp the expiration of this object
+   * @param value the new value
+   * @return a CASResponse
+   * @throws OperationTimeoutException if the global operation timeout is
+   *           exceeded
+   * @throws IllegalStateException in the rare circumstance where queue is too
+   *           full to accept any more requests
+   */
+  public CASResponse cas(String key, long casId, int exp, Object value) {
+    return cas(key, casId, exp, value, transcoder);
+  }
+
+  /**
    * Add an object to the cache iff it does not exist already.
    *
    * <p>
