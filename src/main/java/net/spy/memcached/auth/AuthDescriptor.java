@@ -39,6 +39,16 @@ public class AuthDescriptor {
    * Request authentication using the given list of mechanisms and callback
    * handler.
    *
+   * <p>If the list of mechanisms is empty, then the client will try to
+   * fetch a list of supported SASL mechanisms from the server. If this is
+   * not supported by the server or a specific method needs to be forced,
+   * passing a specific list of mechanisms in will work.</p>
+   *
+   * <p>For example, if the server would support CRAM-MD5 and PLAIN, the
+   * most secure variant (CRAM-MD5) will be chosen by default. If PLAIN
+   * should be used instead, passing in new String[] {"PLAIN"} will force
+   * the client to use PLAIN.</p>
+   *
    * @param m list of mechanisms
    * @param h the callback handler for grabbing credentials and stuff
    */

@@ -67,6 +67,8 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
       byte[] response = buildResponse(sc);
       String mechanism = sc.getMechanismName();
 
+      getLogger().debug("Using SASL auth mechanism: " + mechanism);
+
       prepareBuffer(mechanism, 0, response);
     } catch (SaslException e) {
       // XXX: Probably something saner can be done here.
