@@ -62,6 +62,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
   private boolean timedOutUnsent = false;
   protected Collection<MemcachedNode> notMyVbucketNodes =
       new HashSet<MemcachedNode>();
+  private long writeCompleteTimestamp;
 
   public BaseOperationImpl() {
     super();
@@ -146,6 +147,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
   }
 
   public final void writeComplete() {
+    writeCompleteTimestamp = System.nanoTime();
     transitionState(OperationState.READING);
   }
 
@@ -219,4 +221,10 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
   public boolean isTimedOutUnsent() {
     return timedOutUnsent;
   }
+
+  @Override
+  public long getWriteCompleteTimestamp() {
+    return writeCompleteTimestamp;
+  }
+
 }

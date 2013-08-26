@@ -58,6 +58,8 @@ SOFTWARE.
         conf="common->master" />
     <dependency org="org.springframework" name="spring-beans"
         rev="${spring-beans.version}" conf="common->master" />
+    <dependency org="com.codahale.metrics" name="metrics-core"
+	rev="${codahale.metrics.version}" conf="common->master" />
     <dependency org="checkstyle" name="checkstyle" rev="${checkstyle.version}"
         conf="checkstyle->default" />
     <dependency org="com.google.code.findbugs" name="findbugs"

@@ -505,6 +505,7 @@
       <dependency group="log4j" artifact="log4j" version="${log4j.version}" optional="true" />
       <dependency group="org.slf4j" artifact="slf4j-api" version="${slf4j.version}" optional="true" />
       <dependency group="org.springframework" artifact="spring-beans" version="${spring-beans.version}" optional="true" />
+      <dependency group="com.codahale.metrics" artifact="metrics-core" version="${codahale.metrics.version}" optional="true" />
     </ivy:makepom>
 
     <ivy:makepom ivyfile="ivy/spymemcached-test.xml"
@@ -516,6 +517,7 @@
       <dependency group="log4j" artifact="log4j" version="${log4j.version}" optional="true" />
       <dependency group="org.slf4j" artifact="slf4j-api" version="${slf4j.version}" optional="true" />
       <dependency group="org.springframework" artifact="spring-beans" version="${spring-beans.version}" optional="true" />
+      <dependency group="com.codahale.metrics" artifact="metrics-core" version="${codahale.metrics.version}" />
    </ivy:makepom>
 
     <!-- Change the version in the pom file to reflect our claimed version. -->
@@ -700,8 +702,8 @@
         <exclude name="LICENSE.txt" />
         <exclude name="README.markdown" />
         <exclude name=".gitreview" />
-	<exclude name=".git/** />
-	<exclude name=".idea/** />
+	<exclude name=".git/**" />
+	<exclude name=".idea/**" />
       </fileset>
     </delete>
   </target>

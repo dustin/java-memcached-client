@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2006-2009 Dustin Sallings
+ * Copyright (C) 2009-2013 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +32,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 import net.spy.memcached.auth.AuthDescriptor;
+import net.spy.memcached.metrics.MetricCollector;
+import net.spy.memcached.metrics.MetricType;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.transcoders.Transcoder;
 
@@ -158,4 +161,14 @@ public interface ConnectionFactory {
    * Maximum number of timeout exception for shutdown connection.
    */
   int getTimeoutExceptionThreshold();
+
+  /**
+   * If true, metric collections are enabled.
+   */
+  MetricType enableMetrics();
+
+  /**
+   * The currently active {@link MetricCollector}.
+   */
+  MetricCollector getMetricCollector();
 }

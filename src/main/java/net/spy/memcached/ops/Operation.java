@@ -151,4 +151,11 @@ public interface Operation {
    * written to the network, this will be true.
    */
   boolean isTimedOutUnsent();
+
+  /**
+   * Returns the timestamp from the point where the WRITE was completed.
+   *
+   * This can be used to calculate the roundtrip time of the operation.
+   */
+  long getWriteCompleteTimestamp();
 }
