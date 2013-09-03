@@ -700,6 +700,8 @@
         <exclude name="LICENSE.txt" />
         <exclude name="README.markdown" />
         <exclude name=".gitreview" />
+	<exclude name=".git/** />
+	<exclude name=".idea/** />
       </fileset>
     </delete>
   </target>
