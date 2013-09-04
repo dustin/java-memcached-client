@@ -114,10 +114,6 @@ public class QueueOverflowTest extends ClientBaseCase {
         client.set("kx", 0, "woo").get(10, TimeUnit.SECONDS));
   }
 
-  public void testOverflowingInputQueue() throws Exception {
-    runOverflowTest(new byte[] { 1 });
-  }
-
   public void testOverflowingWriteQueue() throws Exception {
     byte[] b = new byte[8192];
     Random r = new Random();
