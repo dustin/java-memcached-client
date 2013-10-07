@@ -35,6 +35,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.auth.AuthDescriptor;
@@ -116,17 +118,16 @@ public class DefaultConnectionFactory extends SpyObject implements
    */
   public static final MetricType DEFAULT_METRIC_TYPE = MetricType.OFF;
 
-  /**
-   * The ExecutorService in which the listener callbacks will be executed.
-   */
-  public static final ExecutorService DEFAULT_LISTENER_EXECUTOR_SERVICE =
-    Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
   protected final int opQueueLen;
   private final int readBufSize;
   private final HashAlgorithm hashAlg;
 
   private MetricCollector metrics;
+
+  /**
+   * The ExecutorService in which the listener callbacks will be executed.
+   */
+  private ExecutorService executorService;
 
   /**
    * Construct a DefaultConnectionFactory with the given parameters.
@@ -257,8 +258,35 @@ public class DefaultConnectionFactory extends SpyObject implements
     return DEFAULT_OP_QUEUE_MAX_BLOCK_TIME;
   }
 
+
+  /**
+   * Returns the stored {@link ExecutorService} for listeners.
+   *
+   * By default, a {@link ThreadPoolExecutor} is used that acts exactly
+   * like a default cachedThreadPool, but defines the upper limit of
+   * Threads to be created as the number of available processors to
+   * prevent resource exhaustion.
+   *
+   * @return the stored {@link ExecutorService}.
+   */
+  @Override
   public ExecutorService getListenerExecutorService() {
-    return DEFAULT_LISTENER_EXECUTOR_SERVICE;
+    if (executorService == null) {
+      executorService = new ThreadPoolExecutor(
+        0,
+        Runtime.getRuntime().availableProcessors(),
+        60L,
+        TimeUnit.SECONDS,
+        new SynchronousQueue<Runnable>()
+      );
+    }
+
+    return executorService;
+  }
+
+  @Override
+  public boolean isDefaultExecutorService() {
+    return true;
   }
 
   /*

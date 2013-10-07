@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 
 import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.metrics.MetricCollector;
@@ -73,6 +74,7 @@ public class ConnectionFactoryBuilder {
 
   protected MetricType metricType = null;
   protected MetricCollector collector = null;
+  protected ExecutorService executorService = null;
 
   /**
    * Set the operation queue factory.
@@ -97,6 +99,7 @@ public class ConnectionFactoryBuilder {
     setTranscoder(cf.getDefaultTranscoder());
     setUseNagleAlgorithm(cf.useNagleAlgorithm());
     setEnableMetrics(cf.enableMetrics());
+    setListenerExecutorService(cf.getListenerExecutorService());
   }
 
   public ConnectionFactoryBuilder setOpQueueFactory(OperationQueueFactory q) {
@@ -291,6 +294,21 @@ public class ConnectionFactoryBuilder {
   }
 
   /**
+   * Set a custom {@link ExecutorService} to execute the listener callbacks.
+   *
+   * Note that if a custom {@link ExecutorService} is passed in, it also needs to be properly
+   * shut down by the caller. The library itself treats it as a outside managed resource.
+   * Therefore, also make sure to not shut it down before all instances that use it are
+   * shut down.
+   *
+   * @param executorService the ExecutorService to use.
+   */
+  public ConnectionFactoryBuilder setListenerExecutorService(ExecutorService executorService) {
+    this.executorService = executorService;
+    return this;
+  }
+
+  /**
    * Get the ConnectionFactory set up with the provided parameters.
    */
   public ConnectionFactory build() {
@@ -406,6 +424,15 @@ public class ConnectionFactoryBuilder {
         return collector == null ? super.getMetricCollector() : collector;
       }
 
+      @Override
+      public ExecutorService getListenerExecutorService() {
+        return executorService == null ? super.getListenerExecutorService() : executorService;
+      }
+
+      @Override
+      public boolean isDefaultExecutorService() {
+        return executorService == null;
+      }
     };
 
   }

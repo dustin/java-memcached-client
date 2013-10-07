@@ -29,6 +29,8 @@ import java.nio.channels.SocketChannel;
 import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.spy.memcached.ConnectionFactoryBuilder.Locator;
@@ -179,6 +181,17 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
     assertTrue(b.setProtocol(Protocol.TEXT).build().getOperationFactory()
         instanceof AsciiOperationFactory);
 
+  }
+
+  public void testOverridingExecutorService() {
+    ConnectionFactory factory = b.build();
+    assertTrue(factory.isDefaultExecutorService());
+
+    ExecutorService service = Executors.newFixedThreadPool(1);
+    b.setListenerExecutorService(service);
+    factory = b.build();
+    assertFalse(factory.isDefaultExecutorService());
+    assertEquals(service.hashCode(), factory.getListenerExecutorService().hashCode());
   }
 
   static class DirectFactory implements OperationQueueFactory {

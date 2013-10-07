@@ -90,6 +90,12 @@ public interface ConnectionFactory {
   ExecutorService getListenerExecutorService();
 
   /**
+   * Returns true if the default provided {@link ExecutorService} has not been
+   * overriden through the builder.
+   */
+  boolean isDefaultExecutorService();
+
+  /**
    * Create a NodeLocator instance for the given list of nodes.
    */
   NodeLocator createLocator(List<MemcachedNode> nodes);
