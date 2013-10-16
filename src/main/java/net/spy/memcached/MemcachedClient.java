@@ -1033,7 +1033,6 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
 
       public void gotData(String k, int flags, long cas, byte[] data) {
         assert key.equals(k) : "Wrong key returned";
-        assert cas > 0 : "CAS was less than zero:  " + cas;
         val =
             new CASValue<T>(cas, tc.decode(new CachedData(flags, data,
                 tc.getMaxSize())));
@@ -1437,7 +1436,6 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
 
           public void gotData(String k, int flags, long cas, byte[] data) {
             assert k.equals(key) : "Wrong key returned";
-            assert cas > 0 : "CAS was less than zero:  " + cas;
             val =
                 new CASValue<T>(cas, tc.decode(new CachedData(flags, data,
                     tc.getMaxSize())));
