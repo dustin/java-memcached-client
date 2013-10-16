@@ -40,4 +40,9 @@ public interface GetAndTouchOperation extends KeyedOperation {
      */
     void gotData(String key, int flags, long cas, byte[] data);
   }
+
+  /**
+   * Get the expiration to set in case of a new entry.
+   */
+  int getExpiration();
 }

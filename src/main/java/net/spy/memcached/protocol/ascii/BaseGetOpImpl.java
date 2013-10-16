@@ -51,7 +51,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
   private final String cmd;
   private final Collection<String> keys;
   private String currentKey = null;
-  private final int exp;
+  protected final int exp;
   private final boolean hasExp;
   private long casValue = 0;
   private int currentFlags = 0;

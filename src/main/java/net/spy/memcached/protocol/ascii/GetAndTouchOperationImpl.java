@@ -34,4 +34,10 @@ public class GetAndTouchOperationImpl extends BaseGetOpImpl implements
       GetAndTouchOperation.Callback cb, String k) {
     super(c, e, cb, k);
   }
+
+  @Override
+  public int getExpiration() {
+    return exp;
+  }
+
 }

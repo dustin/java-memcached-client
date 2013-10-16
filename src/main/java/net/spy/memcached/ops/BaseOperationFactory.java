@@ -82,6 +82,10 @@ public abstract class BaseOperationFactory implements OperationFactory {
       ConcatenationOperation c = (ConcatenationOperation) op;
       rv.add(cat(c.getStoreType(), c.getCasValue(), first(op.getKeys()),
           c.getData(), c.getCallback()));
+    } else if(op instanceof GetAndTouchOperation) {
+      GetAndTouchOperation gt = (GetAndTouchOperation) op;
+      rv.add(getAndTouch(first(gt.getKeys()), gt.getExpiration(),
+        (GetAndTouchOperation.Callback) gt.getCallback()));
     } else {
       assert false : "Unhandled operation type: " + op.getClass();
     }
