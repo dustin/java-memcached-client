@@ -82,7 +82,7 @@ public class AuthThread extends SpyThread {
     conn.insertOperation(node, listMechsOp);
 
     try {
-      listMechsLatch.await(10, TimeUnit.SECONDS);
+      listMechsLatch.await();
     } catch(InterruptedException ex) {
       // we can be interrupted if we were in the
       // process of auth'ing and the connection is
