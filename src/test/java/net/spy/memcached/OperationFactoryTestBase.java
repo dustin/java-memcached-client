@@ -26,7 +26,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
@@ -115,7 +118,7 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
 
   public void testCASOperationCloning() {
     CASOperation op = ofact.cas(StoreType.set, "someKey", 727582, 8174, 7175,
-        testData, storeCallback);
+      testData, storeCallback);
 
     CASOperation op2 = cloneOne(CASOperation.class, op);
     assertKey(op2);
@@ -131,7 +134,7 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
     long def = 28775;
     long by = 7735;
     MutatorOperation op = ofact.mutate(Mutator.incr, TEST_KEY, by, def, exp,
-        genericCallback);
+      genericCallback);
 
     MutatorOperation op2 = cloneOne(MutatorOperation.class, op);
     assertKey(op2);
@@ -274,6 +277,34 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
       cb.receivedStatus(st);
       cb.complete();
     }
+  }
+
+  public void testNotGrowingCallstack() throws Exception {
+    final CountDownLatch latch = new CountDownLatch(1);
+    GetOperation.Callback cb = new GetOperation.Callback() {
+      @Override
+      public void receivedStatus(OperationStatus status) {
+      }
+
+      @Override
+      public void complete() {
+        latch.countDown();
+      }
+
+      @Override
+      public void gotData(String key, int flags, byte[] data) {
+      }
+    };
+
+    GetOperation operation = ofact.get("key", cb);
+    int nestingDepth = 10000000;
+    for (int i = 0; i < nestingDepth; i++) {
+      List<Operation> clonedOps = (List<Operation>) ofact.clone(operation);
+      operation = (GetOperation) clonedOps.get(0);
+    }
+
+    operation.getCallback().complete();
+    assertTrue(latch.await(1, TimeUnit.SECONDS));
   }
 
   protected void assertKey(KeyedOperation op) {

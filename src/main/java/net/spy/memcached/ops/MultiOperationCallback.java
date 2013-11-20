@@ -45,6 +45,10 @@ public abstract class MultiOperationCallback implements OperationCallback {
    * @param todo how many complete() calls we expect before dispatching.
    */
   public MultiOperationCallback(OperationCallback original, int todo) {
+    if (original instanceof MultiOperationCallback) {
+        original = ((MultiOperationCallback) original).originalCallback;
+    }
+
     originalCallback = original;
     remaining = todo;
   }
