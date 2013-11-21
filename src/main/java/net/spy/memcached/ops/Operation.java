@@ -158,4 +158,11 @@ public interface Operation {
    * This can be used to calculate the roundtrip time of the operation.
    */
   long getWriteCompleteTimestamp();
+
+  /**
+   * Returns the raw bytes of the error message content.
+   *
+   * @return the raw error message content.
+   */
+  byte[] getErrorMsg();
 }
