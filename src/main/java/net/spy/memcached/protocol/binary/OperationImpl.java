@@ -41,7 +41,8 @@ import net.spy.memcached.protocol.BaseOperationImpl;
 /**
  * Base class for binary operations.
  */
-abstract class OperationImpl extends BaseOperationImpl implements Operation {
+public  abstract class OperationImpl extends BaseOperationImpl
+  implements Operation {
 
   protected static final byte REQ_MAGIC = (byte) 0x80;
   protected static final byte RES_MAGIC = (byte) 0x81;
