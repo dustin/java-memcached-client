@@ -21,9 +21,9 @@
  * IN THE SOFTWARE.
  */
 
-
 package net.spy.memcached.protocol.binary;
 
+import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ObserveResponse;
 import net.spy.memcached.ops.ObserveOperation;
 import net.spy.memcached.ops.OperationCallback;
@@ -47,8 +47,9 @@ class ObserveOperationImpl extends SingleKeyOperationImpl implements
 
   @Override
   public void initialize() {
+    byte[] keyBytes = KeyUtil.getKeyBytes(key);
     prepareBuffer("", 0x0, EMPTY_BYTES, (short) index,
-            (short) key.length(), key.getBytes());
+      (short) keyBytes.length, keyBytes);
   }
 
   @Override
