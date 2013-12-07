@@ -34,6 +34,7 @@ import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.transcoders.Transcoder;
+import net.spy.memcached.util.KetamaNodeLocatorConfiguration;
 
 /**
  * Builder for more easily configuring a ConnectionFactory.
@@ -68,6 +69,8 @@ public class ConnectionFactoryBuilder {
 
   protected int timeoutExceptionThreshold =
       DefaultConnectionFactory.DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
+
+  protected KetamaNodeLocatorConfiguration nodeLocatorConf = null;
 
   /**
    * Set the operation queue factory.
@@ -264,6 +267,12 @@ public class ConnectionFactoryBuilder {
     return this;
   }
 
+  public ConnectionFactoryBuilder setKetamaNodeLocatorConfiguration(KetamaNodeLocatorConfiguration conf) {
+      assert conf != null;
+      nodeLocatorConf = conf;
+      return this;
+  }
+
   /**
    * Get the ConnectionFactory set up with the provided parameters.
    */
@@ -294,7 +303,11 @@ public class ConnectionFactoryBuilder {
         case ARRAY_MOD:
           return new ArrayModNodeLocator(nodes, getHashAlg());
         case CONSISTENT:
-          return new KetamaNodeLocator(nodes, getHashAlg());
+          if (nodeLocatorConf == null) {
+            return new KetamaNodeLocator(nodes, getHashAlg());
+          } else {
+            return new KetamaNodeLocator(nodes, getHashAlg(), nodeLocatorConf);
+          }
         default:
           throw new IllegalStateException("Unhandled locator type: " + locator);
         }
