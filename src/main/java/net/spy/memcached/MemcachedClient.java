@@ -137,7 +137,7 @@ import net.spy.memcached.util.StringUtils;
 public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     ConnectionObserver {
 
-  protected volatile boolean shuttingDown = false;
+  protected volatile boolean shuttingDown;
 
   protected final long operationTimeout;
 
@@ -306,13 +306,16 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       executorService);
     Operation op = opFact.store(storeType, key, co.getFlags(), exp,
         co.getData(), new StoreOperation.Callback() {
+            @Override
             public void receivedStatus(OperationStatus val) {
               rv.set(val.isSuccess(), val);
             }
+            @Override
             public void gotData(String key, long cas) {
               rv.setCas(cas);
             }
 
+            @Override
             public void complete() {
               latch.countDown();
             }
@@ -335,10 +338,12 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         latch, operationTimeout, executorService);
     Operation op = opFact.cat(catType, cas, key, co.getData(),
         new OperationCallback() {
+          @Override
           public void receivedStatus(OperationStatus val) {
             rv.set(val.isSuccess(), val);
           }
 
+          @Override
           public void complete() {
             latch.countDown();
           }
@@ -384,10 +389,12 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       executorService);
 
     Operation op = opFact.touch(key, exp, new OperationCallback() {
+      @Override
       public void receivedStatus(OperationStatus status) {
         rv.set(status.isSuccess(), status);
       }
 
+      @Override
       public void complete() {
         latch.countDown();
       }
@@ -615,6 +622,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       executorService);
     Operation op = opFact.cas(StoreType.set, key, casId, co.getFlags(), exp,
         co.getData(), new StoreOperation.Callback() {
+            @Override
             public void receivedStatus(OperationStatus val) {
               if (val instanceof CASOperationStatus) {
                 rv.set(((CASOperationStatus) val).getCASResponse(), val);
@@ -626,9 +634,11 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
                 throw new RuntimeException("Unhandled state: " + val);
               }
             }
+            @Override
             public void gotData(String key, long cas) {
               rv.setCas(cas);
             }
+            @Override
             public void complete() {
               latch.countDown();
             }
@@ -708,7 +718,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public <T> CASResponse cas(String key, long casId, int exp, T value,
       Transcoder<T> tc) {
-    CASResponse casr = null;
+    CASResponse casr;
     try {
       OperationFuture<CASResponse> casOp = asyncCAS(key,
               casId, exp, value, tc);
@@ -768,7 +778,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * Add an object to the cache iff it does not exist already.
    *
    * <p>
-   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * The {@code exp} value is passed along to memcached exactly as given,
    * and will be processed per the memcached protocol specification:
    * </p>
    *
@@ -807,7 +817,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * exist already.
    *
    * <p>
-   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * The {@code exp} value is passed along to memcached exactly as given,
    * and will be processed per the memcached protocol specification:
    * </p>
    *
@@ -842,7 +852,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * Set an object in the cache regardless of any existing value.
    *
    * <p>
-   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * The {@code exp} value is passed along to memcached exactly as given,
    * and will be processed per the memcached protocol specification:
    * </p>
    *
@@ -881,7 +891,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * existing value.
    *
    * <p>
-   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * The {@code exp} value is passed along to memcached exactly as given,
    * and will be processed per the memcached protocol specification:
    * </p>
    *
@@ -917,7 +927,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * given key.
    *
    * <p>
-   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * The {@code exp} value is passed along to memcached exactly as given,
    * and will be processed per the memcached protocol specification:
    * </p>
    *
@@ -956,7 +966,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * transcoder) iff there is already a value for the given key.
    *
    * <p>
-   * The <code>exp</code> value is passed along to memcached exactly as given,
+   * The {@code exp} value is passed along to memcached exactly as given,
    * and will be processed per the memcached protocol specification:
    * </p>
    *
@@ -1004,18 +1014,21 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     final GetFuture<T> rv = new GetFuture<T>(latch, operationTimeout, key,
       executorService);
     Operation op = opFact.get(key, new GetOperation.Callback() {
-      private Future<T> val = null;
+      private Future<T> val;
 
+      @Override
       public void receivedStatus(OperationStatus status) {
         rv.set(val, status);
       }
 
+      @Override
       public void gotData(String k, int flags, byte[] data) {
         assert key.equals(k) : "Wrong key returned";
         val =
             tcService.decode(tc, new CachedData(flags, data, tc.getMaxSize()));
       }
 
+      @Override
       public void complete() {
         latch.countDown();
       }
@@ -1058,12 +1071,14 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       executorService);
 
     Operation op = opFact.gets(key, new GetsOperation.Callback() {
-      private CASValue<T> val = null;
+      private CASValue<T> val;
 
+      @Override
       public void receivedStatus(OperationStatus status) {
         rv.set(val, status);
       }
 
+      @Override
       public void gotData(String k, int flags, long cas, byte[] data) {
         assert key.equals(k) : "Wrong key returned";
         val =
@@ -1071,6 +1086,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
                 tc.getMaxSize())));
       }
 
+      @Override
       public void complete() {
         latch.countDown();
       }
@@ -1296,17 +1312,20 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     final BulkGetFuture<T> rv = new BulkGetFuture<T>(m, ops, latch, executorService);
 
     GetOperation.Callback cb = new GetOperation.Callback() {
+      @Override
       @SuppressWarnings("synthetic-access")
       public void receivedStatus(OperationStatus status) {
         rv.setStatus(status);
       }
 
+      @Override
       public void gotData(String k, int flags, byte[] data) {
         Transcoder<T> tc = tcMap.get(k);
         m.put(k,
             tcService.decode(tc, new CachedData(flags, data, tc.getMaxSize())));
       }
 
+      @Override
       public void complete() {
         latch.countDown();
       }
@@ -1474,16 +1493,19 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
 
     Operation op = opFact.getAndTouch(key, exp,
         new GetAndTouchOperation.Callback() {
-          private CASValue<T> val = null;
+          private CASValue<T> val;
 
+          @Override
           public void receivedStatus(OperationStatus status) {
             rv.set(val, status);
           }
 
+          @Override
           public void complete() {
             latch.countDown();
           }
 
+          @Override
           public void gotData(String k, int flags, long cas, byte[] data) {
             assert k.equals(key) : "Wrong key returned";
             val =
@@ -1622,14 +1644,17 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         new ConcurrentHashMap<SocketAddress, String>();
 
     CountDownLatch blatch = broadcastOp(new BroadcastOpFactory() {
+      @Override
       public Operation newOp(final MemcachedNode n,
           final CountDownLatch latch) {
         final SocketAddress sa = n.getSocketAddress();
         return opFact.version(new OperationCallback() {
+          @Override
           public void receivedStatus(OperationStatus s) {
             rv.put(sa, s.getMessage());
           }
 
+          @Override
           public void complete() {
             latch.countDown();
           }
@@ -1671,15 +1696,18 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         new HashMap<SocketAddress, Map<String, String>>();
 
     CountDownLatch blatch = broadcastOp(new BroadcastOpFactory() {
+      @Override
       public Operation newOp(final MemcachedNode n,
           final CountDownLatch latch) {
         final SocketAddress sa = n.getSocketAddress();
         rv.put(sa, new HashMap<String, String>());
         return opFact.stats(arg, new StatsOperation.Callback() {
+          @Override
           public void gotStat(String name, String val) {
             rv.get(sa).put(name, val);
           }
 
+          @Override
           @SuppressWarnings("synthetic-access")
           public void receivedStatus(OperationStatus status) {
             if (!status.isSuccess()) {
@@ -1687,6 +1715,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
             }
           }
 
+          @Override
           public void complete() {
             latch.countDown();
           }
@@ -1706,6 +1735,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     final CountDownLatch latch = new CountDownLatch(1);
     mconn.enqueueOperation(key, opFact.mutate(m, key, by, def, exp,
         new OperationCallback() {
+        @Override
         public void receivedStatus(OperationStatus s) {
           // XXX: Potential abstraction leak.
           // The handling of incr/decr in the binary protocol
@@ -1713,6 +1743,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
           rv.set(new Long(s.isSuccess() ? s.getMessage() : "-1"));
         }
 
+        @Override
         public void complete() {
           latch.countDown();
         }
@@ -1720,7 +1751,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     try {
       if (!latch.await(operationTimeout, TimeUnit.MILLISECONDS)) {
         throw new OperationTimeoutException("Mutate operation timed out,"
-            + "unable to modify counter [" + key + "]");
+            + "unable to modify counter [" + key + ']');
       }
     } catch (InterruptedException e) {
       throw new RuntimeException("Interrupted", e);
@@ -1766,7 +1797,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long incr(String key, int by) {
-    return mutate(Mutator.incr, key, (long)by, 0, -1);
+    return mutate(Mutator.incr, key, by, 0, -1);
   }
 
   /**
@@ -1806,7 +1837,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long decr(String key, int by) {
-    return mutate(Mutator.decr, key, (long)by, 0, -1);
+    return mutate(Mutator.decr, key, by, 0, -1);
   }
 
   /**
@@ -1850,7 +1881,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long incr(String key, int by, long def, int exp) {
-    return mutateWithDefault(Mutator.incr, key, (long)by, def, exp);
+    return mutateWithDefault(Mutator.incr, key, by, def, exp);
   }
 
   /**
@@ -1894,7 +1925,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long decr(String key, int by, long def, int exp) {
-    return mutateWithDefault(Mutator.decr, key, (long)by, def, exp);
+    return mutateWithDefault(Mutator.decr, key, by, def, exp);
   }
 
   private long mutateWithDefault(Mutator t, String key, long by, long def,
@@ -1936,10 +1967,12 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         new OperationFuture<Long>(key, latch, operationTimeout, executorService);
     Operation op = opFact.mutate(m, key, by, def, exp,
         new OperationCallback() {
+          @Override
           public void receivedStatus(OperationStatus s) {
             rv.set(new Long(s.isSuccess() ? s.getMessage() : "-1"), s);
           }
 
+          @Override
           public void complete() {
             latch.countDown();
           }
@@ -1974,7 +2007,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Long> asyncIncr(String key, int by) {
-    return asyncMutate(Mutator.incr, key, (long)by, 0, -1);
+    return asyncMutate(Mutator.incr, key, by, 0, -1);
   }
 
   /**
@@ -2002,7 +2035,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Long> asyncDecr(String key, int by) {
-    return asyncMutate(Mutator.decr, key, (long)by, 0, -1);
+    return asyncMutate(Mutator.decr, key, by, 0, -1);
   }
 
   /**
@@ -2036,7 +2069,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long incr(String key, int by, long def) {
-    return mutateWithDefault(Mutator.incr, key, (long)by, def, 0);
+    return mutateWithDefault(Mutator.incr, key, by, def, 0);
   }
 
   /**
@@ -2070,7 +2103,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long decr(String key, int by, long def) {
-    return mutateWithDefault(Mutator.decr, key, (long)by, def, 0);
+    return mutateWithDefault(Mutator.decr, key, by, def, 0);
   }
 
   /**
@@ -2107,7 +2140,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Boolean> delete(String key) {
-    return delete(key, (long) 0);
+    return delete(key, 0L);
   }
 
   /**
@@ -2126,20 +2159,23 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         latch, operationTimeout, executorService);
 
     DeleteOperation.Callback callback = new DeleteOperation.Callback() {
+      @Override
       public void receivedStatus(OperationStatus s) {
         rv.set(s.isSuccess(), s);
       }
 
+      @Override
       public void gotData(long cas) {
         rv.setCas(cas);
       }
 
+      @Override
       public void complete() {
         latch.countDown();
       }
     };
 
-    DeleteOperation op = null;
+    DeleteOperation op;
     if(cas == 0) {
       op = opFact.delete(key, callback);
     } else {
@@ -2166,13 +2202,16 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     final ConcurrentLinkedQueue<Operation> ops =
         new ConcurrentLinkedQueue<Operation>();
     CountDownLatch blatch = broadcastOp(new BroadcastOpFactory() {
+      @Override
       public Operation newOp(final MemcachedNode n,
           final CountDownLatch latch) {
         Operation op = opFact.flush(delay, new OperationCallback() {
+          @Override
           public void receivedStatus(OperationStatus s) {
             flushResult.set(s.isSuccess());
           }
 
+          @Override
           public void complete() {
             latch.countDown();
           }
@@ -2239,14 +2278,17 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         new ConcurrentHashMap<String, String>();
 
     CountDownLatch blatch = broadcastOp(new BroadcastOpFactory() {
+      @Override
       public Operation newOp(MemcachedNode n, final CountDownLatch latch) {
         return opFact.saslMechs(new OperationCallback() {
+          @Override
           public void receivedStatus(OperationStatus status) {
             for (String s : status.getMessage().split(" ")) {
               rv.put(s, s);
             }
           }
 
+          @Override
           public void complete() {
             latch.countDown();
           }
@@ -2328,13 +2370,16 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public boolean waitForQueues(long timeout, TimeUnit unit) {
     CountDownLatch blatch = broadcastOp(new BroadcastOpFactory() {
+      @Override
       public Operation newOp(final MemcachedNode n,
           final CountDownLatch latch) {
         return opFact.noop(new OperationCallback() {
+          @Override
           public void complete() {
             latch.countDown();
           }
 
+          @Override
           public void receivedStatus(OperationStatus s) {
             // Nothing special when receiving status, only
             // necessary to complete the interface
@@ -2388,7 +2433,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   public void connectionEstablished(SocketAddress sa, int reconnectCount) {
     if (authDescriptor != null) {
       if (authDescriptor.authThresholdReached()) {
-        this.shutdown();
+        shutdown();
       }
       authMonitor.authConnection(mconn, opFact, authDescriptor, findNode(sa));
     }
