@@ -969,14 +969,24 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
   }
 
   public void testGetBulkWithCallback() throws Exception {
-    client.set("getBulkWithCallback1", 0, "content").get();
+    final int items = 1000;
+    List<String> keysList = new ArrayList<String>(items);
+    for (int i = 0; i < items; i++) {
+      assertTrue(client.set("getBulkWithCallback" + i, 0, "content").get());
+      keysList.add("getBulkWithCallback" + i);
+    }
+
     BulkFuture<Map<String, Object>> asyncGetBulk =
-      client.asyncGetBulk("getBulkWithCallback1");
+      client.asyncGetBulk(keysList);
 
     final CountDownLatch latch = new CountDownLatch(1);
     asyncGetBulk.addListener(new BulkGetCompletionListener() {
       @Override
       public void onComplete(BulkGetFuture<?> f) throws Exception {
+        assertEquals(items, f.get().size());
+        assertTrue(f.getStatus().isSuccess());
+        assertTrue(f.isDone());
+        assertFalse(f.isCancelled());
         latch.countDown();
       }
     });

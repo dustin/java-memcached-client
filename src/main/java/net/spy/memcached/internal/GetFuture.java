@@ -76,7 +76,6 @@ public class GetFuture<T>
 
   public void set(Future<T> d, OperationStatus s) {
     rv.set(d, s);
-    notifyListeners();
   }
 
   public void setOperation(Operation to) {
@@ -101,6 +100,13 @@ public class GetFuture<T>
   public GetFuture<T> removeListener(GetCompletionListener listener) {
     super.removeFromListeners((GenericCompletionListener) listener);
     return this;
+  }
+
+  /**
+   * Signals that this future is complete.
+   */
+  public void signalComplete() {
+    notifyListeners();
   }
 
 }

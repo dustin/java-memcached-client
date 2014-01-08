@@ -261,7 +261,6 @@ public class OperationFuture<T>
   public void set(T o, OperationStatus s) {
     objRef.set(o);
     status = s;
-    notifyListeners();
   }
 
   /**
@@ -317,6 +316,13 @@ public class OperationFuture<T>
     OperationCompletionListener listener) {
     super.removeFromListeners((GenericCompletionListener) listener);
     return this;
+  }
+
+  /**
+   * Signals that this future is complete.
+   */
+  public void signalComplete() {
+    notifyListeners();
   }
 
 }
