@@ -2371,6 +2371,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         mconn.shutdown();
         mconn.setName(baseName + " - SHUTTING DOWN (informed client)");
         tcService.shutdown();
+        //terminate all pending Auth Threads
+        authMonitor.interruptAllPendingAuth();
       } catch (IOException e) {
         getLogger().warn("exception while shutting down", e);
       }
