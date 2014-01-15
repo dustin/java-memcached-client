@@ -82,7 +82,11 @@ public class AuthThread extends SpyThread {
     conn.insertOperation(node, listMechsOp);
 
     try {
-      listMechsLatch.await();
+      if (!conn.isShutDown()) {
+        listMechsLatch.await();
+      } else {
+        done.set(true); // Connection is shutting down, tear.down.
+      }
     } catch(InterruptedException ex) {
       // we can be interrupted if we were in the
       // process of auth'ing and the connection is
@@ -145,7 +149,11 @@ public class AuthThread extends SpyThread {
       conn.insertOperation(node, op);
 
       try {
-        latch.await();
+        if (!conn.isShutDown()) {
+          latch.await();
+        } else {
+          done.set(true); // Connection is shutting down, tear.down.
+        }
         Thread.sleep(100);
       } catch (InterruptedException e) {
         // we can be interrupted if we were in the
