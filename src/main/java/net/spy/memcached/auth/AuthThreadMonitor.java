@@ -91,4 +91,15 @@ public class AuthThreadMonitor extends SpyObject {
       nodeMap.remove(nodeToStop);
     }
   }
+
+  /**
+   * Returns Map of AuthThread for testing
+   * authentication mechanisms for different
+   * server versions. It should not be accessed
+   * from anywhere else.
+   * @return
+   */
+  protected Map<Object, AuthThread> getNodeMap() {
+    return nodeMap;
+  }
 }
