@@ -35,7 +35,8 @@ import net.spy.memcached.ops.StatsOperation;
 final class StatsOperationImpl extends OperationImpl implements StatsOperation {
 
   private static final OperationStatus END = new OperationStatus(true, "END");
-
+  private static final OperationStatus RESET = new OperationStatus(true, "RESET");
+  
   private static final byte[] MSG = "stats\r\n".getBytes();
 
   private final byte[] msg;
@@ -56,6 +57,10 @@ final class StatsOperationImpl extends OperationImpl implements StatsOperation {
     if (line.equals("END")) {
       cb.receivedStatus(END);
       transitionState(OperationState.COMPLETE);
+    } else if (line.equals("RESET")) {
+        // The server responds to "stats reset" with "RESET"
+        cb.receivedStatus(RESET);
+        transitionState(OperationState.COMPLETE);
     } else {
       String[] parts = line.split(" ", 3);
       assert parts.length == 3;
