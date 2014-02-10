@@ -34,6 +34,7 @@ import javax.security.sasl.SaslException;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.ops.StatusCode;
 
 /**
  * SASL authenticator.
@@ -86,10 +87,12 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
   @Override
   protected void finishedPayload(byte[] pl) throws IOException {
     if (errorCode == SASL_CONTINUE) {
-      getCallback().receivedStatus(new OperationStatus(true, new String(pl)));
+      getCallback().receivedStatus(new OperationStatus(true, new String(pl),
+        StatusCode.SUCCESS));
       transitionState(OperationState.COMPLETE);
     } else if (errorCode == 0) {
-      getCallback().receivedStatus(new OperationStatus(true, ""));
+      getCallback().receivedStatus(new OperationStatus(true, "",
+        StatusCode.SUCCESS));
       transitionState(OperationState.COMPLETE);
     } else {
       super.finishedPayload(pl);

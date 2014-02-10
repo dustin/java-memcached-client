@@ -36,6 +36,7 @@ import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.ops.StatusCode;
 import net.spy.memcached.protocol.BaseOperationImpl;
 
 /**
@@ -70,7 +71,7 @@ public  abstract class OperationImpl extends BaseOperationImpl
   protected static final byte[] EMPTY_BYTES = new byte[0];
 
   protected static final OperationStatus STATUS_OK = new CASOperationStatus(
-      true, "OK", CASResponse.OK);
+      true, "OK", CASResponse.OK, StatusCode.SUCCESS);
 
   private static final AtomicInteger SEQ_NUMBER = new AtomicInteger(0);
 
@@ -224,18 +225,20 @@ public  abstract class OperationImpl extends BaseOperationImpl
     errorMsg = new byte[errPl.length];
     errorMsg = errPl.clone();
 
+    StatusCode statusCode = StatusCode.fromBinaryCode(errCode);
+
     switch (errCode) {
     case SUCCESS:
       return STATUS_OK;
     case ERR_NOT_FOUND:
       return new CASOperationStatus(false, new String(errPl),
-          CASResponse.NOT_FOUND);
+          CASResponse.NOT_FOUND, statusCode);
     case ERR_EXISTS:
       return new CASOperationStatus(false, new String(errPl),
-          CASResponse.EXISTS);
+          CASResponse.EXISTS, statusCode);
     case ERR_NOT_STORED:
       return new CASOperationStatus(false, new String(errPl),
-          CASResponse.NOT_FOUND);
+          CASResponse.NOT_FOUND, statusCode);
     case ERR_2BIG:
     case ERR_INTERNAL:
       handleError(OperationErrorType.SERVER, new String(errPl));
@@ -247,7 +250,7 @@ public  abstract class OperationImpl extends BaseOperationImpl
     case ERR_NOT_SUPPORTED:
     case ERR_BUSY:
     case ERR_TEMP_FAIL:
-      return new OperationStatus(false, new String(errPl));
+      return new OperationStatus(false, new String(errPl), statusCode);
     default:
       return null;
     }

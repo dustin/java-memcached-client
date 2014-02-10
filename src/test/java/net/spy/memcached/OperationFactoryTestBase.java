@@ -44,6 +44,7 @@ import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.ops.StatusCode;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 
@@ -255,7 +256,7 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
   public void testMultipleGetOperationFanout() {
     Collection<String> keys = Arrays.asList("k1", "k2", "k3");
     Mock m = mock(GetOperation.Callback.class);
-    OperationStatus st = new OperationStatus(true, "blah");
+    OperationStatus st = new OperationStatus(true, "blah", StatusCode.SUCCESS);
     m.expects(once()).method("complete");
     m.expects(once()).method("receivedStatus").with(same(st));
     m.expects(once()).method("gotData").with(eq("k1"), eq(1),

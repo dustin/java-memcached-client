@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import net.spy.memcached.KeyUtil;
+import net.spy.memcached.ops.StatusCode;
 import net.spy.memcached.ops.TouchOperation;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
@@ -42,7 +43,7 @@ final class TouchOperationImpl extends OperationImpl implements TouchOperation {
   private static final int OVERHEAD = 9;
 
   private static final OperationStatus OK =
-    new OperationStatus(true, "TOUCHED");
+    new OperationStatus(true, "TOUCHED", StatusCode.SUCCESS);
 
   private final String key;
   private final long exp;

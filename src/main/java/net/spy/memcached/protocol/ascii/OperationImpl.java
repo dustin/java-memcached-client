@@ -32,6 +32,7 @@ import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationErrorType;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.ops.StatusCode;
 import net.spy.memcached.protocol.BaseOperationImpl;
 
 /**
@@ -44,15 +45,13 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
 
   private final ByteArrayOutputStream byteBuffer = new ByteArrayOutputStream();
   private OperationReadType readType = OperationReadType.LINE;
-  private boolean foundCr = false;
-  private byte[] errorMsg = null;
+  private boolean foundCr;
+  private byte[] errorMsg;
 
   protected OperationImpl() {
-    super();
   }
 
   protected OperationImpl(OperationCallback cb) {
-    super();
     callback = cb;
   }
 
@@ -73,7 +72,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
       }
     }
     if (rv == null) {
-      rv = new OperationStatus(false, line);
+      rv = new OperationStatus(false, line, StatusCode.fromAsciiLine(line));
     }
     return rv;
   }

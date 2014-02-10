@@ -27,6 +27,7 @@ import net.spy.memcached.ops.Mutator;
 import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.ops.StatusCode;
 
 class MutatorOperationImpl extends SingleKeyOperationImpl implements
     MutatorOperation {
@@ -66,8 +67,8 @@ class MutatorOperationImpl extends SingleKeyOperationImpl implements
 
   @Override
   protected void decodePayload(byte[] pl) {
-    getCallback().receivedStatus(
-        new OperationStatus(true, String.valueOf(decodeLong(pl, 0))));
+    getCallback().receivedStatus(new OperationStatus(true,
+      String.valueOf(decodeLong(pl, 0)), StatusCode.SUCCESS));
   }
 
   public long getBy() {

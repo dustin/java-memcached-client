@@ -30,6 +30,7 @@ import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.ops.StatusCode;
 
 /**
  * Base class for ascii store operations (add, set, replace, append, prepend).
@@ -38,7 +39,7 @@ abstract class BaseStoreOperationImpl extends OperationImpl {
 
   private static final int OVERHEAD = 32;
   private static final OperationStatus STORED = new OperationStatus(true,
-      "STORED");
+      "STORED", StatusCode.SUCCESS);
   protected final String type;
   protected final String key;
   protected final int flags;
