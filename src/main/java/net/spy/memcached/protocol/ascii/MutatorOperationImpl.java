@@ -32,6 +32,7 @@ import net.spy.memcached.ops.MutatorOperation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
 import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.ops.StatusCode;
 
 /**
  * Operation for mutating integers inside of memcached.
@@ -42,7 +43,7 @@ final class MutatorOperationImpl extends OperationImpl implements
   public static final int OVERHEAD = 32;
 
   private static final OperationStatus NOT_FOUND = new OperationStatus(false,
-      "NOT_FOUND");
+      "NOT_FOUND", StatusCode.ERR_NOT_FOUND);
 
   private final Mutator mutator;
   private final String key;
@@ -63,7 +64,7 @@ final class MutatorOperationImpl extends OperationImpl implements
     if (line.equals("NOT_FOUND")) {
       found = NOT_FOUND;
     } else {
-      found = new OperationStatus(true, line);
+      found = new OperationStatus(true, line, StatusCode.SUCCESS);
     }
     getCallback().receivedStatus(found);
     transitionState(OperationState.COMPLETE);
