@@ -25,19 +25,24 @@ package net.spy.memcached.protocol.binary;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.ops.StatusCode;
 
 import static net.spy.memcached.protocol.binary.GetOperationImpl.EXTRA_HDR_LEN;
 
-class MultiGetOperationImpl extends MultiKeyOperationImpl implements
+public class MultiGetOperationImpl extends MultiKeyOperationImpl implements
     GetOperation {
 
   private static final byte CMD_GETQ = 0x09;
@@ -47,6 +52,7 @@ class MultiGetOperationImpl extends MultiKeyOperationImpl implements
   private final Map<String, Integer> rkeys = new HashMap<String, Integer>();
 
   private final int terminalOpaque = generateOpaque();
+  private final List<String> retryKeys = new ArrayList<String>();
 
   public MultiGetOperationImpl(Collection<String> k, OperationCallback cb) {
     super(DUMMY_OPCODE, -1, cb);
@@ -114,10 +120,22 @@ class MultiGetOperationImpl extends MultiKeyOperationImpl implements
 
   @Override
   protected void finishedPayload(byte[] pl) throws IOException {
+    getStatusForErrorCode(errorCode, pl);
+
     if (responseOpaque == terminalOpaque) {
-      getCallback().receivedStatus(STATUS_OK);
-      transitionState(OperationState.COMPLETE);
-    } else if (errorCode != 0) {
+      if (retryKeys.size() > 0) {
+        transitionState(OperationState.RETRY);
+        OperationStatus retryStatus = new OperationStatus(true,
+          Integer.toString(retryKeys.size()), StatusCode.ERR_NOT_MY_VBUCKET);
+        getCallback().receivedStatus(retryStatus);
+        getCallback().complete();
+      } else {
+        getCallback().receivedStatus(STATUS_OK);
+        transitionState(OperationState.COMPLETE);
+      }
+    } else if (errorCode == ERR_NOT_MY_VBUCKET) {
+      retryKeys.add(keys.get(responseOpaque));
+    } else if (errorCode != SUCCESS) {
       getLogger().warn("Error on key %s:  %s (%d)", keys.get(responseOpaque),
           new String(pl), errorCode);
     } else {
@@ -134,4 +152,14 @@ class MultiGetOperationImpl extends MultiKeyOperationImpl implements
   protected boolean opaqueIsValid() {
     return responseOpaque == terminalOpaque || keys.containsKey(responseOpaque);
   }
+
+  /**
+   * Returns the keys to redistribute.
+   *
+   * @return the keys to retry.
+   */
+  public List<String> getRetryKeys() {
+    return retryKeys;
+  }
+
 }

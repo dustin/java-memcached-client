@@ -58,6 +58,7 @@ import net.spy.memcached.compat.log.LoggerFactory;
 import net.spy.memcached.internal.OperationFuture;
 import net.spy.memcached.metrics.MetricCollector;
 import net.spy.memcached.metrics.MetricType;
+import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.KeyedOperation;
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.Operation;
@@ -68,6 +69,7 @@ import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.TapOperation;
 import net.spy.memcached.ops.VBucketAware;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
+import net.spy.memcached.protocol.binary.MultiGetOperationImpl;
 import net.spy.memcached.protocol.binary.TapAckOperationImpl;
 import net.spy.memcached.util.StringUtils;
 
@@ -972,14 +974,26 @@ public class MemcachedConnection extends SpyThread {
         continue;
       }
 
-      if (op instanceof KeyedOperation) {
+      if (op instanceof MultiGetOperationImpl) {
+        for (String key : ((MultiGetOperationImpl) op).getRetryKeys()) {
+          addOperation(key, opFact.get(key,
+            (GetOperation.Callback) op.getCallback()));
+        }
+      } else if (op instanceof KeyedOperation) {
         KeyedOperation ko = (KeyedOperation) op;
         int added = 0;
-        for (String k : ko.getKeys()) {
-          for (Operation newop : opFact.clone(ko)) {
-            addOperation(k, newop);
-            added++;
+        for (Operation newop : opFact.clone(ko)) {
+          if (newop instanceof KeyedOperation) {
+            KeyedOperation newKeyedOp = (KeyedOperation) newop;
+            for (String k : newKeyedOp.getKeys()) {
+              addOperation(k, newop);
+            }
+          } else {
+            newop.cancel();
+            getLogger().warn("Could not redistribute cloned non-keyed " +
+              "operation", newop);
           }
+          added++;
         }
         assert added > 0 : "Didn't add any new operations when redistributing";
       } else {
