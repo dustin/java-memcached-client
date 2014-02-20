@@ -45,6 +45,7 @@ import net.spy.memcached.ops.ObserveOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.ReplicaGetOperation;
+import net.spy.memcached.ops.ReplicaGetsOperation;
 import net.spy.memcached.ops.SASLAuthOperation;
 import net.spy.memcached.ops.SASLMechsOperation;
 import net.spy.memcached.ops.SASLStepOperation;
@@ -151,6 +152,16 @@ public interface OperationFactory {
    */
   ReplicaGetOperation replicaGet(String key, int index,
     ReplicaGetOperation.Callback callback);
+
+  /**
+   * Create a replica gets operation.
+   *
+   * @param key the key to get
+   * @param callback the callback that will contain the results
+   * @return a new ReplicaGetOperation
+   */
+  ReplicaGetsOperation replicaGets(String key, int index,
+    ReplicaGetsOperation.Callback callback);
 
   /**
    * Create a getl operation. A getl gets the value for a key and then locks the

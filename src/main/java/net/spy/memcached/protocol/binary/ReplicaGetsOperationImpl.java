@@ -22,13 +22,13 @@
 
 package net.spy.memcached.protocol.binary;
 
-import net.spy.memcached.ops.ReplicaGetOperation;
+import net.spy.memcached.ops.ReplicaGetsOperation;
 
 /**
- * Implementation of the replica get operation.
+ * Implementation of the replica gets operation.
  */
-public class ReplicaGetOperationImpl extends SingleKeyOperationImpl
-  implements ReplicaGetOperation {
+public class ReplicaGetsOperationImpl extends SingleKeyOperationImpl
+  implements ReplicaGetsOperation {
 
   static final byte REPLICA_GET_CMD = (byte)0x83;
 
@@ -39,8 +39,8 @@ public class ReplicaGetOperationImpl extends SingleKeyOperationImpl
    */
   static final int EXTRA_HDR_LEN = 4;
 
-  public ReplicaGetOperationImpl(String k, int index,
-    ReplicaGetOperation.Callback cb) {
+  public ReplicaGetsOperationImpl(String k, int index,
+                                  Callback cb) {
     super(REPLICA_GET_CMD, generateOpaque(), k, cb);
     replicaIndex = index;
   }
@@ -56,9 +56,9 @@ public class ReplicaGetOperationImpl extends SingleKeyOperationImpl
     final byte[] data = new byte[pl.length - EXTRA_HDR_LEN - keyLen];
     System.arraycopy(pl, (EXTRA_HDR_LEN + keyLen), data, 0,
       pl.length - EXTRA_HDR_LEN - keyLen);
-    ReplicaGetOperation.Callback gcb =
-      (ReplicaGetOperation.Callback) getCallback();
-    gcb.gotData(key, flags, data);
+    Callback gcb =
+      (Callback) getCallback();
+    gcb.gotData(key, flags, responseCas, data);
     getCallback().receivedStatus(STATUS_OK);
   }
 

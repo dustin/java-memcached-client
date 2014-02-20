@@ -29,37 +29,8 @@ import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import net.spy.memcached.ops.BaseOperationFactory;
-import net.spy.memcached.ops.CASOperation;
-import net.spy.memcached.ops.ConcatenationOperation;
-import net.spy.memcached.ops.ConcatenationType;
-import net.spy.memcached.ops.DeleteOperation;
-import net.spy.memcached.ops.FlushOperation;
-import net.spy.memcached.ops.GetAndTouchOperation;
-import net.spy.memcached.ops.GetOperation;
+import net.spy.memcached.ops.*;
 import net.spy.memcached.ops.GetOperation.Callback;
-import net.spy.memcached.ops.GetlOperation;
-import net.spy.memcached.ops.GetsOperation;
-import net.spy.memcached.ops.KeyedOperation;
-import net.spy.memcached.ops.MultiGetOperationCallback;
-import net.spy.memcached.ops.MultiGetsOperationCallback;
-import net.spy.memcached.ops.MultiReplicaGetOperationCallback;
-import net.spy.memcached.ops.Mutator;
-import net.spy.memcached.ops.MutatorOperation;
-import net.spy.memcached.ops.NoopOperation;
-import net.spy.memcached.ops.ObserveOperation;
-import net.spy.memcached.ops.Operation;
-import net.spy.memcached.ops.OperationCallback;
-import net.spy.memcached.ops.ReplicaGetOperation;
-import net.spy.memcached.ops.SASLAuthOperation;
-import net.spy.memcached.ops.SASLMechsOperation;
-import net.spy.memcached.ops.SASLStepOperation;
-import net.spy.memcached.ops.StatsOperation;
-import net.spy.memcached.ops.StoreOperation;
-import net.spy.memcached.ops.StoreType;
-import net.spy.memcached.ops.TapOperation;
-import net.spy.memcached.ops.UnlockOperation;
-import net.spy.memcached.ops.VersionOperation;
 import net.spy.memcached.tapmessage.RequestMessage;
 import net.spy.memcached.tapmessage.TapOpcode;
 
@@ -102,6 +73,11 @@ public class BinaryOperationFactory extends BaseOperationFactory {
   public ReplicaGetOperation replicaGet(String key, int index,
     ReplicaGetOperation.Callback callback) {
     return new ReplicaGetOperationImpl(key, index, callback);
+  }
+
+  public ReplicaGetsOperation replicaGets(String key, int index,
+    ReplicaGetsOperation.Callback callback) {
+    return new ReplicaGetsOperationImpl(key, index, callback);
   }
 
   public GetOperation get(Collection<String> value, Callback cb) {
