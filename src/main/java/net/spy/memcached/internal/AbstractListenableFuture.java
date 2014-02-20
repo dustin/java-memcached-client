@@ -56,8 +56,7 @@ public abstract class AbstractListenableFuture
   private List<GenericCompletionListener<? extends Future<T>>> listeners;
 
   public AbstractListenableFuture(ExecutorService executor) {
-    super();
-    this.service = executor;
+    service = executor;
     listeners = new ArrayList<GenericCompletionListener<? extends Future<T>>>();
   }
 
@@ -140,8 +139,8 @@ public abstract class AbstractListenableFuture
    *
    * @param future the future to pass on to the listeners.
    */
-  protected void notifyListeners(final Future<?> future) {
-    for(GenericCompletionListener<? extends Future<? super T>> listener
+  protected synchronized void notifyListeners(final Future<?> future) {
+    for (GenericCompletionListener<? extends Future<? super T>> listener
       : listeners) {
       notifyListener(executor(), future, listener);
     }
