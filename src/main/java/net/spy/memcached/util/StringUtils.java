@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2011 Couchbase, Inc.
+ * Copyright (C) 2009-2014 Couchbase, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,72 @@ package net.spy.memcached.util;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.spy.memcached.KeyUtil;
 import net.spy.memcached.MemcachedClientIF;
 
 /**
- * Some String utilities.
+ * Utility methods on string objects.
  */
 public final class StringUtils {
 
-  private StringUtils() {
-    // Empty
+  /**
+   * A pattern to match on a signed integer value.
+   */
+  private static final Pattern decimalPattern = Pattern.compile("^-?\\d+$");
+
+  /**
+   * The matcher for the decimal pattern regex.
+   */
+  private static final Matcher decimalMatcher = decimalPattern.matcher("");
+
+  /**
+   * Maximum supported key length.
+   */
+  private static final int MAX_KEY_LENGTH = MemcachedClientIF.MAX_KEY_LENGTH;
+
+  /**
+   * Exception thrown if the input key is too long.
+   */
+  private static final IllegalArgumentException KEY_TOO_LONG_EXCEPTION =
+    new IllegalArgumentException("Key is too long (maxlen = "
+      + MAX_KEY_LENGTH + ")");
+
+  /**
+   * Exception thrown if the input key is empty.
+   */
+  private static final IllegalArgumentException KEY_EMPTY_EXCEPTION =
+    new IllegalArgumentException("Key must contain at least one character.");
+
+  /**
+   * Preset the stack traces for the static exceptions.
+   */
+  static {
+    KEY_TOO_LONG_EXCEPTION.setStackTrace(new StackTraceElement[0]);
+    KEY_EMPTY_EXCEPTION.setStackTrace(new StackTraceElement[0]);
   }
 
-  public static String join(Collection<String> keys, String delimiter) {
+  /**
+   * Private constructor, since this is a purely static class.
+   */
+  private StringUtils() {
+    throw new UnsupportedOperationException();
+  }
+
+  /**
+   * Join a collection of strings together into one.
+   *
+   * @param chunks the chunks to join.
+   * @param delimiter the delimiter between the keys.
+   * @return the fully joined string.
+   */
+  public static String join(final Collection<String> chunks,
+    final String delimiter) {
     StringBuilder sb = new StringBuilder();
-    if (!keys.isEmpty()) {
-      Iterator<String> itr = keys.iterator();
+    if (!chunks.isEmpty()) {
+      Iterator<String> itr = chunks.iterator();
       sb.append(itr.next());
       while (itr.hasNext()) {
         sb.append(delimiter);
@@ -50,31 +99,41 @@ public final class StringUtils {
     return sb.toString();
   }
 
-  public static boolean isJsonObject(String s) {
-    if (s.startsWith("{") || s.startsWith("[") || s.equals("true")
-        || s.equals("false") || s.equals("null")) {
+  /**
+   * Check if a given string is a JSON object.
+   *
+   * @param s the input string.
+   * @return true if it is a JSON object, false otherwise.
+   */
+  public static boolean isJsonObject(final String s) {
+    if (s.startsWith("{") || s.startsWith("[")
+      || "true".equals(s) || "false".equals(s)
+      || "null".equals(s) || decimalMatcher.reset(s).matches()) {
       return true;
     }
-    try {
-      new Integer(s);
-      return true;
-    } catch (NumberFormatException e) {
-      return false;
-    }
+
+    return false;
   }
 
-  public static void validateKey(String key, boolean binary) {
+  /**
+   * Check if a given key is valid to transmit.
+   *
+   * @param key the key to check.
+   * @param binary if binary protocol is used.
+   */
+  public static void validateKey(final String key, final boolean binary) {
     byte[] keyBytes = KeyUtil.getKeyBytes(key);
-    if (keyBytes.length > MemcachedClientIF.MAX_KEY_LENGTH) {
-      throw new IllegalArgumentException("Key is too long (maxlen = "
-          + MemcachedClientIF.MAX_KEY_LENGTH + ")");
+    int keyLength = keyBytes.length;
+
+    if (keyLength > MAX_KEY_LENGTH) {
+      throw KEY_TOO_LONG_EXCEPTION;
     }
-    if (keyBytes.length == 0) {
-      throw new IllegalArgumentException(
-          "Key must contain at least one character.");
+
+    if (keyLength == 0) {
+      throw KEY_EMPTY_EXCEPTION;
     }
+
     if(!binary) {
-      // Validate the key
       for (byte b : keyBytes) {
         if (b == ' ' || b == '\n' || b == '\r' || b == 0) {
           throw new IllegalArgumentException(
@@ -82,5 +141,6 @@ public final class StringUtils {
         }
       }
     }
+
   }
 }
