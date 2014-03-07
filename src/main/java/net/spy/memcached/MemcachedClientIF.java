@@ -172,14 +172,6 @@ public interface MemcachedClientIF {
 
   long decr(String key, int by);
 
-  long incr(String key, long by, long def, int exp);
-
-  long incr(String key, int by, long def, int exp);
-
-  long decr(String key, long by, long def, int exp);
-
-  long decr(String key, int by, long def, int exp);
-
   Future<Long> asyncIncr(String key, long by);
 
   Future<Long> asyncIncr(String key, int by);
@@ -188,6 +180,22 @@ public interface MemcachedClientIF {
 
   Future<Long> asyncDecr(String key, int by);
 
+  long incr(String key, long by, long def, int exp);
+
+  long incr(String key, int by, long def, int exp);
+
+  long decr(String key, long by, long def, int exp);
+
+  long decr(String key, int by, long def, int exp);
+
+  Future<Long> asyncIncr(String key, long by, long def, int exp);
+
+  Future<Long> asyncIncr(String key, int by, long def, int exp);
+
+  Future<Long> asyncDecr(String key, long by, long def, int exp);
+
+  Future<Long> asyncDecr(String key, int by, long def, int exp);
+
   long incr(String key, long by, long def);
 
   long incr(String key, int by, long def);
@@ -195,6 +203,14 @@ public interface MemcachedClientIF {
   long decr(String key, long by, long def);
 
   long decr(String key, int by, long def);
+
+  Future<Long> asyncIncr(String key, long by, long def);
+
+  Future<Long> asyncIncr(String key, int by, long def);
+
+  Future<Long> asyncDecr(String key, long by, long def);
+
+  Future<Long> asyncDecr(String key, int by, long def);
 
   Future<Boolean> delete(String key);
 
