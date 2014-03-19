@@ -121,6 +121,7 @@ public class DefaultConnectionFactory extends SpyObject implements
 
   protected final int opQueueLen;
   private final int readBufSize;
+  private final long opQueueMaxBlockTime;
   private final HashAlgorithm hashAlg;
 
   private MetricCollector metrics;
@@ -130,6 +131,15 @@ public class DefaultConnectionFactory extends SpyObject implements
    */
   private ExecutorService executorService;
 
+
+  public DefaultConnectionFactory(int qLen, int bufSize, long opQMaxBlockTime, HashAlgorithm hash) {
+    super();
+    opQueueLen = qLen;
+    readBufSize = bufSize;
+    opQueueMaxBlockTime = opQMaxBlockTime;
+    hashAlg = hash;
+    metrics = null;
+  }
   /**
    * Construct a DefaultConnectionFactory with the given parameters.
    *
@@ -138,11 +148,7 @@ public class DefaultConnectionFactory extends SpyObject implements
    * @param hash the algorithm to use for hashing
    */
   public DefaultConnectionFactory(int qLen, int bufSize, HashAlgorithm hash) {
-    super();
-    opQueueLen = qLen;
-    readBufSize = bufSize;
-    hashAlg = hash;
-    metrics = null;
+    this(qLen, bufSize, DEFAULT_OP_QUEUE_MAX_BLOCK_TIME, hash);
   }
 
   /**
@@ -256,7 +262,7 @@ public class DefaultConnectionFactory extends SpyObject implements
    *         complete, in milliseconds, or null for no waiting.
    */
   public long getOpQueueMaxBlockTime() {
-    return DEFAULT_OP_QUEUE_MAX_BLOCK_TIME;
+    return opQueueMaxBlockTime;
   }
 
 
