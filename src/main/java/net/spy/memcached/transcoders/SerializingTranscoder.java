@@ -29,6 +29,7 @@ import net.spy.memcached.util.StringUtils;
 
 /**
  * Transcoder that serializes and compresses objects.
+ * <p>NOTE: The transcoder compression threshold is set by default to {@Link BaseSerializingTranscoder.DEFAULT_COMPRESSION_THRESHOLD} - 16384 bytes.
  */
 public class SerializingTranscoder extends BaseSerializingTranscoder implements
     Transcoder<Object> {
