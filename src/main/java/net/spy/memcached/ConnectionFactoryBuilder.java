@@ -75,6 +75,7 @@ public class ConnectionFactoryBuilder {
   protected MetricType metricType = null;
   protected MetricCollector collector = null;
   protected ExecutorService executorService = null;
+  protected long authWaitTime = DefaultConnectionFactory.DEFAULT_AUTH_WAIT_TIME;
 
   /**
    * Set the operation queue factory.
@@ -100,6 +101,7 @@ public class ConnectionFactoryBuilder {
     setUseNagleAlgorithm(cf.useNagleAlgorithm());
     setEnableMetrics(cf.enableMetrics());
     setListenerExecutorService(cf.getListenerExecutorService());
+    setAuthWaitTime(cf.getAuthWaitTime());
   }
 
   public ConnectionFactoryBuilder setOpQueueFactory(OperationQueueFactory q) {
@@ -309,6 +311,16 @@ public class ConnectionFactoryBuilder {
   }
 
   /**
+   * Set a custom wait time for the authentication on connect/reconnect.
+   *
+   * @param authWaitTime the time in milliseconds.
+   */
+  public ConnectionFactoryBuilder setAuthWaitTime(long authWaitTime) {
+    this.authWaitTime = authWaitTime;
+    return this;
+  }
+
+  /**
    * Get the ConnectionFactory set up with the provided parameters.
    */
   public ConnectionFactory build() {
@@ -432,6 +444,11 @@ public class ConnectionFactoryBuilder {
       @Override
       public boolean isDefaultExecutorService() {
         return executorService == null;
+      }
+
+      @Override
+      public long getAuthWaitTime() {
+        return authWaitTime;
       }
     };
 

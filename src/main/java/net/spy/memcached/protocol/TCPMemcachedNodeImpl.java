@@ -55,6 +55,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   private final BlockingQueue<Operation> readQ;
   private final BlockingQueue<Operation> inputQueue;
   private final long opQueueMaxBlockTime;
+  private final long authWaitTime;
   private AtomicInteger reconnectAttempt = new AtomicInteger(1);
   private SocketChannel channel;
   private int toWrite = 0;
@@ -72,7 +73,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c, int bufSize,
       BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
       BlockingQueue<Operation> iq, long opQueueMaxBlockTime,
-      boolean waitForAuth, long dt) {
+      boolean waitForAuth, long dt, long authWaitTime) {
     super();
     assert sa != null : "No SocketAddress";
     assert c != null : "No SocketChannel";
@@ -81,6 +82,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     assert wq != null : "No operation write queue";
     assert iq != null : "No input queue";
     socketAddress = sa;
+    this.authWaitTime = authWaitTime;
     setChannel(c);
     // Since these buffers are allocated rarely (only on client creation
     // or reconfigure), and are passed to Channel.read() and Channel.write(),
@@ -333,11 +335,12 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public final void addOp(Operation op) {
     try {
-      if (!authLatch.await(1, TimeUnit.SECONDS)) {
+      if (!authLatch.await(authWaitTime, TimeUnit.MILLISECONDS)) {
         op.cancel();
         getLogger().warn("Operation canceled because authentication "
-                + "or reconnection and authentication has "
-                + "taken more than one second to complete.");
+          + "or reconnection and authentication has "
+          + "taken more than " + authWaitTime + " milliseconds to "
+          + "complete.");
         getLogger().debug("Canceled operation %s", op.toString());
         return;
       }

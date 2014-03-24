@@ -40,9 +40,10 @@ public final class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
 
   public AsciiMemcachedNodeImpl(SocketAddress sa, SocketChannel c, int bufSize,
       BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
-      BlockingQueue<Operation> iq, Long opQueueMaxBlockTimeNs, long dt) {
+      BlockingQueue<Operation> iq, Long opQueueMaxBlockTimeNs, long dt,
+      long at) {
     // ASCII never does auth
-    super(sa, c, bufSize, rq, wq, iq, opQueueMaxBlockTimeNs, false, dt);
+    super(sa, c, bufSize, rq, wq, iq, opQueueMaxBlockTimeNs, false, dt, at);
   }
 
   @Override

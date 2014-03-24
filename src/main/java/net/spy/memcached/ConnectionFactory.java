@@ -184,4 +184,12 @@ public interface ConnectionFactory {
    * The currently active {@link MetricCollector}.
    */
   MetricCollector getMetricCollector();
+
+  /**
+   * The time to wait until authentication completes when an operation is
+   * inserted.
+   *
+   * @return the time in milliseconds.
+   */
+  long getAuthWaitTime();
 }
