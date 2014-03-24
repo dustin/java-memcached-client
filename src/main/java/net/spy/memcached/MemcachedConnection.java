@@ -313,10 +313,10 @@ public class MemcachedConnection extends SpyThread {
     for (SocketAddress sa : addrs) {
       SocketChannel ch = SocketChannel.open();
       ch.configureBlocking(false);
-      MemcachedNode qa =
-          this.connectionFactory.createMemcachedNode(sa, ch, bufSize);
+      MemcachedNode qa = connectionFactory.createMemcachedNode(sa, ch, bufSize);
+      qa.setConnection(this);
       int ops = 0;
-      ch.socket().setTcpNoDelay(!this.connectionFactory.useNagleAlgorithm());
+      ch.socket().setTcpNoDelay(!connectionFactory.useNagleAlgorithm());
 
       try {
         if (ch.connect(sa)) {
@@ -968,37 +968,56 @@ public class MemcachedConnection extends SpyThread {
    *
    * @param ops the operations to redistribute.
    */
-  private void redistributeOperations(final Collection<Operation> ops) {
+  public void redistributeOperations(final Collection<Operation> ops) {
     for (Operation op : ops) {
-      if (op.isCancelled() || op.isTimedOut()) {
-        continue;
-      }
+      redistributeOperation(op);
+    }
+  }
 
-      if (op instanceof MultiGetOperationImpl) {
-        for (String key : ((MultiGetOperationImpl) op).getRetryKeys()) {
-          addOperation(key, opFact.get(key,
-            (GetOperation.Callback) op.getCallback()));
-        }
-      } else if (op instanceof KeyedOperation) {
-        KeyedOperation ko = (KeyedOperation) op;
-        int added = 0;
-        for (Operation newop : opFact.clone(ko)) {
-          if (newop instanceof KeyedOperation) {
-            KeyedOperation newKeyedOp = (KeyedOperation) newop;
-            for (String k : newKeyedOp.getKeys()) {
-              addOperation(k, newop);
-            }
-          } else {
-            newop.cancel();
-            getLogger().warn("Could not redistribute cloned non-keyed " +
-              "operation", newop);
-          }
-          added++;
-        }
-        assert added > 0 : "Didn't add any new operations when redistributing";
-      } else {
-        op.cancel();
+  /**
+   * Redistribute the given operation to (potentially) other nodes.
+   *
+   * Note that operations can only be redistributed if they have not been
+   * cancelled already, timed out already or do not have definite targets
+   * (a key).
+   *
+   * @param op the operation to redistribute.
+   */
+  public void redistributeOperation(Operation op) {
+    if (op.isCancelled() || op.isTimedOut()) {
+      return;
+    }
+
+    // The operation gets redistributed but has never been actually written,
+    // it we just straight re-add it without cloning.
+    if (op.getState() == OperationState.WRITE_QUEUED) {
+      addOperation(op.getHandlingNode(), op);
+    }
+
+    if (op instanceof MultiGetOperationImpl) {
+      for (String key : ((MultiGetOperationImpl) op).getRetryKeys()) {
+        addOperation(key, opFact.get(key,
+          (GetOperation.Callback) op.getCallback()));
       }
+    } else if (op instanceof KeyedOperation) {
+      KeyedOperation ko = (KeyedOperation) op;
+      int added = 0;
+      for (Operation newop : opFact.clone(ko)) {
+        if (newop instanceof KeyedOperation) {
+          KeyedOperation newKeyedOp = (KeyedOperation) newop;
+          for (String k : newKeyedOp.getKeys()) {
+            addOperation(k, newop);
+          }
+        } else {
+          newop.cancel();
+          getLogger().warn("Could not redistribute cloned non-keyed " +
+            "operation", newop);
+        }
+        added++;
+      }
+      assert added > 0 : "Didn't add any new operations when redistributing";
+    } else {
+      op.cancel();
     }
   }
 

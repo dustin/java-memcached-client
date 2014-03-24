@@ -211,4 +211,14 @@ public class MockMemcachedNode implements MemcachedNode {
     // noop
   }
 
+  @Override
+  public MemcachedConnection getConnection() {
+    return null;
+  }
+
+  @Override
+  public void setConnection(MemcachedConnection connection) {
+
+  }
+
 }

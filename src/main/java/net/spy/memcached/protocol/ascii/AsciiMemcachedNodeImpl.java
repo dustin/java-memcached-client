@@ -27,6 +27,7 @@ import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.BlockingQueue;
 
+import net.spy.memcached.ConnectionFactory;
 import net.spy.memcached.ops.GetOperation;
 import net.spy.memcached.ops.Operation;
 import net.spy.memcached.ops.OperationState;
@@ -41,9 +42,9 @@ public final class AsciiMemcachedNodeImpl extends TCPMemcachedNodeImpl {
   public AsciiMemcachedNodeImpl(SocketAddress sa, SocketChannel c, int bufSize,
       BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
       BlockingQueue<Operation> iq, Long opQueueMaxBlockTimeNs, long dt,
-      long at) {
+      long at, ConnectionFactory fa) {
     // ASCII never does auth
-    super(sa, c, bufSize, rq, wq, iq, opQueueMaxBlockTimeNs, false, dt, at);
+    super(sa, c, bufSize, rq, wq, iq, opQueueMaxBlockTimeNs, false, dt, at, fa);
   }
 
   @Override

@@ -70,7 +70,7 @@ public class BinaryConnectionFactory extends DefaultConnectionFactory {
     return new BinaryMemcachedNodeImpl(sa, c, bufSize,
         createReadOperationQueue(), createWriteOperationQueue(),
         createOperationQueue(), getOpQueueMaxBlockTime(), doAuth,
-        getOperationTimeout(), getAuthWaitTime());
+        getOperationTimeout(), getAuthWaitTime(), this);
   }
 
   @Override
