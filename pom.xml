@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+    http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!--
+    == NOTE ==
+    This maven file is just for developer convenience, release management
+    and primary dependency configuration, as well as all ant targets are
+    managed through ant/ivy.
+    -->
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.spy</groupId>
+    <artifactId>spymemcached</artifactId>
+    <version>2.999.999-SNAPSHOT</version> <!-- not used -->
+
+    <name>Spymemcached</name>
+    <description>A client library for memcached.</description>
+    <url>http://www.couchbase.org/code/couchbase/java</url>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/couchbase/spymemcached</url>
+        <connection>
+            scm:git:git://github.com/couchbase/spymemcached.git
+        </connection>
+    </scm>
+    <developers>
+        <developer>
+            <id>net.spy.spymemcached</id>
+            <name>The Spymemcached Project Contributors</name>
+            <url>https://code.google.com/p/spymemcached/</url>
+            <organization>Couchbase, Inc.</organization>
+            <organizationUrl>http://couchbase.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <dependencies>
+        <!-- Optional Dependencies at Runtime -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>3.0.3.RELEASE</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.codahale.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>3.0.1</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.7</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jmock</groupId>
+            <artifactId>jmock</artifactId>
+            <version>1.2.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+
+</project>

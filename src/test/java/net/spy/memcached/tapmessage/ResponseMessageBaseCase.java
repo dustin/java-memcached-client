@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  * TODO: Implement revid check
  * TODO: Replace a lot of the checks for zeros
  */
-public class ResponseMessageBaseCase {
+public abstract class ResponseMessageBaseCase {
 
   protected byte[] responsebytes;
   protected ResponseMessage instance = null;
