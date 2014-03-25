@@ -165,4 +165,23 @@ public interface Operation {
    * @return the raw error message content.
    */
   byte[] getErrorMsg();
+
+  /**
+   * Add the clone from this operation.
+   *
+   * @param op the cloned operation.
+   */
+  void addClone(Operation op);
+
+  /**
+   * Returns the number of times this operation has been cloned.
+   *
+   * @return the number of clones.
+   */
+  int getCloneCount();
+
+  /**
+   * Sets the clone count for this operation.
+   */
+  void setCloneCount(int count);
 }

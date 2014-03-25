@@ -93,6 +93,12 @@ public class MemcachedConnection extends SpyThread {
    */
   private static final int EXCESSIVE_EMPTY = 0x1000000;
 
+  /**
+   * If an operation gets cloned more than this ceiling, cancel it for
+   * safety reasons.
+   */
+  private static final int MAX_CLONE_COUNT = 100;
+
   private static final String RECON_QUEUE_METRIC =
     "[MEM] Reconnecting Nodes (ReconnectQueue)";
   private static final String SHUTD_QUEUE_METRIC =
@@ -992,6 +998,13 @@ public class MemcachedConnection extends SpyThread {
       return;
     }
 
+    if (op.getCloneCount() >= MAX_CLONE_COUNT) {
+      getLogger().warn("Cancelling operation " + op + "because it has been "
+        + "retried (cloned) more than " + MAX_CLONE_COUNT + "times.");
+      op.cancel();
+      return;
+    }
+
     // The operation gets redistributed but has never been actually written,
     // it we just straight re-add it without cloning.
     if (op.getState() == OperationState.WRITE_QUEUED) {
@@ -1011,6 +1024,8 @@ public class MemcachedConnection extends SpyThread {
           KeyedOperation newKeyedOp = (KeyedOperation) newop;
           for (String k : newKeyedOp.getKeys()) {
             addOperation(k, newop);
+            op.addClone(newop);
+            newop.setCloneCount(op.getCloneCount()+1);
           }
         } else {
           newop.cancel();

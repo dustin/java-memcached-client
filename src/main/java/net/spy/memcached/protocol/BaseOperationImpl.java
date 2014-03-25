@@ -25,8 +25,13 @@ package net.spy.memcached.protocol;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
@@ -65,6 +70,18 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
       new HashSet<MemcachedNode>();
   private long writeCompleteTimestamp;
 
+  /**
+   * If the operation gets cloned, the reference is used to cascade cancellations
+   * and timeouts.
+   */
+  private List<Operation> clones =
+    Collections.synchronizedList(new ArrayList<Operation>());
+
+  /**
+   * Number of clones for this operation.
+   */
+  private volatile int cloneCount;
+
   public BaseOperationImpl() {
     super();
     creationTime = System.nanoTime();
@@ -98,6 +115,14 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
 
   public final synchronized void cancel() {
     cancelled = true;
+
+    synchronized (clones) {
+      Iterator<Operation> i = clones.iterator();
+      while(i.hasNext()) {
+        i.next().cancel();
+      }
+    }
+
     wasCancelled();
     callback.receivedStatus(CANCELLED);
     callback.complete();
@@ -193,6 +218,14 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
   @Override
   public synchronized void timeOut() {
     timedout = true;
+
+    synchronized (clones) {
+      Iterator<Operation> i = clones.iterator();
+      while(i.hasNext()) {
+        i.next().timeOut();
+      }
+    }
+
     callback.receivedStatus(TIMED_OUT);
     callback.complete();
   }
@@ -228,4 +261,18 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
     return writeCompleteTimestamp;
   }
 
+  @Override
+  public void addClone(Operation op) {
+    clones.add(op);
+  }
+
+  @Override
+  public int getCloneCount() {
+    return cloneCount;
+  }
+
+  @Override
+  public void setCloneCount(int count) {
+    cloneCount = count;
+  }
 }
