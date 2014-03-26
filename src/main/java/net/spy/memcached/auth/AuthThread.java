@@ -24,6 +24,7 @@
 package net.spy.memcached.auth;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -131,7 +132,8 @@ public class AuthThread extends SpyThread {
     } else {
       supportedMechs = authDescriptor.getMechs();
     }
-    long mechsDiff = System.nanoTime() - mechsStart;
+    long mechsDiff = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()
+      - mechsStart);
     String msg = String.format("SASL List Mechanisms took %dms on %s",
       mechsDiff, node.toString());
     Level level = mechsDiff
@@ -186,7 +188,8 @@ public class AuthThread extends SpyThread {
         }
         done.set(true); // If we were interrupted, tear down.
       } finally {
-        long stepDiff = System.nanoTime() - stepStart;
+        long stepDiff = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()
+          - stepStart);
         msg = String.format("SASL Step took %dms on %s",
           stepDiff, node.toString());
         level = mechsDiff
@@ -204,7 +207,8 @@ public class AuthThread extends SpyThread {
       }
     }
 
-    long totalDiff = System.nanoTime() - totalStart;
+    long totalDiff = TimeUnit.NANOSECONDS.toMillis(System.nanoTime()
+      - totalStart);
     msg = String.format("SASL Auth took %dms on %s",
       totalDiff, node.toString());
     level = mechsDiff >= AUTH_TOTAL_THRESHOLD ? Level.WARN : Level.DEBUG;
