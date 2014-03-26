@@ -1418,4 +1418,14 @@ public class MemcachedConnection extends SpyThread {
   public boolean isShutDown() {
     return shutDown;
   }
+
+  /**
+   * Add a operation to the retry queue.
+   *
+   * @param op the operation to retry.
+   */
+  public void retryOperation(Operation op) {
+    retryOps.add(op);
+  }
+
 }
