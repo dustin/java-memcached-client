@@ -38,6 +38,7 @@ import java.nio.channels.SocketChannel;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -196,7 +197,7 @@ public class MemcachedConnection extends SpyThread {
   /**
    * Holds operations that need to be retried.
    */
-  private final Collection<Operation> retryOps;
+  private final List<Operation> retryOps;
 
   /**
    * Holds all nodes that are scheduled for shutdown.
@@ -247,7 +248,7 @@ public class MemcachedConnection extends SpyThread {
     opFact = opfactory;
     timeoutExceptionThreshold = f.getTimeoutExceptionThreshold();
     selector = Selector.open();
-    retryOps = new ArrayList<Operation>();
+    retryOps = Collections.synchronizedList(new ArrayList<Operation>());
     nodesToShutdown = new ConcurrentLinkedQueue<MemcachedNode>();
     listenerExecutorService = f.getListenerExecutorService();
     this.bufSize = bufSize;
@@ -429,8 +430,11 @@ public class MemcachedConnection extends SpyThread {
     if (!shutDown && !reconnectQueue.isEmpty()) {
       attemptReconnects();
     }
-    redistributeOperations(retryOps);
-    retryOps.clear();
+
+    if (!retryOps.isEmpty()) {
+      redistributeOperations(new ArrayList<Operation>(retryOps));
+      retryOps.clear();
+    }
 
     handleShutdownQueue();
   }
