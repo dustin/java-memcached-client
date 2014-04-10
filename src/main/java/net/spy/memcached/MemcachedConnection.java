@@ -1078,6 +1078,7 @@ public class MemcachedConnection extends SpyThread {
 
           ch = SocketChannel.open();
           ch.configureBlocking(false);
+          ch.socket().setTcpNoDelay(!connectionFactory.useNagleAlgorithm());
           int ops = 0;
           if (ch.connect(node.getSocketAddress())) {
             connected(node);
