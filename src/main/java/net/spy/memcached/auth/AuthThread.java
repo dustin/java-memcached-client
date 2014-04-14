@@ -82,6 +82,9 @@ public class AuthThread extends SpyThread {
           supportedMechs.set(status.getMessage());
           getLogger().debug("Received SASL supported mechs: "
             + status.getMessage());
+        } else {
+          getLogger().warn("Received non-success response for SASL mechs: "
+            + status);
         }
       }
 
@@ -101,6 +104,7 @@ public class AuthThread extends SpyThread {
         done.set(true); // Connection is shutting down, tear.down.
       }
     } catch(InterruptedException ex) {
+      getLogger().warn("Interrupted in Auth while waiting for SASL mechs.");
       // we can be interrupted if we were in the
       // process of auth'ing and the connection is
       // lost or dropped due to bad auth
@@ -113,9 +117,8 @@ public class AuthThread extends SpyThread {
 
     String supported = supportedMechs.get();
     if (supported == null || supported.isEmpty()) {
-      throw new IllegalStateException("Got empty SASL auth mech list.");
+      return null;
     }
-
     return supported.split(MECH_SEPARATOR);
   }
 
@@ -139,6 +142,12 @@ public class AuthThread extends SpyThread {
     Level level = mechsDiff
       >= AUTH_ROUNDTRIP_THRESHOLD ? Level.WARN : Level.DEBUG;
     getLogger().log(level, msg);
+
+    if (supportedMechs == null || supportedMechs.length == 0) {
+      getLogger().warn("Authentication failed to " + node.getSocketAddress()
+        + ", got empty SASL auth mech list.");
+      throw new IllegalStateException("Got empty SASL auth mech list.");
+    }
 
     OperationStatus priorStatus = null;
     while (!done.get()) {
@@ -201,8 +210,8 @@ public class AuthThread extends SpyThread {
       priorStatus = foundStatus.get();
       if (priorStatus != null) {
         if (!priorStatus.isSuccess()) {
-          getLogger().warn(
-              "Authentication failed to " + node.getSocketAddress());
+          getLogger().warn("Authentication failed to " + node.getSocketAddress()
+            + ", Status: " + priorStatus);
         }
       }
     }
