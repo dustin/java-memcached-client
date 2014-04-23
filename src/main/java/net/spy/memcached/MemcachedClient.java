@@ -1317,7 +1317,8 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     }
 
     final AtomicInteger pendingChunks = new AtomicInteger(chunks.size());
-    final CountDownLatch latch = new CountDownLatch(1);
+    int initialLatchCount = chunks.isEmpty() ? 0 : 1;
+    final CountDownLatch latch = new CountDownLatch(initialLatchCount);
     final Collection<Operation> ops = new ArrayList<Operation>(chunks.size());
     final BulkGetFuture<T> rv = new BulkGetFuture<T>(m, ops, latch, executorService);
 

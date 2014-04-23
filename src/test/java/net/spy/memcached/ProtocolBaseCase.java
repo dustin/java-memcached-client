@@ -1006,6 +1006,11 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     assertTrue(latch.await(2, TimeUnit.SECONDS));
   }
 
+  public void testEmptyGetBulk() throws Exception {
+    Map<String, Object> bulk = client.getBulk(Collections.<String>emptyList());
+    assertTrue(bulk.isEmpty());
+  }
+
   private static class TestTranscoder implements Transcoder<String> {
     private static final int FLAGS = 238885206;
 
