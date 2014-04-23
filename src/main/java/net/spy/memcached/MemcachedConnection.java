@@ -66,7 +66,6 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -405,19 +404,21 @@ public class MemcachedConnection extends SpyThread {
     getLogger().debug("Selecting with delay of %sms", delay);
     assert selectorsMakeSense() : "Selectors don't make sense.";
     int selected = selector.select(delay);
-    Set<SelectionKey> selectedKeys = selector.selectedKeys();
+    //Set<SelectionKey> selectedKeys = selector.selectedKeys();
 
-    if (selectedKeys.isEmpty() && !shutDown) {
+    if (selector.selectedKeys().isEmpty() && !shutDown) {
       handleEmptySelects();
     } else {
       getLogger().debug("Selected %d, selected %d keys", selected,
-        selectedKeys.size());
+        selector.selectedKeys().size());
       emptySelects = 0;
 
-      for (SelectionKey sk : selectedKeys) {
+      Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+      while(iterator.hasNext()) {
+        SelectionKey sk = iterator.next();
         handleIO(sk);
+        iterator.remove();
       }
-      selectedKeys.clear();
     }
 
     handleOperationalTasks();
