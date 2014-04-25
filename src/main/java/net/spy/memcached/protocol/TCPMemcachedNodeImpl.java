@@ -24,6 +24,7 @@
 package net.spy.memcached.protocol;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -51,7 +52,7 @@ import net.spy.memcached.protocol.binary.TapAckOperationImpl;
 public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     MemcachedNode {
 
-  private final SocketAddress socketAddress;
+  private volatile SocketAddress socketAddress;
   private final ByteBuffer rbuf;
   private final ByteBuffer wbuf;
   protected final BlockingQueue<Operation> writeQ;
@@ -76,9 +77,9 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   private final AtomicInteger continuousTimeout = new AtomicInteger(0);
 
   public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c, int bufSize,
-      BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
-      BlockingQueue<Operation> iq, long opQueueMaxBlockTime,
-      boolean waitForAuth, long dt, long authWaitTime, ConnectionFactory fact) {
+                              BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
+                              BlockingQueue<Operation> iq, long opQueueMaxBlockTime,
+                              boolean waitForAuth, long dt, long authWaitTime, ConnectionFactory fact) {
     super();
     assert sa != null : "No SocketAddress";
     assert c != null : "No SocketChannel";
@@ -345,15 +346,15 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
         FailureMode mode = connectionFactory.getFailureMode();
         if (mode == FailureMode.Redistribute || mode == FailureMode.Retry) {
           getLogger().debug("Redistributing Operation " + op + " because auth "
-            + "latch taken longer than " + authWaitTime + " milliseconds to "
-            + "complete on node " + getSocketAddress());
+              + "latch taken longer than " + authWaitTime + " milliseconds to "
+              + "complete on node " + getSocketAddress());
           connection.retryOperation(op);
         } else {
           op.cancel();
           getLogger().warn("Operation canceled because authentication "
-            + "or reconnection and authentication has "
-            + "taken more than " + authWaitTime + " milliseconds to "
-            + "complete on node " + this);
+              + "or reconnection and authentication has "
+              + "taken more than " + authWaitTime + " milliseconds to "
+              + "complete on node " + this);
           getLogger().debug("Canceled operation %s", op.toString());
         }
         return;
@@ -427,6 +428,19 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public final SocketAddress getSocketAddress() {
     return socketAddress;
+  }
+
+  /*
+   * (non-Javadoc)
+   * @see net.spy.memcached.MemcachedNode#forceDnsResolution()
+   */
+  public void forceDnsResolution() {
+    SocketAddress sa = getSocketAddress();
+    if (sa instanceof InetSocketAddress) {
+      getLogger().info("forcing dns resolution, current socket address is: "+ sa);
+      socketAddress = new InetSocketAddress(((InetSocketAddress)sa).getHostString(), ((InetSocketAddress)sa).getPort());
+      getLogger().info("forcing dns resolution, new socket address is: "+ getSocketAddress());
+    }
   }
 
   /*
@@ -520,7 +534,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public final void setChannel(SocketChannel to) {
     assert channel == null || !channel.isOpen()
-      : "Attempting to overwrite channel";
+        : "Attempting to overwrite channel";
     channel = to;
   }
 

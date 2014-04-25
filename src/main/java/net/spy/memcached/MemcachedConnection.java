@@ -104,25 +104,25 @@ public class MemcachedConnection extends SpyThread {
   private static final int MAX_CLONE_COUNT = 100;
 
   private static final String RECON_QUEUE_METRIC =
-    "[MEM] Reconnecting Nodes (ReconnectQueue)";
+      "[MEM] Reconnecting Nodes (ReconnectQueue)";
   private static final String SHUTD_QUEUE_METRIC =
-    "[MEM] Shutting Down Nodes (NodesToShutdown)";
+      "[MEM] Shutting Down Nodes (NodesToShutdown)";
   private static final String OVERALL_REQUEST_METRIC =
-    "[MEM] Request Rate: All";
+      "[MEM] Request Rate: All";
   private static final String OVERALL_AVG_BYTES_WRITE_METRIC =
-    "[MEM] Average Bytes written to OS per write";
+      "[MEM] Average Bytes written to OS per write";
   private static final String OVERALL_AVG_BYTES_READ_METRIC =
-    "[MEM] Average Bytes read from OS per read";
+      "[MEM] Average Bytes read from OS per read";
   private static final String OVERALL_AVG_TIME_ON_WIRE_METRIC =
-    "[MEM] Average Time on wire for operations (µs)";
+      "[MEM] Average Time on wire for operations (µs)";
   private static final String OVERALL_RESPONSE_METRIC =
-    "[MEM] Response Rate: All (Failure + Success + Retry)";
+      "[MEM] Response Rate: All (Failure + Success + Retry)";
   private static final String OVERALL_RESPONSE_RETRY_METRIC =
-    "[MEM] Response Rate: Retry";
+      "[MEM] Response Rate: Retry";
   private static final String OVERALL_RESPONSE_FAIL_METRIC =
-    "[MEM] Response Rate: Failure";
+      "[MEM] Response Rate: Failure";
   private static final String OVERALL_RESPONSE_SUCC_METRIC =
-    "[MEM] Response Rate: Success";
+      "[MEM] Response Rate: Success";
 
   /**
    * If the connection is alread shut down or shutting down.
@@ -192,7 +192,7 @@ public class MemcachedConnection extends SpyThread {
    * changes.
    */
   private final Collection<ConnectionObserver> connObservers =
-    new ConcurrentLinkedQueue<ConnectionObserver>();
+      new ConcurrentLinkedQueue<ConnectionObserver>();
 
   /**
    * The {@link OperationFactory} to clone or create operations.
@@ -252,8 +252,8 @@ public class MemcachedConnection extends SpyThread {
    * @throws IOException if a connection attempt fails early
    */
   public MemcachedConnection(final int bufSize, final ConnectionFactory f,
-      final List<InetSocketAddress> a, final Collection<ConnectionObserver> obs,
-      final FailureMode fm, final OperationFactory opfactory) throws IOException {
+                             final List<InetSocketAddress> a, final Collection<ConnectionObserver> obs,
+                             final FailureMode fm, final OperationFactory opfactory) throws IOException {
     connObservers.addAll(obs);
     reconnectQueue = new TreeMap<Long, MemcachedNode>();
     addedQueue = new ConcurrentLinkedQueue<MemcachedNode>();
@@ -277,7 +277,7 @@ public class MemcachedConnection extends SpyThread {
     }
 
     wakeupDelay = Integer.parseInt( System.getProperty("net.spy.wakeupDelay",
-      Integer.toString(DEFAULT_WAKEUP_DELAY)));
+        Integer.toString(DEFAULT_WAKEUP_DELAY)));
 
     List<MemcachedNode> connections = createConnections(a);
     locator = f.createLocator(connections);
@@ -301,7 +301,7 @@ public class MemcachedConnection extends SpyThread {
    */
   protected void registerMetrics() {
     if (metricType.equals(MetricType.DEBUG)
-      || metricType.equals(MetricType.PERFORMANCE)) {
+        || metricType.equals(MetricType.PERFORMANCE)) {
       metrics.addHistogram(OVERALL_AVG_BYTES_READ_METRIC);
       metrics.addHistogram(OVERALL_AVG_BYTES_WRITE_METRIC);
       metrics.addHistogram(OVERALL_AVG_TIME_ON_WIRE_METRIC);
@@ -326,7 +326,7 @@ public class MemcachedConnection extends SpyThread {
    * @throws IOException if connecting was not successful.
    */
   protected List<MemcachedNode> createConnections(
-    final Collection<InetSocketAddress> addrs) throws IOException {
+      final Collection<InetSocketAddress> addrs) throws IOException {
     List<MemcachedNode> connections = new ArrayList<MemcachedNode>(addrs.size());
 
     for (SocketAddress sa : addrs) {
@@ -382,11 +382,11 @@ public class MemcachedConnection extends SpyThread {
             expected |= SelectionKey.OP_WRITE;
           }
           assert sops == expected : "Invalid ops:  " + qa + ", expected "
-            + expected + ", got " + sops;
+              + expected + ", got " + sops;
         } else {
           int sops = qa.getSk().interestOps();
           assert sops == SelectionKey.OP_CONNECT
-            : "Not connected, and not watching for connect: " + sops;
+              : "Not connected, and not watching for connect: " + sops;
         }
       }
     }
@@ -427,7 +427,7 @@ public class MemcachedConnection extends SpyThread {
       handleEmptySelects();
     } else {
       getLogger().debug("Selected %d, selected %d keys", selected,
-        selector.selectedKeys().size());
+          selector.selectedKeys().size());
       emptySelects = 0;
 
       Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
@@ -486,12 +486,12 @@ public class MemcachedConnection extends SpyThread {
    */
   private void handleEmptySelects() {
     getLogger().debug("No selectors ready, interrupted: "
-      + Thread.interrupted());
+        + Thread.interrupted());
 
     if (++emptySelects > DOUBLE_CHECK_EMPTY) {
       for (SelectionKey sk : selector.keys()) {
         getLogger().debug("%s has %s, interested in %s", sk, sk.readyOps(),
-          sk.interestOps());
+            sk.interestOps());
         if (sk.readyOps() != 0) {
           getLogger().debug("%s has a ready op, handling IO", sk);
           handleIO(sk);
@@ -519,7 +519,7 @@ public class MemcachedConnection extends SpyThread {
           qa.setSk(null);
           if (qa.getBytesRemainingToWrite() > 0) {
             getLogger().warn("Shut down with %d bytes remaining to write",
-              qa.getBytesRemainingToWrite());
+                qa.getBytesRemainingToWrite());
           }
           getLogger().debug("Shut down channel %s", qa.getChannel());
         }
@@ -545,7 +545,7 @@ public class MemcachedConnection extends SpyThread {
         stillCheckingTimeouts = false;
       } catch(ConcurrentModificationException e) {
         getLogger().warn("Retrying selector keys after "
-          + "ConcurrentModificationException caught", e);
+            + "ConcurrentModificationException caught", e);
         continue;
       }
     }
@@ -669,8 +669,8 @@ public class MemcachedConnection extends SpyThread {
 
     try {
       getLogger().debug("Handling IO for:  %s (r=%s, w=%s, c=%s, op=%s)", sk,
-        sk.isReadable(), sk.isWritable(), sk.isConnectable(),
-        sk.attachment());
+          sk.isReadable(), sk.isWritable(), sk.isConnectable(),
+          sk.attachment());
       if (sk.isConnectable() && belongsToCluster(node)) {
         getLogger().debug("Connection state changed for %s", sk);
         final SocketChannel channel = node.getChannel();
@@ -694,8 +694,8 @@ public class MemcachedConnection extends SpyThread {
     } catch (OperationException e) {
       node.setupForAuth();
       getLogger().info("Reconnection due to exception handling a memcached "
-        + "operation on %s. This may be due to an authentication failure.",
-        node, e);
+              + "operation on %s. This may be due to an authentication failure.",
+          node, e);
       lostConnection(node);
     } catch (Exception e) {
       node.setupForAuth();
@@ -714,7 +714,7 @@ public class MemcachedConnection extends SpyThread {
    * @throws IOException if an error occurs during read/write.
    */
   private void handleReadsAndWrites(final SelectionKey sk,
-    final MemcachedNode node) throws IOException {
+                                    final MemcachedNode node) throws IOException {
     if (sk.isValid()) {
       if (sk.isReadable()) {
         handleReads(node);
@@ -733,11 +733,11 @@ public class MemcachedConnection extends SpyThread {
    * @throws IOException if something goes wrong during reading/writing.
    */
   private void finishConnect(final SelectionKey sk, final MemcachedNode node)
-    throws IOException {
+      throws IOException {
     if (verifyAliveOnConnect) {
       final CountDownLatch latch = new CountDownLatch(1);
       final OperationFuture<Boolean> rv = new OperationFuture<Boolean>("noop",
-        latch, 2500, listenerExecutorService);
+          latch, 2500, listenerExecutorService);
       NoopOperation testOp = opFact.noop(new OperationCallback() {
         public void receivedStatus(OperationStatus status) {
           rv.set(status.isSuccess(), status);
@@ -758,7 +758,7 @@ public class MemcachedConnection extends SpyThread {
       boolean done = false;
       if (sk.isValid()) {
         long timeout = TimeUnit.MILLISECONDS.toNanos(
-          connectionFactory.getOperationTimeout());
+            connectionFactory.getOperationTimeout());
 
         long stop = System.nanoTime() + timeout;
         while (stop > System.nanoTime()) {
@@ -771,10 +771,10 @@ public class MemcachedConnection extends SpyThread {
       }
 
       if (!done || testOp.isCancelled() || testOp.hasErrored()
-        || testOp.isTimedOut()) {
+          || testOp.isTimedOut()) {
         throw new ConnectException("Could not send noop upon connect! "
-          + "This may indicate a running, but not responding memcached "
-          + "instance.");
+            + "This may indicate a running, but not responding memcached "
+            + "instance.");
       }
     }
 
@@ -832,9 +832,9 @@ public class MemcachedConnection extends SpyThread {
         }
 
         long timeOnWire =
-          System.nanoTime() - currentOp.getWriteCompleteTimestamp();
+            System.nanoTime() - currentOp.getWriteCompleteTimestamp();
         metrics.updateHistogram(OVERALL_AVG_TIME_ON_WIRE_METRIC,
-          (int)(timeOnWire / 1000));
+            (int)(timeOnWire / 1000));
         metrics.markMeter(OVERALL_RESPONSE_METRIC);
         synchronized(currentOp) {
           readBufferAndLogMetrics(currentOp, rbuf, node);
@@ -857,14 +857,14 @@ public class MemcachedConnection extends SpyThread {
    * @throws IOException if reading was not successful.
    */
   private void readBufferAndLogMetrics(final Operation currentOp,
-    final ByteBuffer rbuf, final MemcachedNode node) throws IOException {
+                                       final ByteBuffer rbuf, final MemcachedNode node) throws IOException {
     currentOp.readFromBuffer(rbuf);
     if (currentOp.getState() == OperationState.COMPLETE) {
       getLogger().debug("Completed read op: %s and giving the next %d "
-        + "bytes", currentOp, rbuf.remaining());
+          + "bytes", currentOp, rbuf.remaining());
       Operation op = node.removeCurrentReadOp();
       assert op == currentOp : "Expected to pop " + currentOp + " got "
-        + op;
+          + op;
 
       if (op.hasErrored()) {
         metrics.markMeter(OVERALL_RESPONSE_FAIL_METRIC);
@@ -874,12 +874,12 @@ public class MemcachedConnection extends SpyThread {
     } else if (currentOp.getState() == OperationState.RETRY) {
       handleRetryInformation(currentOp.getErrorMsg());
       getLogger().debug("Reschedule read op due to NOT_MY_VBUCKET error: "
-        + "%s ", currentOp);
+          + "%s ", currentOp);
       ((VBucketAware) currentOp).addNotMyVbucketNode(
-        currentOp.getHandlingNode());
+          currentOp.getHandlingNode());
       Operation op = node.removeCurrentReadOp();
       assert op == currentOp : "Expected to pop " + currentOp + " got "
-        + op;
+          + op;
 
       retryOps.add(currentOp);
       metrics.markMeter(OVERALL_RESPONSE_RETRY_METRIC);
@@ -897,13 +897,13 @@ public class MemcachedConnection extends SpyThread {
    * @throws IOException if disconnect while reading.
    */
   private Operation handleReadsWhenChannelEndOfStream(final Operation currentOp,
-    final MemcachedNode node, final ByteBuffer rbuf) throws IOException {
+                                                      final MemcachedNode node, final ByteBuffer rbuf) throws IOException {
     if (currentOp instanceof TapOperation) {
       currentOp.getCallback().complete();
       ((TapOperation) currentOp).streamClosed(OperationState.COMPLETE);
 
       getLogger().debug("Completed read op: %s and giving the next %d bytes",
-        currentOp, rbuf.remaining());
+          currentOp, rbuf.remaining());
       Operation op = node.removeCurrentReadOp();
       assert op == currentOp : "Expected to pop " + currentOp + " got " + op;
       return node.getCurrentReadOp();
@@ -944,7 +944,7 @@ public class MemcachedConnection extends SpyThread {
    */
   protected void handleRetryInformation(final byte[] retryMessage) {
     getLogger().debug("Got RETRY message: " + new String(retryMessage)
-      + ", but not handled.");
+        + ", but not handled.");
   }
 
   /**
@@ -957,7 +957,7 @@ public class MemcachedConnection extends SpyThread {
       return;
     }
     getLogger().warn("Closing, and reopening %s, attempt %d.", node,
-      node.getReconnectCount());
+        node.getReconnectCount());
 
     if (node.getSk() != null) {
       node.getSk().cancel();
@@ -1036,7 +1036,7 @@ public class MemcachedConnection extends SpyThread {
 
     if (op.getCloneCount() >= MAX_CLONE_COUNT) {
       getLogger().warn("Cancelling operation " + op + "because it has been "
-        + "retried (cloned) more than " + MAX_CLONE_COUNT + "times.");
+          + "retried (cloned) more than " + MAX_CLONE_COUNT + "times.");
       op.cancel();
       return;
     }
@@ -1051,7 +1051,7 @@ public class MemcachedConnection extends SpyThread {
     if (op instanceof MultiGetOperationImpl) {
       for (String key : ((MultiGetOperationImpl) op).getRetryKeys()) {
         addOperation(key, opFact.get(key,
-          (GetOperation.Callback) op.getCallback()));
+            (GetOperation.Callback) op.getCallback()));
       }
     } else if (op instanceof KeyedOperation) {
       KeyedOperation ko = (KeyedOperation) op;
@@ -1067,7 +1067,7 @@ public class MemcachedConnection extends SpyThread {
         } else {
           newop.cancel();
           getLogger().warn("Could not redistribute cloned non-keyed " +
-            "operation", newop);
+              "operation", newop);
         }
         added++;
       }
@@ -1091,7 +1091,7 @@ public class MemcachedConnection extends SpyThread {
   private void attemptReconnects() {
     final long now = System.currentTimeMillis();
     final Map<MemcachedNode, Boolean> seen =
-      new IdentityHashMap<MemcachedNode, Boolean>();
+        new IdentityHashMap<MemcachedNode, Boolean>();
     final List<MemcachedNode> rereQueue = new ArrayList<MemcachedNode>();
     SocketChannel ch = null;
 
@@ -1105,12 +1105,13 @@ public class MemcachedConnection extends SpyThread {
       try {
         if (!belongsToCluster(node)) {
           getLogger().debug("Node does not belong to cluster anymore, "
-            + "skipping reconnect: %s", node);
+              + "skipping reconnect: %s", node);
           continue;
         }
 
         if (!seen.containsKey(node)) {
           seen.put(node, Boolean.TRUE);
+          node.forceDnsResolution();
           getLogger().info("Reconnecting %s", node);
 
           ch = SocketChannel.open();
@@ -1129,7 +1130,7 @@ public class MemcachedConnection extends SpyThread {
           assert node.getChannel() == ch : "Channel was lost.";
         } else {
           getLogger().debug("Skipping duplicate reconnect request for %s",
-            node);
+              node);
         }
       } catch (SocketException e) {
         getLogger().warn("Error on reconnect", e);
@@ -1154,7 +1155,7 @@ public class MemcachedConnection extends SpyThread {
    * @param node the node to which the channel should be bound to.
    */
   private void potentiallyCloseLeakingChannel(final SocketChannel ch,
-    final MemcachedNode node) {
+                                              final MemcachedNode node) {
     if (ch != null && !ch.isConnected() && !ch.isConnectionPending()) {
       try {
         ch.close();
@@ -1220,7 +1221,7 @@ public class MemcachedConnection extends SpyThread {
       if (placeIn == null) {
         placeIn = primary;
         this.getLogger().warn("Could not redistribute to another node, "
-          + "retrying primary node for %s.", key);
+            + "retrying primary node for %s.", key);
       }
     }
 
@@ -1229,7 +1230,7 @@ public class MemcachedConnection extends SpyThread {
       addOperation(placeIn, o);
     } else {
       assert o.isCancelled() : "No node found for " + key + " (and not "
-        + "immediately cancelled)";
+          + "immediately cancelled)";
     }
   }
 
@@ -1301,7 +1302,7 @@ public class MemcachedConnection extends SpyThread {
    *         operations are complete.
    */
   public CountDownLatch broadcastOperation(final BroadcastOpFactory of,
-    final Collection<MemcachedNode> nodes) {
+                                           final Collection<MemcachedNode> nodes) {
     final CountDownLatch latch = new CountDownLatch(nodes.size());
 
     for (MemcachedNode node : nodes) {
@@ -1333,7 +1334,7 @@ public class MemcachedConnection extends SpyThread {
           node.setSk(null);
           if (node.getBytesRemainingToWrite() > 0) {
             getLogger().warn("Shut down with %d bytes remaining to write",
-              node.getBytesRemainingToWrite());
+                node.getBytesRemainingToWrite());
           }
           getLogger().debug("Shut down channel %s", node.getChannel());
         }
@@ -1367,14 +1368,14 @@ public class MemcachedConnection extends SpyThread {
     connStatus.append("Connection Status {");
     for (MemcachedNode node : locator.getAll()) {
       connStatus
-        .append(" ")
-        .append(node.getSocketAddress())
-        .append(" active: ")
-        .append(node.isActive())
-        .append(", authed: ")
-        .append(node.isAuthenticated())
-        .append(MessageFormat.format(", last read: {0} ms ago",
-          node.lastReadDelta()));
+          .append(" ")
+          .append(node.getSocketAddress())
+          .append(" active: ")
+          .append(node.isActive())
+          .append(", authed: ")
+          .append(node.isAuthenticated())
+          .append(MessageFormat.format(", last read: {0} ms ago",
+              node.lastReadDelta()));
     }
     connStatus.append(" }");
     return connStatus.toString();

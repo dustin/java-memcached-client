@@ -131,6 +131,9 @@ public class MockMemcachedNode implements MemcachedNode {
     return null;
   }
 
+  public void forceDnsResolution() {
+  }
+
   public boolean isActive() {
     return false;
   }
