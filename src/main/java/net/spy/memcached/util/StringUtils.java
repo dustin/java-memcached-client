@@ -22,13 +22,13 @@
 
 package net.spy.memcached.util;
 
+import net.spy.memcached.KeyUtil;
+import net.spy.memcached.MemcachedClientIF;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import net.spy.memcached.KeyUtil;
-import net.spy.memcached.MemcachedClientIF;
 
 /**
  * Utility methods on string objects.
@@ -106,6 +106,10 @@ public final class StringUtils {
    * @return true if it is a JSON object, false otherwise.
    */
   public static boolean isJsonObject(final String s) {
+    if (s == null || s.isEmpty()) {
+      return false;
+    }
+
     if (s.startsWith("{") || s.startsWith("[")
       || "true".equals(s) || "false".equals(s)
       || "null".equals(s) || decimalMatcher.reset(s).matches()) {
