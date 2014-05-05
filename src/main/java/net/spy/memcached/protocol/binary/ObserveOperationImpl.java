@@ -67,4 +67,14 @@ class ObserveOperationImpl extends SingleKeyOperationImpl implements
         getHandlingNode(), r);
     getCallback().receivedStatus(STATUS_OK);
   }
+
+  @Override
+  public long getCasValue() {
+    return cas;
+  }
+
+  @Override
+  public int getIndex() {
+    return index;
+  }
 }

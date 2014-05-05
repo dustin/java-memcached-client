@@ -23,11 +23,11 @@
 
 package net.spy.memcached.ops;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.OperationFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Base class for operation factories.
@@ -93,6 +93,10 @@ public abstract class BaseOperationFactory implements OperationFactory {
       GetAndTouchOperation gt = (GetAndTouchOperation) op;
       rv.add(getAndTouch(first(gt.getKeys()), gt.getExpiration(),
         (GetAndTouchOperation.Callback) gt.getCallback()));
+    } else if (op instanceof ObserveOperation) {
+      ObserveOperation oo = (ObserveOperation) op;
+      rv.add(observe(first(oo.getKeys()), oo.getCasValue(), oo.getIndex(),
+        (ObserveOperation.Callback) oo.getCallback()));
     } else {
       assert false : "Unhandled operation type: " + op.getClass();
     }

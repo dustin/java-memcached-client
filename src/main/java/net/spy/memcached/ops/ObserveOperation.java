@@ -29,6 +29,17 @@ import net.spy.memcached.ObserveResponse;
  * Observe operation.
  */
 public interface ObserveOperation extends KeyedOperation {
+
+  /**
+   * Get the CAS value advised for this operation.
+   */
+  long getCasValue();
+
+  /**
+   * Get the index advised for this operation.
+   */
+  int getIndex();
+
   /**
    * Operation callback for the Observe request.
    */
