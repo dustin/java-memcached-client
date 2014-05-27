@@ -27,7 +27,6 @@ import net.spy.memcached.MemcachedClientIF;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -41,11 +40,6 @@ public final class StringUtils {
   private static final Pattern decimalPattern = Pattern.compile("^-?\\d+$");
 
   /**
-   * The matcher for the decimal pattern regex.
-   */
-  private static final Matcher decimalMatcher = decimalPattern.matcher("");
-
-  /**
    * Maximum supported key length.
    */
   private static final int MAX_KEY_LENGTH = MemcachedClientIF.MAX_KEY_LENGTH;
@@ -55,7 +49,7 @@ public final class StringUtils {
    */
   private static final IllegalArgumentException KEY_TOO_LONG_EXCEPTION =
     new IllegalArgumentException("Key is too long (maxlen = "
-      + MAX_KEY_LENGTH + ")");
+      + MAX_KEY_LENGTH + ')');
 
   /**
    * Exception thrown if the input key is empty.
@@ -112,7 +106,7 @@ public final class StringUtils {
 
     if (s.startsWith("{") || s.startsWith("[")
       || "true".equals(s) || "false".equals(s)
-      || "null".equals(s) || decimalMatcher.reset(s).matches()) {
+      || "null".equals(s) || decimalPattern.matcher(s).matches()) {
       return true;
     }
 
