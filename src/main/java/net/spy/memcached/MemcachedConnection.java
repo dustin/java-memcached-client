@@ -93,6 +93,11 @@ public class MemcachedConnection extends SpyThread {
   private static final int EXCESSIVE_EMPTY = 0x1000000;
 
   /**
+   * The default wakeup delay if not overriden by a system property.
+   */
+  private static final int DEFAULT_WAKEUP_DELAY = 1000;
+
+  /**
    * If an operation gets cloned more than this ceiling, cancel it for
    * safety reasons.
    */
@@ -231,6 +236,11 @@ public class MemcachedConnection extends SpyThread {
   protected final MetricType metricType;
 
   /**
+   * The selector wakeup delay, defaults to 1000ms.
+   */
+  private final int wakeupDelay;
+
+  /**
    * Construct a {@link MemcachedConnection}.
    *
    * @param bufSize the size of the buffer used for reading from the server.
@@ -265,6 +275,9 @@ public class MemcachedConnection extends SpyThread {
     } else {
       verifyAliveOnConnect = false;
     }
+
+    wakeupDelay = Integer.parseInt( System.getProperty("net.spy.wakeupDelay",
+      Integer.toString(DEFAULT_WAKEUP_DELAY)));
 
     List<MemcachedNode> connections = createConnections(a);
     locator = f.createLocator(connections);
@@ -396,7 +409,7 @@ public class MemcachedConnection extends SpyThread {
     handleInputQueue();
     getLogger().debug("Done dealing with queue.");
 
-    long delay = 0;
+    long delay = 1000;
     if (!reconnectQueue.isEmpty()) {
       long now = System.currentTimeMillis();
       long then = reconnectQueue.firstKey();
@@ -405,9 +418,12 @@ public class MemcachedConnection extends SpyThread {
     getLogger().debug("Selecting with delay of %sms", delay);
     assert selectorsMakeSense() : "Selectors don't make sense.";
     int selected = selector.select(delay);
-    //Set<SelectionKey> selectedKeys = selector.selectedKeys();
 
-    if (selector.selectedKeys().isEmpty() && !shutDown) {
+    if (shutDown) {
+      return;
+    } else if (selected == 0 && addedQueue.isEmpty()) {
+      handleWokenUpSelector();
+    } else if (selector.selectedKeys().isEmpty()) {
       handleEmptySelects();
     } else {
       getLogger().debug("Selected %d, selected %d keys", selected,
@@ -424,6 +440,23 @@ public class MemcachedConnection extends SpyThread {
 
     handleOperationalTasks();
   }
+
+  /**
+   * Helper method which gets called if the selector is woken up because of the
+   * timeout setting, if has been interrupted or if happens during regular
+   * write operation phases.
+   *
+   * <p>This method can be overriden by child implementations to handle custom
+   * behavior on a manually woken selector, like sending pings through the
+   * channels to make sure they are alive.</p>
+   *
+   * <p>Note that there is no guarantee that this method is at all or in the
+   * regular interval called, so all overriding implementations need to take
+   * that into account. Also, it needs to take into account that it may be
+   * called very often under heavy workloads, so it should not perform extensive
+   * tasks in the same thread.</p>
+   */
+  protected void handleWokenUpSelector() { }
 
   /**
    * Helper method for {@link #handleIO()} to encapsulate everything that
