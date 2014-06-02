@@ -389,7 +389,8 @@ public class MemcachedConnection extends SpyThread {
    */
   public void handleIO() throws IOException {
     if (shutDown) {
-      throw new IOException("No IO while shut down");
+      getLogger().debug("No IO while shut down.");
+      return;
     }
 
     handleInputQueue();
@@ -1285,23 +1286,26 @@ public class MemcachedConnection extends SpyThread {
    */
   public void shutdown() throws IOException {
     shutDown = true;
-
-    Selector s = selector.wakeup();
-    assert s == selector : "Wakeup returned the wrong selector.";
-    for (MemcachedNode node : locator.getAll()) {
-      if (node.getChannel() != null) {
-        node.getChannel().close();
-        node.setSk(null);
-        if (node.getBytesRemainingToWrite() > 0) {
-          getLogger().warn("Shut down with %d bytes remaining to write",
+    try {
+      Selector s = selector.wakeup();
+      assert s == selector : "Wakeup returned the wrong selector.";
+      for (MemcachedNode node : locator.getAll()) {
+        if (node.getChannel() != null) {
+          node.getChannel().close();
+          node.setSk(null);
+          if (node.getBytesRemainingToWrite() > 0) {
+            getLogger().warn("Shut down with %d bytes remaining to write",
               node.getBytesRemainingToWrite());
+          }
+          getLogger().debug("Shut down channel %s", node.getChannel());
         }
-        getLogger().debug("Shut down channel %s", node.getChannel());
       }
+
+      selector.close();
+      getLogger().debug("Shut down selector %s", selector);
+    } finally {
+      running = false;
     }
-    running = false;
-    selector.close();
-    getLogger().debug("Shut down selector %s", selector);
   }
 
   @Override
