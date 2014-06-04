@@ -49,7 +49,7 @@ public class WokenUpOnIdleTest {
       latch,
       1024,
       new BinaryConnectionFactory(),
-      Arrays.asList(new InetSocketAddress(11210)),
+      Arrays.asList(new InetSocketAddress(11211)),
       Collections.<ConnectionObserver>emptyList(),
       FailureMode.Redistribute,
       new BinaryOperationFactory()
