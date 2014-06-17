@@ -57,7 +57,7 @@ contains a wiki, issue tracker, and downloads section.
 
 ## Github
 
-[The gitub page](http://github.com/dustin/java-memcached-client)
+[The github page](http://github.com/dustin/java-memcached-client)
 contains the latest Spymemcached source.
 
 ## Couchbase.org
