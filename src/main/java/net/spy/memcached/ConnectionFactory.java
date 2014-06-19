@@ -175,6 +175,11 @@ public interface ConnectionFactory {
    */
   int getTimeoutExceptionThreshold();
 
+	/**
+	 * Minimum number of millis of continuous timeout exceptions before shutting down a connection
+	 */
+	long getTimeoutExceptionDurationThreshold();
+
   /**
    * If true, metric collections are enabled.
    */

@@ -171,6 +171,10 @@ public class MemcachedClientFactoryBean implements FactoryBean,
     connectionFactoryBuilder.setTimeoutExceptionThreshold(to);
   }
 
+  public void setTimeoutExceptionDurationThreshold(final long to) {
+    connectionFactoryBuilder.setTimeoutExceptionDurationThreshold(to);
+  }
+
   public void setTranscoder(final Transcoder<Object> t) {
     connectionFactoryBuilder.setTranscoder(t);
   }

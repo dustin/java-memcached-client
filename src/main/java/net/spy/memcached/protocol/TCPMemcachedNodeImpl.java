@@ -35,6 +35,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.spy.memcached.ConnectionFactory;
 import net.spy.memcached.FailureMode;
@@ -75,6 +76,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
 
   // operation Future.get timeout counter
   private final AtomicInteger continuousTimeout = new AtomicInteger(0);
+  private final AtomicLong continuousTimeoutStart = new AtomicLong(0);
 
   public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c, int bufSize,
                               BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
@@ -470,6 +472,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   public final void reconnecting() {
     reconnectAttempt.incrementAndGet();
     continuousTimeout.set(0);
+    continuousTimeoutStart.set(0);
   }
 
   /*
@@ -480,6 +483,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   public final void connected() {
     reconnectAttempt.set(0);
     continuousTimeout.set(0);
+    continuousTimeoutStart.set(0);
   }
 
   /*
@@ -596,9 +600,12 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public void setContinuousTimeout(boolean timedOut) {
     if (timedOut && isActive()) {
-      continuousTimeout.incrementAndGet();
+      if (continuousTimeout.incrementAndGet() == 1) {
+        continuousTimeoutStart.set(System.nanoTime());
+      }
     } else {
       continuousTimeout.set(0);
+      continuousTimeoutStart.set(0);
     }
   }
 
@@ -609,6 +616,14 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public int getContinuousTimeout() {
     return continuousTimeout.get();
+  }
+
+  /*
+   * (non-Javadoc)
+   * @see net.spy.memcached.MemcachedNode#getContinuousTimeoutStart
+ 	 */
+  public long getContinuousTimeoutStart() {
+    return continuousTimeoutStart.get();
   }
 
   public final void fixupOps() {

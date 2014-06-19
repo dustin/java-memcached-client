@@ -205,6 +205,11 @@ public class MemcachedConnection extends SpyThread {
   private final int timeoutExceptionThreshold;
 
   /**
+   * Minimum number of millis of continuous timeout exceptions before shutting down a connection.
+   */
+  private final long timeoutExceptionDurationThreshold;
+
+  /**
    * Holds operations that need to be retried.
    */
   private final List<Operation> retryOps;
@@ -262,6 +267,7 @@ public class MemcachedConnection extends SpyThread {
     maxDelay = TimeUnit.SECONDS.toMillis(f.getMaxReconnectDelay());
     opFact = opfactory;
     timeoutExceptionThreshold = f.getTimeoutExceptionThreshold();
+    timeoutExceptionDurationThreshold = f.getTimeoutExceptionDurationThreshold();
     selector = Selector.open();
     retryOps = Collections.synchronizedList(new ArrayList<Operation>());
     nodesToShutdown = new ConcurrentLinkedQueue<MemcachedNode>();
@@ -537,8 +543,9 @@ public class MemcachedConnection extends SpyThread {
       try {
         for (SelectionKey sk : selector.keys()) {
           MemcachedNode mn = (MemcachedNode) sk.attachment();
-          if (mn.getContinuousTimeout() > timeoutExceptionThreshold) {
-            getLogger().warn("%s exceeded continuous timeout threshold", sk);
+          if (mn.getContinuousTimeout() > timeoutExceptionThreshold &&
+              (System.nanoTime() - mn.getContinuousTimeoutStart())/1000000 > timeoutExceptionDurationThreshold) {
+            getLogger().warn("%s exceeded continuous timeout threshold: %d consecutive timeouts over %dms", sk, mn.getContinuousTimeout(), (System.nanoTime() - mn.getContinuousTimeoutStart())/1000000);
             lostConnection(mn);
           }
         }

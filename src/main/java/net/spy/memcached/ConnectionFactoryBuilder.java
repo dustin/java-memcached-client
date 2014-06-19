@@ -72,6 +72,9 @@ public class ConnectionFactoryBuilder {
   protected int timeoutExceptionThreshold =
       DefaultConnectionFactory.DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
 
+  protected long timeoutExceptionDurationThreshold =
+      DefaultConnectionFactory.DEFAULT_MAX_TIMEOUTEXCEPTION_DURATION_THRESHOLD;
+
   protected MetricType metricType = null;
   protected MetricCollector collector = null;
   protected ExecutorService executorService = null;
@@ -97,6 +100,7 @@ public class ConnectionFactoryBuilder {
     setReadBufferSize(cf.getReadBufSize());
     setShouldOptimize(cf.shouldOptimize());
     setTimeoutExceptionThreshold(cf.getTimeoutExceptionThreshold());
+    setTimeoutExceptionDurationThreshold(cf.getTimeoutExceptionDurationThreshold());
     setTranscoder(cf.getDefaultTranscoder());
     setUseNagleAlgorithm(cf.useNagleAlgorithm());
     setEnableMetrics(cf.enableMetrics());
@@ -276,6 +280,14 @@ public class ConnectionFactoryBuilder {
   }
 
   /**
+   * Set the minimum timeout exception duration threshold
+   */
+  public ConnectionFactoryBuilder setTimeoutExceptionDurationThreshold(long to) {
+    timeoutExceptionDurationThreshold = to;
+    return this;
+  }
+
+  /**
    * Enable or disable metric collection.
    *
    * @param type the metric type to use (or disable).
@@ -424,6 +436,11 @@ public class ConnectionFactoryBuilder {
       @Override
       public int getTimeoutExceptionThreshold() {
         return timeoutExceptionThreshold;
+      }
+
+      @Override
+      public long getTimeoutExceptionDurationThreshold() {
+        return timeoutExceptionDurationThreshold;
       }
 
       @Override

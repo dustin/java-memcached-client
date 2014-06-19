@@ -115,6 +115,11 @@ public class DefaultConnectionFactory extends SpyObject implements
   public static final int DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD = 998;
 
   /**
+   * Minimum number of millis of continuous timeout exceptions before shutting down a connection
+   */
+  public static final long DEFAULT_MAX_TIMEOUTEXCEPTION_DURATION_THRESHOLD = 30000;
+
+  /**
    * Turn off metric collection by default.
    */
   public static final MetricType DEFAULT_METRIC_TYPE = MetricType.OFF;
@@ -422,6 +427,14 @@ public class DefaultConnectionFactory extends SpyObject implements
    */
   public int getTimeoutExceptionThreshold() {
     return DEFAULT_MAX_TIMEOUTEXCEPTION_THRESHOLD;
+  }
+
+  /*
+   * (non-Javadoc)
+   * @see net.spy.memcached.ConnectionFactory#getTimeoutExceptionDurationThreshold()
+   */
+  public long getTimeoutExceptionDurationThreshold() {
+    return DEFAULT_MAX_TIMEOUTEXCEPTION_DURATION_THRESHOLD;
   }
 
   @Override
