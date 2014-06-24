@@ -708,8 +708,6 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
       System.err.println("Has read operation? " + node.hasReadOp()
           + " Has write operation? " + node.hasWriteOp());
       try {
-        System.err.println("Has timed out this many times: "
-            + node.getContinuousTimeout());
         System.err.println("Write op: " + node.getCurrentWriteOp());
         System.err.println("Read op: " + node.getCurrentReadOp());
       } catch (UnsupportedOperationException e) {

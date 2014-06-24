@@ -35,7 +35,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import net.spy.memcached.ConnectionFactory;
 import net.spy.memcached.FailureMode;
@@ -75,8 +74,8 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   private MemcachedConnection connection;
 
   // operation Future.get timeout counter
-  private final AtomicInteger continuousTimeout = new AtomicInteger(0);
-  private final AtomicLong continuousTimeoutStart = new AtomicLong(0);
+  private int continuousTimeout = 0;
+  private long continuousTimeoutStart = 0;
 
   public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c, int bufSize,
                               BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
@@ -471,8 +470,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public final void reconnecting() {
     reconnectAttempt.incrementAndGet();
-    continuousTimeout.set(0);
-    continuousTimeoutStart.set(0);
+    resetContinuousTimeoutStatistics();
   }
 
   /*
@@ -482,8 +480,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public final void connected() {
     reconnectAttempt.set(0);
-    continuousTimeout.set(0);
-    continuousTimeoutStart.set(0);
+    resetContinuousTimeoutStatistics();
   }
 
   /*
@@ -600,30 +597,33 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public void setContinuousTimeout(boolean timedOut) {
     if (timedOut && isActive()) {
-      if (continuousTimeout.incrementAndGet() == 1) {
-        continuousTimeoutStart.set(System.nanoTime());
-      }
+      setContinuousTimeoutStatistics();
     } else {
-      continuousTimeout.set(0);
-      continuousTimeoutStart.set(0);
+      resetContinuousTimeoutStatistics();
     }
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see net.spy.memcached.MemcachedNode#getContinuousTimeout
-   */
-  public int getContinuousTimeout() {
-    return continuousTimeout.get();
+  private synchronized void setContinuousTimeoutStatistics() {
+    if (++continuousTimeout == 1) {
+      continuousTimeoutStart = System.nanoTime();
+    }
   }
 
-  /*
-   * (non-Javadoc)
-   * @see net.spy.memcached.MemcachedNode#getContinuousTimeoutStart
- 	 */
-  public long getContinuousTimeoutStart() {
-    return continuousTimeoutStart.get();
+  private synchronized void resetContinuousTimeoutStatistics() {
+    continuousTimeout = 0;
+    continuousTimeoutStart = 0;
+  }
+
+  public synchronized boolean hasExceededContinuousTimeoutThresholds(int countThreshold, long durationThreshold) {
+    if (continuousTimeout > countThreshold) {
+      long continuousTimeoutNanos = System.nanoTime() - continuousTimeoutStart;
+      if (TimeUnit.NANOSECONDS.toMillis(continuousTimeoutNanos) > durationThreshold) {
+        getLogger().warn("%s exceeded continuous timeout threshold: %d consecutive timeouts over %dms",
+            socketAddress, continuousTimeout, TimeUnit.NANOSECONDS.toMillis(continuousTimeoutNanos));
+        return true;
+      }
+    }
+    return false;
   }
 
   public final void fixupOps() {
