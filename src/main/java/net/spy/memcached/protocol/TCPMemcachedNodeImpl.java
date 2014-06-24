@@ -74,6 +74,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   private MemcachedConnection connection;
 
   // operation Future.get timeout counter
+  private final Object timeoutLock = new Object();
   private int continuousTimeout = 0;
   private long continuousTimeoutStart = 0;
 
@@ -603,24 +604,30 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     }
   }
 
-  private synchronized void setContinuousTimeoutStatistics() {
-    if (++continuousTimeout == 1) {
-      continuousTimeoutStart = System.nanoTime();
+  private void setContinuousTimeoutStatistics() {
+    synchronized (timeoutLock) {
+      if (++continuousTimeout == 1) {
+        continuousTimeoutStart = System.nanoTime();
+      }
     }
   }
 
-  private synchronized void resetContinuousTimeoutStatistics() {
-    continuousTimeout = 0;
-    continuousTimeoutStart = 0;
+  private void resetContinuousTimeoutStatistics() {
+    synchronized (timeoutLock) {
+      continuousTimeout = 0;
+      continuousTimeoutStart = 0;
+    }
   }
 
-  public synchronized boolean hasExceededContinuousTimeoutThresholds(int countThreshold, long durationThreshold) {
-    if (continuousTimeout > countThreshold) {
-      long continuousTimeoutNanos = System.nanoTime() - continuousTimeoutStart;
-      if (TimeUnit.NANOSECONDS.toMillis(continuousTimeoutNanos) > durationThreshold) {
-        getLogger().warn("%s exceeded continuous timeout threshold: %d consecutive timeouts over %dms",
-            socketAddress, continuousTimeout, TimeUnit.NANOSECONDS.toMillis(continuousTimeoutNanos));
-        return true;
+  public boolean hasExceededContinuousTimeoutThresholds(int countThreshold, long durationThreshold) {
+    synchronized (timeoutLock) {
+      if (continuousTimeout > countThreshold) {
+        long continuousTimeoutNanos = System.nanoTime() - continuousTimeoutStart;
+        if (TimeUnit.NANOSECONDS.toMillis(continuousTimeoutNanos) > durationThreshold) {
+          getLogger().warn("%s exceeded continuous timeout threshold: %d consecutive timeouts over %dms",
+              socketAddress, continuousTimeout, TimeUnit.NANOSECONDS.toMillis(continuousTimeoutNanos));
+          return true;
+        }
       }
     }
     return false;
