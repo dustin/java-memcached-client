@@ -22,7 +22,6 @@
 
 package net.spy.memcached;
 
-import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
@@ -49,11 +48,11 @@ public class ObserverTest extends ClientBaseCase {
     final CountDownLatch latch = new CountDownLatch(1);
     final ConnectionObserver obs = new ConnectionObserver() {
 
-      public void connectionEstablished(SocketAddress sa, int reconnectCount) {
+      public void connectionEstablished(HostPort hp, int reconnectCount) {
         latch.countDown();
       }
 
-      public void connectionLost(SocketAddress sa) {
+      public void connectionLost(HostPort hp) {
         assert false : "Should not see this.";
       }
 
@@ -75,12 +74,12 @@ public class ObserverTest extends ClientBaseCase {
   }
 
   static class LoggingObserver extends SpyObject implements ConnectionObserver {
-    public void connectionEstablished(SocketAddress sa, int reconnectCount) {
-      getLogger().info("Connection established to %s (%s)", sa, reconnectCount);
+    public void connectionEstablished(HostPort hp, int reconnectCount) {
+      getLogger().info("Connection established to %s (%s)", hp, reconnectCount);
     }
 
-    public void connectionLost(SocketAddress sa) {
-      getLogger().info("Connection lost from %s", sa);
+    public void connectionLost(HostPort hp) {
+      getLogger().info("Connection lost from %s", hp);
     }
   }
 }

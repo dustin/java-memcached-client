@@ -26,7 +26,6 @@ import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,7 +48,7 @@ public class WokenUpOnIdleTest {
       latch,
       1024,
       new BinaryConnectionFactory(),
-      Arrays.asList(new InetSocketAddress(11211)),
+      Arrays.asList(new HostPort("", 11211)),
       Collections.<ConnectionObserver>emptyList(),
       FailureMode.Redistribute,
       new BinaryOperationFactory()
@@ -61,7 +60,7 @@ public class WokenUpOnIdleTest {
   static class InstrumentedConnection extends MemcachedConnection {
     final CountDownLatch latch;
     InstrumentedConnection(CountDownLatch latch, int bufSize, ConnectionFactory f,
-      List<InetSocketAddress> a, Collection<ConnectionObserver> obs,
+      List<HostPort> a, Collection<ConnectionObserver> obs,
       FailureMode fm, OperationFactory opfactory) throws IOException {
       super(bufSize, f, a, obs, fm, opfactory);
       this.latch = latch;

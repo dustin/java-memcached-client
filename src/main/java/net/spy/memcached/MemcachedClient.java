@@ -24,8 +24,6 @@
 package net.spy.memcached;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,7 +72,6 @@ import net.spy.memcached.ops.StatusCode;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.ops.TimedOutOperationStatus;
-import net.spy.memcached.protocol.ascii.AsciiOperationFactory;
 import net.spy.memcached.protocol.binary.BinaryOperationFactory;
 import net.spy.memcached.transcoders.TranscodeService;
 import net.spy.memcached.transcoders.Transcoder;
@@ -87,7 +84,7 @@ import net.spy.memcached.util.StringUtils;
  *
  * <pre>
  * MemcachedClient c = new MemcachedClient(
- *    new InetSocketAddress(&quot;hostname&quot;, portNum));
+ *    new NostPort(&quot;hostname&quot;, portNum));
  *
  * // Store a value (async) for one hour
  * c.set(&quot;someKey&quot;, 3600, someObject);
@@ -163,20 +160,20 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   /**
    * Get a memcache client operating on the specified memcached locations.
    *
-   * @param ia the memcached locations
+   * @param hp the memcached locations
    * @throws IOException if connections cannot be established
    */
-  public MemcachedClient(InetSocketAddress... ia) throws IOException {
-    this(new DefaultConnectionFactory(), Arrays.asList(ia));
+  public MemcachedClient(HostPort... hp) throws IOException {
+    this(new DefaultConnectionFactory(), Arrays.asList(hp));
   }
 
   /**
    * Get a memcache client over the specified memcached locations.
    *
-   * @param addrs the socket addrs
+   * @param addrs the addresses
    * @throws IOException if connections cannot be established
    */
-  public MemcachedClient(List<InetSocketAddress> addrs) throws IOException {
+  public MemcachedClient(List<HostPort> addrs) throws IOException {
     this(new DefaultConnectionFactory(), addrs);
   }
 
@@ -184,10 +181,10 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * Get a memcache client over the specified memcached locations.
    *
    * @param cf the connection factory to configure connections for this client
-   * @param addrs the socket addresses
+   * @param addrs the addresses
    * @throws IOException if connections cannot be established
    */
-  public MemcachedClient(ConnectionFactory cf, List<InetSocketAddress> addrs)
+  public MemcachedClient(ConnectionFactory cf, List<HostPort> addrs)
     throws IOException {
     if (cf == null) {
       throw new NullPointerException("Connection factory required");
@@ -229,11 +226,11 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @return point-in-time view of currently available servers
    */
   @Override
-  public Collection<SocketAddress> getAvailableServers() {
-    ArrayList<SocketAddress> rv = new ArrayList<SocketAddress>();
+  public Collection<HostPort> getAvailableServers() {
+    ArrayList<HostPort> rv = new ArrayList<HostPort>();
     for (MemcachedNode node : mconn.getLocator().getAll()) {
       if (node.isActive()) {
-        rv.add(node.getSocketAddress());
+        rv.add(node.getHostPort());
       }
     }
     return rv;
@@ -251,11 +248,11 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * @return point-in-time view of currently available servers
    */
   @Override
-  public Collection<SocketAddress> getUnavailableServers() {
-    ArrayList<SocketAddress> rv = new ArrayList<SocketAddress>();
+  public Collection<HostPort> getUnavailableServers() {
+    ArrayList<HostPort> rv = new ArrayList<HostPort>();
     for (MemcachedNode node : mconn.getLocator().getAll()) {
       if (!node.isActive()) {
-        rv.add(node.getSocketAddress());
+        rv.add(node.getHostPort());
       }
     }
     return rv;
@@ -1652,20 +1649,20 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   /**
    * Get the versions of all of the connected memcacheds.
    *
-   * @return a Map of SocketAddress to String for connected servers
+   * @return a Map of HostPort to String for connected servers
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
   @Override
-  public Map<SocketAddress, String> getVersions() {
-    final Map<SocketAddress, String> rv =
-        new ConcurrentHashMap<SocketAddress, String>();
+  public Map<HostPort, String> getVersions() {
+    final Map<HostPort, String> rv =
+        new ConcurrentHashMap<HostPort, String>();
 
     CountDownLatch blatch = broadcastOp(new BroadcastOpFactory() {
       @Override
       public Operation newOp(final MemcachedNode n,
           final CountDownLatch latch) {
-        final SocketAddress sa = n.getSocketAddress();
+        final HostPort sa = n.getHostPort();
         return opFact.version(new OperationCallback() {
           @Override
           public void receivedStatus(OperationStatus s) {
@@ -1690,12 +1687,12 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   /**
    * Get all of the stats from all of the connections.
    *
-   * @return a Map of a Map of stats replies by SocketAddress
+   * @return a Map of a Map of stats replies by HostPort
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
   @Override
-  public Map<SocketAddress, Map<String, String>> getStats() {
+  public Map<HostPort, Map<String, String>> getStats() {
     return getStats(null);
   }
 
@@ -1703,21 +1700,21 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    * Get a set of stats from all connections.
    *
    * @param arg which stats to get
-   * @return a Map of the server SocketAddress to a map of String stat keys to
+   * @return a Map of the server HostPort to a map of String stat keys to
    *         String stat values.
    * @throws IllegalStateException in the rare circumstance where queue is too
    *           full to accept any more requests
    */
   @Override
-  public Map<SocketAddress, Map<String, String>> getStats(final String arg) {
-    final Map<SocketAddress, Map<String, String>> rv =
-        new HashMap<SocketAddress, Map<String, String>>();
+  public Map<HostPort, Map<String, String>> getStats(final String arg) {
+    final Map<HostPort, Map<String, String>> rv =
+        new HashMap<HostPort, Map<String, String>>();
 
     CountDownLatch blatch = broadcastOp(new BroadcastOpFactory() {
       @Override
       public Operation newOp(final MemcachedNode n,
           final CountDownLatch latch) {
-        final SocketAddress sa = n.getSocketAddress();
+        final HostPort sa = n.getHostPort();
         rv.put(sa, new HashMap<String, String>());
         return opFact.stats(arg, new StatsOperation.Callback() {
           @Override
@@ -2575,7 +2572,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     if (rv) {
       for (MemcachedNode node : mconn.getLocator().getAll()) {
         if (node.isActive()) {
-          obs.connectionEstablished(node.getSocketAddress(), -1);
+          obs.connectionEstablished(node.getHostPort(), -1);
         }
       }
     }
@@ -2594,23 +2591,23 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   }
 
   @Override
-  public void connectionEstablished(SocketAddress sa, int reconnectCount) {
+  public void connectionEstablished(HostPort hp, int reconnectCount) {
     if (authDescriptor != null) {
       if (authDescriptor.authThresholdReached()) {
         shutdown();
       }
-      authMonitor.authConnection(mconn, opFact, authDescriptor, findNode(sa));
+      authMonitor.authConnection(mconn, opFact, authDescriptor, findNode(hp));
     }
   }
 
-  private MemcachedNode findNode(SocketAddress sa) {
+  private MemcachedNode findNode(HostPort hp) {
     MemcachedNode node = null;
     for (MemcachedNode n : mconn.getLocator().getAll()) {
-      if (n.getSocketAddress().equals(sa)) {
+      if (n.getHostPort().equals(hp)) {
         node = n;
       }
     }
-    assert node != null : "Couldn't find node connected to " + sa;
+    assert node != null : "Couldn't find node connected to " + hp;
     return node;
   }
 
@@ -2624,7 +2621,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   }
 
   @Override
-  public void connectionLost(SocketAddress sa) {
+  public void connectionLost(HostPort sa) {
     // Don't care.
   }
 

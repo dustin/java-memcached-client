@@ -23,7 +23,6 @@
 
 package net.spy.memcached;
 
-import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -46,9 +45,9 @@ public interface MemcachedClientIF {
    */
   int MAX_KEY_LENGTH = 250;
 
-  Collection<SocketAddress> getAvailableServers();
+  Collection<HostPort> getAvailableServers();
 
-  Collection<SocketAddress> getUnavailableServers();
+  Collection<HostPort> getUnavailableServers();
 
   Transcoder<Object> getTranscoder();
 
@@ -158,11 +157,11 @@ public interface MemcachedClientIF {
 
   <T> Future<Boolean> touch(final String key, final int exp);
 
-  Map<SocketAddress, String> getVersions();
+  Map<HostPort, String> getVersions();
 
-  Map<SocketAddress, Map<String, String>> getStats();
+  Map<HostPort, Map<String, String>> getStats();
 
-  Map<SocketAddress, Map<String, String>> getStats(String prefix);
+  Map<HostPort, Map<String, String>> getStats(String prefix);
 
   long incr(String key, long by);
 

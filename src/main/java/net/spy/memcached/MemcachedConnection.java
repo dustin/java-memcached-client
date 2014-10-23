@@ -46,7 +46,6 @@ import net.spy.memcached.util.StringUtils;
 
 import java.io.IOException;
 import java.net.ConnectException;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
@@ -251,9 +250,13 @@ public class MemcachedConnection extends SpyThread {
    * @param opfactory the operation factory.
    * @throws IOException if a connection attempt fails early
    */
-  public MemcachedConnection(final int bufSize, final ConnectionFactory f,
-      final List<InetSocketAddress> a, final Collection<ConnectionObserver> obs,
-      final FailureMode fm, final OperationFactory opfactory) throws IOException {
+  public MemcachedConnection(
+      final int bufSize,
+      final ConnectionFactory f,
+      final List<HostPort> a,
+      final Collection<ConnectionObserver> obs,
+      final FailureMode fm,
+      final OperationFactory opfactory) throws IOException {
     connObservers.addAll(obs);
     reconnectQueue = new TreeMap<Long, MemcachedNode>();
     addedQueue = new ConcurrentLinkedQueue<MemcachedNode>();
@@ -325,14 +328,15 @@ public class MemcachedConnection extends SpyThread {
    * @return addrs list of {@link MemcachedNode}s.
    * @throws IOException if connecting was not successful.
    */
-  protected List<MemcachedNode> createConnections(
-    final Collection<InetSocketAddress> addrs) throws IOException {
+  protected List<MemcachedNode> createConnections(final Collection<HostPort> addrs)
+      throws IOException {
     List<MemcachedNode> connections = new ArrayList<MemcachedNode>(addrs.size());
 
-    for (SocketAddress sa : addrs) {
+    for (HostPort hp : addrs) {
+      SocketAddress sa = hp.resolveAddress();
       SocketChannel ch = SocketChannel.open();
       ch.configureBlocking(false);
-      MemcachedNode qa = connectionFactory.createMemcachedNode(sa, ch, bufSize);
+      MemcachedNode qa = connectionFactory.createMemcachedNode(hp, ch, bufSize);
       qa.setConnection(this);
       int ops = 0;
       ch.socket().setTcpNoDelay(!connectionFactory.useNagleAlgorithm());
@@ -621,7 +625,7 @@ public class MemcachedConnection extends SpyThread {
     node.connected();
 
     for (ConnectionObserver observer : connObservers) {
-      observer.connectionEstablished(node.getSocketAddress(), rt);
+      observer.connectionEstablished(node.getHostPort(), rt);
     }
   }
 
@@ -633,7 +637,7 @@ public class MemcachedConnection extends SpyThread {
   private void lostConnection(final MemcachedNode node) {
     queueReconnect(node);
     for (ConnectionObserver observer : connObservers) {
-      observer.connectionLost(node.getSocketAddress());
+      observer.connectionLost(node.getHostPort());
     }
   }
 
@@ -645,7 +649,7 @@ public class MemcachedConnection extends SpyThread {
    */
   boolean belongsToCluster(final MemcachedNode node) {
     for (MemcachedNode n : locator.getAll()) {
-      if (n.getSocketAddress().equals(node.getSocketAddress())) {
+      if (n.getHostPort().equals(node.getHostPort())) {
         return true;
       }
     }
@@ -1117,7 +1121,7 @@ public class MemcachedConnection extends SpyThread {
           ch.configureBlocking(false);
           ch.socket().setTcpNoDelay(!connectionFactory.useNagleAlgorithm());
           int ops = 0;
-          if (ch.connect(node.getSocketAddress())) {
+          if (ch.connect(node.getHostPort().resolveAddress())) {
             connected(node);
             addedQueue.offer(node);
             getLogger().info("Immediately reconnected to %s", node);
@@ -1351,7 +1355,7 @@ public class MemcachedConnection extends SpyThread {
     StringBuilder sb = new StringBuilder();
     sb.append("{MemcachedConnection to");
     for (MemcachedNode qa : locator.getAll()) {
-      sb.append(" ").append(qa.getSocketAddress());
+      sb.append(" ").append(qa.getHostPort());
     }
     sb.append("}");
     return sb.toString();
@@ -1368,7 +1372,7 @@ public class MemcachedConnection extends SpyThread {
     for (MemcachedNode node : locator.getAll()) {
       connStatus
         .append(" ")
-        .append(node.getSocketAddress())
+        .append(node.getHostPort())
         .append(" active: ")
         .append(node.isActive())
         .append(", authed: ")

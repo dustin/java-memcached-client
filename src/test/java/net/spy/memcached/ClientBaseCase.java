@@ -23,7 +23,6 @@
 
 package net.spy.memcached;
 
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -96,7 +95,7 @@ public abstract class ClientBaseCase extends TestCase {
     }
     // some tests are invalid if using moxi
 
-    Map<SocketAddress, Map<String, String>> stats = client.getStats("proxy");
+    Map<HostPort, Map<String, String>> stats = client.getStats("proxy");
     for (Map<String, String> node : stats.values()) {
       if (node.get("basic:version") != null) {
         moxi = true;

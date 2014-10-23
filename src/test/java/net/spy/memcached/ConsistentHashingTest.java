@@ -23,7 +23,6 @@
 
 package net.spy.memcached;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -80,8 +79,8 @@ public class ConsistentHashingTest extends TestCase {
         failed = true;
         System.out.println("---------------");
         System.out.println("Key: " + key);
-        System.out.println("Small: " + smallNode.getSocketAddress());
-        System.out.println("Large: " + largeNode.getSocketAddress());
+        System.out.println("Small: " + smallNode.getHostPort());
+        System.out.println("Large: " + largeNode.getHostPort());
       }
     }
     assertFalse(failed);
@@ -93,7 +92,7 @@ public class ConsistentHashingTest extends TestCase {
         final MemcachedNode newNode = smLocator.getNodeForKey(key);
         if (!smaller.contains(newNode)) {
           System.out.println("Error - " + key + " -> "
-              + newNode.getSocketAddress());
+              + newNode.getHostPort());
           failed = true;
         }
       }
@@ -138,10 +137,10 @@ public class ConsistentHashingTest extends TestCase {
     return results;
   }
 
-  private List<MemcachedNode> createNodes(List<InetSocketAddress> addresses) {
+  private List<MemcachedNode> createNodes(List<HostPort> addresses) {
     List<MemcachedNode> results = new ArrayList<MemcachedNode>();
 
-    for (InetSocketAddress addr : addresses) {
+    for (HostPort addr : addresses) {
       results.add(new MockMemcachedNode(addr));
     }
 
