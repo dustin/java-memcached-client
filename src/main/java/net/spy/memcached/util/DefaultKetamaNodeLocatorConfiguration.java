@@ -48,7 +48,7 @@ public class DefaultKetamaNodeLocatorConfiguration implements
    * @param node The node which we're interested in
    * @return String the socket address of that node.
    */
-  protected String getSocketAddressForNode(MemcachedNode node) {
+  protected String getAddressForNode(MemcachedNode node) {
     // Using the internal map retrieve the socket addresses
     // for given nodes.
     // I'm aware that this code is inherently thread-unsafe as
@@ -59,7 +59,7 @@ public class DefaultKetamaNodeLocatorConfiguration implements
     // all other cases should be as fast as possible.
     String result = socketAddresses.get(node);
     if (result == null) {
-      result = String.valueOf(node.getSocketAddress());
+      result = String.valueOf(node.getHostPort());
       if (result.startsWith("/")) {
         result = result.substring(1);
       }
@@ -115,6 +115,6 @@ public class DefaultKetamaNodeLocatorConfiguration implements
    * @return The key that represents the specific repetition of the node
    */
   public String getKeyForNode(MemcachedNode node, int repetition) {
-    return getSocketAddressForNode(node) + "-" + repetition;
+    return getAddressForNode(node) + "-" + repetition;
   }
 }

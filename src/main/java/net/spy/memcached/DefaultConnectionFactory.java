@@ -24,8 +24,6 @@
 package net.spy.memcached;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,9 +31,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -166,12 +162,14 @@ public class DefaultConnectionFactory extends SpyObject implements
     this(DEFAULT_OP_QUEUE_LEN, DEFAULT_READ_BUFFER_SIZE);
   }
 
-  public MemcachedNode createMemcachedNode(SocketAddress sa, SocketChannel c,
-      int bufSize) {
+  public MemcachedNode createMemcachedNode(HostPort hp, SocketChannel c, int bufSize) {
 
     OperationFactory of = getOperationFactory();
     if (of instanceof AsciiOperationFactory) {
-      return new AsciiMemcachedNodeImpl(sa, c, bufSize,
+      return new AsciiMemcachedNodeImpl(
+          hp,
+          c,
+          bufSize,
           createReadOperationQueue(),
           createWriteOperationQueue(),
           createOperationQueue(),
@@ -184,7 +182,10 @@ public class DefaultConnectionFactory extends SpyObject implements
       if (getAuthDescriptor() != null) {
         doAuth = true;
       }
-      return new BinaryMemcachedNodeImpl(sa, c, bufSize,
+      return new BinaryMemcachedNodeImpl(
+          hp,
+          c,
+          bufSize,
           createReadOperationQueue(),
           createWriteOperationQueue(),
           createOperationQueue(),
@@ -203,7 +204,7 @@ public class DefaultConnectionFactory extends SpyObject implements
    *
    * @see net.spy.memcached.ConnectionFactory#createConnection(java.util.List)
    */
-  public MemcachedConnection createConnection(List<InetSocketAddress> addrs)
+  public MemcachedConnection createConnection(List<HostPort> addrs)
     throws IOException {
     return new MemcachedConnection(getReadBufSize(), this, addrs,
         getInitialObservers(), getFailureMode(), getOperationFactory());

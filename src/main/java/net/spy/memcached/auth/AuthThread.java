@@ -144,7 +144,7 @@ public class AuthThread extends SpyThread {
     getLogger().log(level, msg);
 
     if (supportedMechs == null || supportedMechs.length == 0) {
-      getLogger().warn("Authentication failed to " + node.getSocketAddress()
+      getLogger().warn("Authentication failed to " + node.getHostPort()
         + ", got empty SASL auth mech list.");
       throw new IllegalStateException("Got empty SASL auth mech list.");
     }
@@ -164,7 +164,7 @@ public class AuthThread extends SpyThread {
           if (val.getMessage().length() == 0) {
             done.set(true);
             node.authComplete();
-            getLogger().info("Authenticated to " + node.getSocketAddress());
+            getLogger().info("Authenticated to " + node.getHostPort());
           } else {
             foundStatus.set(val);
           }
@@ -210,7 +210,7 @@ public class AuthThread extends SpyThread {
       priorStatus = foundStatus.get();
       if (priorStatus != null) {
         if (!priorStatus.isSuccess()) {
-          getLogger().warn("Authentication failed to " + node.getSocketAddress()
+          getLogger().warn("Authentication failed to " + node.getHostPort()
             + ", Status: " + priorStatus);
         }
       }
@@ -228,11 +228,11 @@ public class AuthThread extends SpyThread {
     final String [] supportedMechs) {
     if (st == null) {
       return opFact.saslAuth(supportedMechs,
-          node.getSocketAddress().toString(), null,
+          node.getHostPort().toString(), null,
           authDescriptor.getCallback(), cb);
     } else {
       return opFact.saslStep(supportedMechs, KeyUtil.getKeyBytes(
-          st.getMessage()), node.getSocketAddress().toString(), null,
+          st.getMessage()), node.getHostPort().toString(), null,
           authDescriptor.getCallback(), cb);
     }
   }

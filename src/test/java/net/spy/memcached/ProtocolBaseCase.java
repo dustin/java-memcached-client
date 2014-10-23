@@ -23,7 +23,6 @@
 
 package net.spy.memcached;
 
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,9 +37,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertSame;
-import static junit.framework.Assert.assertTrue;
 
 import net.spy.memcached.compat.SyncThread;
 import net.spy.memcached.internal.BulkFuture;
@@ -73,7 +69,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
   }
 
   public void testGetStats() throws Exception {
-    Map<SocketAddress, Map<String, String>> stats = client.getStats();
+    Map<HostPort, Map<String, String>> stats = client.getStats();
     System.out.println("Stats:  " + stats);
     assertEquals(1, stats.size());
     Map<String, String> oneStat = stats.values().iterator().next();
@@ -87,7 +83,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     // There needs to at least have been one value set or there may be
     // no slabs to check.
     client.set("slabinitializer", 0, "hi");
-    Map<SocketAddress, Map<String, String>> stats = client.getStats("slabs");
+    Map<HostPort, Map<String, String>> stats = client.getStats("slabs");
     System.out.println("Stats:  " + stats);
     assertEquals(1, stats.size());
     Map<String, String> oneStat = stats.values().iterator().next();
@@ -104,7 +100,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
     // use flush when testing, so we check that there's at least
     // one.
     client.set("sizeinitializer", 0, "hi");
-    Map<SocketAddress, Map<String, String>> stats = client.getStats("sizes");
+    Map<HostPort, Map<String, String>> stats = client.getStats("sizes");
     System.out.println("Stats sizes:  " + stats);
     assertEquals(1, stats.size());
     Map<String, String> oneStat = stats.values().iterator().next();
@@ -516,9 +512,9 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
   protected abstract String getExpectedVersionSource();
 
   public void testGetVersions() throws Exception {
-    Map<SocketAddress, String> vs = client.getVersions();
+    Map<HostPort, String> vs = client.getVersions();
     assertEquals(1, vs.size());
-    Map.Entry<SocketAddress, String> me = vs.entrySet().iterator().next();
+    Map.Entry<HostPort, String> me = vs.entrySet().iterator().next();
     assertEquals(getExpectedVersionSource(), me.getKey().toString());
     assertNotNull(me.getValue());
   }
@@ -672,7 +668,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
         client.shutdown(5, TimeUnit.SECONDS));
 
     syncGetTimeoutsInitClient();
-    Thread.sleep(100); // allow connections to be established
+    Thread.sleep(1000); // allow connections to be established
 
     int i = 0;
     GetFuture<Object> g = null;
@@ -686,7 +682,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
       assert !g.getStatus().isSuccess();
       System.err.println("Got a timeout at iteration " + i + ".");
     }
-    Thread.sleep(100); // let whatever caused the timeout to pass
+    Thread.sleep(1000); // let whatever caused the timeout to pass
     try {
       if (value.equals(client.asyncGet(key).get(30, TimeUnit.SECONDS))) {
         System.err.println("Got the right value.");
@@ -727,7 +723,7 @@ public abstract class ProtocolBaseCase extends ClientBaseCase {
         client.shutdown(1, TimeUnit.MILLISECONDS));
 
     try {
-      Map<SocketAddress, String> m = client.getVersions();
+      Map<HostPort, String> m = client.getVersions();
       fail("Expected failure, got " + m);
     } catch (IllegalStateException e) {
       assertEquals("Shutting down", e.getMessage());

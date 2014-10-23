@@ -24,8 +24,6 @@
 package net.spy.memcached;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -37,14 +35,14 @@ import net.spy.memcached.ops.Operation;
  * A MockMemcachedNode.
  */
 public class MockMemcachedNode implements MemcachedNode {
-  private final InetSocketAddress socketAddress;
+  private final HostPort hostPort;
 
-  public SocketAddress getSocketAddress() {
-    return socketAddress;
+  public HostPort getHostPort() {
+    return hostPort;
   }
 
-  public MockMemcachedNode(InetSocketAddress socketAddress) {
-    this.socketAddress = socketAddress;
+  public MockMemcachedNode(HostPort hostPort) {
+    this.hostPort = hostPort;
   }
 
   @Override
@@ -58,8 +56,8 @@ public class MockMemcachedNode implements MemcachedNode {
 
     MockMemcachedNode that = (MockMemcachedNode) o;
 
-    if (socketAddress != null ? !socketAddress.equals(that.socketAddress)
-        : that.socketAddress != null) {
+    if (hostPort != null ? !hostPort.equals(that.hostPort)
+        : that.hostPort != null) {
       return false;
     }
 
@@ -68,7 +66,7 @@ public class MockMemcachedNode implements MemcachedNode {
 
   @Override
   public int hashCode() {
-    return (socketAddress != null ? socketAddress.hashCode() : 0);
+    return (hostPort != null ? hostPort.hashCode() : 0);
   }
 
   public void copyInputQueue() {

@@ -23,7 +23,6 @@
 package net.spy.memcached;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,7 +52,7 @@ public class TapClient {
   protected BlockingQueue<Object> rqueue;
   protected final HashMap<TapStream, TapConnectionProvider> omap;
   protected long messagesRead;
-  private List<InetSocketAddress> addrs;
+  private List<HostPort> addrs;
 
   /**
    * Creates a tap client against the specified servers.
@@ -64,7 +63,7 @@ public class TapClient {
    *
    * @param ia the addresses of each node in the cluster.
    */
-  public TapClient(InetSocketAddress... ia) {
+  public TapClient(HostPort... ia) {
     this(Arrays.asList(ia));
   }
 
@@ -77,7 +76,7 @@ public class TapClient {
    *
    * @param addrs a list of addresses containing each node in the cluster.
    */
-  public TapClient(List<InetSocketAddress> addrs) {
+  public TapClient(List<HostPort> addrs) {
     this.rqueue = new LinkedBlockingQueue<Object>();
     this.omap = new HashMap<TapStream, TapConnectionProvider>();
     this.addrs = addrs;

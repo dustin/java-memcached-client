@@ -24,7 +24,6 @@
 package net.spy.memcached;
 
 import java.io.IOException;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -132,8 +131,9 @@ public interface MemcachedNode {
 
   /**
    * Get the SocketAddress of the server to which this node is connected.
+   *
    */
-  SocketAddress getSocketAddress();
+  HostPort getHostPort();
 
   /**
    * True if this node is <q>active.</q> i.e. is is currently connected and

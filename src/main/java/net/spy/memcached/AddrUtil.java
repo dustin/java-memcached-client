@@ -23,7 +23,6 @@
 
 package net.spy.memcached;
 
-import java.net.InetSocketAddress;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,14 +44,14 @@ public final class AddrUtil {
    *
    * Note that colon-delimited IPv6 is also supported. For example: ::1:11211
    */
-  public static List<InetSocketAddress> getAddresses(String s) {
+  public static List<HostPort> getAddresses(String s) {
     if (s == null) {
       throw new NullPointerException("Null host list");
     }
     if (s.trim().equals("")) {
       throw new IllegalArgumentException("No hosts in list:  ``" + s + "''");
     }
-    ArrayList<InetSocketAddress> addrs = new ArrayList<InetSocketAddress>();
+    ArrayList<HostPort> addrs = new ArrayList<HostPort>();
 
     for (String hoststuff : s.split("(?:\\s|,)+")) {
       if (hoststuff.equals("")) {
@@ -67,15 +66,14 @@ public final class AddrUtil {
       String hostPart = hoststuff.substring(0, finalColon);
       String portNum = hoststuff.substring(finalColon + 1);
 
-      addrs.add(new InetSocketAddress(hostPart, Integer.parseInt(portNum)));
+      addrs.add(new HostPort(hostPart, Integer.parseInt(portNum)));
     }
     assert !addrs.isEmpty() : "No addrs found";
     return addrs;
   }
 
-  public static List<InetSocketAddress> getAddresses(List<String> servers) {
-    ArrayList<InetSocketAddress> addrs =
-        new ArrayList<InetSocketAddress>(servers.size());
+  public static List<HostPort> getAddresses(List<String> servers) {
+    ArrayList<HostPort> addrs = new ArrayList<HostPort>(servers.size());
     for (String server : servers) {
       int finalColon = server.lastIndexOf(':');
       if (finalColon < 1) {
@@ -85,7 +83,7 @@ public final class AddrUtil {
       String hostPart = server.substring(0, finalColon);
       String portNum = server.substring(finalColon + 1);
 
-      addrs.add(new InetSocketAddress(hostPart, Integer.parseInt(portNum)));
+      addrs.add(new HostPort(hostPart, Integer.parseInt(portNum)));
     }
     if (addrs.isEmpty()) {
       // servers was passed in empty, and shouldn't have been
@@ -94,13 +92,12 @@ public final class AddrUtil {
     return addrs;
   }
 
-  public static List<InetSocketAddress>
-  getAddressesFromURL(List<URL> servers) {
-    ArrayList<InetSocketAddress> addrs =
-      new ArrayList<InetSocketAddress>(servers.size());
+  public static List<HostPort> getAddressesFromURL(List<URL> servers) {
+    ArrayList<HostPort> addrs = new ArrayList<HostPort>(servers.size());
     for (URL server : servers) {
-      addrs.add(new InetSocketAddress(server.getHost(), server.getPort()));
+      addrs.add(new HostPort(server.getHost(), server.getPort()));
     }
     return addrs;
   }
+
 }
