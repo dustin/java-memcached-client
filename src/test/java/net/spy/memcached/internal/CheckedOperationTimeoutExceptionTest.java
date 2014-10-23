@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import junit.framework.TestCase;
+import net.spy.memcached.HostPort;
 import net.spy.memcached.MockMemcachedNode;
 import net.spy.memcached.TestConfig;
 import net.spy.memcached.ops.Operation;
@@ -76,8 +77,7 @@ public class CheckedOperationTimeoutExceptionTest extends TestCase {
   private TestOperation buildOp(int portNum) {
     TestOperation op = new TestOperation();
     MockMemcachedNode node =
-        new MockMemcachedNode(InetSocketAddress.createUnresolved(
-          TestConfig.IPV4_ADDR, portNum));
+        new MockMemcachedNode(new HostPort(TestConfig.IPV4_ADDR, portNum));
     op.setHandlingNode(node);
     return op;
   }

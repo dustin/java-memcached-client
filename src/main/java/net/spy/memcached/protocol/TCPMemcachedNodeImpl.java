@@ -24,7 +24,6 @@
 package net.spy.memcached.protocol;
 
 import java.io.IOException;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -37,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.spy.memcached.ConnectionFactory;
 import net.spy.memcached.FailureMode;
+import net.spy.memcached.HostPort;
 import net.spy.memcached.MemcachedConnection;
 import net.spy.memcached.MemcachedNode;
 import net.spy.memcached.compat.SpyObject;
@@ -51,7 +51,7 @@ import net.spy.memcached.protocol.binary.TapAckOperationImpl;
 public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     MemcachedNode {
 
-  private final SocketAddress socketAddress;
+  private final HostPort hostPort;
   private final ByteBuffer rbuf;
   private final ByteBuffer wbuf;
   protected final BlockingQueue<Operation> writeQ;
@@ -75,18 +75,26 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   // operation Future.get timeout counter
   private final AtomicInteger continuousTimeout = new AtomicInteger(0);
 
-  public TCPMemcachedNodeImpl(SocketAddress sa, SocketChannel c, int bufSize,
-      BlockingQueue<Operation> rq, BlockingQueue<Operation> wq,
-      BlockingQueue<Operation> iq, long opQueueMaxBlockTime,
-      boolean waitForAuth, long dt, long authWaitTime, ConnectionFactory fact) {
+  public TCPMemcachedNodeImpl(
+      HostPort hp,
+      SocketChannel c,
+      int bufSize,
+      BlockingQueue<Operation> rq,
+      BlockingQueue<Operation> wq,
+      BlockingQueue<Operation> iq,
+      long opQueueMaxBlockTime,
+      boolean waitForAuth,
+      long dt,
+      long authWaitTime,
+      ConnectionFactory fact) {
     super();
-    assert sa != null : "No SocketAddress";
+    assert hp != null : "No HostPort";
     assert c != null : "No SocketChannel";
     assert bufSize > 0 : "Invalid buffer size: " + bufSize;
     assert rq != null : "No operation read queue";
     assert wq != null : "No operation write queue";
     assert iq != null : "No input queue";
-    socketAddress = sa;
+    hostPort = hp;
     connectionFactory = fact;
     this.authWaitTime = authWaitTime;
     setChannel(c);
@@ -346,7 +354,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
         if (mode == FailureMode.Redistribute || mode == FailureMode.Retry) {
           getLogger().debug("Redistributing Operation " + op + " because auth "
             + "latch taken longer than " + authWaitTime + " milliseconds to "
-            + "complete on node " + getSocketAddress());
+            + "complete on node " + getHostPort());
           connection.retryOperation(op);
         } else {
           op.cancel();
@@ -423,10 +431,10 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   /*
    * (non-Javadoc)
    *
-   * @see net.spy.memcached.MemcachedNode#getSocketAddress()
+   * @see net.spy.memcached.MemcachedNode#getHostPort()
    */
-  public final SocketAddress getSocketAddress() {
-    return socketAddress;
+  public final HostPort getHostPort() {
+    return hostPort;
   }
 
   /*
@@ -491,7 +499,8 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     int rsize = readQ.size() + (optimizedOp == null ? 0 : 1);
     int wsize = writeQ.size();
     int isize = inputQueue.size();
-    return "{QA sa=" + getSocketAddress() + ", #Rops=" + rsize
+    return "{QA hp=" + getHostPort()
+        + ", #Rops=" + rsize
         + ", #Wops=" + wsize
         + ", #iq=" + isize
         + ", topRop=" + getCurrentReadOp()

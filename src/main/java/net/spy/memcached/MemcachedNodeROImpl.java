@@ -24,7 +24,6 @@
 package net.spy.memcached;
 
 import java.io.IOException;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -102,8 +101,8 @@ class MemcachedNodeROImpl implements MemcachedNode {
     throw new UnsupportedOperationException();
   }
 
-  public SocketAddress getSocketAddress() {
-    return root.getSocketAddress();
+  public HostPort getHostPort() {
+    return root.getHostPort();
   }
 
   public ByteBuffer getWbuf() {

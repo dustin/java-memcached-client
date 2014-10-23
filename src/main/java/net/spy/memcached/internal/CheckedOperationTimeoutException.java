@@ -68,7 +68,7 @@ public class CheckedOperationTimeoutException extends TimeoutException {
         rv.append(", ");
       }
       MemcachedNode node = op == null ? null : op.getHandlingNode();
-      rv.append(node == null ? "<unknown>" : node.getSocketAddress());
+      rv.append(node == null ? "<unknown>" : node.getHostPort());
     }
     return rv.toString();
   }

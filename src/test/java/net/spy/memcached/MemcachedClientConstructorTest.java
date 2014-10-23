@@ -24,9 +24,6 @@
 package net.spy.memcached;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +56,7 @@ public class MemcachedClientConstructorTest extends TestCase {
   }
 
   private void assertWorking() throws Exception {
-    Map<SocketAddress, String> versions = client.getVersions();
+    Map<HostPort, String> versions = client.getVersions();
     assertEquals("/" + TestConfig.IPV4_ADDR + ":" + TestConfig.PORT_NUMBER,
         versions.keySet().iterator().next().toString());
   }
@@ -71,8 +68,9 @@ public class MemcachedClientConstructorTest extends TestCase {
 
   public void testVarargConstructor() throws Exception {
     client =
-        new MemcachedClient(new InetSocketAddress(
-            InetAddress.getByName(TestConfig.IPV4_ADDR),
+        new MemcachedClient(
+            new HostPort(
+                TestConfig.IPV4_ADDR,
                 TestConfig.PORT_NUMBER));
     assertWorking();
   }
@@ -88,7 +86,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 
   public void testNulListConstructor() throws Exception {
     try {
-      List<InetSocketAddress> l = null;
+      List<HostPort> l = null;
       client = new MemcachedClient(l);
       fail("Expected null pointer exception, got " + client);
     } catch (NullPointerException e) {
@@ -98,7 +96,7 @@ public class MemcachedClientConstructorTest extends TestCase {
 
   public void testEmptyListConstructor() throws Exception {
     try {
-      client = new MemcachedClient(Collections.<InetSocketAddress>emptyList());
+      client = new MemcachedClient(Collections.<HostPort>emptyList());
       fail("Expected illegal arg exception, got " + client);
     } catch (IllegalArgumentException e) {
       assertArgRequired(e);
@@ -165,8 +163,7 @@ public class MemcachedClientConstructorTest extends TestCase {
     try {
       client = new MemcachedClient(new DefaultConnectionFactory() {
         @Override
-        public MemcachedConnection createConnection(
-            List<InetSocketAddress> addrs) throws IOException {
+        public MemcachedConnection createConnection(List<HostPort> addrs) throws IOException {
           return null;
         }
       }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":"
