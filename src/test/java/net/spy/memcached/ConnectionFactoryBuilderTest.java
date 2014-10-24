@@ -24,7 +24,6 @@
 package net.spy.memcached;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.Collections;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -91,8 +90,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
     SocketChannel sc = SocketChannel.open();
     try {
       assertTrue(f.createMemcachedNode(
-          InetSocketAddress.createUnresolved("localhost",
-              TestConfig.PORT_NUMBER), sc, 1)
+          new HostPort("localhost", TestConfig.PORT_NUMBER), sc, 1)
           instanceof AsciiMemcachedNodeImpl);
     } finally {
       sc.close();
@@ -109,11 +107,11 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
 
   public void testModifications() throws Exception {
     ConnectionObserver testObserver = new ConnectionObserver() {
-      public void connectionLost(SocketAddress sa) {
+      public void connectionLost(HostPort hp) {
         // none
       }
 
-      public void connectionEstablished(SocketAddress sa, int reconnectCount) {
+      public void connectionEstablished(HostPort hp, int reconnectCount) {
         // none
       }
     };
@@ -161,16 +159,14 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
     assertEquals(f.getAuthWaitTime(), 3000);
 
     MemcachedNode n = new MockMemcachedNode(
-        InetSocketAddress.createUnresolved("localhost",
-            TestConfig.PORT_NUMBER));
+        new HostPort("localhost", TestConfig.PORT_NUMBER));
     assertTrue(f.createLocator(Collections.singletonList(n))
         instanceof KetamaNodeLocator);
 
     SocketChannel sc = SocketChannel.open();
     try {
       assertTrue(f.createMemcachedNode(
-          InetSocketAddress.createUnresolved("localhost",
-              TestConfig.PORT_NUMBER), sc, 1)
+          new HostPort("lcoalhost", TestConfig.PORT_NUMBER), sc, 1)
           instanceof BinaryMemcachedNodeImpl);
     } finally {
       sc.close();

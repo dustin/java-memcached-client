@@ -23,7 +23,6 @@
 
 package net.spy.memcached;
 
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,9 +37,8 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
   protected void setupNodes(HashAlgorithm alg, int n) {
     super.setupNodes(n);
     for (int i = 0; i < nodeMocks.length; i++) {
-      nodeMocks[i].expects(atLeastOnce()).method("getSocketAddress")
-          .will(returnValue(InetSocketAddress.createUnresolved("127.0.0.1",
-          10000 + i)));
+      nodeMocks[i].expects(atLeastOnce()).method("getHostPort")
+          .will(returnValue(new HostPort("127.0.0.1", 10000 + i)));
     }
 
     locator = new KetamaNodeLocator(Arrays.asList(nodes), alg);
@@ -72,9 +70,8 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
 
     ArrayList<MemcachedNode> toUpdate = new ArrayList<MemcachedNode>();
     Mock mock = mock(MemcachedNode.class);
-    mock.expects(atLeastOnce()).method("getSocketAddress")
-          .will(returnValue(InetSocketAddress.createUnresolved("127.0.0.1",
-          10000)));
+    mock.expects(atLeastOnce()).method("getHostPort")
+          .will(returnValue(new HostPort("127.0.0.1", 10000)));
     toUpdate.add((MemcachedNode) mock.proxy());
     locator.updateLocator(toUpdate);
 
@@ -175,9 +172,9 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
     setupNodes(servers.length);
 
     for (int i = 0; i < nodeMocks.length; i++) {
-      List<InetSocketAddress> a = AddrUtil.getAddresses(servers[i]);
+      List<HostPort> a = AddrUtil.getAddresses(servers[i]);
 
-      nodeMocks[i].expects(atLeastOnce()).method("getSocketAddress")
+      nodeMocks[i].expects(atLeastOnce()).method("getHostPort")
           .will(returnValue(a.iterator().next()));
 
     }
@@ -1817,7 +1814,7 @@ public class KetamaNodeLocatorTest extends AbstractNodeLocationCase {
       String k = s[0];
       String server = s[1];
       MemcachedNode n = locator.getPrimary(k);
-      assertEquals("/" + server, n.getSocketAddress().toString());
+      assertEquals(server, n.getHostPort().toString());
     }
 
   }

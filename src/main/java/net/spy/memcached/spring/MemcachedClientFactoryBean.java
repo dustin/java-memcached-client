@@ -69,7 +69,8 @@ public class MemcachedClientFactoryBean implements FactoryBean {
 
   @Override
   public Object getObject() throws Exception {
-    return new MemcachedClient(connectionFactoryBuilder.build(),
+    return new MemcachedClient(
+        connectionFactoryBuilder.build(),
         AddrUtil.getAddresses(servers));
   }
 

@@ -22,7 +22,6 @@
 
 package net.spy.memcached;
 
-import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,14 +34,14 @@ import junit.framework.TestCase;
 public class AddrUtilTest extends TestCase {
 
   public void testSingle() throws Exception {
-    List<InetSocketAddress> addrs = AddrUtil.getAddresses("www.google.com:80");
+    List<HostPort> addrs = AddrUtil.getAddresses("www.google.com:80");
     assertEquals(1, addrs.size());
     assertEquals("www.google.com", addrs.get(0).getHostName());
     assertEquals(80, addrs.get(0).getPort());
   }
 
   public void testTwo() throws Exception {
-    List<InetSocketAddress> addrs =
+    List<HostPort> addrs =
         AddrUtil.getAddresses("www.google.com:80 www.yahoo.com:81");
     assertEquals(2, addrs.size());
     assertEquals("www.google.com", addrs.get(0).getHostName());
@@ -52,7 +51,7 @@ public class AddrUtilTest extends TestCase {
   }
 
   public void testThree() throws Exception {
-    List<InetSocketAddress> addrs = AddrUtil
+    List<HostPort> addrs = AddrUtil
         .getAddresses(" ,  www.google.com:80 ,, ,, www.yahoo.com:81 , ,,");
     assertEquals(2, addrs.size());
     assertEquals("www.google.com", addrs.get(0).getHostName());
@@ -64,7 +63,7 @@ public class AddrUtilTest extends TestCase {
   public void testBrokenHost() throws Exception {
     String s = "www.google.com:80 www.yahoo.com:81:more";
     try {
-      List<InetSocketAddress> addrs = AddrUtil.getAddresses(s);
+      List<HostPort> addrs = AddrUtil.getAddresses(s);
       fail("Expected failure, got " + addrs);
     } catch (NumberFormatException e) {
       e.printStackTrace();
@@ -75,7 +74,7 @@ public class AddrUtilTest extends TestCase {
   public void testBrokenHost2() throws Exception {
     String s = "www.google.com:80 www.yahoo.com";
     try {
-      List<InetSocketAddress> addrs = AddrUtil.getAddresses(s);
+      List<HostPort> addrs = AddrUtil.getAddresses(s);
       fail("Expected failure, got " + addrs);
     } catch (IllegalArgumentException e) {
       assertEquals("Invalid server ``www.yahoo.com'' in list:  " + s,
@@ -86,7 +85,7 @@ public class AddrUtilTest extends TestCase {
   public void testBrokenList() throws Exception {
     String s = "";
     try {
-      List<InetSocketAddress> addrs = AddrUtil.getAddresses(s);
+      List<HostPort> addrs = AddrUtil.getAddresses(s);
       fail("Expected failure, got " + addrs);
     } catch (IllegalArgumentException e) {
       assertEquals("No hosts in list:  ``''", e.getMessage());
@@ -96,7 +95,7 @@ public class AddrUtilTest extends TestCase {
   public void testBrokenList2() throws Exception {
     String s = "   ";
     try {
-      List<InetSocketAddress> addrs = AddrUtil.getAddresses(s);
+      List<HostPort> addrs = AddrUtil.getAddresses(s);
       fail("Expected failure, got " + addrs);
     } catch (IllegalArgumentException e) {
       assertEquals("No hosts in list:  ``   ''", e.getMessage());
@@ -106,7 +105,7 @@ public class AddrUtilTest extends TestCase {
   public void testNullList() throws Exception {
     String s = null;
     try {
-      List<InetSocketAddress> addrs = AddrUtil.getAddresses(s);
+      List<HostPort> addrs = AddrUtil.getAddresses(s);
       fail("Expected failure, got " + addrs);
     } catch (NullPointerException e) {
       assertEquals("Null host list", e.getMessage());
@@ -114,7 +113,7 @@ public class AddrUtilTest extends TestCase {
   }
 
   public void testIPv6Host() throws Exception {
-    List<InetSocketAddress> addrs = AddrUtil.getAddresses("::1:80");
+    List<HostPort> addrs = AddrUtil.getAddresses("::1:80");
     assertEquals(1, addrs.size());
 
     Set<String> validLocalhostNames = new HashSet<String>();
@@ -122,7 +121,7 @@ public class AddrUtilTest extends TestCase {
     validLocalhostNames.add("ip6-localhost");
     validLocalhostNames.add("0:0:0:0:0:0:0:1");
     validLocalhostNames.add("localhost6.localdomain6");
-    assert (validLocalhostNames.contains(addrs.get(0).getHostName()));
+    assert (validLocalhostNames.contains(addrs.get(0).getAddress().getHostName()));
     assertEquals(80, addrs.get(0).getPort());
   }
 }

@@ -39,31 +39,30 @@ public class DefaultKetamaNodeLocatorConfiguration implements
 
   // Internal lookup map to try to carry forward the optimisation that was
   // previously in KetamaNodeLocator
-  protected Map<MemcachedNode, String> socketAddresses =
+  protected Map<MemcachedNode, String> address =
       new HashMap<MemcachedNode, String>();
 
   /**
-   * Returns the socket address of a given MemcachedNode.
+   * Returns the address of a given MemcachedNode.
    *
    * @param node The node which we're interested in
-   * @return String the socket address of that node.
+   * @return String the address of that node.
    */
-  protected String getSocketAddressForNode(MemcachedNode node) {
-    // Using the internal map retrieve the socket addresses
-    // for given nodes.
+  protected String getAddressForNode(MemcachedNode node) {
+    // Using the internal map retrieve the addresses for given nodes.
     // I'm aware that this code is inherently thread-unsafe as
     // I'm using a HashMap implementation of the map, but the worst
     // case ( I believe) is we're slightly in-efficient when
     // a node has never been seen before concurrently on two different
-    // threads, so it the socketaddress will be requested multiple times!
+    // threads, so it the address will be requested multiple times!
     // all other cases should be as fast as possible.
-    String result = socketAddresses.get(node);
+    String result = address.get(node);
     if (result == null) {
-      result = String.valueOf(node.getSocketAddress());
+      result = String.valueOf(node.getHostPort());
       if (result.startsWith("/")) {
         result = result.substring(1);
       }
-      socketAddresses.put(node, result);
+      address.put(node, result);
     }
     return result;
   }
@@ -83,9 +82,9 @@ public class DefaultKetamaNodeLocatorConfiguration implements
    * KetamaNodeLocator algorithm.
    *
    * <p>
-   * This default implementation uses the socket-address of the MemcachedNode
-   * and concatenates it with a hyphen directly against the repetition number
-   * for example a key for a particular server's first repetition may look like:
+   * This default implementation uses the address of the MemcachedNode and
+   * concatenates it with a hyphen directly against the repetition number for
+   * example a key for a particular server's first repetition may look like:
    * <p>
    *
    * <p>
@@ -115,6 +114,6 @@ public class DefaultKetamaNodeLocatorConfiguration implements
    * @return The key that represents the specific repetition of the node
    */
   public String getKeyForNode(MemcachedNode node, int repetition) {
-    return getSocketAddressForNode(node) + "-" + repetition;
+    return getAddressForNode(node) + "-" + repetition;
   }
 }

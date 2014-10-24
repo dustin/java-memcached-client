@@ -24,7 +24,6 @@
 package net.spy.memcached;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +35,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import net.spy.memcached.internal.OperationFuture;
 import net.spy.memcached.ops.Operation;
 
 /**
@@ -52,7 +52,7 @@ public class QueueOverflowTest extends ClientBaseCase {
     initClient(new DefaultConnectionFactory(5, 1024) {
       @Override
       public MemcachedConnection
-      createConnection(List<InetSocketAddress> addrs) throws IOException {
+      createConnection(List<HostPort> addrs) throws IOException {
         MemcachedConnection rv = super.createConnection(addrs);
         return rv;
       }
@@ -146,7 +146,7 @@ public class QueueOverflowTest extends ClientBaseCase {
     } catch (IllegalStateException e) {
       // expected
     }
-    Thread.sleep(50);
+    Thread.sleep(100);
     for (Future<Object> f : c) {
       try {
         f.get(1, TimeUnit.SECONDS);
@@ -156,7 +156,7 @@ public class QueueOverflowTest extends ClientBaseCase {
         // OK, at least we got one back.
       }
     }
-    Thread.sleep(500);
+    Thread.sleep(1000);
     assertTrue(client.set("kx", 0, "woo").get(5, TimeUnit.SECONDS));
   }
 }

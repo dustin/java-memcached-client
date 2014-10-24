@@ -23,8 +23,6 @@
 package net.spy.memcached;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -63,17 +61,17 @@ public class TapConnectionProvider extends SpyObject implements
    * @param ia the memcached locations
    * @throws IOException if connections cannot be established
    */
-  public TapConnectionProvider(InetSocketAddress... ia) throws IOException {
+  public TapConnectionProvider(HostPort... ia) throws IOException {
     this(new BinaryConnectionFactory(), Arrays.asList(ia));
   }
 
   /**
    * Get a tap client operating on the specified memcached locations.
    *
-   * @param addrs the socket addrs
+   * @param addrs the address
    * @throws IOException if connections cannot be established
    */
-  public TapConnectionProvider(List<InetSocketAddress> addrs)
+  public TapConnectionProvider(List<HostPort> addrs)
     throws IOException {
     this(new BinaryConnectionFactory(), addrs);
   }
@@ -82,11 +80,11 @@ public class TapConnectionProvider extends SpyObject implements
    * Get a tap client operating on the specified memcached locations.
    *
    * @param cf the connection factory to configure connections for this client
-   * @param addrs the socket addresses
+   * @param addrs the addresses
    * @throws IOException if connections cannot be established
    */
   public TapConnectionProvider(ConnectionFactory cf,
-      List<InetSocketAddress> addrs) throws IOException {
+      List<HostPort> addrs) throws IOException {
     if (cf == null) {
       throw new NullPointerException("Connection factory required");
     }
@@ -137,7 +135,7 @@ public class TapConnectionProvider extends SpyObject implements
     if (rv) {
       for (MemcachedNode node : conn.getLocator().getAll()) {
         if (node.isActive()) {
-          obs.connectionEstablished(node.getSocketAddress(), -1);
+          obs.connectionEstablished(node.getHostPort(), -1);
         }
       }
     }
@@ -154,28 +152,28 @@ public class TapConnectionProvider extends SpyObject implements
     return conn.removeObserver(obs);
   }
 
-  public void connectionEstablished(SocketAddress sa, int reconnectCount) {
+  public void connectionEstablished(HostPort hp, int reconnectCount) {
     if (authDescriptor != null) {
       if (authDescriptor.authThresholdReached()) {
         this.shutdown();
       } else {
-        authMonitor.authConnection(conn, opFact, authDescriptor, findNode(sa));
+        authMonitor.authConnection(conn, opFact, authDescriptor, findNode(hp));
       }
     }
   }
 
-  private MemcachedNode findNode(SocketAddress sa) {
+  private MemcachedNode findNode(HostPort hp) {
     MemcachedNode node = null;
     for (MemcachedNode n : conn.getLocator().getAll()) {
-      if (n.getSocketAddress().equals(sa)) {
+      if (n.getHostPort().equals(hp)) {
         node = n;
       }
     }
-    assert node != null : "Couldn't find node connected to " + sa;
+    assert node != null : "Couldn't find node connected to " + hp;
     return node;
   }
 
-  public void connectionLost(SocketAddress sa) {
+  public void connectionLost(HostPort hp) {
     // Don't care.
   }
 

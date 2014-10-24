@@ -25,8 +25,6 @@ package net.spy.memcached;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -40,17 +38,17 @@ import org.jmock.MockObjectTestCase;
 public class MemcachedNodeROImplTest extends MockObjectTestCase {
 
   public void testReadOnliness() throws Exception {
-    SocketAddress sa = new InetSocketAddress(TestConfig.PORT_NUMBER);
+    HostPort hp = new HostPort("", TestConfig.PORT_NUMBER);
     Mock m = mock(MemcachedNode.class, "node");
     MemcachedNodeROImpl node =
         new MemcachedNodeROImpl((MemcachedNode) m.proxy());
-    m.expects(once()).method("getSocketAddress").will(returnValue(sa));
+    m.expects(once()).method("getHostPort").will(returnValue(hp));
 
-    assertSame(sa, node.getSocketAddress());
+    assertSame(hp, node.getHostPort());
     assertEquals(m.proxy().toString(), node.toString());
 
     Set<String> acceptable = new HashSet<String>(Arrays.asList("toString",
-        "getSocketAddress", "getBytesRemainingToWrite", "getReconnectCount",
+        "getHostPort", "getBytesRemainingToWrite", "getReconnectCount",
         "getSelectionOps", "hasReadOp", "hasWriteOp", "isActive"));
 
     for (Method meth : MemcachedNode.class.getMethods()) {
