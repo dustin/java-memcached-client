@@ -23,6 +23,10 @@
 
 package net.spy.memcached;
 
+import net.spy.memcached.compat.SpyObject;
+import net.spy.memcached.util.DefaultKetamaNodeLocatorConfiguration;
+import net.spy.memcached.util.KetamaNodeLocatorConfiguration;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,10 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import net.spy.memcached.compat.SpyObject;
-import net.spy.memcached.util.DefaultKetamaNodeLocatorConfiguration;
-import net.spy.memcached.util.KetamaNodeLocatorConfiguration;
 
 /**
  * This is an implementation of the Ketama consistent hash strategy from
@@ -139,7 +139,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
 
     // Rewrite the values a copy of the map.
     for (Map.Entry<Long, MemcachedNode> me : smn.entrySet()) {
-      me.setValue(new MemcachedNodeROImpl(me.getValue()));
+      smn.put(me.getKey(), new MemcachedNodeROImpl(me.getValue()));
     }
 
     // Copy the allNodes collection.
