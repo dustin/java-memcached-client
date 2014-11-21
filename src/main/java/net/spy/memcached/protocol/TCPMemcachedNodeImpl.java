@@ -73,7 +73,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   private volatile long lastReadTimestamp = System.nanoTime();
   private MemcachedConnection connection;
 
-  // operation Future.get timeout counter
+  // operation Future.{get,mutate} timeout counter
   private final Object timeoutLock = new Object();
   private int continuousTimeout = 0;
   private long continuousTimeoutStart = 0;
