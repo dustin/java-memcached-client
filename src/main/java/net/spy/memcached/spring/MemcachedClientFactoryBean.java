@@ -23,6 +23,7 @@
 package net.spy.memcached.spring;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 import net.spy.memcached.AddrUtil;
 import net.spy.memcached.ConnectionFactoryBuilder;
@@ -37,7 +38,9 @@ import net.spy.memcached.auth.AuthDescriptor;
 import net.spy.memcached.ops.OperationQueueFactory;
 import net.spy.memcached.transcoders.Transcoder;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * A Spring {@link FactoryBean} creating {@link MemcachedClient} instances.
@@ -62,15 +65,17 @@ import org.springframework.beans.factory.FactoryBean;
  */
 
 @SuppressWarnings("rawtypes")
-public class MemcachedClientFactoryBean implements FactoryBean {
+public class MemcachedClientFactoryBean implements FactoryBean,
+        InitializingBean, DisposableBean {
   private final ConnectionFactoryBuilder connectionFactoryBuilder =
       new ConnectionFactoryBuilder();
   private String servers;
+  private long shutdownTimeoutSeconds = 0;
+  private MemcachedClient client;
 
   @Override
   public Object getObject() throws Exception {
-    return new MemcachedClient(connectionFactoryBuilder.build(),
-        AddrUtil.getAddresses(servers));
+    return client;
   }
 
   @Override
@@ -81,6 +86,21 @@ public class MemcachedClientFactoryBean implements FactoryBean {
   @Override
   public boolean isSingleton() {
     return true;
+  }
+
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    client = new MemcachedClient(connectionFactoryBuilder.build(),
+            AddrUtil.getAddresses(servers));
+  }
+
+  @Override
+  public void destroy() throws Exception {
+    if(shutdownTimeoutSeconds > 0) {
+      client.shutdown(shutdownTimeoutSeconds, TimeUnit.SECONDS);
+    } else {
+      client.shutdown();
+    }
   }
 
   public void setServers(final String newServers) {
@@ -161,5 +181,13 @@ public class MemcachedClientFactoryBean implements FactoryBean {
 
   public void setWriteOpQueueFactory(final OperationQueueFactory q) {
     connectionFactoryBuilder.setWriteOpQueueFactory(q);
+  }
+
+  /**
+   * The number of seconds to wait for connections to finish before shutting
+   * down the client.
+   */
+  public void setShutdownTimeoutSeconds(long shutdownTimeoutSeconds) {
+    this.shutdownTimeoutSeconds = shutdownTimeoutSeconds;
   }
 }
