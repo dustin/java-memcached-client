@@ -41,7 +41,7 @@ import net.spy.memcached.util.StringUtils;
 /**
  * Base class for get and gets handlers.
  */
-abstract class BaseGetOpImpl extends OperationImpl {
+public abstract class BaseGetOpImpl extends OperationImpl {
 
   private static final OperationStatus END = new OperationStatus(true, "END",
     StatusCode.SUCCESS);
@@ -54,7 +54,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
   private final Collection<String> keys;
   private String currentKey = null;
   protected final int exp;
-  private final boolean hasExp;
+  private final byte[] expBytes;
   private long casValue = 0;
   private int currentFlags = 0;
   private byte[] data = null;
@@ -67,7 +67,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
     cmd = c;
     keys = k;
     exp = 0;
-    hasExp = false;
+    expBytes = null;
     hasValue = false;
   }
 
@@ -76,7 +76,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
     cmd = c;
     keys = Collections.singleton(k);
     exp = e;
-    hasExp = true;
+    expBytes = String.valueOf(e).getBytes();
     hasValue = false;
   }
 
@@ -200,23 +200,31 @@ abstract class BaseGetOpImpl extends OperationImpl {
       size += k.length;
       size++;
     }
-    byte[] e = String.valueOf(exp).getBytes();
-    if (hasExp) {
-      size += e.length + 1;
-    }
+    size += afterKeyBytesSize();
     ByteBuffer b = ByteBuffer.allocate(size);
     b.put(cmd.getBytes());
     for (byte[] k : keyBytes) {
       b.put((byte) ' ');
       b.put(k);
     }
-    if (hasExp) {
-      b.put((byte) ' ');
-      b.put(e);
-    }
+    afterKeyBytes(b);
     b.put(RN_BYTES);
     b.flip();
     setBuffer(b);
+  }
+
+  protected int afterKeyBytesSize() {
+    if (expBytes == null) {
+      return 0;
+    }
+    return expBytes.length + 1;
+  }
+
+  protected void afterKeyBytes(final ByteBuffer b) {
+    if (expBytes != null) {
+      b.put((byte) ' ');
+      b.put(expBytes);
+    }
   }
 
   @Override
