@@ -64,4 +64,10 @@ public class GetlOperationImpl extends SingleKeyOperationImpl implements
   public String toString() {
     return super.toString() + " Exp: " + exp;
   }
+
+  @Override
+  public int getExpiration() {
+    return exp;
+  }
+
 }

@@ -31,7 +31,15 @@ class GetlOperationImpl extends BaseGetOpImpl implements GetlOperation {
 
   private static final String CMD = "getl";
 
+  private final int exp;
+
   public GetlOperationImpl(String key, int exp, GetlOperation.Callback c) {
     super(CMD, exp, c, key);
+    this.exp = exp;
+  }
+
+  @Override
+  public int getExpiration() {
+    return exp;
   }
 }

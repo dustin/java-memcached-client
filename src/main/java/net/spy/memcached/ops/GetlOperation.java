@@ -40,4 +40,7 @@ public interface GetlOperation extends KeyedOperation {
      */
     void gotData(String key, int flags, long cas, byte[] data);
   }
+
+  int getExpiration();
+
 }
