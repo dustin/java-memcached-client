@@ -27,8 +27,10 @@ import net.spy.memcached.compat.SpyObject;
 import net.spy.memcached.util.DefaultKetamaNodeLocatorConfiguration;
 import net.spy.memcached.util.KetamaNodeLocatorConfiguration;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,8 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
   private volatile Collection<MemcachedNode> allNodes;
 
   private final HashAlgorithm hashAlg;
+  private final Map<InetSocketAddress, Integer> weights;
+  private final boolean isWeightedKetama;
   private final KetamaNodeLocatorConfiguration config;
 
   /**
@@ -63,7 +67,26 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
    *          consistent hash continuum
    */
   public KetamaNodeLocator(List<MemcachedNode> nodes, HashAlgorithm alg) {
-    this(nodes, alg, new DefaultKetamaNodeLocatorConfiguration());
+    this(nodes, alg, KetamaNodeKeyFormatter.Format.SPYMEMCACHED, new HashMap<InetSocketAddress, Integer>());
+  }
+
+  /**
+   * Create a new KetamaNodeLocator with specific nodes, hash, node key format,
+   * and weight
+   *
+   * @param nodes The List of nodes to use in the Ketama consistent hash
+   *          continuum
+   * @param alg The hash algorithm to use when choosing a node in the Ketama
+   *          consistent hash continuum
+   * @param nodeKeyFormat the format used to name the nodes in Ketama, either
+   *          SPYMEMCACHED or LIBMEMCACHED
+   * @param weights node weights for ketama, a map from InetSocketAddress to
+   *          weight as Integer
+   */
+    public KetamaNodeLocator(List<MemcachedNode> nodes, HashAlgorithm alg,
+            KetamaNodeKeyFormatter.Format nodeKeyFormat,
+            Map<InetSocketAddress, Integer> weights) {
+    this(nodes, alg, weights, new DefaultKetamaNodeLocatorConfiguration(new KetamaNodeKeyFormatter(nodeKeyFormat)));
   }
 
   /**
@@ -78,21 +101,44 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
    */
   public KetamaNodeLocator(List<MemcachedNode> nodes, HashAlgorithm alg,
       KetamaNodeLocatorConfiguration conf) {
+    this(nodes, alg, new HashMap<InetSocketAddress, Integer>(), conf);
+  }
+
+  /**
+   * Create a new KetamaNodeLocator with specific nodes, hash, node key format,
+   * and weight
+   *
+   * @param nodes The List of nodes to use in the Ketama consistent hash
+   *          continuum
+   * @param alg The hash algorithm to use when choosing a node in the Ketama
+   *          consistent hash continuum
+   * @param weights node weights for ketama, a map from InetSocketAddress to
+   *          weight as Integer
+   * @param configuration node locator configuration
+   */
+    public KetamaNodeLocator(List<MemcachedNode> nodes, HashAlgorithm alg,
+            Map<InetSocketAddress, Integer> nodeWeights,
+            KetamaNodeLocatorConfiguration configuration) {
     super();
     allNodes = nodes;
     hashAlg = alg;
-    config = conf;
+    config = configuration;
+    weights = nodeWeights;
+    isWeightedKetama = !weights.isEmpty();
     setKetamaNodes(nodes);
   }
 
   private KetamaNodeLocator(TreeMap<Long, MemcachedNode> smn,
       Collection<MemcachedNode> an, HashAlgorithm alg,
+      Map<InetSocketAddress, Integer> nodeWeights,
       KetamaNodeLocatorConfiguration conf) {
     super();
     ketamaNodes = smn;
     allNodes = an;
     hashAlg = alg;
     config = conf;
+    weights = nodeWeights;
+    isWeightedKetama = !weights.isEmpty();
   }
 
   public Collection<MemcachedNode> getAll() {
@@ -147,7 +193,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
       an.add(new MemcachedNodeROImpl(n));
     }
 
-    return new KetamaNodeLocator(smn, an, hashAlg, config);
+    return new KetamaNodeLocator(smn, an, hashAlg, weights, config);
   }
 
   @Override
@@ -171,30 +217,62 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
    */
   protected void setKetamaNodes(List<MemcachedNode> nodes) {
     TreeMap<Long, MemcachedNode> newNodeMap =
-        new TreeMap<Long, MemcachedNode>();
+            new TreeMap<Long, MemcachedNode>();
     int numReps = config.getNodeRepetitions();
+    int nodeCount = nodes.size();
+    int totalWeight = 0;
+
+    if (isWeightedKetama) {
+        for (MemcachedNode node : nodes) {
+            totalWeight += weights.get(node.getSocketAddress());
+        }
+    }
+
     for (MemcachedNode node : nodes) {
-      // Ketama does some special work with md5 where it reuses chunks.
-      if (hashAlg == DefaultHashAlgorithm.KETAMA_HASH) {
-        for (int i = 0; i < numReps / 4; i++) {
-          byte[] digest =
-              DefaultHashAlgorithm.computeMd5(config.getKeyForNode(node, i));
-          for (int h = 0; h < 4; h++) {
-            Long k = ((long) (digest[3 + h * 4] & 0xFF) << 24)
-                    | ((long) (digest[2 + h * 4] & 0xFF) << 16)
-                    | ((long) (digest[1 + h * 4] & 0xFF) << 8)
-                    | (digest[h * 4] & 0xFF);
-            newNodeMap.put(k, node);
-            getLogger().debug("Adding node %s in position %d", node, k);
+      if (isWeightedKetama) {
+
+          int thisWeight = weights.get(node.getSocketAddress());
+          float percent = (float)thisWeight / (float)totalWeight;
+          int pointerPerServer = (int)((Math.floor((float)(percent * (float)config.getNodeRepetitions() / 4 * (float)nodeCount + 0.0000000001))) * 4);
+          for (int i = 0; i < pointerPerServer / 4; i++) {
+              for(long position : ketamaNodePositionsAtIteration(node, i)) {
+                  newNodeMap.put(position, node);
+                  getLogger().debug("Adding node %s with weight %s in position %d", node, thisWeight, position);
+              }
           }
-        }
       } else {
-        for (int i = 0; i < numReps; i++) {
-          newNodeMap.put(hashAlg.hash(config.getKeyForNode(node, i)), node);
-        }
+          // Ketama does some special work with md5 where it reuses chunks.
+          // Check to be backwards compatible, the hash algorithm does not
+          // matter for Ketama, just the placement should always be done using
+          // MD5
+          if (hashAlg == DefaultHashAlgorithm.KETAMA_HASH) {
+              for (int i = 0; i < numReps / 4; i++) {
+                  for(long position : ketamaNodePositionsAtIteration(node, i)) {
+                    newNodeMap.put(position, node);
+                    getLogger().debug("Adding node %s in position %d", node, position);
+                  }
+              }
+          } else {
+              for (int i = 0; i < numReps; i++) {
+                  newNodeMap.put(hashAlg.hash(config.getKeyForNode(node, i)), node);
+              }
+          }
       }
     }
     assert newNodeMap.size() == numReps * nodes.size();
     ketamaNodes = newNodeMap;
+  }
+
+  private List<Long> ketamaNodePositionsAtIteration(MemcachedNode node, int iteration) {
+      List<Long> positions = new ArrayList<Long>();
+      byte[] digest = DefaultHashAlgorithm.computeMd5(config.getKeyForNode(node, iteration));
+      for (int h = 0; h < 4; h++) {
+          Long k = ((long) (digest[3 + h * 4] & 0xFF) << 24)
+              | ((long) (digest[2 + h * 4] & 0xFF) << 16)
+              | ((long) (digest[1 + h * 4] & 0xFF) << 8)
+              | (digest[h * 4] & 0xFF);
+          positions.add(k);
+      }
+      return positions;
   }
 }

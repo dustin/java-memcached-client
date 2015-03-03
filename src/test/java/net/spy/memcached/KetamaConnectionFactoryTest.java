@@ -22,7 +22,10 @@
 
 package net.spy.memcached;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -41,7 +44,29 @@ public class KetamaConnectionFactoryTest extends TestCase {
 
     NodeLocator locator = factory.createLocator(new ArrayList<MemcachedNode>());
     assertTrue(locator instanceof KetamaNodeLocator);
+  }
 
-    assertEquals(DefaultHashAlgorithm.KETAMA_HASH, factory.getHashAlg());
+  /*
+   * Test initialization with defaults
+   */
+  public void testDefaultProperties() {
+      KetamaConnectionFactory connectionFactory = new KetamaConnectionFactory();
+      assertEquals(connectionFactory.getHashAlg(), DefaultHashAlgorithm.KETAMA_HASH);
+      assertTrue(connectionFactory.getWeights().isEmpty());
+      assertEquals(connectionFactory.getKetamaNodeKeyFormat(), KetamaNodeKeyFormatter.Format.SPYMEMCACHED);
+  }
+
+  /*
+   * Test overwriting the weights, hash and node key format
+   */
+  public void testSettingProperties() {
+        Map<InetSocketAddress, Integer> weights = new HashMap<InetSocketAddress, Integer>();
+        weights.put(new InetSocketAddress("localhost", 11211), 8);
+        KetamaConnectionFactory connectionFactory = new KetamaConnectionFactory(
+                1, 1, 1, DefaultHashAlgorithm.FNV1_32_HASH,
+                KetamaNodeKeyFormatter.Format.LIBMEMCACHED, weights);
+        assertEquals(connectionFactory.getWeights(), weights);
+        assertEquals(connectionFactory.getHashAlg(), DefaultHashAlgorithm.FNV1_32_HASH);
+        assertEquals(connectionFactory.getKetamaNodeKeyFormat(), KetamaNodeKeyFormatter.Format.LIBMEMCACHED);
   }
 }
