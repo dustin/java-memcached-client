@@ -23,12 +23,6 @@
 
 package net.spy.memcached.protocol.ascii;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-
-import javax.security.auth.callback.CallbackHandler;
-
 import net.spy.memcached.ops.BaseOperationFactory;
 import net.spy.memcached.ops.CASOperation;
 import net.spy.memcached.ops.ConcatenationOperation;
@@ -57,10 +51,16 @@ import net.spy.memcached.ops.StatsOperation.Callback;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.ops.TapOperation;
+import net.spy.memcached.ops.TouchOperation;
 import net.spy.memcached.ops.UnlockOperation;
 import net.spy.memcached.ops.VersionOperation;
 import net.spy.memcached.tapmessage.RequestMessage;
 import net.spy.memcached.tapmessage.TapOpcode;
+
+import javax.security.auth.callback.CallbackHandler;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Operation factory for the ascii protocol.
@@ -133,7 +133,7 @@ public class AsciiOperationFactory extends BaseOperationFactory {
     return new StoreOperationImpl(storeType, key, flags, exp, data, cb);
   }
 
-  public KeyedOperation touch(String key, int expiration,
+  public TouchOperation touch(String key, int expiration,
       OperationCallback cb) {
     return new TouchOperationImpl(key, expiration, cb);
   }

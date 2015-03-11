@@ -53,6 +53,7 @@ import net.spy.memcached.ops.StatsOperation;
 import net.spy.memcached.ops.StoreOperation;
 import net.spy.memcached.ops.StoreType;
 import net.spy.memcached.ops.TapOperation;
+import net.spy.memcached.ops.TouchOperation;
 import net.spy.memcached.ops.UnlockOperation;
 import net.spy.memcached.ops.VersionOperation;
 import net.spy.memcached.tapmessage.RequestMessage;
@@ -140,7 +141,7 @@ public class BinaryOperationFactory extends BaseOperationFactory {
     return new StoreOperationImpl(storeType, key, flags, exp, data, 0, cb);
   }
 
-  public KeyedOperation touch(String key, int expiration,
+  public TouchOperation touch(String key, int expiration,
       OperationCallback cb) {
     return new TouchOperationImpl(key, expiration, cb);
   }

@@ -23,16 +23,16 @@
 
 package net.spy.memcached.protocol.ascii;
 
+import net.spy.memcached.KeyUtil;
+import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.OperationState;
+import net.spy.memcached.ops.OperationStatus;
+import net.spy.memcached.ops.StatusCode;
+import net.spy.memcached.ops.TouchOperation;
+
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Collections;
-
-import net.spy.memcached.KeyUtil;
-import net.spy.memcached.ops.StatusCode;
-import net.spy.memcached.ops.TouchOperation;
-import net.spy.memcached.ops.OperationState;
-import net.spy.memcached.ops.OperationStatus;
-import net.spy.memcached.ops.OperationCallback;
 
 
 /**
@@ -46,9 +46,9 @@ final class TouchOperationImpl extends OperationImpl implements TouchOperation {
     new OperationStatus(true, "TOUCHED", StatusCode.SUCCESS);
 
   private final String key;
-  private final long exp;
+  private final int exp;
 
-  public TouchOperationImpl(String k, long t, OperationCallback cb) {
+  public TouchOperationImpl(String k, int t, OperationCallback cb) {
     super(cb);
     key = k;
     exp = t;
@@ -75,6 +75,11 @@ final class TouchOperationImpl extends OperationImpl implements TouchOperation {
     b.put(("touch " + key + " " + exp + "\r\n").getBytes());
     b.flip();
     setBuffer(b);
+  }
+
+  @Override
+  public int getExpiration() {
+    return exp;
   }
 
   @Override

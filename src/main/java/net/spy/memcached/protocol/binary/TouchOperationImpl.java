@@ -24,12 +24,13 @@
 package net.spy.memcached.protocol.binary;
 
 import net.spy.memcached.ops.OperationCallback;
-import static net.spy.memcached.protocol.binary.OperationImpl.STATUS_OK;
+import net.spy.memcached.ops.TouchOperation;
 
 /**
  * Operation to reset a timeout in Membase server.
  */
-public class TouchOperationImpl extends SingleKeyOperationImpl {
+public class TouchOperationImpl extends SingleKeyOperationImpl
+  implements TouchOperation {
 
   static final byte CMD = 0x1c;
 
@@ -48,6 +49,11 @@ public class TouchOperationImpl extends SingleKeyOperationImpl {
   @Override
   protected void decodePayload(byte[] pl) {
     getCallback().receivedStatus(STATUS_OK);
+  }
+
+  @Override
+  public int getExpiration() {
+    return exp;
   }
 
   @Override

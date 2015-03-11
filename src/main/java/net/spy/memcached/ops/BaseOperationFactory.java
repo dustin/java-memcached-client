@@ -92,7 +92,10 @@ public abstract class BaseOperationFactory implements OperationFactory {
     } else if(op instanceof GetAndTouchOperation) {
       GetAndTouchOperation gt = (GetAndTouchOperation) op;
       rv.add(getAndTouch(first(gt.getKeys()), gt.getExpiration(),
-          (GetAndTouchOperation.Callback) gt.getCallback()));
+        (GetAndTouchOperation.Callback) gt.getCallback()));
+    } else if (op instanceof TouchOperation) {
+      TouchOperation tt = (TouchOperation) op;
+      rv.add(touch(first(tt.getKeys()), tt.getExpiration(), tt.getCallback()));
     } else if (op instanceof GetlOperation) {
       GetlOperation gl = (GetlOperation) op;
       rv.add(getl(first(gl.getKeys()), gl.getExpiration(),

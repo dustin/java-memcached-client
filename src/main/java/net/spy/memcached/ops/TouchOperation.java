@@ -27,6 +27,10 @@ package net.spy.memcached.ops;
  * Touch operation marker.
  **/
 public interface TouchOperation extends KeyedOperation {
-  // TODO: hook this in with binary protocol
+
+  /**
+   * Get the expiration to set in case of a new entry.
+   */
+  int getExpiration();
 }
 

@@ -25,6 +25,8 @@ package net.spy.memcached.protocol.binary;
 import net.spy.memcached.OperationFactory;
 import net.spy.memcached.OperationFactoryTestBase;
 import net.spy.memcached.ops.GetAndTouchOperation;
+import net.spy.memcached.ops.OperationCallback;
+import net.spy.memcached.ops.TouchOperation;
 
 /**
  * An OperationFactoryTest.
@@ -42,6 +44,17 @@ public class OperationFactoryTest extends OperationFactoryTestBase {
     GetAndTouchOperation op = ofact.getAndTouch(TEST_KEY, 0, callback);
 
     GetAndTouchOperation op2 = cloneOne(GetAndTouchOperation.class, op);
+    assertKey(op2);
+    assertSame(callback, op2.getCallback());
+  }
+
+  public void testTouchOperationCloning() {
+    OperationCallback callback =
+      (OperationCallback) mock(OperationCallback.class).proxy();
+
+    TouchOperation op = ofact.touch(TEST_KEY, 0, callback);
+
+    TouchOperation op2 = cloneOne(TouchOperation.class, op);
     assertKey(op2);
     assertSame(callback, op2.getCallback());
   }
