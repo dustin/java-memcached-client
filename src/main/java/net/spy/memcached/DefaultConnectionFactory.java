@@ -391,6 +391,15 @@ public class DefaultConnectionFactory extends SpyObject implements
   /*
    * (non-Javadoc)
    *
+   * @see net.spy.memcached.ConnectionFactory#getKeepAlive()
+   */
+  public boolean getKeepAlive() {
+    return false;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
    * @see net.spy.memcached.ConnectionFactory#shouldOptimize()
    */
   public boolean shouldOptimize() {
