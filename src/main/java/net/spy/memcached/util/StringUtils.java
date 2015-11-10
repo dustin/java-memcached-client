@@ -123,7 +123,7 @@ public final class StringUtils {
     byte[] keyBytes = KeyUtil.getKeyBytes(key);
     int keyLength = keyBytes.length;
 
-    if (keyLength > MAX_KEY_LENGTH) {
+    if (keyLength > MAX_KEY_LENGTH && !binary) {
       throw KEY_TOO_LONG_EXCEPTION;
     }
 
