@@ -108,7 +108,8 @@ public class ResponseMessage extends BaseMessage {
       key = new byte[keylength];
       System.arraycopy(b, 32 + engineprivate, key, 0, keylength);
       value = new byte[0];
-    } else if (opcode.equals(TapOpcode.VBUCKETSET)) {
+    } else if (opcode.equals(TapOpcode.VBUCKETSET)
+      || opcode.equals(TapOpcode.OPAQUE)) {
       itemflags = 0;
       itemexpiry = 0;
       vbucketstate = decodeInt(b, ITEM_FLAGS_OFFSET);
@@ -122,14 +123,6 @@ public class ResponseMessage extends BaseMessage {
       itemexpiry = 0;
       vbucketstate = 0;
       checkpoint = decodeLong(b, KEY_OFFSET);
-      key = new byte[0];
-      value = new byte[0];
-      revid = new byte[0];
-    } else if (opcode.equals(TapOpcode.OPAQUE)) {
-      itemflags = 0;
-      itemexpiry = 0;
-      vbucketstate = decodeInt(b, ITEM_FLAGS_OFFSET);
-      checkpoint = 0;
       key = new byte[0];
       value = new byte[0];
       revid = new byte[0];

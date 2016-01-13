@@ -231,14 +231,12 @@ public  abstract class OperationImpl extends BaseOperationImpl
 
         switch (errCode) {
             case ERR_NOT_FOUND:
+            case ERR_NOT_STORED:
                 return new CASOperationStatus(false, new String(errPl),
                         CASResponse.NOT_FOUND, statusCode);
             case ERR_EXISTS:
                 return new CASOperationStatus(false, new String(errPl),
                         CASResponse.EXISTS, statusCode);
-            case ERR_NOT_STORED:
-                return new CASOperationStatus(false, new String(errPl),
-                        CASResponse.NOT_FOUND, statusCode);
             case ERR_2BIG:
             case ERR_INTERNAL:
                 handleError(OperationErrorType.SERVER, new String(errPl));

@@ -88,8 +88,6 @@ public class SunLogger extends AbstractLogger {
       sLevel = java.util.logging.Level.WARNING;
       break;
     case ERROR:
-      sLevel = java.util.logging.Level.SEVERE;
-      break;
     case FATAL:
       sLevel = java.util.logging.Level.SEVERE;
       break;
