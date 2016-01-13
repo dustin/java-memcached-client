@@ -123,7 +123,7 @@ public class MultiGetOperationImpl extends MultiKeyOperationImpl implements
     getStatusForErrorCode(errorCode, pl);
 
     if (responseOpaque == terminalOpaque) {
-      if (retryKeys.size() > 0) {
+      if (!retryKeys.isEmpty()) {
         transitionState(OperationState.RETRY);
         OperationStatus retryStatus = new OperationStatus(true,
           Integer.toString(retryKeys.size()), StatusCode.ERR_NOT_MY_VBUCKET);

@@ -102,7 +102,7 @@ public class BulkGetFuture<T>
     throws InterruptedException, ExecutionException {
     Collection<Operation> timedoutOps = new HashSet<Operation>();
     Map<String, T> ret = internalGet(to, unit, timedoutOps);
-    if (timedoutOps.size() > 0) {
+    if (!timedoutOps.isEmpty()) {
       timeout = true;
       LoggerFactory.getLogger(getClass()).warn(
           new CheckedOperationTimeoutException("Operation timed out: ",
@@ -122,7 +122,7 @@ public class BulkGetFuture<T>
     throws InterruptedException, ExecutionException, TimeoutException {
     Collection<Operation> timedoutOps = new HashSet<Operation>();
     Map<String, T> ret = internalGet(to, unit, timedoutOps);
-    if (timedoutOps.size() > 0) {
+    if (!timedoutOps.isEmpty()) {
       this.timeout = true;
       throw new CheckedOperationTimeoutException("Operation timed out.",
           timedoutOps);

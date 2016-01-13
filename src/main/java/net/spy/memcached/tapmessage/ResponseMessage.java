@@ -322,7 +322,7 @@ public class ResponseMessage extends BaseMessage {
 
   @Override
   public String toString() {
-    return String.format("Key: %s, Flags: %d, TTL: %d, Size: %d\nValue: %s",
+    return String.format("Key: %s, Flags: %d, TTL: %d, Size: %d%nValue: %s",
       getKey(), getItemFlags(), getTTL(), getValue().length, deserialize());
   }
 
