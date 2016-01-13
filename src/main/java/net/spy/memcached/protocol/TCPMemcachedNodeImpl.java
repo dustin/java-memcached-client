@@ -154,7 +154,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     // to requeue them.
     while (hasReadOp()) {
       op = removeCurrentReadOp();
-      if (op != getCurrentWriteOp()) {
+      if (!op.equals(getCurrentWriteOp())) {
         getLogger().warn("Discarding partially completed op: %s", op);
         op.cancel();
       }
@@ -240,11 +240,11 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
         if (o.isCancelled()) {
           getLogger().debug("Not writing cancelled op.");
           Operation cancelledOp = removeCurrentWriteOp();
-          assert o == cancelledOp;
+          assert o.equals(cancelledOp);
         } else if (o.isTimedOut(defaultOpTimeout)) {
           getLogger().debug("Not writing timed out op.");
           Operation timedOutOp = removeCurrentWriteOp();
-          assert o == timedOutOp;
+          assert o.equals(timedOutOp);
         } else {
           o.writing();
           if (!(o instanceof TapAckOperationImpl)) {

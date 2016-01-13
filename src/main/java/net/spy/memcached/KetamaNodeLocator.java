@@ -175,7 +175,7 @@ public final class KetamaNodeLocator extends SpyObject implements NodeLocator {
     int numReps = config.getNodeRepetitions();
     for (MemcachedNode node : nodes) {
       // Ketama does some special work with md5 where it reuses chunks.
-      if (hashAlg == DefaultHashAlgorithm.KETAMA_HASH) {
+      if (DefaultHashAlgorithm.KETAMA_HASH.equals(hashAlg)) {
         for (int i = 0; i < numReps / 4; i++) {
           byte[] digest =
               DefaultHashAlgorithm.computeMd5(config.getKeyForNode(node, i));

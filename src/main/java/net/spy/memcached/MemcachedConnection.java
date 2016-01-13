@@ -863,7 +863,7 @@ public class MemcachedConnection extends SpyThread {
       getLogger().debug("Completed read op: %s and giving the next %d "
         + "bytes", currentOp, rbuf.remaining());
       Operation op = node.removeCurrentReadOp();
-      assert op == currentOp : "Expected to pop " + currentOp + " got "
+      assert op.equals(currentOp) : "Expected to pop " + currentOp + " got "
         + op;
 
       if (op.hasErrored()) {
@@ -878,7 +878,7 @@ public class MemcachedConnection extends SpyThread {
       ((VBucketAware) currentOp).addNotMyVbucketNode(
         currentOp.getHandlingNode());
       Operation op = node.removeCurrentReadOp();
-      assert op == currentOp : "Expected to pop " + currentOp + " got "
+      assert op.equals(currentOp) : "Expected to pop " + currentOp + " got "
         + op;
 
       retryOps.add(currentOp);
@@ -905,7 +905,7 @@ public class MemcachedConnection extends SpyThread {
       getLogger().debug("Completed read op: %s and giving the next %d bytes",
         currentOp, rbuf.remaining());
       Operation op = node.removeCurrentReadOp();
-      assert op == currentOp : "Expected to pop " + currentOp + " got " + op;
+      assert op.equals(currentOp) : "Expected to pop " + currentOp + " got " + op;
       return node.getCurrentReadOp();
     } else {
       throw new IOException("Disconnected unexpected, will reconnect.");
@@ -1126,7 +1126,7 @@ public class MemcachedConnection extends SpyThread {
             ops = SelectionKey.OP_CONNECT;
           }
           node.registerChannel(ch, ch.register(selector, ops, node));
-          assert node.getChannel() == ch : "Channel was lost.";
+          assert node.getChannel().equals(ch) : "Channel was lost.";
         } else {
           getLogger().debug("Skipping duplicate reconnect request for %s",
             node);
@@ -1247,7 +1247,7 @@ public class MemcachedConnection extends SpyThread {
     metrics.markMeter(OVERALL_REQUEST_METRIC);
 
     Selector s = selector.wakeup();
-    assert s == selector : "Wakeup returned the wrong selector.";
+    assert s.equals(selector) : "Wakeup returned the wrong selector.";
     getLogger().debug("Added %s to %s", o, node);
   }
 
@@ -1269,7 +1269,7 @@ public class MemcachedConnection extends SpyThread {
     metrics.markMeter(OVERALL_REQUEST_METRIC);
 
     Selector s = selector.wakeup();
-    assert s == selector : "Wakeup returned the wrong selector.";
+    assert s.equals(selector) : "Wakeup returned the wrong selector.";
     getLogger().debug("Added %s to %s", o, node);
   }
 
@@ -1315,7 +1315,7 @@ public class MemcachedConnection extends SpyThread {
     }
 
     Selector s = selector.wakeup();
-    assert s == selector : "Wakeup returned the wrong selector.";
+    assert s.equals(selector) : "Wakeup returned the wrong selector.";
     return latch;
   }
 
@@ -1326,7 +1326,7 @@ public class MemcachedConnection extends SpyThread {
     shutDown = true;
     try {
       Selector s = selector.wakeup();
-      assert s == selector : "Wakeup returned the wrong selector.";
+      assert s.equals(selector) : "Wakeup returned the wrong selector.";
       for (MemcachedNode node : locator.getAll()) {
         if (node.getChannel() != null) {
           node.getChannel().close();
