@@ -333,7 +333,7 @@ public  abstract class OperationImpl extends BaseOperationImpl
     int bufSize = MIN_RECV_PACKET + keyBytes.length + val.length;
 
     ByteBuffer bb = ByteBuffer.allocate(bufSize + extraLen);
-    assert bb.order() == ByteOrder.BIG_ENDIAN;
+    assert ByteOrder.BIG_ENDIAN.equals(bb.order());
     bb.put(REQ_MAGIC);
     bb.put(cmd);
     bb.putShort((short) keyBytes.length);

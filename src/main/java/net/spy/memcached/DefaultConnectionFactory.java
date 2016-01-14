@@ -438,7 +438,7 @@ public class DefaultConnectionFactory extends SpyObject implements
     }
 
     String enableMetrics = System.getProperty("net.spy.metrics.enable");
-    if (enableMetrics().equals(MetricType.OFF) || enableMetrics == "false") {
+    if (MetricType.OFF.equals(enableMetrics()) || "false".equals(enableMetrics)) {
       getLogger().debug("Metric collection disabled.");
       metrics =  new NoopMetricCollector();
     } else {
