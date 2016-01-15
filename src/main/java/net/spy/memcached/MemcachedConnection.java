@@ -56,6 +56,7 @@ import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -943,7 +944,7 @@ public class MemcachedConnection extends SpyThread {
    * @param retryMessage the body of the retry message.
    */
   protected void handleRetryInformation(final byte[] retryMessage) {
-    getLogger().debug("Got RETRY message: " + new String(retryMessage)
+    getLogger().debug("Got RETRY message: " + new String(retryMessage, Charset.forName("UTF-8"))
       + ", but not handled.");
   }
 

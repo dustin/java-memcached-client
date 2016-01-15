@@ -23,6 +23,7 @@
 package net.spy.memcached.tapmessage;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -167,7 +168,7 @@ public class RequestMessage extends BaseMessage{
       }
       bb.putInt(flag);
     }
-    bb.put(name.getBytes());
+    bb.put(name.getBytes(Charset.forName("UTF-8")));
     if (hasBackfill) {
       bb.putLong(backfilldate);
     }

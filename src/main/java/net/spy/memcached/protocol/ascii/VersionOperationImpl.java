@@ -23,6 +23,7 @@
 package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 import net.spy.memcached.ops.NoopOperation;
 import net.spy.memcached.ops.OperationCallback;
@@ -37,7 +38,7 @@ import net.spy.memcached.ops.VersionOperation;
 final class VersionOperationImpl extends OperationImpl implements
     VersionOperation, NoopOperation {
 
-  private static final byte[] REQUEST = "version\r\n".getBytes();
+  private static final byte[] REQUEST = "version\r\n".getBytes(Charset.forName("UTF-8"));
 
   public VersionOperationImpl(OperationCallback c) {
     super(c);

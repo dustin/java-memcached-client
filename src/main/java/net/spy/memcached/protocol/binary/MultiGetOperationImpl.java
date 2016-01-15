@@ -25,6 +25,7 @@ package net.spy.memcached.protocol.binary;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -137,7 +138,7 @@ public class MultiGetOperationImpl extends MultiKeyOperationImpl implements
       retryKeys.add(keys.get(responseOpaque));
     } else if (errorCode != SUCCESS) {
       getLogger().warn("Error on key %s:  %s (%d)", keys.get(responseOpaque),
-          new String(pl), errorCode);
+          new String(pl, Charset.forName("UTF-8")), errorCode);
     } else {
       final int flags = decodeInt(pl, 0);
       final byte[] data = new byte[pl.length - EXTRA_HDR_LEN];

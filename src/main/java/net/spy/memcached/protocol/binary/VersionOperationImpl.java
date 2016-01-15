@@ -23,6 +23,8 @@
 
 package net.spy.memcached.protocol.binary;
 
+import java.nio.charset.Charset;
+
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.StatusCode;
@@ -43,7 +45,7 @@ class VersionOperationImpl extends OperationImpl implements VersionOperation {
 
   @Override
   protected void decodePayload(byte[] pl) {
-    getCallback().receivedStatus(new OperationStatus(true, new String(pl),
+    getCallback().receivedStatus(new OperationStatus(true, new String(pl, Charset.forName("UTF-8")),
       StatusCode.SUCCESS));
   }
 }

@@ -22,6 +22,8 @@
 
 package net.spy.memcached.protocol.binary;
 
+import java.nio.charset.Charset;
+
 import net.spy.memcached.ops.OperationCallback;
 import net.spy.memcached.ops.OperationStatus;
 import net.spy.memcached.ops.SASLMechsOperation;
@@ -43,7 +45,7 @@ class SASLMechsOperationImpl extends OperationImpl implements
 
   @Override
   protected void decodePayload(byte[] pl) {
-    getCallback().receivedStatus(new OperationStatus(true, new String(pl),
+    getCallback().receivedStatus(new OperationStatus(true, new String(pl, Charset.forName("UTF-8")),
       StatusCode.SUCCESS));
   }
 
