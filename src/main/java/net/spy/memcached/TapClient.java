@@ -240,7 +240,7 @@ public class TapClient {
     return ts;
   }
 
-  private void tapAck(TapConnectionProvider conn, MemcachedNode node,
+  private static void tapAck(TapConnectionProvider conn, MemcachedNode node,
       TapOpcode opcode, int opaque, OperationCallback cb) {
     final Operation op = conn.getOpFactory().tapAck(opcode, opaque, cb);
     conn.addTapAckOp(node, op);

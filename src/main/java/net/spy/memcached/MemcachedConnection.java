@@ -999,7 +999,7 @@ public class MemcachedConnection extends SpyThread {
    *
    * @param ops the list of operations to cancel.
    */
-  private void cancelOperations(final Collection<Operation> ops) {
+  private static void cancelOperations(final Collection<Operation> ops) {
     for (Operation op : ops) {
       op.cancel();
     }

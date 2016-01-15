@@ -39,7 +39,7 @@ import java.util.Collection;
  */
 public abstract class BaseOperationFactory implements OperationFactory {
 
-  private String first(Collection<String> keys) {
+  private static String first(Collection<String> keys) {
     return keys.iterator().next();
   }
 

@@ -61,7 +61,7 @@ class ObserveOperationImpl extends SingleKeyOperationImpl implements
   protected void decodePayload(byte[] pl) {
     final short  keylen = (short) decodeShort(pl, 2);
     keystate = (byte) decodeByte(pl, keylen+4);
-    retCas = (long) decodeLong(pl, keylen+5);
+    retCas = decodeLong(pl, keylen+5);
     ObserveResponse r = ObserveResponse.valueOf(keystate);
     ((ObserveOperation.Callback) getCallback()).gotData(key, retCas,
         getHandlingNode(), r);
