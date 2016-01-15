@@ -23,6 +23,7 @@
 package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import net.spy.memcached.ops.OperationState;
@@ -38,7 +39,7 @@ final class StatsOperationImpl extends OperationImpl implements StatsOperation {
   private static final OperationStatus END = new OperationStatus(true, "END",
     StatusCode.SUCCESS);
 
-  private static final byte[] MSG = "stats\r\n".getBytes();
+  private static final byte[] MSG = "stats\r\n".getBytes(Charset.forName("UTF-8"));
 
   private final byte[] msg;
   private final StatsOperation.Callback cb;
@@ -49,7 +50,7 @@ final class StatsOperationImpl extends OperationImpl implements StatsOperation {
     if (arg == null) {
       msg = MSG;
     } else {
-      msg = ("stats " + arg + "\r\n").getBytes();
+      msg = ("stats " + arg + "\r\n").getBytes(Charset.forName("UTF-8"));
     }
   }
 

@@ -25,6 +25,7 @@ package net.spy.memcached.protocol.ascii;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 import net.spy.memcached.KeyUtil;
 import net.spy.memcached.ops.Operation;
@@ -148,7 +149,7 @@ abstract class OperationImpl extends BaseOperationImpl implements Operation {
           byteBuffer.reset();
           OperationErrorType eType = classifyError(line);
           if (eType != null) {
-            errorMsg = line.getBytes();
+            errorMsg = line.getBytes(Charset.forName("UTF-8"));
             handleError(eType, line);
           } else {
             handleLine(line);

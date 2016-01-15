@@ -23,6 +23,7 @@
 package net.spy.memcached.tapmessage;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 import net.spy.memcached.CachedData;
@@ -246,7 +247,7 @@ public class ResponseMessage extends BaseMessage {
    * @return The key data.
    */
   public String getKey() {
-    return new String(key);
+    return new String(key, Charset.forName("UTF-8"));
   }
 
   /**

@@ -26,6 +26,7 @@ package net.spy.memcached.protocol.binary;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.spy.memcached.CASResponse;
@@ -201,7 +202,7 @@ public  abstract class OperationImpl extends BaseOperationImpl
     OperationStatus status = getStatusForErrorCode(errorCode, pl);
 
     if (status == null) {
-      handleError(OperationErrorType.SERVER, new String(pl));
+      handleError(OperationErrorType.SERVER, new String(pl, Charset.forName("UTF-8")));
     } else if (errorCode == SUCCESS) {
       decodePayload(pl);
       transitionState(OperationState.COMPLETE);
@@ -231,17 +232,17 @@ public  abstract class OperationImpl extends BaseOperationImpl
 
         switch (errCode) {
             case ERR_NOT_FOUND:
-                return new CASOperationStatus(false, new String(errPl),
+                return new CASOperationStatus(false, new String(errPl, Charset.forName("UTF-8")),
                         CASResponse.NOT_FOUND, statusCode);
             case ERR_EXISTS:
-                return new CASOperationStatus(false, new String(errPl),
+                return new CASOperationStatus(false, new String(errPl, Charset.forName("UTF-8")),
                         CASResponse.EXISTS, statusCode);
             case ERR_NOT_STORED:
-                return new CASOperationStatus(false, new String(errPl),
+                return new CASOperationStatus(false, new String(errPl, Charset.forName("UTF-8")),
                         CASResponse.NOT_FOUND, statusCode);
             case ERR_2BIG:
             case ERR_INTERNAL:
-                handleError(OperationErrorType.SERVER, new String(errPl));
+                handleError(OperationErrorType.SERVER, new String(errPl, Charset.forName("UTF-8")));
             case ERR_INVAL:
             case ERR_DELTA_BADVAL:
             case ERR_NOT_MY_VBUCKET:
@@ -250,7 +251,7 @@ public  abstract class OperationImpl extends BaseOperationImpl
             case ERR_NOT_SUPPORTED:
             case ERR_BUSY:
             case ERR_TEMP_FAIL:
-                return new OperationStatus(false, new String(errPl), statusCode);
+                return new OperationStatus(false, new String(errPl, Charset.forName("UTF-8")), statusCode);
             default:
                 return null;
         }

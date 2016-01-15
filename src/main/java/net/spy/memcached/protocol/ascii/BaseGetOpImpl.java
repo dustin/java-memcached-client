@@ -24,6 +24,7 @@
 package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -49,7 +50,7 @@ abstract class BaseGetOpImpl extends OperationImpl {
       "NOT_FOUND", StatusCode.ERR_NOT_FOUND);
   private static final OperationStatus LOCK_ERROR = new OperationStatus(false,
       "LOCK_ERROR", StatusCode.ERR_TEMP_FAIL);
-  private static final byte[] RN_BYTES = "\r\n".getBytes();
+  private static final byte[] RN_BYTES = "\r\n".getBytes(Charset.forName("UTF-8"));
   private final String cmd;
   private final Collection<String> keys;
   private String currentKey = null;
@@ -200,12 +201,12 @@ abstract class BaseGetOpImpl extends OperationImpl {
       size += k.length;
       size++;
     }
-    byte[] e = String.valueOf(exp).getBytes();
+    byte[] e = String.valueOf(exp).getBytes(Charset.forName("UTF-8"));
     if (hasExp) {
       size += e.length + 1;
     }
     ByteBuffer b = ByteBuffer.allocate(size);
-    b.put(cmd.getBytes());
+    b.put(cmd.getBytes(Charset.forName("UTF-8")));
     for (byte[] k : keyBytes) {
       b.put((byte) ' ');
       b.put(k);

@@ -24,6 +24,7 @@
 package net.spy.memcached.protocol.binary;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import javax.security.auth.callback.CallbackHandler;
@@ -81,13 +82,13 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
 
   @Override
   protected void decodePayload(byte[] pl) {
-    getLogger().debug("Auth response:  %s", new String(pl));
+    getLogger().debug("Auth response:  %s", new String(pl, Charset.forName("UTF-8")));
   }
 
   @Override
   protected void finishedPayload(byte[] pl) throws IOException {
     if (errorCode == SASL_CONTINUE) {
-      getCallback().receivedStatus(new OperationStatus(true, new String(pl),
+      getCallback().receivedStatus(new OperationStatus(true, new String(pl, Charset.forName("UTF-8")),
         StatusCode.SUCCESS));
       transitionState(OperationState.COMPLETE);
     } else if (errorCode == 0) {

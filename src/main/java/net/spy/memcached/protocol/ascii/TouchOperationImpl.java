@@ -24,6 +24,7 @@
 package net.spy.memcached.protocol.ascii;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -72,7 +73,7 @@ final class TouchOperationImpl extends OperationImpl implements TouchOperation {
     ByteBuffer b = null;
     b = ByteBuffer.allocate(KeyUtil.getKeyBytes(key).length
       + String.valueOf(exp).length() + OVERHEAD);
-    b.put(("touch " + key + " " + exp + "\r\n").getBytes());
+    b.put(("touch " + key + " " + exp + "\r\n").getBytes(Charset.forName("UTF-8")));
     b.flip();
     setBuffer(b);
   }
