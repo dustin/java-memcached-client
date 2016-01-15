@@ -56,7 +56,7 @@ final class FlushOperationImpl extends OperationImpl implements FlushOperation {
 
   @Override
   public void initialize() {
-    ByteBuffer b = null;
+    ByteBuffer b;
     if (delay == -1) {
       b = ByteBuffer.wrap(FLUSH);
     } else {

@@ -62,7 +62,7 @@ public class OperationException extends IOException {
 
   @Override
   public String toString() {
-    String rv = null;
+    String rv;
     if (type == OperationErrorType.GENERAL) {
       rv = "OperationException: " + type;
     } else {
