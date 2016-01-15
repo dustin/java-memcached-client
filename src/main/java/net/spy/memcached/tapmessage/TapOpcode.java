@@ -102,9 +102,7 @@ public enum TapOpcode {
   }
 
   public static TapOpcode getOpcodeByByte(byte b) {
-    if (b == TapOpcode.DELETE.opcode) {
-      return TapOpcode.DELETE;
-    } else if (b == TapOpcode.FLUSH.opcode) {
+    if (b == TapOpcode.DELETE.opcode || b == TapOpcode.FLUSH.opcode) {
       return TapOpcode.DELETE;
     } else if (b == TapOpcode.MUTATION.opcode) {
       return TapOpcode.MUTATION;

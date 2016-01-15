@@ -51,9 +51,7 @@ public abstract class BaseOperationFactory implements OperationFactory {
     assert !op.hasErrored() : "Attempted to clone an errored op";
 
     Collection<Operation> rv = new ArrayList<Operation>(op.getKeys().size());
-    if (op instanceof GetOperation) {
-      rv.addAll(cloneGet(op));
-    } else if (op instanceof ReplicaGetOperation) {
+    if (op instanceof GetOperation || op instanceof ReplicaGetOperation) {
       rv.addAll(cloneGet(op));
     } else if (op instanceof ReplicaGetsOperation) {
       ReplicaGetsOperation.Callback callback =

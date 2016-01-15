@@ -89,10 +89,8 @@ public class SLF4JLogger extends AbstractLogger {
     case WARN:
       logger.warn(message.toString(), e);
       break;
-    case ERROR:
-      logger.error(message.toString(), e);
-      break;
     case FATAL:
+    case ERROR:
       logger.error(message.toString(), e);
       break;
     default:

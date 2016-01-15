@@ -189,8 +189,6 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
       exception = new OperationException();
       break;
     case SERVER:
-      exception = new OperationException(eType, line);
-      break;
     case CLIENT:
       exception = new OperationException(eType, line);
       break;
