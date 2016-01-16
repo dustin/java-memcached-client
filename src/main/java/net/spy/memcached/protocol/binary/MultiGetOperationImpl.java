@@ -72,7 +72,7 @@ public class MultiGetOperationImpl extends MultiKeyOperationImpl implements
       bkeys.put(rv, KeyUtil.getKeyBytes(k));
       rkeys.put(k, rv);
       synchronized (vbmap) {
-        vbmap.put(k, new Short((short) 0));
+        vbmap.put(k, Short.valueOf((short) 0));
       }
     }
     return rv;

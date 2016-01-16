@@ -33,13 +33,6 @@ public class SpyObject extends Object {
   private transient Logger logger = null;
 
   /**
-   * Get an instance of SpyObject.
-   */
-  public SpyObject() {
-    super();
-  }
-
-  /**
    * Get a Logger instance for this class.
    *
    * @return an appropriate logger instance.
