@@ -29,9 +29,9 @@ public enum Mutator {
   /**
    * Increment a value on the memcached server.
    */
-  incr,
+  INCR,
   /**
    * Decrement a value on the memcached server.
    */
-  decr
+  DECR
 }

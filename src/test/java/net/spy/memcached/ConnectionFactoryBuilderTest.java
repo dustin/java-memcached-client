@@ -129,7 +129,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
           "password"));
 
     ConnectionFactory f = b.setDaemon(true).setShouldOptimize(false)
-        .setFailureMode(FailureMode.Redistribute)
+        .setFailureMode(FailureMode.REDISTRIBUTE)
         .setHashAlg(DefaultHashAlgorithm.KETAMA_HASH)
         .setInitialObservers(Collections.singleton(testObserver))
         .setOpFact(new BinaryOperationFactory()).setOpTimeout(4225)
@@ -146,7 +146,7 @@ public class ConnectionFactoryBuilderTest extends BaseMockCase {
     assertEquals(19, f.getReadBufSize());
     assertSame(DefaultHashAlgorithm.KETAMA_HASH, f.getHashAlg());
     assertTrue(f.getDefaultTranscoder() instanceof WhalinTranscoder);
-    assertSame(FailureMode.Redistribute, f.getFailureMode());
+    assertSame(FailureMode.REDISTRIBUTE, f.getFailureMode());
     assertEquals(1, f.getInitialObservers().size());
     assertSame(testObserver, f.getInitialObservers().iterator().next());
     assertTrue(f.getOperationFactory() instanceof BinaryOperationFactory);

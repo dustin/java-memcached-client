@@ -47,7 +47,7 @@ public class BinaryClientTest extends ProtocolBaseCase {
 
       @Override
       public FailureMode getFailureMode() {
-        return FailureMode.Retry;
+        return FailureMode.RETRY;
       }
     });
   }

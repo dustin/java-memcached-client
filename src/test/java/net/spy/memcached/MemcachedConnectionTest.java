@@ -50,7 +50,7 @@ public class MemcachedConnectionTest extends TestCase {
     Collection<ConnectionObserver> observers =
       new ArrayList<ConnectionObserver>();
     MemcachedConnection mcc = new MemcachedConnection(10240, factory, addresses,
-      observers, FailureMode.Retry, new BinaryOperationFactory());
+      observers, FailureMode.RETRY, new BinaryOperationFactory());
     assertNotNull(mcc.connectionsStatus());
   }
 
@@ -69,7 +69,7 @@ public class MemcachedConnectionTest extends TestCase {
     nodes.add((InetSocketAddress)node.getSocketAddress());
 
     MemcachedConnection conn = new MemcachedConnection(
-      100, factory, nodes, observers, FailureMode.Retry, opfactory);
+      100, factory, nodes, observers, FailureMode.RETRY, opfactory);
     assertTrue(conn.belongsToCluster(node));
     assertFalse(conn.belongsToCluster(node2));
   }

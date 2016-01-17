@@ -33,7 +33,7 @@ import net.spy.memcached.ops.StoreType;
 public class AsciiToStringTest extends TestCase{
 
   public void testConcatentaion() {
-    (new ConcatenationOperationImpl(ConcatenationType.append, "key",
+    (new ConcatenationOperationImpl(ConcatenationType.APPEND, "key",
         "value".getBytes(), null)).toString();
   }
 
@@ -66,7 +66,7 @@ public class AsciiToStringTest extends TestCase{
   }
 
   public void testMutator() {
-    (new MutatorOperationImpl(Mutator.decr, "key", 1, null)).toString();
+    (new MutatorOperationImpl(Mutator.DECR, "key", 1, null)).toString();
   }
 
   public void testOptimizedGet() {
@@ -78,7 +78,7 @@ public class AsciiToStringTest extends TestCase{
   }
 
   public void testStore() {
-    (new StoreOperationImpl(StoreType.set, "key", 0, 10,
+    (new StoreOperationImpl(StoreType.SET, "key", 0, 10,
         "value".getBytes(), null)).toString();
   }
 

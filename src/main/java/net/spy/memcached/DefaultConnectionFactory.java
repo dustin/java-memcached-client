@@ -72,7 +72,7 @@ public class DefaultConnectionFactory extends SpyObject implements
    * Default failure mode.
    */
   public static final FailureMode DEFAULT_FAILURE_MODE =
-      FailureMode.Redistribute;
+      FailureMode.REDISTRIBUTE;
 
   /**
    * Default hash algorithm.

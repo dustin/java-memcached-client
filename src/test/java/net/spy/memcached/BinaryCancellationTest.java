@@ -32,7 +32,7 @@ public class BinaryCancellationTest extends CancellationBaseCase {
     initClient(new BinaryConnectionFactory() {
       @Override
       public FailureMode getFailureMode() {
-        return FailureMode.Retry;
+        return FailureMode.RETRY;
       }
     });
   }

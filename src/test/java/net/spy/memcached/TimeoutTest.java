@@ -44,7 +44,7 @@ public class TimeoutTest extends ClientBaseCase {
 
       @Override
       public FailureMode getFailureMode() {
-        return FailureMode.Retry;
+        return FailureMode.RETRY;
       }
     }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":64213"));
   }

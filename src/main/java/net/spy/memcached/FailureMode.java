@@ -36,7 +36,7 @@ public enum FailureMode {
    * given key.
    * </p>
    */
-  Redistribute,
+  REDISTRIBUTE,
   /**
    * Continue to retry a failing node until it comes back up.
    *
@@ -46,10 +46,10 @@ public enum FailureMode {
    * wait very long for async command completion.
    * </p>
    */
-  Retry,
+  RETRY,
 
   /**
    * Automatically cancel all operations heading towards a downed node.
    */
-  Cancel
+  CANCEL
 }

@@ -474,7 +474,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public <T> OperationFuture<Boolean> append(long cas, String key, T val,
       Transcoder<T> tc) {
-    return asyncCat(ConcatenationType.append, cas, key, val, tc);
+    return asyncCat(ConcatenationType.APPEND, cas, key, val, tc);
   }
 
   /**
@@ -498,7 +498,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public <T> OperationFuture<Boolean> append(String key, T val,
       Transcoder<T> tc) {
-    return asyncCat(ConcatenationType.append, 0, key, val, tc);
+    return asyncCat(ConcatenationType.APPEND, 0, key, val, tc);
   }
 
   /**
@@ -563,7 +563,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public <T> OperationFuture<Boolean> prepend(long cas, String key, T val,
       Transcoder<T> tc) {
-    return asyncCat(ConcatenationType.prepend, cas, key, val, tc);
+    return asyncCat(ConcatenationType.PREPEND, cas, key, val, tc);
   }
 
   /**
@@ -584,7 +584,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public <T> OperationFuture<Boolean> prepend(String key, T val,
       Transcoder<T> tc) {
-    return asyncCat(ConcatenationType.prepend, 0, key, val, tc);
+    return asyncCat(ConcatenationType.PREPEND, 0, key, val, tc);
   }
 
   /**
@@ -626,7 +626,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     final OperationFuture<CASResponse> rv =
       new OperationFuture<CASResponse>(key, latch, operationTimeout,
       executorService);
-    Operation op = opFact.cas(StoreType.set, key, casId, co.getFlags(), exp,
+    Operation op = opFact.cas(StoreType.SET, key, casId, co.getFlags(), exp,
         co.getData(), new StoreOperation.Callback() {
             @Override
             public void receivedStatus(OperationStatus val) {
@@ -816,7 +816,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public <T> OperationFuture<Boolean> add(String key, int exp, T o,
       Transcoder<T> tc) {
-    return asyncStore(StoreType.add, key, exp, o, tc);
+    return asyncStore(StoreType.ADD, key, exp, o, tc);
   }
 
   /**
@@ -852,7 +852,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Boolean> add(String key, int exp, Object o) {
-    return asyncStore(StoreType.add, key, exp, o, transcoder);
+    return asyncStore(StoreType.ADD, key, exp, o, transcoder);
   }
 
   /**
@@ -890,7 +890,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public <T> OperationFuture<Boolean> set(String key, int exp, T o,
       Transcoder<T> tc) {
-    return asyncStore(StoreType.set, key, exp, o, tc);
+    return asyncStore(StoreType.SET, key, exp, o, tc);
   }
 
   /**
@@ -926,7 +926,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Boolean> set(String key, int exp, Object o) {
-    return asyncStore(StoreType.set, key, exp, o, transcoder);
+    return asyncStore(StoreType.SET, key, exp, o, transcoder);
   }
 
   /**
@@ -965,7 +965,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public <T> OperationFuture<Boolean> replace(String key, int exp, T o,
       Transcoder<T> tc) {
-    return asyncStore(StoreType.replace, key, exp, o, tc);
+    return asyncStore(StoreType.REPLACE, key, exp, o, tc);
   }
 
   /**
@@ -1001,7 +1001,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Boolean> replace(String key, int exp, Object o) {
-    return asyncStore(StoreType.replace, key, exp, o, transcoder);
+    return asyncStore(StoreType.REPLACE, key, exp, o, transcoder);
   }
 
   /**
@@ -1795,7 +1795,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long incr(String key, long by) {
-    return mutate(Mutator.incr, key, by, 0, -1);
+    return mutate(Mutator.INCR, key, by, 0, -1);
   }
 
   /**
@@ -1815,7 +1815,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long incr(String key, int by) {
-    return mutate(Mutator.incr, key, by, 0, -1);
+    return mutate(Mutator.INCR, key, by, 0, -1);
   }
 
   /**
@@ -1835,7 +1835,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long decr(String key, long by) {
-    return mutate(Mutator.decr, key, by, 0, -1);
+    return mutate(Mutator.DECR, key, by, 0, -1);
   }
 
   /**
@@ -1855,7 +1855,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long decr(String key, int by) {
-    return mutate(Mutator.decr, key, by, 0, -1);
+    return mutate(Mutator.DECR, key, by, 0, -1);
   }
 
   /**
@@ -1877,7 +1877,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long incr(String key, long by, long def, int exp) {
-    return mutateWithDefault(Mutator.incr, key, by, def, exp);
+    return mutateWithDefault(Mutator.INCR, key, by, def, exp);
   }
 
   /**
@@ -1899,7 +1899,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long incr(String key, int by, long def, int exp) {
-    return mutateWithDefault(Mutator.incr, key, by, def, exp);
+    return mutateWithDefault(Mutator.INCR, key, by, def, exp);
   }
 
   /**
@@ -1921,7 +1921,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long decr(String key, long by, long def, int exp) {
-    return mutateWithDefault(Mutator.decr, key, by, def, exp);
+    return mutateWithDefault(Mutator.DECR, key, by, def, exp);
   }
 
   /**
@@ -1943,7 +1943,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long decr(String key, int by, long def, int exp) {
-    return mutateWithDefault(Mutator.decr, key, by, def, exp);
+    return mutateWithDefault(Mutator.DECR, key, by, def, exp);
   }
 
   private long mutateWithDefault(Mutator t, String key, long by, long def,
@@ -1952,7 +1952,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     // The ascii protocol doesn't support defaults, so I added them
     // manually here.
     if (rv == -1) {
-      Future<Boolean> f = asyncStore(StoreType.add, key, exp,
+      Future<Boolean> f = asyncStore(StoreType.ADD, key, exp,
           String.valueOf(def));
       try {
         if (f.get(operationTimeout, TimeUnit.MILLISECONDS)) {
@@ -2018,7 +2018,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Long> asyncIncr(String key, long by) {
-    return asyncMutate(Mutator.incr, key, by, 0, -1);
+    return asyncMutate(Mutator.INCR, key, by, 0, -1);
   }
 
   /**
@@ -2032,7 +2032,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Long> asyncIncr(String key, int by) {
-    return asyncMutate(Mutator.incr, key, by, 0, -1);
+    return asyncMutate(Mutator.INCR, key, by, 0, -1);
   }
 
   /**
@@ -2046,7 +2046,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Long> asyncDecr(String key, long by) {
-    return asyncMutate(Mutator.decr, key, by, 0, -1);
+    return asyncMutate(Mutator.DECR, key, by, 0, -1);
   }
 
   /**
@@ -2060,7 +2060,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Long> asyncDecr(String key, int by) {
-    return asyncMutate(Mutator.decr, key, by, 0, -1);
+    return asyncMutate(Mutator.DECR, key, by, 0, -1);
   }
 
   /**
@@ -2077,7 +2077,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public OperationFuture<Long> asyncIncr(String key, long by, long def,
     int exp) {
-    return asyncMutate(Mutator.incr, key, by, def, exp);
+    return asyncMutate(Mutator.INCR, key, by, def, exp);
   }
 
   /**
@@ -2094,7 +2094,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public OperationFuture<Long> asyncIncr(String key, int by, long def,
     int exp) {
-    return asyncMutate(Mutator.incr, key, by, def, exp);
+    return asyncMutate(Mutator.INCR, key, by, def, exp);
   }
 
   /**
@@ -2111,7 +2111,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public OperationFuture<Long> asyncDecr(String key, long by, long def,
     int exp) {
-    return asyncMutate(Mutator.decr, key, by, def, exp);
+    return asyncMutate(Mutator.DECR, key, by, def, exp);
   }
 
   /**
@@ -2128,7 +2128,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
   @Override
   public OperationFuture<Long> asyncDecr(String key, int by, long def,
     int exp) {
-    return asyncMutate(Mutator.decr, key, by, def, exp);
+    return asyncMutate(Mutator.DECR, key, by, def, exp);
   }
 
   /**
@@ -2143,7 +2143,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Long> asyncIncr(String key, long by, long def) {
-    return asyncMutate(Mutator.incr, key, by, def, 0);
+    return asyncMutate(Mutator.INCR, key, by, def, 0);
   }
 
   /**
@@ -2158,7 +2158,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Long> asyncIncr(String key, int by, long def) {
-    return asyncMutate(Mutator.incr, key, by, def, 0);
+    return asyncMutate(Mutator.INCR, key, by, def, 0);
   }
 
   /**
@@ -2173,7 +2173,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Long> asyncDecr(String key, long by, long def) {
-    return asyncMutate(Mutator.decr, key, by, def, 0);
+    return asyncMutate(Mutator.DECR, key, by, def, 0);
   }
 
   /**
@@ -2188,7 +2188,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public OperationFuture<Long> asyncDecr(String key, int by, long def) {
-    return asyncMutate(Mutator.decr, key, by, def, 0);
+    return asyncMutate(Mutator.DECR, key, by, def, 0);
   }
 
   /**
@@ -2205,7 +2205,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long incr(String key, long by, long def) {
-    return mutateWithDefault(Mutator.incr, key, by, def, 0);
+    return mutateWithDefault(Mutator.INCR, key, by, def, 0);
   }
 
   /**
@@ -2222,7 +2222,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long incr(String key, int by, long def) {
-    return mutateWithDefault(Mutator.incr, key, by, def, 0);
+    return mutateWithDefault(Mutator.INCR, key, by, def, 0);
   }
 
   /**
@@ -2239,7 +2239,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long decr(String key, long by, long def) {
-    return mutateWithDefault(Mutator.decr, key, by, def, 0);
+    return mutateWithDefault(Mutator.DECR, key, by, def, 0);
   }
 
   /**
@@ -2256,7 +2256,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
    */
   @Override
   public long decr(String key, int by, long def) {
-    return mutateWithDefault(Mutator.decr, key, by, def, 0);
+    return mutateWithDefault(Mutator.DECR, key, by, def, 0);
   }
 
   /**

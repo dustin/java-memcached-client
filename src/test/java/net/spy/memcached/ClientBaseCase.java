@@ -48,7 +48,7 @@ public abstract class ClientBaseCase extends TestCase {
 
       @Override
       public FailureMode getFailureMode() {
-        return FailureMode.Retry;
+        return FailureMode.RETRY;
       }
     });
   }

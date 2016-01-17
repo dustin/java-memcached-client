@@ -29,15 +29,15 @@ public enum StoreType {
   /**
    * Unconditionally store a value in the cache.
    */
-  set,
+  SET,
   /**
    * Store a value in the cache iff there is not already something stored for
    * the given key.
    */
-  add,
+  ADD,
   /**
    * Store a value in the cache iff there is already something stored for the
    * given key.
    */
-  replace
+  REPLACE
 }

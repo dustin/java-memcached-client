@@ -108,7 +108,7 @@ class CASOperationImpl extends OperationImpl implements CASOperation {
   }
 
   public StoreType getStoreType() {
-    return StoreType.set;
+    return StoreType.SET;
   }
 
   @Override

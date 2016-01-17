@@ -987,9 +987,9 @@ public class MemcachedConnection extends SpyThread {
     metrics.incrementCounter(RECON_QUEUE_METRIC);
 
     node.setupResend();
-    if (failureMode == FailureMode.Redistribute) {
+    if (failureMode == FailureMode.REDISTRIBUTE) {
       redistributeOperations(node.destroyInputQueue());
-    } else if (failureMode == FailureMode.Cancel) {
+    } else if (failureMode == FailureMode.CANCEL) {
       cancelOperations(node.destroyInputQueue());
     }
   }
@@ -1204,9 +1204,9 @@ public class MemcachedConnection extends SpyThread {
     MemcachedNode placeIn = null;
     MemcachedNode primary = locator.getPrimary(key);
 
-    if (primary.isActive() || failureMode == FailureMode.Retry) {
+    if (primary.isActive() || failureMode == FailureMode.RETRY) {
       placeIn = primary;
-    } else if (failureMode == FailureMode.Cancel) {
+    } else if (failureMode == FailureMode.CANCEL) {
       o.cancel();
     } else {
       Iterator<MemcachedNode> i = locator.getSequence(key);
