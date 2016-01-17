@@ -256,7 +256,7 @@ public class ResponseMessage extends BaseMessage {
    * @return The value data.
    */
   public byte[] getValue() {
-    return value;
+    return value == null ? null : value.clone();
   }
 
   /**
@@ -266,7 +266,7 @@ public class ResponseMessage extends BaseMessage {
    * @return The revid of the document.
    */
   public byte[] getRevID() {
-    return revid;
+    return revid == null ? null : revid.clone();
   }
 
   public ByteBuffer getBytes() {

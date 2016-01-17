@@ -53,7 +53,7 @@ public class AuthDescriptor {
    * @param h the callback handler for grabbing credentials and stuff
    */
   public AuthDescriptor(String[] m, CallbackHandler h) {
-    mechs = m;
+    mechs = m == null ? null : m.clone();
     cbh = h;
     authAttempts = 0;
     String authThreshhold =
@@ -91,7 +91,7 @@ public class AuthDescriptor {
   }
 
   public String[] getMechs() {
-    return mechs;
+    return mechs == null ? null : mechs.clone();
   }
 
   public CallbackHandler getCallback() {

@@ -52,8 +52,8 @@ public abstract class SASLBaseOperationImpl extends OperationImpl {
   public SASLBaseOperationImpl(byte c, String[] m, byte[] ch, String s,
       Map<String, ?> p, CallbackHandler h, OperationCallback cb) {
     super(c, generateOpaque(), cb);
-    mech = m;
-    challenge = ch;
+    mech = m == null ? null : m.clone();
+    challenge = ch == null ? null : ch.clone();
     serverName = s;
     props = p;
     cbh = h;
