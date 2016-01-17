@@ -66,6 +66,10 @@ import net.spy.memcached.tapmessage.TapOpcode;
  * Operation factory for the ascii protocol.
  */
 public class AsciiOperationFactory extends BaseOperationFactory {
+	
+  private static final String FOR_ASCIII_PROTOCOL = "for ASCII protocol";
+  
+  private static final String TAP_IS_NOT_SUPPORTED_FOR_ASCII_PROTOCOL = "Tap is not supported for ASCII protocol";
 
   public DeleteOperation delete(String key, DeleteOperation.Callback cb) {
     return new DeleteOperationImpl(key, cb);
@@ -74,7 +78,7 @@ public class AsciiOperationFactory extends BaseOperationFactory {
   public DeleteOperation delete(String key, long cas,
     DeleteOperation.Callback cb) {
     throw new UnsupportedOperationException("Delete with CAS is not supported "
-        + "for ASCII protocol");
+        + FOR_ASCIII_PROTOCOL);
   }
 
   public FlushOperation flush(int delay, OperationCallback cb) {
@@ -84,7 +88,7 @@ public class AsciiOperationFactory extends BaseOperationFactory {
   public GetAndTouchOperation getAndTouch(String key, int expiration,
       GetAndTouchOperation.Callback cb) {
     throw new UnsupportedOperationException("Get and touch is not supported "
-        + "for ASCII protocol");
+        + FOR_ASCIII_PROTOCOL);
   }
 
   public GetOperation get(String key, GetOperation.Callback cb) {
@@ -102,7 +106,7 @@ public class AsciiOperationFactory extends BaseOperationFactory {
   public ObserveOperation observe(String key, long casId, int index,
       ObserveOperation.Callback cb) {
     throw new UnsupportedOperationException("Observe is not supported "
-        + "for ASCII protocol");
+        + FOR_ASCIII_PROTOCOL);
   }
 
   public UnlockOperation unlock(String key, long casId,
@@ -116,7 +120,7 @@ public class AsciiOperationFactory extends BaseOperationFactory {
 
   public StatsOperation keyStats(String key, Callback cb) {
     throw new UnsupportedOperationException("Key stats are not supported "
-        + "for ASCII protocol");
+        + FOR_ASCIII_PROTOCOL);
   }
 
   public MutatorOperation mutate(Mutator m, String key, long by, long exp,
@@ -187,41 +191,37 @@ public class AsciiOperationFactory extends BaseOperationFactory {
 
   @Override
   public TapOperation tapBackfill(String id, long date, OperationCallback cb) {
-    throw new UnsupportedOperationException("Tap is not supported for ASCII"
-        + " protocol");
+    throw new UnsupportedOperationException(TAP_IS_NOT_SUPPORTED_FOR_ASCII_PROTOCOL);
   }
 
   @Override
   public TapOperation tapCustom(String id, RequestMessage message,
       OperationCallback cb) {
-    throw new UnsupportedOperationException("Tap is not supported for ASCII"
-        + " protocol");
+    throw new UnsupportedOperationException(TAP_IS_NOT_SUPPORTED_FOR_ASCII_PROTOCOL);
   }
 
   @Override
   public TapOperation tapAck(TapOpcode opcode, int opaque,
       OperationCallback cb) {
-    throw new UnsupportedOperationException("Tap is not supported for ASCII"
-        + " protocol");
+    throw new UnsupportedOperationException(TAP_IS_NOT_SUPPORTED_FOR_ASCII_PROTOCOL);
   }
 
   @Override
   public TapOperation tapDump(String id, OperationCallback cb) {
-    throw new UnsupportedOperationException("Tap is not supported for ASCII"
-        + " protocol");
+    throw new UnsupportedOperationException(TAP_IS_NOT_SUPPORTED_FOR_ASCII_PROTOCOL);
   }
 
   @Override
   public ReplicaGetOperation replicaGet(String key, int index,
   ReplicaGetOperation.Callback callback) {
     throw new UnsupportedOperationException("Replica get is not supported "
-        + "for ASCII protocol");
+        + FOR_ASCIII_PROTOCOL);
   }
 
   @Override
   public ReplicaGetsOperation replicaGets(String key, int index,
     ReplicaGetsOperation.Callback callback) {
     throw new UnsupportedOperationException("Replica gets is not supported "
-      + "for ASCII protocol");
+      + FOR_ASCIII_PROTOCOL);
   }
 }

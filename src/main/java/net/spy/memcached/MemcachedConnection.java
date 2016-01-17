@@ -123,6 +123,8 @@ public class MemcachedConnection extends SpyThread {
     "[MEM] Response Rate: Failure";
   private static final String OVERALL_RESPONSE_SUCC_METRIC =
     "[MEM] Response Rate: Success";
+  private static final String WAKEUP_RETURNED_THE_WRONG_SELECTOR =
+	"Wakeup returned the wrong selector.";
 
   /**
    * If the connection is alread shut down or shutting down.
@@ -1247,7 +1249,7 @@ public class MemcachedConnection extends SpyThread {
     metrics.markMeter(OVERALL_REQUEST_METRIC);
 
     Selector s = selector.wakeup();
-    assert s == selector : "Wakeup returned the wrong selector.";
+    assert s == selector : WAKEUP_RETURNED_THE_WRONG_SELECTOR;
     getLogger().debug("Added %s to %s", o, node);
   }
 
@@ -1269,7 +1271,7 @@ public class MemcachedConnection extends SpyThread {
     metrics.markMeter(OVERALL_REQUEST_METRIC);
 
     Selector s = selector.wakeup();
-    assert s == selector : "Wakeup returned the wrong selector.";
+    assert s == selector : WAKEUP_RETURNED_THE_WRONG_SELECTOR;
     getLogger().debug("Added %s to %s", o, node);
   }
 
@@ -1315,7 +1317,7 @@ public class MemcachedConnection extends SpyThread {
     }
 
     Selector s = selector.wakeup();
-    assert s == selector : "Wakeup returned the wrong selector.";
+    assert s == selector : WAKEUP_RETURNED_THE_WRONG_SELECTOR;
     return latch;
   }
 
@@ -1326,7 +1328,7 @@ public class MemcachedConnection extends SpyThread {
     shutDown = true;
     try {
       Selector s = selector.wakeup();
-      assert s == selector : "Wakeup returned the wrong selector.";
+      assert s == selector : WAKEUP_RETURNED_THE_WRONG_SELECTOR;
       for (MemcachedNode node : locator.getAll()) {
         if (node.getChannel() != null) {
           node.getChannel().close();
