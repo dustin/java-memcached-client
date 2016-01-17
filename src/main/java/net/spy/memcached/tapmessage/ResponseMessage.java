@@ -97,7 +97,7 @@ public class ResponseMessage extends BaseMessage {
       key = new byte[keylength];
       System.arraycopy(b, KEY_OFFSET + engineprivate, key, 0, keylength);
       value = new byte[b.length - keylength - engineprivate - KEY_OFFSET];
-      System.arraycopy(b, (b.length - value.length), value, 0, value.length);
+      System.arraycopy(b, b.length - value.length, value, 0, value.length);
     } else if (opcode.equals(TapOpcode.DELETE)) {
       itemflags = 0;
       itemexpiry = 0;

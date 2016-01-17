@@ -445,7 +445,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    * @see net.spy.memcached.MemcachedNode#isAuthenticated()
    */
   public boolean isAuthenticated() {
-    return (0 == authLatch.getCount());
+    return 0 == authLatch.getCount();
   }
 
   /*
@@ -624,7 +624,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
         reconnectBlocked = new ArrayList<Operation>(inputQueue.size() + 1);
         inputQueue.drainTo(reconnectBlocked);
       }
-      assert (inputQueue.size() == 0);
+      assert inputQueue.size() == 0;
       setupResend();
     } else {
       authLatch = new CountDownLatch(0);

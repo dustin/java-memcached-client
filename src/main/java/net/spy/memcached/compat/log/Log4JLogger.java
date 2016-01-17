@@ -47,17 +47,17 @@ public class Log4JLogger extends AbstractLogger {
 
   @Override
   public boolean isTraceEnabled() {
-    return (l4jLogger.isTraceEnabled());
+    return l4jLogger.isTraceEnabled();
   }
 
   @Override
   public boolean isDebugEnabled() {
-    return (l4jLogger.isDebugEnabled());
+    return l4jLogger.isDebugEnabled();
   }
 
   @Override
   public boolean isInfoEnabled() {
-    return (l4jLogger.isInfoEnabled());
+    return l4jLogger.isInfoEnabled();
   }
 
   /**

@@ -63,14 +63,14 @@ abstract class SingleKeyOperationImpl extends OperationImpl implements
   }
 
   public void setVBucket(String k, short vb) {
-    assert k.equals(key) : (k + " doesn't match the key " + key
-        + " for this operation");
+    assert k.equals(key) : k + " doesn't match the key " + key
+        + " for this operation";
     vbucket = vb;
   }
 
   public short getVBucket(String k) {
-    assert k.equals(key) : (k + " doesn't match the key " + key
-        + " for this operation");
+    assert k.equals(key) : k + " doesn't match the key " + key
+        + " for this operation";
     return vbucket;
   }
 

@@ -285,7 +285,7 @@ public  abstract class OperationImpl extends BaseOperationImpl
   }
 
   static int decodeByte(byte[] data, int i) {
-    return (data[i] & 0xff);
+    return data[i] & 0xff;
   }
   static int decodeInt(byte[] data, int i) {
     return (data[i] & 0xff) << 24

@@ -50,17 +50,17 @@ public class SunLogger extends AbstractLogger {
 
   @Override
   public boolean isTraceEnabled() {
-    return (sunLogger.isLoggable(java.util.logging.Level.FINEST));
+    return sunLogger.isLoggable(java.util.logging.Level.FINEST);
   }
 
   @Override
   public boolean isDebugEnabled() {
-    return (sunLogger.isLoggable(java.util.logging.Level.FINE));
+    return sunLogger.isLoggable(java.util.logging.Level.FINE);
   }
 
   @Override
   public boolean isInfoEnabled() {
-    return (sunLogger.isLoggable(java.util.logging.Level.INFO));
+    return sunLogger.isLoggable(java.util.logging.Level.INFO);
   }
 
   /**
