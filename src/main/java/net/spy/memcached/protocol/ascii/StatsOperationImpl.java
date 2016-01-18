@@ -40,16 +40,16 @@ final class StatsOperationImpl extends OperationImpl implements StatsOperation {
 
   private static final byte[] MSG = "stats\r\n".getBytes();
 
-  private final byte[] msg;
+  private final byte[] msgBytes;
   private final StatsOperation.Callback cb;
 
   public StatsOperationImpl(String arg, StatsOperation.Callback c) {
     super(c);
     cb = c;
     if (arg == null) {
-      msg = MSG;
+      msgBytes = MSG;
     } else {
-      msg = ("stats " + arg + "\r\n").getBytes();
+      msgBytes = ("stats " + arg + "\r\n").getBytes();
     }
   }
 
@@ -67,7 +67,7 @@ final class StatsOperationImpl extends OperationImpl implements StatsOperation {
 
   @Override
   public void initialize() {
-    setBuffer(ByteBuffer.wrap(msg));
+    setBuffer(ByteBuffer.wrap(msgBytes));
   }
 
   @Override
@@ -77,6 +77,6 @@ final class StatsOperationImpl extends OperationImpl implements StatsOperation {
 
   @Override
   public String toString() {
-    return "Cmd: " + Arrays.toString(msg);
+    return "Cmd: " + Arrays.toString(msgBytes);
   }
 }
