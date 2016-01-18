@@ -54,10 +54,8 @@ public abstract class AbstractLogger implements Logger {
    */
   public Throwable getThrowable(Object[] args) {
     Throwable rv = null;
-    if (args.length > 0) {
-      if (args[args.length - 1] instanceof Throwable) {
+    if (args.length > 0 && args[args.length - 1] instanceof Throwable) {
         rv = (Throwable) args[args.length - 1];
-      }
     }
     return rv;
   }

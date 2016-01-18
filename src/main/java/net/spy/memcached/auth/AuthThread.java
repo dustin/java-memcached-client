@@ -208,11 +208,9 @@ public class AuthThread extends SpyThread {
 
       // Get the new status to inspect it.
       priorStatus = foundStatus.get();
-      if (priorStatus != null) {
-        if (!priorStatus.isSuccess()) {
+      if (priorStatus != null && !priorStatus.isSuccess()) {
           getLogger().warn("Authentication failed to " + node.getSocketAddress()
             + ", Status: " + priorStatus);
-        }
       }
     }
 
