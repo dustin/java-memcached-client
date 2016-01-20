@@ -59,7 +59,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
       new TimedOutOperationStatus();
   private volatile OperationState state = OperationState.WRITE_QUEUED;
   private ByteBuffer cmd = null;
-  private boolean cancelled = false;
+  private boolean isCancelled = false;
   private OperationException exception = null;
   protected OperationCallback callback = null;
   private volatile MemcachedNode handlingNode = null;
@@ -102,7 +102,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
   }
 
   public final synchronized boolean isCancelled() {
-    return cancelled;
+    return isCancelled;
   }
 
   public final boolean hasErrored() {
@@ -114,7 +114,7 @@ public abstract class BaseOperationImpl extends SpyObject implements Operation {
   }
 
   public final synchronized void cancel() {
-    cancelled = true;
+    isCancelled = true;
 
     synchronized (clones) {
       Iterator<Operation> i = clones.iterator();

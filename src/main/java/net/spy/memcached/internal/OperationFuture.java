@@ -106,6 +106,7 @@ public class OperationFuture<T>
    * @deprecated
    * @return true if the operation has not yet been written to the network
    */
+  @Deprecated
   public boolean cancel(boolean ign) {
     assert op != null : "No operation";
     op.cancel();
