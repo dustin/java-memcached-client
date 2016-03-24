@@ -25,11 +25,15 @@ package net.spy.memcached;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
 import net.spy.memcached.internal.GetFuture;
 import net.spy.memcached.internal.OperationFuture;
+import net.spy.memcached.ops.OperationErrorType;
+import net.spy.memcached.ops.OperationException;
 import net.spy.memcached.ops.StatusCode;
+import net.spy.memcached.transcoders.SerializingTranscoder;
 
 /**
  * This test assumes a binary server is running on the host specified int the
@@ -219,6 +223,24 @@ public class BinaryClientTest extends ProtocolBaseCase {
     f = client.asyncDecr(k, 4, 10);
     assertEquals(StatusCode.SUCCESS, f.getStatus().getStatusCode());
     assertEquals(6, (long) f.get());
+  }
+
+  @Override
+  public void testStupidlyLargeSetAndSizeOverride() throws Exception {
+    Random r = new Random();
+    SerializingTranscoder st = new SerializingTranscoder(Integer.MAX_VALUE);
+
+    st.setCompressionThreshold(Integer.MAX_VALUE);
+
+    byte[] data = new byte[21 * 1024 * 1024];
+    r.nextBytes(data);
+
+    OperationFuture<Boolean> setResult = client.set("bigassthing", 60, data, st);
+    assertFalse(setResult.get());
+    assertEquals(StatusCode.ERR_2BIG, setResult.getStatus().getStatusCode());
+
+    client.set("k", 5, "Blah");
+    assertEquals("Blah", client.get("k"));
   }
 
 }
