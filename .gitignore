@@ -4,7 +4,8 @@
 *.iml
 *~
 bin/
-build/
+/build/
+/lib/
 cobertura.ser
 junit*
 lib/ivy*
