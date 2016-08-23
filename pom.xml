@@ -14,7 +14,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.spy</groupId>
     <artifactId>spymemcached</artifactId>
-    <version>2.12.1-hs-1</version> <!-- used for development -->
+    <version>2.12.1-hs-3</version> <!-- used for development -->
 
     <name>Spymemcached</name>
     <description>A client library for memcached.</description>

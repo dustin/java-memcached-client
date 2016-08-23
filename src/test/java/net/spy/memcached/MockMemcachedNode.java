@@ -224,4 +224,8 @@ public class MockMemcachedNode implements MemcachedNode {
 
 	}
 
+	@Override
+	public int pendingOperationQueueSize() {
+		return 0;
+	}
 }

@@ -604,6 +604,15 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     }
   }
 
+  /*
+  * (non-Javadoc)
+  *
+  * @see net.spy.memcached.MemcachedNode#pendingOperationQueueSize
+  */
+  public int pendingOperationQueueSize() {
+    return inputQueue.size();
+  }
+
   private void setContinuousTimeoutStatistics() {
     synchronized (timeoutLock) {
       if (++continuousTimeout == 1) {
