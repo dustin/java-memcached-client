@@ -248,4 +248,10 @@ public interface MemcachedNode {
 	MemcachedConnection getConnection();
 
 	void setConnection(MemcachedConnection connection);
+
+	/**
+	 * The size of the input operations that are in a pending state
+	 * waiting to be picked up by the event loop.
+	 */
+	int pendingOperationQueueSize();
 }

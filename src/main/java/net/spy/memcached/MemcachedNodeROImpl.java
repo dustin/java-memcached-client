@@ -182,6 +182,11 @@ public class MemcachedNodeROImpl implements MemcachedNode {
     throw new UnsupportedOperationException();
   }
 
+  @Override
+  public int pendingOperationQueueSize() {
+    return root.pendingOperationQueueSize();
+  }
+
   public boolean isAuthenticated() {
     throw new UnsupportedOperationException();
   }
