@@ -43,4 +43,7 @@
     <!--get the artifact from our module name-->
     <artifact conf="master"/>
   </publications>
+  <dependencies>
+    <dependency org="net.jodah" name="failsafe" rev="0.9.5" conf="default" />
+  </dependencies>
 </ivy-module>
