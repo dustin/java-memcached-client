@@ -34,8 +34,10 @@ import java.util.Collection;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.jodah.failsafe.CircuitBreaker;
 import net.spy.memcached.ConnectionFactory;
 import net.spy.memcached.FailureMode;
 import net.spy.memcached.MemcachedConnection;
@@ -51,6 +53,8 @@ import net.spy.memcached.protocol.binary.TapAckOperationImpl;
  */
 public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     MemcachedNode {
+
+  private static final TimeoutException TIMEOUT_EXCEPTION = new TimeoutException("Memcached operation timed out");
 
   private volatile SocketAddress socketAddress;
   private final ByteBuffer rbuf;
@@ -72,6 +76,10 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   private long defaultOpTimeout;
   private volatile long lastReadTimestamp = System.nanoTime();
   private MemcachedConnection connection;
+  private final CircuitBreaker circuitBreaker = new CircuitBreaker()
+      .withFailureThreshold(1, 2)
+      .withDelay(5, TimeUnit.SECONDS)
+      .withSuccessThreshold(1);
 
   // operation Future.{get,mutate} timeout counter
   private final Object timeoutLock = new Object();
@@ -452,7 +460,8 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public final boolean isActive() {
     return reconnectAttempt.get() == 0 && getChannel() != null
-        && getChannel().isConnected();
+        && getChannel().isConnected()
+        && circuitBreaker.allowsExecution();
   }
 
   /*
@@ -598,8 +607,10 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public void setContinuousTimeout(boolean timedOut) {
     if (timedOut && isActive()) {
+      circuitBreaker.recordFailure(TIMEOUT_EXCEPTION);
       setContinuousTimeoutStatistics();
     } else {
+      circuitBreaker.recordSuccess();
       resetContinuousTimeoutStatistics();
     }
   }

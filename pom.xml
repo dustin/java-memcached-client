@@ -44,6 +44,12 @@
     </developers>
 
     <dependencies>
+        <dependency>
+            <groupId>net.jodah</groupId>
+            <artifactId>failsafe</artifactId>
+            <version>0.9.5</version>
+        </dependency>
+
         <!-- Optional Dependencies at Runtime -->
         <dependency>
             <groupId>log4j</groupId>
