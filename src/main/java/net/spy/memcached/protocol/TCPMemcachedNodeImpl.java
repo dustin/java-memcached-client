@@ -77,7 +77,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   private volatile long lastReadTimestamp = System.nanoTime();
   private MemcachedConnection connection;
   private final CircuitBreaker circuitBreaker = new CircuitBreaker()
-      .withFailureThreshold(1, 2)
+      .withFailureThreshold(2, 3)
       .withDelay(5, TimeUnit.SECONDS)
       .withSuccessThreshold(1);
 
