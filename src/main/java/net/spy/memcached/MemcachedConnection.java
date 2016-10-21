@@ -123,6 +123,8 @@ public class MemcachedConnection extends SpyThread {
       "[MEM] Response Rate: Failure";
   private static final String OVERALL_RESPONSE_SUCC_METRIC =
       "[MEM] Response Rate: Success";
+  private static final String TIMEOUTS_METRIC =
+      "[MEM] Timeouts";
 
   /**
    * If the connection is alread shut down or shutting down.
@@ -308,6 +310,7 @@ public class MemcachedConnection extends SpyThread {
   protected void registerMetrics() {
     if (metricType.equals(MetricType.DEBUG)
         || metricType.equals(MetricType.PERFORMANCE)) {
+      metrics.addCounter(TIMEOUTS_METRIC);
       metrics.addHistogram(OVERALL_AVG_BYTES_READ_METRIC);
       metrics.addHistogram(OVERALL_AVG_BYTES_WRITE_METRIC);
       metrics.addHistogram(OVERALL_AVG_TIME_ON_WIRE_METRIC);
@@ -1393,6 +1396,15 @@ public class MemcachedConnection extends SpyThread {
    */
   public static void opTimedOut(final Operation op) {
     MemcachedConnection.setTimeout(op, true);
+    if (op != null) {
+      MemcachedNode node = op.getHandlingNode();
+      if (node != null) {
+        MemcachedConnection connection = node.getConnection();
+        if (connection != null) {
+          connection.metrics.forNode(node).incrementCounter(TIMEOUTS_METRIC);
+        }
+      }
+    }
   }
 
   /**
