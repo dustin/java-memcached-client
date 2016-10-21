@@ -76,10 +76,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   private long defaultOpTimeout;
   private volatile long lastReadTimestamp = System.nanoTime();
   private MemcachedConnection connection;
-  private final CircuitBreaker circuitBreaker = new CircuitBreaker()
-      .withFailureThreshold(2, 3)
-      .withDelay(5, TimeUnit.SECONDS)
-      .withSuccessThreshold(1);
+  private final CircuitBreaker circuitBreaker;
 
   // operation Future.{get,mutate} timeout counter
   private final Object timeoutLock = new Object();
@@ -114,6 +111,10 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     this.opQueueMaxBlockTime = opQueueMaxBlockTime;
     shouldAuth = waitForAuth;
     defaultOpTimeout = dt;
+    circuitBreaker = new CircuitBreaker()
+        .withFailureThreshold(5, 10)
+        .withDelay(5, TimeUnit.SECONDS)
+        .withSuccessThreshold(1);
     setupForAuth();
   }
 
