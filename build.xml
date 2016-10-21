@@ -502,6 +502,7 @@
         settingsRef="${name}.ivy.settings">
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
+      <dependency greoup="net.jodah" artifact="failsafe" version="0.9.5" />
       <dependency group="log4j" artifact="log4j" version="${log4j.version}" optional="true" />
       <dependency group="org.slf4j" artifact="slf4j-api" version="${slf4j.version}" optional="true" />
       <dependency group="org.springframework" artifact="spring-beans" version="${spring-beans.version}" optional="true" />
@@ -514,6 +515,7 @@
         settingsRef="${name}.ivy.settings">
       <mapping conf="default" scope="compile" />
       <mapping conf="runtime" scope="runtime" />
+      <dependency group="net.jodah" artifact="failsafe" version="0.9.5" />
       <dependency group="log4j" artifact="log4j" version="${log4j.version}" optional="true" />
       <dependency group="org.slf4j" artifact="slf4j-api" version="${slf4j.version}" optional="true" />
       <dependency group="org.springframework" artifact="spring-beans" version="${spring-beans.version}" optional="true" />
