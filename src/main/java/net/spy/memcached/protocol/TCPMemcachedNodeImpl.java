@@ -38,6 +38,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jodah.failsafe.CircuitBreaker;
+import net.jodah.failsafe.function.CheckedRunnable;
 import net.spy.memcached.ConnectionFactory;
 import net.spy.memcached.FailureMode;
 import net.spy.memcached.MemcachedConnection;
@@ -115,6 +116,9 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
         .withFailureThreshold(5, 10)
         .withDelay(5, TimeUnit.SECONDS)
         .withSuccessThreshold(1);
+    circuitBreaker.onOpen(new LoggingRunnable(String.format("Circuit for node %s is now open due to timeouts", sa)));
+    circuitBreaker.onHalfOpen(new LoggingRunnable(String.format("Circuit for node %s is now half-open", sa)));
+    circuitBreaker.onClose(new LoggingRunnable(String.format("Circuit for node %s is now closed", sa)));
     setupForAuth();
   }
 
@@ -712,5 +716,17 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   @Override
   public void setConnection(MemcachedConnection connection) {
     this.connection = connection;
+  }
+
+  private class LoggingRunnable implements CheckedRunnable {
+    private final String message;
+
+    public LoggingRunnable(String logMessage) {
+      this.message = logMessage;
+    }
+
+    public void run() throws Exception {
+      getLogger().warn(message);
+    }
   }
 }
