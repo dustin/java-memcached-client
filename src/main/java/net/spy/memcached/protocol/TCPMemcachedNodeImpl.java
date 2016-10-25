@@ -77,7 +77,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   private long defaultOpTimeout;
   private volatile long lastReadTimestamp = System.nanoTime();
   private MemcachedConnection connection;
-  private final CircuitBreaker circuitBreaker;
+  private final MiniCircuitBreaker circuitBreaker;
 
   // operation Future.{get,mutate} timeout counter
   private final Object timeoutLock = new Object();
@@ -116,9 +116,15 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     setupForAuth();
   }
 
-  private CircuitBreaker circuitBreaker(boolean enabled, SocketAddress sa) {
+  private interface MiniCircuitBreaker {
+    boolean allowExecution();
+    void recordFailure();
+    void recordSuccess();
+  }
+
+  private MiniCircuitBreaker circuitBreaker(boolean enabled, SocketAddress sa) {
     if (enabled) {
-      CircuitBreaker circuitBreaker = new CircuitBreaker()
+      final CircuitBreaker circuitBreaker = new CircuitBreaker()
           .withFailureThreshold(5, 10)
           .withDelay(5, TimeUnit.SECONDS)
           .withSuccessThreshold(1);
@@ -127,45 +133,29 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
       circuitBreaker.onHalfOpen(new LoggingRunnable(String.format("Circuit for node %s is now half-open", sa)));
       circuitBreaker.onClose(new LoggingRunnable(String.format("Circuit for node %s is now closed", sa)));
 
-      return circuitBreaker;
+      return new MiniCircuitBreaker() {
+
+        public boolean allowExecution() {
+          return circuitBreaker.allowsExecution();
+        }
+
+        public void recordFailure() {
+          circuitBreaker.recordFailure(TIMEOUT_EXCEPTION);
+        }
+
+        public void recordSuccess() {
+          circuitBreaker.recordSuccess();
+        }
+      };
     } else {
-      return new CircuitBreaker() {
+      return new MiniCircuitBreaker() {
 
-        @Override
-        public boolean allowsExecution() {
+        public boolean allowExecution() {
           return true;
         }
 
-        @Override
-        public State getState() {
-          return State.CLOSED;
-        }
+        public void recordFailure() {}
 
-        @Override
-        public boolean isClosed() {
-          return true;
-        }
-
-        @Override
-        public boolean isHalfOpen() {
-          return false;
-        }
-
-        @Override
-        public boolean isOpen() {
-          return false;
-        }
-
-        @Override
-        public void open() {}
-
-        @Override
-        public void recordFailure(Throwable failure) {}
-
-        @Override
-        public void recordResult(Object result) {}
-
-        @Override
         public void recordSuccess() {}
       };
     }
@@ -515,7 +505,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   public final boolean isActive() {
     return reconnectAttempt.get() == 0 && getChannel() != null
         && getChannel().isConnected()
-        && circuitBreaker.allowsExecution();
+        && circuitBreaker.allowExecution();
   }
 
   /*
@@ -661,7 +651,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
    */
   public void setContinuousTimeout(boolean timedOut) {
     if (timedOut && isActive()) {
-      circuitBreaker.recordFailure(TIMEOUT_EXCEPTION);
+      circuitBreaker.recordFailure();
       setContinuousTimeoutStatistics();
     } else {
       circuitBreaker.recordSuccess();
