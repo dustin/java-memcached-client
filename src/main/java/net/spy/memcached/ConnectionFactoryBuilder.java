@@ -75,6 +75,9 @@ public class ConnectionFactoryBuilder {
   protected long timeoutExceptionDurationThreshold =
       DefaultConnectionFactory.DEFAULT_MAX_TIMEOUTEXCEPTION_DURATION_THRESHOLD;
 
+  protected boolean circuitBreakerEnabled =
+      DefaultConnectionFactory.DEFAULT_CIRCUIT_BREAKER_ENABLED;
+
   protected MetricType metricType = null;
   protected MetricCollector collector = null;
   protected ExecutorService executorService = null;
@@ -288,6 +291,14 @@ public class ConnectionFactoryBuilder {
   }
 
   /**
+   * Whether to use failsafe to short-circuit nodes that are timing out
+   */
+  public ConnectionFactoryBuilder setCircuitBreakerEnabled(boolean to) {
+    circuitBreakerEnabled = to;
+    return this;
+  }
+
+  /**
    * Enable or disable metric collection.
    *
    * @param type the metric type to use (or disable).
@@ -441,6 +452,11 @@ public class ConnectionFactoryBuilder {
       @Override
       public long getTimeoutExceptionDurationThreshold() {
         return timeoutExceptionDurationThreshold;
+      }
+
+      @Override
+      public boolean circuitBreakerEnabled() {
+        return circuitBreakerEnabled;
       }
 
       @Override

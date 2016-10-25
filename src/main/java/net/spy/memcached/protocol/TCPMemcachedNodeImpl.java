@@ -112,14 +112,63 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     this.opQueueMaxBlockTime = opQueueMaxBlockTime;
     shouldAuth = waitForAuth;
     defaultOpTimeout = dt;
-    circuitBreaker = new CircuitBreaker()
-        .withFailureThreshold(5, 10)
-        .withDelay(5, TimeUnit.SECONDS)
-        .withSuccessThreshold(1);
-    circuitBreaker.onOpen(new LoggingRunnable(String.format("Circuit for node %s is now open due to timeouts", sa)));
-    circuitBreaker.onHalfOpen(new LoggingRunnable(String.format("Circuit for node %s is now half-open", sa)));
-    circuitBreaker.onClose(new LoggingRunnable(String.format("Circuit for node %s is now closed", sa)));
+    circuitBreaker = circuitBreaker(connectionFactory.circuitBreakerEnabled(), sa);
     setupForAuth();
+  }
+
+  private CircuitBreaker circuitBreaker(boolean enabled, SocketAddress sa) {
+    if (enabled) {
+      CircuitBreaker circuitBreaker = new CircuitBreaker()
+          .withFailureThreshold(5, 10)
+          .withDelay(5, TimeUnit.SECONDS)
+          .withSuccessThreshold(1);
+
+      circuitBreaker.onOpen(new LoggingRunnable(String.format("Circuit for node %s is now open due to timeouts", sa)));
+      circuitBreaker.onHalfOpen(new LoggingRunnable(String.format("Circuit for node %s is now half-open", sa)));
+      circuitBreaker.onClose(new LoggingRunnable(String.format("Circuit for node %s is now closed", sa)));
+
+      return circuitBreaker;
+    } else {
+      return new CircuitBreaker() {
+
+        @Override
+        public boolean allowsExecution() {
+          return true;
+        }
+
+        @Override
+        public State getState() {
+          return State.CLOSED;
+        }
+
+        @Override
+        public boolean isClosed() {
+          return true;
+        }
+
+        @Override
+        public boolean isHalfOpen() {
+          return false;
+        }
+
+        @Override
+        public boolean isOpen() {
+          return false;
+        }
+
+        @Override
+        public void open() {}
+
+        @Override
+        public void recordFailure(Throwable failure) {}
+
+        @Override
+        public void recordResult(Object result) {}
+
+        @Override
+        public void recordSuccess() {}
+      };
+    }
   }
 
   /*

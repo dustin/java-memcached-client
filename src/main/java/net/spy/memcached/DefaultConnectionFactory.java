@@ -120,6 +120,11 @@ public class DefaultConnectionFactory extends SpyObject implements
   public static final long DEFAULT_MAX_TIMEOUTEXCEPTION_DURATION_THRESHOLD = 30000;
 
   /**
+   * Whether to use failsafe to short-circuit nodes that are timing out
+   */
+  public static final boolean DEFAULT_CIRCUIT_BREAKER_ENABLED = false;
+
+  /**
    * Turn off metric collection by default.
    */
   public static final MetricType DEFAULT_METRIC_TYPE = MetricType.OFF;
@@ -435,6 +440,10 @@ public class DefaultConnectionFactory extends SpyObject implements
    */
   public long getTimeoutExceptionDurationThreshold() {
     return DEFAULT_MAX_TIMEOUTEXCEPTION_DURATION_THRESHOLD;
+  }
+
+  public boolean circuitBreakerEnabled() {
+    return DEFAULT_CIRCUIT_BREAKER_ENABLED;
   }
 
   @Override

@@ -181,6 +181,11 @@ public interface ConnectionFactory {
 	long getTimeoutExceptionDurationThreshold();
 
   /**
+   * Whether to use failsafe to short-circuit nodes that are timing out
+   */
+  boolean circuitBreakerEnabled();
+
+  /**
    * If true, metric collections are enabled.
    */
   MetricType enableMetrics();
