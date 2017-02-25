@@ -499,8 +499,8 @@ public class MemcachedConnection extends SpyThread {
    * Helper method for {@link #handleIO()} to handle empty select calls.
    */
   private void handleEmptySelects() {
-    getLogger().debug("No selectors ready, interrupted: "
-      + Thread.interrupted());
+    getLogger().debug("No selectors ready, interrupted: %b",
+      Thread.interrupted());
 
     if (++emptySelects > DOUBLE_CHECK_EMPTY) {
       for (SelectionKey sk : selector.keys()) {
