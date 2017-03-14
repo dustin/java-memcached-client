@@ -93,7 +93,7 @@ public class MemcachedConnection extends SpyThread {
   private static final int EXCESSIVE_EMPTY = 0x1000000;
 
   /**
-   * The default wakeup delay if not overriden by a system property.
+   * The default wakeup delay if not overridden by a system property.
    */
   private static final int DEFAULT_WAKEUP_DELAY = 1000;
 
@@ -409,7 +409,7 @@ public class MemcachedConnection extends SpyThread {
     handleInputQueue();
     getLogger().debug("Done dealing with queue.");
 
-    long delay = 1000;
+    long delay = wakeupDelay;
     if (!reconnectQueue.isEmpty()) {
       long now = System.currentTimeMillis();
       long then = reconnectQueue.firstKey();
