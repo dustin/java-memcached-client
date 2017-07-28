@@ -125,6 +125,15 @@ public interface ConnectionFactory {
   boolean useNagleAlgorithm();
 
   /**
+   * If true, keep alive will be used on connected sockets.
+   *
+   * <p>
+   * See {@link java.net.Socket#setKeepAlive(boolean)} for more information.
+   * </p>
+   */
+   boolean getKeepAlive();
+
+  /**
    * Observers that should be established at the time of connection
    * instantiation.
    *

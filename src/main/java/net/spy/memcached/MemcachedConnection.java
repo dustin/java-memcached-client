@@ -47,6 +47,7 @@ import net.spy.memcached.util.StringUtils;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
@@ -349,8 +350,10 @@ public class MemcachedConnection extends SpyThread {
       MemcachedNode qa = connectionFactory.createMemcachedNode(sa, ch, bufSize);
       qa.setConnection(this);
       int ops = 0;
-      ch.socket().setTcpNoDelay(!connectionFactory.useNagleAlgorithm());
-
+      Socket socket = ch.socket();
+      socket.setTcpNoDelay(!connectionFactory.useNagleAlgorithm());
+      socket.setKeepAlive(connectionFactory.getKeepAlive());
+      
       try {
         if (ch.connect(sa)) {
           getLogger().info("Connected to %s immediately", qa);
