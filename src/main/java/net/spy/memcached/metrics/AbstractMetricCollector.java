@@ -22,19 +22,21 @@
 
 package net.spy.memcached.metrics;
 
+import java.net.SocketAddress;
+
 /**
  * This abstract class implements methods needed by all {@link MetricCollector}s.
  */
 public abstract class AbstractMetricCollector  implements MetricCollector {
 
   @Override
-  public void decrementCounter(String name) {
-    decrementCounter(name, 1);
+  public void decrementCounter(SocketAddress node, String name) {
+    decrementCounter(node, name, 1);
   }
 
   @Override
-  public void incrementCounter(String name) {
-    incrementCounter(name, 1);
+  public void incrementCounter(SocketAddress node, String name) {
+    incrementCounter(node, name, 1);
   }
 
 }

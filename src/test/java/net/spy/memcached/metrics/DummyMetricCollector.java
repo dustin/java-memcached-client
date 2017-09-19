@@ -23,6 +23,7 @@
 
 package net.spy.memcached.metrics;
 
+import java.net.SocketAddress;
 import java.util.HashMap;
 
 /**
@@ -37,62 +38,62 @@ public class DummyMetricCollector implements MetricCollector {
   }
 
   @Override
-  public void addCounter(String name) {
+  public void addCounter(SocketAddress node, String name) {
     metrics.put(name, 0);
   }
 
   @Override
-  public void removeCounter(String name) {
+  public void removeCounter(SocketAddress node,String name) {
     metrics.remove(name);
   }
 
   @Override
-  public void incrementCounter(String name) {
+  public void incrementCounter(SocketAddress node,String name) {
     metrics.put(name, metrics.get(name) + 1);
   }
 
   @Override
-  public void incrementCounter(String name, int amount) {
+  public void incrementCounter(SocketAddress node,String name, int amount) {
     metrics.put(name, metrics.get(name) + amount);
   }
 
   @Override
-  public void decrementCounter(String name) {
+  public void decrementCounter(SocketAddress node,String name) {
     metrics.put(name, metrics.get(name) - 1);
   }
 
   @Override
-  public void decrementCounter(String name, int amount) {
+  public void decrementCounter(SocketAddress node,String name, int amount) {
     metrics.put(name, metrics.get(name) - amount);
   }
 
   @Override
-  public void addMeter(String name) {
+  public void addMeter(SocketAddress node,String name) {
     metrics.put(name, 0);
   }
 
   @Override
-  public void removeMeter(String name) {
+  public void removeMeter(SocketAddress node,String name) {
     metrics.remove(name);
   }
 
   @Override
-  public void markMeter(String name) {
+  public void markMeter(SocketAddress node,String name) {
     metrics.put(name, metrics.get(name) + 1);
   }
 
   @Override
-  public void addHistogram(String name) {
+  public void addHistogram(SocketAddress node,String name) {
     metrics.put(name, 0);
   }
 
   @Override
-  public void removeHistogram(String name) {
+  public void removeHistogram(SocketAddress node,String name) {
     metrics.remove(name);
   }
 
   @Override
-  public void updateHistogram(String name, int amount) {
+  public void updateHistogram(SocketAddress node,String name, int amount) {
     metrics.put(name, metrics.get(name) + amount);
   }
 

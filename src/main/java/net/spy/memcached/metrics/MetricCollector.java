@@ -22,6 +22,8 @@
 
 package net.spy.memcached.metrics;
 
+import java.net.SocketAddress;
+
 /**
  * Defines a common API for all {@link MetricCollector}s.
  *
@@ -42,88 +44,99 @@ public interface MetricCollector {
   /**
    * Add a Counter to the collector.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    */
-  void addCounter(String name);
+  void addCounter(SocketAddress node, String name);
 
   /**
    * Remove a Counter from the collector.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    */
-  void removeCounter(String name);
+  void removeCounter(SocketAddress node, String name);
 
   /**
    * Increment a Counter by one.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    */
-  void incrementCounter(String name);
+  void incrementCounter(SocketAddress node, String name);
 
   /**
    * Increment a Counter by the given amount.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    * @param amount the amount to increase.
    */
-  void incrementCounter(String name, int amount);
+  void incrementCounter(SocketAddress node, String name, int amount);
 
   /**
    * Decrement a Counter by one.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    */
-  void decrementCounter(String name);
+  void decrementCounter(SocketAddress node, String name);
 
   /**
    * Decrement a Counter by the given amount.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    * @param amount the amount to decrease.
    */
-  void decrementCounter(String name, int amount);
+  void decrementCounter(SocketAddress node, String name, int amount);
 
   /**
    * Add a Meter to the Collector.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    */
-  void addMeter(String name);
+  void addMeter(SocketAddress node, String name);
 
   /**
    * Remove a Meter from the Collector.
    *
    * @param name the name of the counter.
    */
-  void removeMeter(String name);
+  void removeMeter(SocketAddress node, String name);
 
   /**
    * Mark a checkpoint in the Meter.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    */
-  void markMeter(String name);
+  void markMeter(SocketAddress node, String name);
 
   /**
    * Add a Histogram to the Collector.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    */
-  void addHistogram(String name);
+  void addHistogram(SocketAddress node, String name);
 
   /**
    * Remove a Histogram from the Collector.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    */
-  void removeHistogram(String name);
+  void removeHistogram(SocketAddress node, String name);
 
   /**
    * Update the Histogram with the given amount.
    *
+   * @param node the memcached node
    * @param name the name of the counter.
    * @param amount the amount to update.
    */
-  void updateHistogram(String name, int amount);
+  void updateHistogram(SocketAddress node, String name, int amount);
 
 }
