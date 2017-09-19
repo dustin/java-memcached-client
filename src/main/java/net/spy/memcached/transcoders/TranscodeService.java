@@ -45,7 +45,7 @@ public class TranscodeService extends SpyObject {
 
   public TranscodeService(boolean daemon) {
     pool = new ThreadPoolExecutor(1, 10, 60L, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<>(100), new BasicThreadFactory(
+        new LinkedBlockingQueue<Runnable>(100), new BasicThreadFactory(
           "transcoder", daemon), new ThreadPoolExecutor.DiscardPolicy());
   }
 
