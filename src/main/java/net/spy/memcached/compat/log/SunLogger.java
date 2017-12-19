@@ -66,7 +66,7 @@ public class SunLogger extends AbstractLogger {
   /**
    * Wrapper around sun logger.
    *
-   * @param level net.spy.compat.log.AbstractLogger level.
+   * @param level net.spy.memcached.compat.log.AbstractLogger level.
    * @param message object message
    * @param e optional throwable
    */

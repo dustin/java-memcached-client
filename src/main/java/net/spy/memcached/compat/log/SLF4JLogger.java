@@ -66,7 +66,7 @@ public class SLF4JLogger extends AbstractLogger {
   /**
    * Wrapper around SLF4J logger facade.
    *
-   * @param level net.spy.compat.log.Level level.
+   * @param level net.spy.memcached.compat.log.Level level.
    * @param message object message
    * @param e optional throwable
    */
