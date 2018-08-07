@@ -22,8 +22,6 @@
 
 package net.spy.memcached.metrics;
 
-import net.spy.memcached.MemcachedNode;
-
 /**
  * Defines a common API for all {@link MetricCollector}s.
  *
@@ -40,8 +38,6 @@ import net.spy.memcached.MemcachedNode;
  * </p>
  */
 public interface MetricCollector {
-
-  MetricCollector forNode(MemcachedNode node);
 
   /**
    * Add a Counter to the collector.

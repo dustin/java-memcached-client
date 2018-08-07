@@ -25,8 +25,6 @@ package net.spy.memcached.metrics;
 
 import java.util.HashMap;
 
-import net.spy.memcached.MemcachedNode;
-
 /**
  * A dummy {@link MetricCollector} to measure executions.
  */
@@ -36,11 +34,6 @@ public class DummyMetricCollector implements MetricCollector {
 
   public DummyMetricCollector() {
     metrics = new HashMap<String, Integer>();
-  }
-
-  @Override
-  public MetricCollector forNode(MemcachedNode node) {
-    return this;
   }
 
   @Override
