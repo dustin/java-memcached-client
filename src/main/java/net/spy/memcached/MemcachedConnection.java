@@ -521,7 +521,7 @@ public class MemcachedConnection extends SpyThread {
     for (MemcachedNode qa : nodesToShutdown) {
       if (!addedQueue.contains(qa)) {
         nodesToShutdown.remove(qa);
-        metrics.decrementCounter(SHUTD_QUEUE_METRIC);
+        metrics.forNode(qa).decrementCounter(SHUTD_QUEUE_METRIC);
         Collection<Operation> notCompletedOperations = qa.destroyInputQueue();
         if (qa.getChannel() != null) {
           qa.getChannel().close();
@@ -804,7 +804,7 @@ public class MemcachedConnection extends SpyThread {
     boolean canWriteMore = node.getBytesRemainingToWrite() > 0;
     while (canWriteMore) {
       int wrote = node.writeSome();
-      metrics.updateHistogram(OVERALL_AVG_BYTES_WRITE_METRIC, wrote);
+      metrics.forNode(node).updateHistogram(OVERALL_AVG_BYTES_WRITE_METRIC, wrote);
       node.fillWriteBuffer(shouldOptimize);
       canWriteMore = wrote > 0 && node.getBytesRemainingToWrite() > 0;
     }
@@ -826,7 +826,7 @@ public class MemcachedConnection extends SpyThread {
     ByteBuffer rbuf = node.getRbuf();
     final SocketChannel channel = node.getChannel();
     int read = channel.read(rbuf);
-    metrics.updateHistogram(OVERALL_AVG_BYTES_READ_METRIC, read);
+    metrics.forNode(node).updateHistogram(OVERALL_AVG_BYTES_READ_METRIC, read);
     if (read < 0) {
       currentOp = handleReadsWhenChannelEndOfStream(currentOp, node, rbuf);
     }
@@ -841,9 +841,9 @@ public class MemcachedConnection extends SpyThread {
 
         long timeOnWire =
             System.nanoTime() - currentOp.getWriteCompleteTimestamp();
-        metrics.updateHistogram(OVERALL_AVG_TIME_ON_WIRE_METRIC,
+        metrics.forNode(node).updateHistogram(OVERALL_AVG_TIME_ON_WIRE_METRIC,
             (int)(timeOnWire / 1000));
-        metrics.markMeter(OVERALL_RESPONSE_METRIC);
+        metrics.forNode(node).markMeter(OVERALL_RESPONSE_METRIC);
         synchronized(currentOp) {
           readBufferAndLogMetrics(currentOp, rbuf, node);
         }
@@ -875,9 +875,9 @@ public class MemcachedConnection extends SpyThread {
           + op;
 
       if (op.hasErrored()) {
-        metrics.markMeter(OVERALL_RESPONSE_FAIL_METRIC);
+        metrics.forNode(node).markMeter(OVERALL_RESPONSE_FAIL_METRIC);
       } else {
-        metrics.markMeter(OVERALL_RESPONSE_SUCC_METRIC);
+        metrics.forNode(node).markMeter(OVERALL_RESPONSE_SUCC_METRIC);
       }
     } else if (currentOp.getState() == OperationState.RETRY) {
       handleRetryInformation(currentOp.getErrorMsg());
@@ -890,7 +890,7 @@ public class MemcachedConnection extends SpyThread {
           + op;
 
       retryOps.add(currentOp);
-      metrics.markMeter(OVERALL_RESPONSE_RETRY_METRIC);
+      metrics.forNode(node).markMeter(OVERALL_RESPONSE_RETRY_METRIC);
     }
   }
 
@@ -992,7 +992,7 @@ public class MemcachedConnection extends SpyThread {
     }
 
     reconnectQueue.put(reconnectTime, node);
-    metrics.incrementCounter(RECON_QUEUE_METRIC);
+    metrics.forNode(node).incrementCounter(RECON_QUEUE_METRIC);
 
     node.setupResend();
     if (failureMode == FailureMode.Redistribute) {
@@ -1108,7 +1108,7 @@ public class MemcachedConnection extends SpyThread {
     while(i.hasNext()) {
       final MemcachedNode node = i.next();
       i.remove();
-      metrics.decrementCounter(RECON_QUEUE_METRIC);
+      metrics.forNode(node).decrementCounter(RECON_QUEUE_METRIC);
 
       try {
         if (!belongsToCluster(node)) {
@@ -1253,7 +1253,7 @@ public class MemcachedConnection extends SpyThread {
     o.initialize();
     node.insertOp(o);
     addedQueue.offer(node);
-    metrics.markMeter(OVERALL_REQUEST_METRIC);
+    metrics.forNode(node).markMeter(OVERALL_REQUEST_METRIC);
 
     Selector s = selector.wakeup();
     assert s == selector : "Wakeup returned the wrong selector.";
@@ -1275,7 +1275,7 @@ public class MemcachedConnection extends SpyThread {
     o.initialize();
     node.addOp(o);
     addedQueue.offer(node);
-    metrics.markMeter(OVERALL_REQUEST_METRIC);
+    metrics.forNode(node).markMeter(OVERALL_REQUEST_METRIC);
 
     Selector s = selector.wakeup();
     assert s == selector : "Wakeup returned the wrong selector.";
@@ -1320,7 +1320,7 @@ public class MemcachedConnection extends SpyThread {
       node.addOp(op);
       op.setHandlingNode(node);
       addedQueue.offer(node);
-      metrics.markMeter(OVERALL_REQUEST_METRIC);
+      metrics.forNode(node).markMeter(OVERALL_REQUEST_METRIC);
     }
 
     Selector s = selector.wakeup();
