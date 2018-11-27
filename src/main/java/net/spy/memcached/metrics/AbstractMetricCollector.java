@@ -22,10 +22,17 @@
 
 package net.spy.memcached.metrics;
 
+import net.spy.memcached.MemcachedNode;
+
 /**
  * This abstract class implements methods needed by all {@link MetricCollector}s.
  */
 public abstract class AbstractMetricCollector  implements MetricCollector {
+
+  @Override
+  public MetricCollector forNode(MemcachedNode node) {
+    return this;
+  }
 
   @Override
   public void decrementCounter(String name) {
