@@ -50,7 +50,7 @@ be temporarily failing.
 
 ## Circuit Breaker
 
-There is now a configuration option to add a [Failsafe](https://github.com/jhalterman/failsafe) circuit breaker in front of each node. If enabled, the circuit breaker is updated at the end of each operation (failure if it timed out, success otherwise). If 5 out of the last 10 operations have timed out for a specific node, the circuit breaker will open and requests to that node will immediately fail. After 5 seconds, a single request is allowed to that node. If it fails, the circuit stays open and the process is repeated 5 seconds later. If it succeeds, the circuit is closed and behavior returns to normal.  
+There is now a configuration option to add a [Failsafe](https://github.com/jhalterman/failsafe) circuit breaker in front of each node. If enabled, the circuit breaker is updated at the end of each operation (failure if it timed out, success otherwise). If 5 out of the last 10 operations have timed out for a specific node, the circuit breaker will open and requests to that node will immediately fail. After one second, a single request is allowed to that node. If it fails, the circuit stays open and the process is repeated one second later. If it succeeds, the circuit is closed and behavior returns to normal.
 
 # More Information
 
