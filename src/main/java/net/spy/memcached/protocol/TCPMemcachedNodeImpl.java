@@ -126,7 +126,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     if (enabled) {
       final CircuitBreaker circuitBreaker = new CircuitBreaker()
           .withFailureThreshold(5, 10)
-          .withDelay(5, TimeUnit.SECONDS)
+          .withDelay(1, TimeUnit.SECONDS)
           .withSuccessThreshold(1);
 
       circuitBreaker.onOpen(new LoggingRunnable(String.format("Circuit for node %s is now open due to timeouts", sa)));
