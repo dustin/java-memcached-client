@@ -1,0 +1,27 @@
+buildDeps:
+  - jdk8
+  - maven3
+
+steps:
+  - description: "Installing ant"
+    commands:
+      - wget http://apache.mirrors.tds.net/ant/binaries/apache-ant-1.10.7-bin.zip
+      - unzip -qq apache-ant-1.10.7-bin.zip
+
+  - description: "Running ant build"
+    commands:
+      - apache-ant-1.10.7/bin/ant
+
+  - description: "Changing POM version"
+    commands:
+      - set-maven-versions --root $WORKSPACE --version "$(if [ $GIT_BRANCH == 2.12.1-hs ]; then echo 2.12.$MODULE_BUILD_NUMBER-hubspot-SNAPSHOT; else echo 2.12.$MODULE_BUILD_NUMBER-hubspot-$GIT_BRANCH-SNAPSHOT; fi)"
+
+  - description: "Uploading JAR to Nexus"
+    commands:
+      - mvn -B
+            org.apache.maven.plugins:maven-deploy-plugin:2.8.2:deploy-file
+            -DrepositoryId=s3
+            -Durl=s3://hubspot-maven-artifacts-prod/snapshots
+            -DpomFile=pom.xml
+            -Dfile=build/jars/spymemcached-no-version.jar
+            -Dsources=build/sources/spymemcached-no-version.jar
