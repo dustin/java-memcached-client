@@ -12,7 +12,7 @@
     -->
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.spy</groupId>
+    <groupId>spy</groupId>
     <artifactId>spymemcached</artifactId>
     <version>2.12.1-SNAPSHOT</version> <!-- used for development -->
 
