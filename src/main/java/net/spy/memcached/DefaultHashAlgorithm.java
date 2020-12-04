@@ -70,7 +70,11 @@ public enum DefaultHashAlgorithm implements HashAlgorithm {
   /**
    * MD5-based hash algorithm used by ketama.
    */
-  KETAMA_HASH;
+  KETAMA_HASH,
+  /**
+   * Jenkins hash function (default in PHP).
+   */
+  JENKINS_HASH;
 
   private static final long FNV_64_INIT = 0xcbf29ce484222325L;
   private static final long FNV_64_PRIME = 0x100000001b3L;
@@ -142,10 +146,27 @@ public enum DefaultHashAlgorithm implements HashAlgorithm {
           | ((long) (bKey[1] & 0xFF) << 8)
           | (bKey[0] & 0xFF);
       break;
+    case JENKINS_HASH:
+      try {
+        int hash = 0;
+        for (byte bt : k.getBytes("utf-8")) {
+          hash += (bt & 0xFF);
+          hash += (hash << 10);
+          hash ^= (hash >>> 6);
+        }
+        hash += (hash << 3);
+        hash ^= (hash >>> 11);
+        hash += (hash << 15);
+        rv = hash;
+      }
+      catch (UnsupportedEncodingException e) {
+        throw new IllegalStateException("Hash function error", e);
+      }
+      break;
     default:
       assert false;
     }
-    return rv & 0xffffffffL; /* Truncate to 32-bits */
+    return rv & 0xffffffffL; /* Convert to unsigned 32-bits */
   }
 
   /**
