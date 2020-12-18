@@ -63,7 +63,7 @@ public class Log4JLogger extends AbstractLogger {
   /**
    * Wrapper around log4j.
    *
-   * @param level net.spy.compat.log.Level level.
+   * @param level net.spy.memcached.compat.log.Level level.
    * @param message object message
    * @param e optional throwable
    */
@@ -93,9 +93,9 @@ public class Log4JLogger extends AbstractLogger {
     default:
       // I don't know what this is, so consider it fatal
       pLevel = org.apache.log4j.Level.FATAL;
-      l4jLogger.log("net.spy.compat.log.AbstractLogger", pLevel, "Unhandled "
+      l4jLogger.log("net.spy.memcached.compat.log.AbstractLogger", pLevel, "Unhandled "
           + "log level:  " + level + " for the following message", null);
     }
-    l4jLogger.log("net.spy.compat.log.AbstractLogger", pLevel, message, e);
+    l4jLogger.log("net.spy.memcached.compat.log.AbstractLogger", pLevel, message, e);
   }
 }
