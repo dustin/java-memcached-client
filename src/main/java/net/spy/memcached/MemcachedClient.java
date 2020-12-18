@@ -1757,7 +1757,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
           // XXX: Potential abstraction leak.
           // The handling of incr/decr in the binary protocol
           // Allows us to avoid string processing.
-          rv.set(new Long(s.isSuccess() ? s.getMessage() : "-1"));
+          rv.set(Long.valueOf(s.isSuccess() ? s.getMessage() : "-1"));
         }
 
         @Override
@@ -1992,7 +1992,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
         new OperationCallback() {
           @Override
           public void receivedStatus(OperationStatus s) {
-            rv.set(new Long(s.isSuccess() ? s.getMessage() : "-1"), s);
+            rv.set(Long.valueOf(s.isSuccess() ? s.getMessage() : "-1"), s);
           }
 
           @Override
