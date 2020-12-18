@@ -165,7 +165,7 @@ public class WhalinV1Transcoder extends BaseSerializingTranscoder implements
     return Short.valueOf((short) decodeInteger(data).intValue());
   }
 
-  private Byte decodeByte(byte[] in) {
+  private static Byte decodeByte(byte[] in) {
     assert in.length == 2 : "Wrong length for a byte";
     byte value = in[1];
     return Byte.valueOf(value);
@@ -190,12 +190,12 @@ public class WhalinV1Transcoder extends BaseSerializingTranscoder implements
     return Double.valueOf(Double.longBitsToDouble(l.longValue()));
   }
 
-  private Boolean decodeBoolean(byte[] in) {
+  private static Boolean decodeBoolean(byte[] in) {
     assert in.length == 2 : "Wrong length for a boolean";
     return Boolean.valueOf(in[1] == 1);
   }
 
-  private Long decodeLong(byte[] in) {
+  private static Long decodeLong(byte[] in) {
     long rv = 0L;
     for (int idx = 1; idx < in.length; idx++) {
       byte i = in[idx];
@@ -216,14 +216,14 @@ public class WhalinV1Transcoder extends BaseSerializingTranscoder implements
     }
   }
 
-  private byte[] encodeByte(Byte value) {
+  private static byte[] encodeByte(Byte value) {
     byte[] b = new byte[2];
     b[0] = SPECIAL_BYTE;
     b[1] = value.byteValue();
     return b;
   }
 
-  private byte[] encodeBoolean(Boolean value) {
+  private static byte[] encodeBoolean(Boolean value) {
     byte[] b = new byte[2];
     b[0] = SPECIAL_BOOLEAN;
     b[1] = (byte) (value.booleanValue() ? 1 : 0);
@@ -295,7 +295,7 @@ public class WhalinV1Transcoder extends BaseSerializingTranscoder implements
     return result;
   }
 
-  private byte[] encodeNum(long l, int maxBytes) {
+  private static byte[] encodeNum(long l, int maxBytes) {
     byte[] rv = new byte[maxBytes + 1];
 
     for (int i = 0; i < rv.length - 1; i++) {
