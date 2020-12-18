@@ -59,6 +59,6 @@ public class SpyThread extends Thread {
     if (logger == null) {
       logger = LoggerFactory.getLogger(getClass());
     }
-    return (logger);
+    return logger;
   }
 }

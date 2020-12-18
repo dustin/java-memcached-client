@@ -49,7 +49,7 @@ public class DefaultLogger extends AbstractLogger {
    */
   @Override
   public boolean isTraceEnabled() {
-    return (false);
+    return false;
   }
 
   /**
@@ -57,7 +57,7 @@ public class DefaultLogger extends AbstractLogger {
    */
   @Override
   public boolean isDebugEnabled() {
-    return (false);
+    return false;
   }
 
   /**
@@ -65,7 +65,7 @@ public class DefaultLogger extends AbstractLogger {
    */
   @Override
   public boolean isInfoEnabled() {
-    return (true);
+    return true;
   }
 
   /**

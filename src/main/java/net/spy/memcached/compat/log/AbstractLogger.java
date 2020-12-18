@@ -45,7 +45,7 @@ public abstract class AbstractLogger implements Logger {
    * Get the name of this logger.
    */
   public String getName() {
-    return (name);
+    return name;
   }
 
   /**

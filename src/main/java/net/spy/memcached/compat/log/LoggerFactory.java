@@ -70,7 +70,7 @@ public final class LoggerFactory extends Object {
    * @return a Logger instance
    */
   public static Logger getLogger(Class<?> clazz) {
-    return (getLogger(clazz.getName()));
+    return getLogger(clazz.getName());
   }
 
   /**
@@ -84,7 +84,7 @@ public final class LoggerFactory extends Object {
       throw new NullPointerException("Logger name may not be null.");
     }
     init();
-    return (instance.internalGetLogger(name));
+    return instance.internalGetLogger(name);
   }
 
   // Get an instance of Logger from internal mechanisms.
@@ -105,7 +105,7 @@ public final class LoggerFactory extends Object {
       rv = tmp == null ? newLogger : tmp;
     }
 
-    return (rv);
+    return rv;
   }
 
   private Logger getNewInstance(String name) throws InstantiationException,
@@ -117,7 +117,7 @@ public final class LoggerFactory extends Object {
     Object[] args = { name };
     Logger rv = instanceConstructor.newInstance(args);
 
-    return (rv);
+    return rv;
   }
 
   // Find the appropriate constructor

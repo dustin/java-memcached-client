@@ -54,7 +54,7 @@ public class ReplicaGetOperationImpl extends SingleKeyOperationImpl
   protected void decodePayload(byte[] pl) {
     final int flags = decodeInt(pl, 0);
     final byte[] data = new byte[pl.length - EXTRA_HDR_LEN - keyLen];
-    System.arraycopy(pl, (EXTRA_HDR_LEN + keyLen), data, 0,
+    System.arraycopy(pl, EXTRA_HDR_LEN + keyLen, data, 0,
       pl.length - EXTRA_HDR_LEN - keyLen);
     ReplicaGetOperation.Callback gcb =
       (ReplicaGetOperation.Callback) getCallback();

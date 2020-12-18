@@ -48,6 +48,6 @@ public class SpyObject extends Object {
     if (logger == null) {
       logger = LoggerFactory.getLogger(getClass());
     }
-    return (logger);
+    return logger;
   }
 }

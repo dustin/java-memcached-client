@@ -58,6 +58,6 @@ public enum Level {
    */
   @Override
   public String toString() {
-    return ("{LogLevel:  " + name() + "}");
+    return "{LogLevel:  " + name() + "}";
   }
 }
