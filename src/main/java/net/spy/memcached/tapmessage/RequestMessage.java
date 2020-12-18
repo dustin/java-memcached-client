@@ -114,7 +114,7 @@ public class RequestMessage extends BaseMessage{
     int oldSize = (vblist.length + 1) * 2;
     int newSize = (vbs.length + 1) * 2;
     totalbody += newSize - oldSize;
-    vblist = vbs;
+    vblist = vbs == null ? null : vbs.clone();
   }
 
   /**

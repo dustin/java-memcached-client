@@ -57,14 +57,14 @@ public final class CachedData {
           + " byte object)");
     }
     flags = f;
-    data = d;
+    data = d == null ? null : d.clone();
   }
 
   /**
    * Get the stored data.
    */
   public byte[] getData() {
-    return data;
+    return data == null ? null : data.clone();
   }
 
   /**
