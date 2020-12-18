@@ -22,6 +22,8 @@
 
 package net.spy.memcached.metrics;
 
+import java.net.SocketAddress;
+
 /**
  * A {@link MetricCollector} that does nothing.
  *
@@ -31,52 +33,52 @@ package net.spy.memcached.metrics;
 public final class NoopMetricCollector extends AbstractMetricCollector {
 
   @Override
-  public void addCounter(String name) {
+  public void addCounter(SocketAddress node, String name) {
     return;
   }
 
   @Override
-  public void removeCounter(String name) {
+  public void removeCounter(SocketAddress node,String name) {
     return;
   }
 
   @Override
-  public void incrementCounter(String name, int amount) {
+  public void incrementCounter(SocketAddress node,String name, int amount) {
     return;
   }
 
   @Override
-  public void decrementCounter(String name, int amount) {
+  public void decrementCounter(SocketAddress node,String name, int amount) {
     return;
   }
 
   @Override
-  public void addMeter(String name) {
+  public void addMeter(SocketAddress node,String name) {
     return;
   }
 
   @Override
-  public void removeMeter(String name) {
+  public void removeMeter(SocketAddress node,String name) {
     return;
   }
 
   @Override
-  public void markMeter(String name) {
+  public void markMeter(SocketAddress node,String name) {
     return;
   }
 
   @Override
-  public void addHistogram(String name) {
+  public void addHistogram(SocketAddress node,String name) {
     return;
   }
 
   @Override
-  public void removeHistogram(String name) {
+  public void removeHistogram(SocketAddress node,String name) {
     return;
   }
 
   @Override
-  public void updateHistogram(String name, int amount) {
+  public void updateHistogram(SocketAddress node,String name, int amount) {
     return;
   }
 

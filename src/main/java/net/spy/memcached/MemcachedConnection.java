@@ -300,7 +300,7 @@ public class MemcachedConnection extends SpyThread {
     metrics = f.getMetricCollector();
     metricType = f.enableMetrics();
 
-    registerMetrics();
+    registerMetrics(connections);
 
     setName("Memcached IO over " + this);
     setDaemon(f.isDaemon());
@@ -313,22 +313,25 @@ public class MemcachedConnection extends SpyThread {
    * Note that these Metrics may or may not take effect, depending on the
    * {@link MetricCollector} implementation. This can be controlled from
    * the {@link DefaultConnectionFactory}.
+   * @param connections
    */
-  protected void registerMetrics() {
-    if (metricType.equals(MetricType.DEBUG)
-      || metricType.equals(MetricType.PERFORMANCE)) {
-      metrics.addHistogram(OVERALL_AVG_BYTES_READ_METRIC);
-      metrics.addHistogram(OVERALL_AVG_BYTES_WRITE_METRIC);
-      metrics.addHistogram(OVERALL_AVG_TIME_ON_WIRE_METRIC);
-      metrics.addMeter(OVERALL_RESPONSE_METRIC);
-      metrics.addMeter(OVERALL_REQUEST_METRIC);
+  protected void registerMetrics(List<MemcachedNode> connections) {
+    for (MemcachedNode node : connections) {
+      if (metricType.equals(MetricType.DEBUG)
+        || metricType.equals(MetricType.PERFORMANCE)) {
+        metrics.addHistogram(node.getSocketAddress(), OVERALL_AVG_BYTES_READ_METRIC);
+        metrics.addHistogram(node.getSocketAddress(), OVERALL_AVG_BYTES_WRITE_METRIC);
+        metrics.addHistogram(node.getSocketAddress(), OVERALL_AVG_TIME_ON_WIRE_METRIC);
+        metrics.addMeter(node.getSocketAddress(), OVERALL_RESPONSE_METRIC);
+        metrics.addMeter(node.getSocketAddress(), OVERALL_REQUEST_METRIC);
 
-      if (metricType.equals(MetricType.DEBUG)) {
-        metrics.addCounter(RECON_QUEUE_METRIC);
-        metrics.addCounter(SHUTD_QUEUE_METRIC);
-        metrics.addMeter(OVERALL_RESPONSE_RETRY_METRIC);
-        metrics.addMeter(OVERALL_RESPONSE_SUCC_METRIC);
-        metrics.addMeter(OVERALL_RESPONSE_FAIL_METRIC);
+        if (metricType.equals(MetricType.DEBUG)) {
+          metrics.addCounter(node.getSocketAddress(), RECON_QUEUE_METRIC);
+          metrics.addCounter(node.getSocketAddress(), SHUTD_QUEUE_METRIC);
+          metrics.addMeter(node.getSocketAddress(), OVERALL_RESPONSE_RETRY_METRIC);
+          metrics.addMeter(node.getSocketAddress(), OVERALL_RESPONSE_SUCC_METRIC);
+          metrics.addMeter(node.getSocketAddress(), OVERALL_RESPONSE_FAIL_METRIC);
+        }
       }
     }
   }
@@ -529,7 +532,7 @@ public class MemcachedConnection extends SpyThread {
     for (MemcachedNode qa : nodesToShutdown) {
       if (!addedQueue.contains(qa)) {
         nodesToShutdown.remove(qa);
-        metrics.decrementCounter(SHUTD_QUEUE_METRIC);
+        metrics.decrementCounter(qa.getSocketAddress(), SHUTD_QUEUE_METRIC);
         Collection<Operation> notCompletedOperations = qa.destroyInputQueue();
         if (qa.getChannel() != null) {
           qa.getChannel().close();
@@ -810,7 +813,7 @@ public class MemcachedConnection extends SpyThread {
     boolean canWriteMore = node.getBytesRemainingToWrite() > 0;
     while (canWriteMore) {
       int wrote = node.writeSome();
-      metrics.updateHistogram(OVERALL_AVG_BYTES_WRITE_METRIC, wrote);
+      metrics.updateHistogram(node.getSocketAddress(), OVERALL_AVG_BYTES_WRITE_METRIC, wrote);
       node.fillWriteBuffer(shouldOptimize);
       canWriteMore = wrote > 0 && node.getBytesRemainingToWrite() > 0;
     }
@@ -832,7 +835,7 @@ public class MemcachedConnection extends SpyThread {
     ByteBuffer rbuf = node.getRbuf();
     final SocketChannel channel = node.getChannel();
     int read = channel.read(rbuf);
-    metrics.updateHistogram(OVERALL_AVG_BYTES_READ_METRIC, read);
+    metrics.updateHistogram(node.getSocketAddress(), OVERALL_AVG_BYTES_READ_METRIC, read);
     if (read < 0) {
       currentOp = handleReadsWhenChannelEndOfStream(currentOp, node, rbuf);
     }
@@ -847,9 +850,9 @@ public class MemcachedConnection extends SpyThread {
 
         long timeOnWire =
           System.nanoTime() - currentOp.getWriteCompleteTimestamp();
-        metrics.updateHistogram(OVERALL_AVG_TIME_ON_WIRE_METRIC,
+        metrics.updateHistogram(node.getSocketAddress(), OVERALL_AVG_TIME_ON_WIRE_METRIC,
           (int)(timeOnWire / 1000));
-        metrics.markMeter(OVERALL_RESPONSE_METRIC);
+        metrics.markMeter(node.getSocketAddress(), OVERALL_RESPONSE_METRIC);
         synchronized(currentOp) {
           readBufferAndLogMetrics(currentOp, rbuf, node);
         }
@@ -881,9 +884,9 @@ public class MemcachedConnection extends SpyThread {
         + op;
 
       if (op.hasErrored()) {
-        metrics.markMeter(OVERALL_RESPONSE_FAIL_METRIC);
+        metrics.markMeter(node.getSocketAddress(), OVERALL_RESPONSE_FAIL_METRIC);
       } else {
-        metrics.markMeter(OVERALL_RESPONSE_SUCC_METRIC);
+        metrics.markMeter(node.getSocketAddress(), OVERALL_RESPONSE_SUCC_METRIC);
       }
     } else if (currentOp.getState() == OperationState.RETRY) {
       handleRetryInformation(currentOp.getErrorMsg());
@@ -896,7 +899,7 @@ public class MemcachedConnection extends SpyThread {
         + op;
 
       retryOperation(currentOp);
-      metrics.markMeter(OVERALL_RESPONSE_RETRY_METRIC);
+      metrics.markMeter(node.getSocketAddress(), OVERALL_RESPONSE_RETRY_METRIC);
     }
   }
 
@@ -998,7 +1001,7 @@ public class MemcachedConnection extends SpyThread {
     }
 
     reconnectQueue.put(reconnectTime, node);
-    metrics.incrementCounter(RECON_QUEUE_METRIC);
+    metrics.incrementCounter(node.getSocketAddress(), RECON_QUEUE_METRIC);
 
     node.setupResend();
     if (failureMode == FailureMode.Redistribute) {
@@ -1114,7 +1117,7 @@ public class MemcachedConnection extends SpyThread {
     while(i.hasNext()) {
       final MemcachedNode node = i.next();
       i.remove();
-      metrics.decrementCounter(RECON_QUEUE_METRIC);
+      metrics.decrementCounter(node.getSocketAddress(), RECON_QUEUE_METRIC);
 
       try {
         if (!belongsToCluster(node)) {
@@ -1258,7 +1261,7 @@ public class MemcachedConnection extends SpyThread {
     o.initialize();
     node.insertOp(o);
     addedQueue.offer(node);
-    metrics.markMeter(OVERALL_REQUEST_METRIC);
+    metrics.markMeter(node.getSocketAddress(), OVERALL_REQUEST_METRIC);
 
     Selector s = selector.wakeup();
     assert s == selector : "Wakeup returned the wrong selector.";
@@ -1280,7 +1283,7 @@ public class MemcachedConnection extends SpyThread {
     o.initialize();
     node.addOp(o);
     addedQueue.offer(node);
-    metrics.markMeter(OVERALL_REQUEST_METRIC);
+    metrics.markMeter(node.getSocketAddress(), OVERALL_REQUEST_METRIC);
 
     Selector s = selector.wakeup();
     assert s == selector : "Wakeup returned the wrong selector.";
@@ -1325,7 +1328,7 @@ public class MemcachedConnection extends SpyThread {
       node.addOp(op);
       op.setHandlingNode(node);
       addedQueue.offer(node);
-      metrics.markMeter(OVERALL_REQUEST_METRIC);
+      metrics.markMeter(node.getSocketAddress(), OVERALL_REQUEST_METRIC);
     }
 
     Selector s = selector.wakeup();

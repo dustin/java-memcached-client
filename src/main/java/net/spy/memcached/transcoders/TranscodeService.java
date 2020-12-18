@@ -22,7 +22,7 @@
 
 package net.spy.memcached.transcoders;
 
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -45,7 +45,7 @@ public class TranscodeService extends SpyObject {
 
   public TranscodeService(boolean daemon) {
     pool = new ThreadPoolExecutor(1, 10, 60L, TimeUnit.MILLISECONDS,
-        new ArrayBlockingQueue<Runnable>(100), new BasicThreadFactory(
+        new LinkedBlockingQueue<Runnable>(100), new BasicThreadFactory(
           "transcoder", daemon), new ThreadPoolExecutor.DiscardPolicy());
   }
 

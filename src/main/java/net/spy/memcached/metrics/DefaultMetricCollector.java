@@ -26,6 +26,7 @@ import com.codahale.metrics.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -134,14 +135,14 @@ public final class DefaultMetricCollector extends AbstractMetricCollector {
   }
 
   @Override
-  public void addCounter(String name) {
+  public void addCounter(SocketAddress node, String name) {
     if (!counters.containsKey(name)) {
       counters.put(name, registry.counter(name));
     }
   }
 
   @Override
-  public void removeCounter(String name) {
+  public void removeCounter(SocketAddress node, String name) {
     if (!counters.containsKey(name)) {
       registry.remove(name);
       counters.remove(name);
@@ -149,56 +150,56 @@ public final class DefaultMetricCollector extends AbstractMetricCollector {
   }
 
   @Override
-  public void incrementCounter(String name, int amount) {
+  public void incrementCounter(SocketAddress node, String name, int amount) {
     if (counters.containsKey(name)) {
       counters.get(name).inc(amount);
     }
   }
 
   @Override
-  public void decrementCounter(String name, int amount) {
+  public void decrementCounter(SocketAddress node, String name, int amount) {
     if (counters.containsKey(name)) {
       counters.get(name).dec(amount);
     }
   }
 
   @Override
-  public void addMeter(String name) {
+  public void addMeter(SocketAddress node, String name) {
     if (!meters.containsKey(name)) {
       meters.put(name, registry.meter(name));
     }
   }
 
   @Override
-  public void removeMeter(String name) {
+  public void removeMeter(SocketAddress node, String name) {
     if (meters.containsKey(name)) {
       meters.remove(name);
     }
   }
 
   @Override
-  public void markMeter(String name) {
+  public void markMeter(SocketAddress node, String name) {
     if (meters.containsKey(name)) {
       meters.get(name).mark();
     }
   }
 
   @Override
-  public void addHistogram(String name) {
+  public void addHistogram(SocketAddress node, String name) {
     if (!histograms.containsKey(name)) {
       histograms.put(name, registry.histogram(name));
     }
   }
 
   @Override
-  public void removeHistogram(String name) {
+  public void removeHistogram(SocketAddress node, String name) {
     if (histograms.containsKey(name)) {
       histograms.remove(name);
     }
   }
 
   @Override
-  public void updateHistogram(String name, int amount) {
+  public void updateHistogram(SocketAddress node, String name, int amount) {
     if (histograms.containsKey(name)) {
       histograms.get(name).update(amount);
     }
