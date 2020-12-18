@@ -173,6 +173,7 @@ public class TapClient {
         Operation op =  conn.getOpFactory().tapCustom(id, message,
             new TapOperation.Callback() {
             public void receivedStatus(OperationStatus status) {
+            	throw new UnsupportedOperationException();
             }
             public void gotData(ResponseMessage tapMessage) {
               rqueue.add(tapMessage);
@@ -217,6 +218,7 @@ public class TapClient {
         Operation op =  conn.getOpFactory().tapDump(id,
             new TapOperation.Callback() {
             public void receivedStatus(OperationStatus status) {
+            	throw new UnsupportedOperationException();
             }
             public void gotData(ResponseMessage tapMessage) {
               rqueue.add(tapMessage);

@@ -473,7 +473,9 @@ public class MemcachedConnection extends SpyThread {
    * called very often under heavy workloads, so it should not perform extensive
    * tasks in the same thread.</p>
    */
-  protected void handleWokenUpSelector() { }
+  protected void handleWokenUpSelector() {
+	  throw new UnsupportedOperationException();
+  }
 
   /**
    * Helper method for {@link #handleIO()} to encapsulate everything that
