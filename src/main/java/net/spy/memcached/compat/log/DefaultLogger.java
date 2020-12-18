@@ -77,7 +77,7 @@ public class DefaultLogger extends AbstractLogger {
         || level == Level.WARN
         || level == Level.ERROR
         || level == Level.FATAL) {
-      System.err.printf("%s %s %s:  %s\n", df.format(new Date()), level.name(),
+      System.err.printf("%s %s %s:  %s%n", df.format(new Date()), level.name(),
           getName(), message);
       if (e != null) {
         e.printStackTrace();

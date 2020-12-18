@@ -611,7 +611,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   }
 
   public final void authComplete() {
-    if (reconnectBlocked != null && reconnectBlocked.size() > 0) {
+    if (reconnectBlocked != null && !reconnectBlocked.isEmpty()) {
       inputQueue.addAll(reconnectBlocked);
     }
     authLatch.countDown();
@@ -620,11 +620,11 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
   public final void setupForAuth() {
     if (shouldAuth) {
       authLatch = new CountDownLatch(1);
-      if (inputQueue.size() > 0) {
+      if (!inputQueue.isEmpty()) {
         reconnectBlocked = new ArrayList<Operation>(inputQueue.size() + 1);
         inputQueue.drainTo(reconnectBlocked);
       }
-      assert (inputQueue.size() == 0);
+      assert (inputQueue.isEmpty());
       setupResend();
     } else {
       authLatch = new CountDownLatch(0);
