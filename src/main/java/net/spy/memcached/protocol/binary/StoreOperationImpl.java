@@ -50,13 +50,13 @@ class StoreOperationImpl extends SingleKeyOperationImpl implements
   private static byte cmdMap(StoreType t) {
     byte rv;
     switch (t) {
-    case set:
+    case SET:
       rv = SET;
       break;
-    case add:
+    case ADD:
       rv = ADD;
       break;
-    case replace:
+    case REPLACE:
       rv = REPLACE;
       break;
     default:

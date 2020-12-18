@@ -118,7 +118,7 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
   }
 
   public void testCASOperationCloning() {
-    CASOperation op = ofact.cas(StoreType.set, "someKey", 727582, 8174, 7175,
+    CASOperation op = ofact.cas(StoreType.SET, "someKey", 727582, 8174, 7175,
       testData, storeCallback);
 
     CASOperation op2 = cloneOne(CASOperation.class, op);
@@ -134,7 +134,7 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
     int exp = 823862;
     long def = 28775;
     long by = 7735;
-    MutatorOperation op = ofact.mutate(Mutator.incr, TEST_KEY, by, def, exp,
+    MutatorOperation op = ofact.mutate(Mutator.INCR, TEST_KEY, by, def, exp,
       genericCallback);
 
     MutatorOperation op2 = cloneOne(MutatorOperation.class, op);
@@ -142,7 +142,7 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
     assertEquals(exp, op2.getExpiration());
     assertEquals(def, op2.getDefault());
     assertEquals(by, op2.getBy());
-    assertSame(Mutator.incr, op2.getType());
+    assertSame(Mutator.INCR, op2.getType());
     assertCallback(op2);
   }
 
@@ -150,7 +150,7 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
     int exp = 823862;
     long def = 28775;
     long by = 7735;
-    MutatorOperation op = ofact.mutate(Mutator.decr, TEST_KEY, by, def, exp,
+    MutatorOperation op = ofact.mutate(Mutator.DECR, TEST_KEY, by, def, exp,
         genericCallback);
 
     MutatorOperation op2 = cloneOne(MutatorOperation.class, op);
@@ -158,57 +158,57 @@ public abstract class OperationFactoryTestBase extends MockObjectTestCase {
     assertEquals(exp, op2.getExpiration());
     assertEquals(def, op2.getDefault());
     assertEquals(by, op2.getBy());
-    assertSame(Mutator.decr, op2.getType());
+    assertSame(Mutator.DECR, op2.getType());
     assertCallback(op2);
   }
 
   public void testStoreOperationAddCloning() {
     int exp = 823862;
     int flags = 7735;
-    StoreOperation op = ofact.store(StoreType.add, TEST_KEY, flags, exp,
+    StoreOperation op = ofact.store(StoreType.ADD, TEST_KEY, flags, exp,
         testData, storeCallback);
 
     StoreOperation op2 = cloneOne(StoreOperation.class, op);
     assertKey(op2);
     assertEquals(exp, op2.getExpiration());
     assertEquals(flags, op2.getFlags());
-    assertSame(StoreType.add, op2.getStoreType());
+    assertSame(StoreType.ADD, op2.getStoreType());
     assertStoreCallback(op2);
   }
 
   public void testStoreOperationSetCloning() {
     int exp = 823862;
     int flags = 7735;
-    StoreOperation op = ofact.store(StoreType.set, TEST_KEY, flags, exp,
+    StoreOperation op = ofact.store(StoreType.SET, TEST_KEY, flags, exp,
         testData, storeCallback);
 
     StoreOperation op2 = cloneOne(StoreOperation.class, op);
     assertKey(op2);
     assertEquals(exp, op2.getExpiration());
     assertEquals(flags, op2.getFlags());
-    assertSame(StoreType.set, op2.getStoreType());
+    assertSame(StoreType.SET, op2.getStoreType());
     assertStoreCallback(op2);
   }
 
   public void testConcatenationOperationAppendCloning() {
     long casId = 82757248;
-    ConcatenationOperation op = ofact.cat(ConcatenationType.append, casId,
+    ConcatenationOperation op = ofact.cat(ConcatenationType.APPEND, casId,
         TEST_KEY, testData, genericCallback);
 
     ConcatenationOperation op2 = cloneOne(ConcatenationOperation.class, op);
     assertKey(op2);
-    assertSame(ConcatenationType.append, op2.getStoreType());
+    assertSame(ConcatenationType.APPEND, op2.getStoreType());
     assertCallback(op2);
   }
 
   public void testConcatenationOperationPrependCloning() {
     long casId = 82757248;
-    ConcatenationOperation op = ofact.cat(ConcatenationType.prepend, casId,
+    ConcatenationOperation op = ofact.cat(ConcatenationType.PREPEND, casId,
         TEST_KEY, testData, genericCallback);
 
     ConcatenationOperation op2 = cloneOne(ConcatenationOperation.class, op);
     assertKey(op2);
-    assertSame(ConcatenationType.prepend, op2.getStoreType());
+    assertSame(ConcatenationType.PREPEND, op2.getStoreType());
     assertCallback(op2);
   }
 

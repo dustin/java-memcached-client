@@ -59,7 +59,7 @@ public class CancelFailureModeTest extends ClientBaseCase {
     initClient(new DefaultConnectionFactory() {
       @Override
       public FailureMode getFailureMode() {
-        return FailureMode.Cancel;
+        return FailureMode.CANCEL;
       }
     });
   }

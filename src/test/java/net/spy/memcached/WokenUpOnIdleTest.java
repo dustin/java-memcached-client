@@ -51,7 +51,7 @@ public class WokenUpOnIdleTest {
       new BinaryConnectionFactory(),
       Arrays.asList(new InetSocketAddress(11211)),
       Collections.<ConnectionObserver>emptyList(),
-      FailureMode.Redistribute,
+      FailureMode.REDISTRIBUTE,
       new BinaryOperationFactory()
     );
 

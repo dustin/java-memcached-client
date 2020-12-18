@@ -40,10 +40,10 @@ class ConcatenationOperationImpl extends SingleKeyOperationImpl implements
   private static byte cmdMap(ConcatenationType t) {
     byte rv;
     switch (t) {
-    case append:
+    case APPEND:
       rv = APPEND;
       break;
-    case prepend:
+    case PREPEND:
       rv = PREPEND;
       break;
     default:

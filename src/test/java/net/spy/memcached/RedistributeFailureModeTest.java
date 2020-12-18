@@ -61,7 +61,7 @@ public class RedistributeFailureModeTest extends ClientBaseCase {
     initClient(new DefaultConnectionFactory() {
       @Override
       public FailureMode getFailureMode() {
-        return FailureMode.Redistribute;
+        return FailureMode.REDISTRIBUTE;
       }
     });
   }

@@ -343,7 +343,7 @@ public abstract class TCPMemcachedNodeImpl extends SpyObject implements
     try {
       if (!authLatch.await(authWaitTime, TimeUnit.MILLISECONDS)) {
         FailureMode mode = connectionFactory.getFailureMode();
-        if (mode == FailureMode.Redistribute || mode == FailureMode.Retry) {
+        if (mode == FailureMode.REDISTRIBUTE || mode == FailureMode.RETRY) {
           getLogger().debug("Redistributing Operation " + op + " because auth "
             + "latch taken longer than " + authWaitTime + " milliseconds to "
             + "complete on node " + getSocketAddress());

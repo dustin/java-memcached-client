@@ -132,13 +132,13 @@ public class OptimizedSetImpl extends MultiKeyOperationImpl {
   private static byte cmdMap(StoreType t) {
     byte rv;
     switch (t) {
-    case set:
+    case SET:
       rv = StoreOperationImpl.SETQ;
       break;
-    case add:
+    case ADD:
       rv = StoreOperationImpl.ADDQ;
       break;
-    case replace:
+    case REPLACE:
       rv = StoreOperationImpl.REPLACEQ;
       break;
     default:

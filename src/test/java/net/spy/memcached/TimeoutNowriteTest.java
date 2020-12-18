@@ -51,7 +51,7 @@ public class TimeoutNowriteTest extends ClientBaseCase {
 
       @Override
       public FailureMode getFailureMode() {
-        return FailureMode.Retry;
+        return FailureMode.RETRY;
       }
     }, AddrUtil.getAddresses(TestConfig.IPV4_ADDR + ":"
          + TestConfig.PORT_NUMBER));

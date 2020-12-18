@@ -42,7 +42,7 @@ public class OperationFactoryTest extends OperationFactoryTestBase {
     int exp = 823862;
     long def = 28775;
     long by = 7735;
-    MutatorOperation op = ofact.mutate(Mutator.incr, TEST_KEY, by, def, exp,
+    MutatorOperation op = ofact.mutate(Mutator.INCR, TEST_KEY, by, def, exp,
         genericCallback);
 
     MutatorOperation op2 = cloneOne(MutatorOperation.class, op);
@@ -50,7 +50,7 @@ public class OperationFactoryTest extends OperationFactoryTestBase {
     assertEquals(-1, op2.getExpiration());
     assertEquals(-1, op2.getDefault());
     assertEquals(by, op2.getBy());
-    assertSame(Mutator.incr, op2.getType());
+    assertSame(Mutator.INCR, op2.getType());
     assertCallback(op2);
   }
 
@@ -59,7 +59,7 @@ public class OperationFactoryTest extends OperationFactoryTestBase {
     int exp = 823862;
     long def = 28775;
     long by = 7735;
-    MutatorOperation op = ofact.mutate(Mutator.decr, TEST_KEY, by, def, exp,
+    MutatorOperation op = ofact.mutate(Mutator.DECR, TEST_KEY, by, def, exp,
         genericCallback);
 
     MutatorOperation op2 = cloneOne(MutatorOperation.class, op);
@@ -67,7 +67,7 @@ public class OperationFactoryTest extends OperationFactoryTestBase {
     assertEquals(-1, op2.getExpiration());
     assertEquals(-1, op2.getDefault());
     assertEquals(by, op2.getBy());
-    assertSame(Mutator.decr, op2.getType());
+    assertSame(Mutator.DECR, op2.getType());
     assertCallback(op2);
   }
 }

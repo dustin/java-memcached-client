@@ -38,7 +38,7 @@ import net.spy.memcached.tapmessage.TapOpcode;
 public class BinaryToStringTest extends TestCase {
 
   public void testConcatenation() {
-    (new ConcatenationOperationImpl(ConcatenationType.append, "key",
+    (new ConcatenationOperationImpl(ConcatenationType.APPEND, "key",
         "value".getBytes(), 0, null)).toString();
   }
 
@@ -71,7 +71,7 @@ public class BinaryToStringTest extends TestCase {
   }
 
   public void testMutator() {
-    (new MutatorOperationImpl(Mutator.decr, "key", 1, 0, 15, null)).toString();
+    (new MutatorOperationImpl(Mutator.DECR, "key", 1, 0, 15, null)).toString();
   }
 
   public void testNoop() {
@@ -83,7 +83,7 @@ public class BinaryToStringTest extends TestCase {
   }
 
   public void testOptimiedSet() {
-    (new OptimizedSetImpl(new StoreOperationImpl(StoreType.set, "key", 0, 10,
+    (new OptimizedSetImpl(new StoreOperationImpl(StoreType.SET, "key", 0, 10,
         "value".getBytes(), 0, null))).toString();
   }
 
@@ -104,7 +104,7 @@ public class BinaryToStringTest extends TestCase {
   }
 
   public void testStore() {
-    (new StoreOperationImpl(StoreType.set, "key", 0, 10,
+    (new StoreOperationImpl(StoreType.SET, "key", 0, 10,
         "value".getBytes(), 0, null)).toString();
   }
 
