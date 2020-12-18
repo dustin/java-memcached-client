@@ -62,7 +62,7 @@ public class OperationFuture<T>
   private Operation op;
   private final String key;
   private Long cas;
-
+  private static final String NO_OPERATTION = "No operation";
   /**
    * Create an OperationFuture for a given async operation.
    *
@@ -107,7 +107,7 @@ public class OperationFuture<T>
    * @return true if the operation has not yet been written to the network
    */
   public boolean cancel(boolean ign) {
-    assert op != null : "No operation";
+    assert op != null : NO_OPERATTION;
     op.cancel();
     notifyListeners();
     return op.getState() == OperationState.WRITE_QUEUED;
@@ -119,7 +119,7 @@ public class OperationFuture<T>
    * @return true if the operation has not yet been written to the network
    */
   public boolean cancel() {
-    assert op != null : "No operation";
+    assert op != null : NO_OPERATTION;
     op.cancel();
     notifyListeners();
     return op.getState() == OperationState.WRITE_QUEUED;
@@ -290,7 +290,7 @@ public class OperationFuture<T>
    * @return true if the Operation has been canceled
    */
   public boolean isCancelled() {
-    assert op != null : "No operation";
+    assert op != null : NO_OPERATTION;
     return op.isCancelled();
   }
 
@@ -305,7 +305,7 @@ public class OperationFuture<T>
    * @return true if the Operation is done
    */
   public boolean isDone() {
-    assert op != null : "No operation";
+    assert op != null : NO_OPERATTION;
     return latch.getCount() == 0 || op.isCancelled()
         || op.getState() == OperationState.COMPLETE;
   }

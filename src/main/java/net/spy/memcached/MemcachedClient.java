@@ -138,7 +138,15 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     ConnectionObserver {
-
+  
+  private static final String EXCEPTION_WAITING_FOR_VALUE = "Exception waiting for value";
+  
+  private static final String INTERRUPTED_WAITING_FOR_VALUE = "Interrupted waiting for value";
+  
+  private static final String TIMEOUT_WAITING_FOR_VALUE = "Timeout waiting for value";
+  
+  private static final String WRONG_KEY_RETURNED = "Wrong key returned";
+	
   protected volatile boolean shuttingDown;
 
   protected final long operationTimeout;
@@ -732,15 +740,15 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
           TimeUnit.MILLISECONDS);
       return casr;
     } catch (InterruptedException e) {
-      throw new RuntimeException("Interrupted waiting for value", e);
+      throw new RuntimeException(INTERRUPTED_WAITING_FOR_VALUE, e);
     } catch (ExecutionException e) {
       if(e.getCause() instanceof CancellationException) {
         throw (CancellationException) e.getCause();
       } else {
-        throw new RuntimeException("Exception waiting for value", e);
+        throw new RuntimeException(EXCEPTION_WAITING_FOR_VALUE, e);
       }
     } catch (TimeoutException e) {
-      throw new OperationTimeoutException("Timeout waiting for value: "
+      throw new OperationTimeoutException(TIMEOUT_WAITING_FOR_VALUE
         + buildTimeoutMessage(operationTimeout, TimeUnit.MILLISECONDS), e);
     }
   }
@@ -1029,7 +1037,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
 
       @Override
       public void gotData(String k, int flags, byte[] data) {
-        assert key.equals(k) : "Wrong key returned";
+        assert key.equals(k) : WRONG_KEY_RETURNED;
         val =
             tcService.decode(tc, new CachedData(flags, data, tc.getMaxSize()));
       }
@@ -1087,7 +1095,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
 
       @Override
       public void gotData(String k, int flags, long cas, byte[] data) {
-        assert key.equals(k) : "Wrong key returned";
+        assert key.equals(k) : WRONG_KEY_RETURNED;
         val =
             new CASValue<T>(cas, tc.decode(new CachedData(flags, data,
                 tc.getMaxSize())));
@@ -1135,15 +1143,15 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     try {
       return asyncGets(key, tc).get(operationTimeout, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
-      throw new RuntimeException("Interrupted waiting for value", e);
+      throw new RuntimeException(INTERRUPTED_WAITING_FOR_VALUE, e);
     } catch (ExecutionException e) {
       if(e.getCause() instanceof CancellationException) {
         throw (CancellationException) e.getCause();
       } else {
-        throw new RuntimeException("Exception waiting for value", e);
+        throw new RuntimeException(EXCEPTION_WAITING_FOR_VALUE, e);
       }
     } catch (TimeoutException e) {
-      throw new OperationTimeoutException("Timeout waiting for value", e);
+      throw new OperationTimeoutException(TIMEOUT_WAITING_FOR_VALUE, e);
     }
   }
 
@@ -1167,15 +1175,15 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
       return asyncGetAndTouch(key, exp, tc).get(operationTimeout,
           TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
-      throw new RuntimeException("Interrupted waiting for value", e);
+      throw new RuntimeException(INTERRUPTED_WAITING_FOR_VALUE, e);
     } catch (ExecutionException e) {
       if(e.getCause() instanceof CancellationException) {
         throw (CancellationException) e.getCause();
       } else {
-        throw new RuntimeException("Exception waiting for value", e);
+        throw new RuntimeException(EXCEPTION_WAITING_FOR_VALUE, e);
       }
     } catch (TimeoutException e) {
-      throw new OperationTimeoutException("Timeout waiting for value", e);
+      throw new OperationTimeoutException(TIMEOUT_WAITING_FOR_VALUE, e);
     }
   }
 
@@ -1228,15 +1236,15 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
     try {
       return asyncGet(key, tc).get(operationTimeout, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
-      throw new RuntimeException("Interrupted waiting for value", e);
+      throw new RuntimeException(INTERRUPTED_WAITING_FOR_VALUE, e);
     } catch (ExecutionException e) {
       if(e.getCause() instanceof CancellationException) {
         throw (CancellationException) e.getCause();
       } else {
-        throw new RuntimeException("Exception waiting for value", e);
+        throw new RuntimeException(EXCEPTION_WAITING_FOR_VALUE, e);
       }
     } catch (TimeoutException e) {
-      throw new OperationTimeoutException("Timeout waiting for value: "
+      throw new OperationTimeoutException(TIMEOUT_WAITING_FOR_VALUE
         + buildTimeoutMessage(operationTimeout, TimeUnit.MILLISECONDS), e);
     }
   }
@@ -1524,7 +1532,7 @@ public class MemcachedClient extends SpyObject implements MemcachedClientIF,
 
           @Override
           public void gotData(String k, int flags, long cas, byte[] data) {
-            assert k.equals(key) : "Wrong key returned";
+            assert k.equals(key) : WRONG_KEY_RETURNED;
             val =
                 new CASValue<T>(cas, tc.decode(new CachedData(flags, data,
                     tc.getMaxSize())));
