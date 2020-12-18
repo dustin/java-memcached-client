@@ -333,7 +333,7 @@ public class ResponseMessage extends BaseMessage {
     SerializingTranscoder tc = new SerializingTranscoder();
     CachedData d = new CachedData(this.getItemFlags(), this.getValue(),
       CachedData.MAX_SIZE);
-    Object rv = null;
+    Object rv;
     rv = tc.decode(d);
     return rv;
   }

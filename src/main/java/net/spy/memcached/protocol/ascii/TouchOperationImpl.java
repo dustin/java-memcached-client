@@ -69,7 +69,7 @@ final class TouchOperationImpl extends OperationImpl implements TouchOperation {
 
   @Override
   public void initialize() {
-    ByteBuffer b = null;
+    ByteBuffer b;
     b = ByteBuffer.allocate(KeyUtil.getKeyBytes(key).length
       + String.valueOf(exp).length() + OVERHEAD);
     b.put(("touch " + key + " " + exp + "\r\n").getBytes());
