@@ -10,7 +10,7 @@ steps:
 
   - description: "Running ant build"
     commands:
-      - apache-ant-1.10.11-bin/bin/ant
+      - apache-ant-1.10.11/bin/ant
 
   - description: "Changing POM version"
     commands:
