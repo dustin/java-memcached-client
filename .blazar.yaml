@@ -5,7 +5,7 @@ buildDeps:
 steps:
   - description: "Installing ant"
     commands:
-      - wget https://apache.mirrors.tds.net/ant/binaries/apache-ant-1.10.11-bin.zip
+      - wget http://apache.mirrors.tds.net/ant/binaries/apache-ant-1.10.11-bin.zip
       - unzip -qq apache-ant-1.10.11-bin.zip
 
   - description: "Running ant build"
