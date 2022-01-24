@@ -5,12 +5,12 @@ buildDeps:
 steps:
   - description: "Installing ant"
     commands:
-      - wget http://apache.mirrors.tds.net/ant/binaries/apache-ant-1.10.7-bin.zip
-      - unzip -qq apache-ant-1.10.7-bin.zip
+      - wget http://apache.mirrors.tds.net/ant/binaries/apache-ant-1.10.11-bin.zip
+      - unzip -qq apache-ant-1.10.11-bin.zip
 
   - description: "Running ant build"
     commands:
-      - apache-ant-1.10.7/bin/ant
+      - apache-ant-1.10.11/bin/ant
 
   - description: "Changing POM version"
     commands:

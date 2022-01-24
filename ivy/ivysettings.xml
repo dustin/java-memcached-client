@@ -22,7 +22,7 @@
 
 <ivysettings>
 
-  <property name="repo.maven.org" value="http://repo1.maven.org/maven2/"
+  <property name="repo.maven.org" value="https://repo1.maven.org/maven2/"
     override="false"/>
   <property name="ibiblio.maven.org" value="http://www.ibiblio.org/maven2/"
     override="false"/>
